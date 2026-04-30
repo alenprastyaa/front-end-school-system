@@ -307,7 +307,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 import { Icon } from "@iconify/vue";
 import { io } from "socket.io-client";
-import { api } from "@/api";
+import { api, realtimeConfig } from "@/api";
 import { formatDateTime } from "@/utils/date";
 import { getStoredRole } from "@/utils/auth";
 
@@ -356,8 +356,6 @@ const AUDIO_MIME_EXTENSION_MAP = {
   "audio/3gpp2": ".3g2",
   "audio/mp4a-latm": ".m4a",
 };
-
-const socketBaseUrl = api.baseUrl.replace(/\/api$/, "");
 
 const getCurrentUserId = () => {
   try {
@@ -987,8 +985,9 @@ const sendMessage = async () => {
 
 onMounted(async () => {
   const token = localStorage.getItem("token");
-  socket.value = io(socketBaseUrl, {
+  socket.value = io(realtimeConfig.url, {
     auth: { token },
+    path: realtimeConfig.path,
     transports: ["websocket", "polling"],
   });
 

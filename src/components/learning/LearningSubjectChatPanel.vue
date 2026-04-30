@@ -132,7 +132,7 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { io } from "socket.io-client";
-import { api } from "@/api";
+import { api, realtimeConfig } from "@/api";
 import { formatDateTime } from "@/utils/date";
 
 const props = defineProps({
@@ -170,8 +170,6 @@ const getCurrentUserId = () => {
 };
 
 const currentUserId = getCurrentUserId();
-const socketBaseUrl = api.baseUrl.replace(/\/api$/, "");
-
 const focusClass = computed(() =>
   props.mode === "teacher"
     ? "focus:ring-sky-600 dark:focus:ring-cyan-500"
@@ -325,10 +323,11 @@ const sendMessage = async () => {
 
 onMounted(() => {
   const token = localStorage.getItem("token");
-  socket.value = io(socketBaseUrl, {
+  socket.value = io(realtimeConfig.url, {
     auth: {
       token,
     },
+    path: realtimeConfig.path,
     transports: ["websocket", "polling"],
   });
 

@@ -128,7 +128,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
 import { getStoredRole } from "@/utils/auth";
-import { api } from "@/api";
+import { api, realtimeConfig } from "@/api";
 import { io } from "socket.io-client";
 
 defineEmits(["sidebarToggle"]);
@@ -145,7 +145,6 @@ const joinedSubjectIds = ref([]);
 const chatToasts = ref([]);
 const learningToasts = ref([]);
 const liveChatSubjects = ref([]);
-const socketBaseUrl = api.baseUrl.replace(/\/api$/, "");
 let toastIdCounter = 0;
 
 const getCurrentUserId = () => {
@@ -498,8 +497,9 @@ const bindLiveChatSocket = () => {
   }
 
   const token = localStorage.getItem("token");
-  chatSocket.value = io(socketBaseUrl, {
+  chatSocket.value = io(realtimeConfig.url, {
     auth: { token },
+    path: realtimeConfig.path,
     transports: ["websocket", "polling"],
   });
 

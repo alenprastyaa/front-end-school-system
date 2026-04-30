@@ -1,5 +1,39 @@
 const API_BASE_URL = (process.env.VUE_APP_API_BASE_URL || "https://alentest.my.id/school/api").replace(/\/$/, "");
 
+const normalizeSocketPath = (path) => {
+  if (!path) {
+    return "/socket.io";
+  }
+
+  const normalized = `/${String(path).replace(/^\/+|\/+$/g, "")}`;
+  return normalized || "/socket.io";
+};
+
+const buildRealtimeConfig = () => {
+  const configuredSocketUrl = (process.env.VUE_APP_SOCKET_URL || "").trim().replace(/\/$/, "");
+  const configuredSocketPath = (process.env.VUE_APP_SOCKET_PATH || "").trim();
+  const fallbackOrigin =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : "http://localhost";
+
+  let resolvedApiUrl;
+  try {
+    resolvedApiUrl = new URL(API_BASE_URL, fallbackOrigin);
+  } catch (error) {
+    resolvedApiUrl = new URL(fallbackOrigin);
+  }
+
+  const apiPathname = resolvedApiUrl.pathname.replace(/\/$/, "");
+  const derivedBasePath = apiPathname.replace(/\/api$/i, "");
+  const derivedSocketPath = `${derivedBasePath || ""}/socket.io`;
+
+  return {
+    url: configuredSocketUrl || resolvedApiUrl.origin,
+    path: normalizeSocketPath(configuredSocketPath || derivedSocketPath),
+  };
+};
+
 const buildHeaders = (options = {}) => {
   const headers = { ...(options.headers || {}) };
   const token = localStorage.getItem("token");
@@ -102,3 +136,5 @@ export const api = {
   delete: (path, options = {}) =>
     apiRequest(path, { ...options, method: "DELETE" }),
 };
+
+export const realtimeConfig = buildRealtimeConfig();
