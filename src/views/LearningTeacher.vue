@@ -98,7 +98,7 @@
                     item.content || "Tidak ada deskripsi." }}</p>
                 </div>
                 <div class="mt-5 pt-4 border-t border-slate-200/60 dark:border-slate-700/60">
-                  <a v-if="item.attachment_url" :href="item.attachment_url" target="_blank" rel="noreferrer"
+                  <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank" rel="noreferrer"
                     class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-sky-50 px-3 py-2 text-xs font-bold text-sky-700 transition hover:bg-sky-100 dark:bg-cyan-500/10 dark:text-cyan-300 dark:hover:bg-cyan-500/20">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round"
@@ -237,7 +237,7 @@
                             class="max-h-16 max-w-xs overflow-y-auto text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                             {{ item.submission_text || "Tanpa teks catatan." }}
                           </p>
-                          <a v-if="item.attachment_url" :href="item.attachment_url" target="_blank" rel="noreferrer"
+                          <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank" rel="noreferrer"
                             class="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-sky-50 px-2.5 py-1 text-xs font-bold text-sky-700 transition hover:bg-sky-100 dark:bg-cyan-900/30 dark:text-cyan-400 dark:hover:bg-cyan-900/50">
                             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2"
                               stroke="currentColor">
@@ -466,6 +466,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { api } from "@/api";
 import { formatDateTime } from "@/utils/date";
+import { normalizePublicUrl } from "@/utils/url";
 
 const activeTab = ref("materials");
 const subjects = ref([]);

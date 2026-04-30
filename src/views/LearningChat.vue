@@ -174,20 +174,20 @@
                       {{ item.message }}
                     </p>
                     <div v-if="item.attachment_url" class="mt-3">
-                      <audio v-if="item.message_type === 'VOICE'" :src="item.attachment_url" controls
+                      <audio v-if="item.message_type === 'VOICE'" :src="normalizePublicUrl(item.attachment_url)" controls
                         class="w-full max-w-sm" />
-                      <a v-else-if="item.message_type === 'IMAGE'" :href="item.attachment_url" target="_blank"
+                      <a v-else-if="item.message_type === 'IMAGE'" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
                         rel="noreferrer" class="block overflow-hidden rounded-2xl">
-                        <img :src="item.attachment_url" :alt="item.attachment_name || 'Lampiran gambar'"
+                        <img :src="normalizePublicUrl(item.attachment_url)" :alt="item.attachment_name || 'Lampiran gambar'"
                           class="max-h-72 w-full object-cover" />
                       </a>
-                      <a v-else-if="item.message_type === 'PDF'" :href="item.attachment_url" target="_blank"
+                      <a v-else-if="item.message_type === 'PDF'" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
                         rel="noreferrer"
                         class="flex items-center gap-3 rounded-2xl bg-black/5 px-4 py-3 text-sm font-semibold hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15">
                         <Icon icon="ph:file-pdf" class="h-6 w-6 shrink-0" />
                         <span class="truncate">{{ item.attachment_name || "Buka PDF" }}</span>
                       </a>
-                      <a v-else :href="item.attachment_url" target="_blank" rel="noreferrer"
+                      <a v-else :href="normalizePublicUrl(item.attachment_url)" target="_blank" rel="noreferrer"
                         class="flex items-center gap-3 rounded-2xl bg-black/5 px-4 py-3 text-sm font-semibold hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15">
                         <Icon icon="ph:paperclip" class="h-5 w-5 shrink-0" />
                         <span class="truncate">{{ item.attachment_name || "Buka file" }}</span>
@@ -310,6 +310,7 @@ import { io } from "socket.io-client";
 import { api, realtimeConfig } from "@/api";
 import { formatDateTime } from "@/utils/date";
 import { getStoredRole } from "@/utils/auth";
+import { normalizePublicUrl } from "@/utils/url";
 
 const role = getStoredRole();
 const subjects = ref([]);

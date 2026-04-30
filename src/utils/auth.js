@@ -1,3 +1,5 @@
+import { normalizePublicUrl } from "@/utils/url";
+
 export const getStoredUser = () => {
   try {
     const rawUser = localStorage.getItem("user");
@@ -23,7 +25,7 @@ export const persistSession = (payload) => {
       role: data.role,
       school_id: data.school_id,
       school_name: data.school_name,
-      profile_image: data.profile_image || null,
+      profile_image: normalizePublicUrl(data.profile_image) || null,
     }),
   );
 };

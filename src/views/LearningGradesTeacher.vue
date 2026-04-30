@@ -183,7 +183,7 @@
                     </svg>
                     Review Jawaban
                   </button>
-                  <a v-else-if="row.attachment_url" :href="row.attachment_url" target="_blank" rel="noreferrer"
+                  <a v-else-if="row.attachment_url" :href="normalizePublicUrl(row.attachment_url)" target="_blank" rel="noreferrer"
                     class="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round"
@@ -344,6 +344,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { api } from "@/api";
 import { formatDateTime } from "@/utils/date";
+import { normalizePublicUrl } from "@/utils/url";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 import { downloadExcelWorksheet } from "@/utils/excelExport";
 

@@ -140,6 +140,7 @@ import { Icon } from "@iconify/vue";
 import { fullscreen as handleFullscreen } from "@/helper/fullscreen";
 import { clearSession, getStoredUser, updateStoredUser } from "@/utils/auth";
 import { api } from "@/api";
+import { normalizePublicUrl } from "@/utils/url";
 import defaultAvatar from "@/assets/img/user.jpg";
 
 const router = useRouter();
@@ -169,7 +170,7 @@ const profileForm = ref({
   confirm_password: "",
 });
 
-const avatarSrc = computed(() => userProfile.value.profile_image || defaultAvatar);
+const avatarSrc = computed(() => normalizePublicUrl(userProfile.value.profile_image) || defaultAvatar);
 
 watch(
   () => route.path,
@@ -208,13 +209,14 @@ const loadProfile = async () => {
     userProfile.value = {
       ...userProfile.value,
       ...profile,
+      profile_image: normalizePublicUrl(profile.profile_image) || null,
     };
     updateStoredUser({
       username: profile.username,
       role: profile.role,
       school_id: profile.school_id,
       school_name: profile.school_name,
-      profile_image: profile.profile_image || null,
+      profile_image: normalizePublicUrl(profile.profile_image) || null,
     });
     syncProfileForm();
   } catch (error) {
@@ -276,6 +278,7 @@ const saveProfile = async () => {
     userProfile.value = {
       ...userProfile.value,
       ...profile,
+      profile_image: normalizePublicUrl(profile.profile_image) || null,
     };
 
     updateStoredUser({
@@ -283,7 +286,7 @@ const saveProfile = async () => {
       role: profile.role,
       school_id: profile.school_id,
       school_name: profile.school_name,
-      profile_image: profile.profile_image || null,
+      profile_image: normalizePublicUrl(profile.profile_image) || null,
     });
 
     profileMessage.value = response?.message || "Profil berhasil diperbarui.";

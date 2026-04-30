@@ -117,7 +117,7 @@
                 </div>
 
                 <div class="mt-5 pt-4 border-t border-slate-200/60 dark:border-slate-700/60">
-                  <a v-if="item.attachment_url" :href="item.attachment_url" target="_blank" rel="noreferrer"
+                      <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank" rel="noreferrer"
                     class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-3 py-2.5 text-xs font-bold text-emerald-700 shadow-sm ring-1 ring-inset ring-slate-200 transition hover:bg-emerald-50 hover:ring-emerald-200 dark:bg-slate-900 dark:text-emerald-400 dark:ring-slate-700 dark:hover:bg-emerald-500/10 dark:hover:ring-emerald-500/30">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round"
@@ -183,7 +183,7 @@
                         }}
                       </div>
 
-                      <a v-if="item.attachment_url" :href="item.attachment_url" target="_blank" rel="noreferrer"
+                      <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank" rel="noreferrer"
                         class="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-emerald-600 transition hover:text-emerald-500 dark:text-emerald-400">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round"
@@ -296,6 +296,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { api } from "@/api";
 import { formatDateTime } from "@/utils/date";
+import { normalizePublicUrl } from "@/utils/url";
 
 const activeTab = ref("materials");
 const subjects = ref([]);
