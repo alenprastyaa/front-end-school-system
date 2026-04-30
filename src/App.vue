@@ -23,14 +23,14 @@
     </div>
 
     <div
-      class="app-content flex-auto flex min-h-[100dvh] w-full flex-col overflow-hidden transition-colors"
+      class="app-content flex-auto flex min-h-[100dvh] w-full flex-col overflow-hidden lg:overflow-visible transition-colors"
     >
       <Header
         v-if="!shouldHideChrome"
         @sidebarToggle="open"
       />
 
-      <div class="flex-1 overflow-y-auto">
+      <div class="flex-1 overflow-y-auto lg:overflow-visible">
         <transition
           name="slide-up"
           mode="out-in"
