@@ -1,0 +1,104 @@
+const API_BASE_URL = (process.env.VUE_APP_API_BASE_URL || "https://alentest.my.id/school/api").replace(/\/$/, "");
+
+const buildHeaders = (options = {}) => {
+  const headers = { ...(options.headers || {}) };
+  const token = localStorage.getItem("token");
+
+  if (!(options.body instanceof FormData)) {
+    headers["Content-Type"] = headers["Content-Type"] || "application/json";
+  }
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+};
+
+const buildBody = (body) => {
+  if (body == null) {
+    return undefined;
+  }
+
+  if (body instanceof FormData) {
+    return body;
+  }
+
+  return JSON.stringify(body);
+};
+
+const buildUrl = (path, params) => {
+  const url = new URL(`${API_BASE_URL}${path}`);
+
+  if (!params || typeof params !== "object") {
+    return url.toString();
+  }
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") {
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach((item) => {
+        if (item !== undefined && item !== null && item !== "") {
+          url.searchParams.append(key, String(item));
+        }
+      });
+      return;
+    }
+
+    url.searchParams.set(key, String(value));
+  });
+
+  return url.toString();
+};
+
+const normalizeError = async (response) => {
+  let payload = null;
+
+  try {
+    payload = await response.json();
+  } catch (error) {
+    payload = null;
+  }
+
+  const message =
+    payload?.message || payload?.error || `Request failed with status ${response.status}`;
+
+  const requestError = new Error(message);
+  requestError.status = response.status;
+  requestError.payload = payload;
+  throw requestError;
+};
+
+export const apiRequest = async (path, options = {}) => {
+  const response = await fetch(buildUrl(path, options.params), {
+    method: options.method || "GET",
+    headers: buildHeaders(options),
+    body: buildBody(options.body),
+  });
+
+  if (!response.ok) {
+    await normalizeError(response);
+  }
+
+  const contentType = response.headers.get("content-type") || "";
+
+  if (!contentType.includes("application/json")) {
+    return null;
+  }
+
+  return response.json();
+};
+
+export const api = {
+  baseUrl: API_BASE_URL,
+  get: (path, options = {}) => apiRequest(path, options),
+  post: (path, body, options = {}) =>
+    apiRequest(path, { ...options, method: "POST", body }),
+  put: (path, body, options = {}) =>
+    apiRequest(path, { ...options, method: "PUT", body }),
+  delete: (path, options = {}) =>
+    apiRequest(path, { ...options, method: "DELETE" }),
+};

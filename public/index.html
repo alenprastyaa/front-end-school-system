@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html
+  lang=""
+  class="theme transition-all"
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="X-UA-Compatible"
+      content="IE=edge"
+    />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1.0"
+    />
+    <link
+      rel="icon"
+      href="<%= BASE_URL %>logo.png"
+    />
+    <title><%= htmlWebpackPlugin.options.title %></title>
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <!-- PushAlert -->
+    <script type="text/javascript">
+      (function(d, t) {
+        var g = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+        g.src = "https://cdn.pushalert.co/integrate_4e817fc273ad9c0246ab8bf1d85eab63.js";
+        s.parentNode.insertBefore(g, s);
+      }(document, "script"));
+    </script>
+    <!-- End PushAlert -->
+  </head>
+  <body>
+    <noscript>
+      <strong
+        >We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work
+        properly without JavaScript enabled. Please enable it to
+        continue.</strong
+      >
+    </noscript>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  </body>
+</html>
