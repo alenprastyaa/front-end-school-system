@@ -1,5 +1,7 @@
 <template>
-  <header class="z-40 border-b-2 bg-white/95 p-4 backdrop-blur dark:border-gray-700 dark:bg-gray-800/95">
+  <header
+    class="app-header z-40 border-b-2 bg-white/95 p-4 backdrop-blur dark:border-gray-700 dark:bg-gray-800/95"
+  >
     <div class="flex items-center justify-between gap-4 flex-wrap">
       <div class="flex items-center gap-4">
         <button class="text-gray-500 lg:hidden block" @click="$emit('sidebarToggle', true)">
@@ -307,3 +309,9 @@ onMounted(() => {
   loadProfile();
 });
 </script>
+
+<style scoped>
+  .app-header {
+    padding-top: calc(1rem + env(safe-area-inset-top, 0px));
+  }
+</style>

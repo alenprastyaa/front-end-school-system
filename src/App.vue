@@ -1,15 +1,15 @@
 <template>
   <!-- App -->
-  <div class="flex bg-gray-50 font-lexend dark:bg-gray-900">
+  <div class="app-shell flex min-h-[100dvh] bg-gray-50 font-lexend dark:bg-gray-900">
     <div
       v-if="!shouldHideChrome"
       class="lg:block"
       :class="{ 'lg:block hidden': !sidebar, block: sidebar }"
     >
       <div
-        class="lg:flex-auto w-sidebar bg-white dark:bg-gray-800 border-r-2 dark:border-gray-700 lg:z-0 z-20 overflow-auto lg:relative fixed"
+        class="app-sidebar lg:flex-auto w-sidebar bg-white dark:bg-gray-800 border-r-2 dark:border-gray-700 lg:z-0 z-20 overflow-auto lg:relative fixed inset-y-0 left-0"
       >
-        <perfect-scrollbar class="h-screen">
+        <perfect-scrollbar class="h-full">
           <Sidebar
             v-if="!shouldHideChrome"
             @sidebarToggle="close"
@@ -23,7 +23,7 @@
     </div>
 
     <div
-      class="flex-auto flex h-screen w-full flex-col overflow-hidden transition-colors"
+      class="app-content flex-auto flex min-h-[100dvh] w-full flex-col overflow-hidden transition-colors"
     >
       <Header
         v-if="!shouldHideChrome"
@@ -111,5 +111,29 @@
   .slide-up-leave-to {
     transform: translateY(20px);
     opacity: 0;
+  }
+
+  .app-shell,
+  .app-content {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .app-sidebar {
+    top: 0;
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  @supports (padding-top: env(safe-area-inset-top)) {
+    .app-shell,
+    .app-content {
+      min-height: calc(100dvh + env(safe-area-inset-top));
+    }
+
+    .app-sidebar {
+      height: calc(100dvh + env(safe-area-inset-top));
+      padding-top: env(safe-area-inset-top);
+    }
   }
 </style>
