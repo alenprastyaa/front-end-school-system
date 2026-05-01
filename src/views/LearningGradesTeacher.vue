@@ -433,7 +433,10 @@ const reviewItems = computed(() => {
 
     if (reviewRow.value.assignment_type === "MCQ") {
       const options = Array.isArray(question.options) ? question.options : [];
-      const selectedIndex = Number(answer.selected_option);
+      const selectedRaw = answer.selected_option;
+      const selectedIndex = selectedRaw === null || selectedRaw === undefined || selectedRaw === ""
+        ? null
+        : Number(selectedRaw);
       const correctIndex = Number(question.correct_option);
       const selectedText = Number.isInteger(selectedIndex) && options[selectedIndex] ? options[selectedIndex] : "Belum dijawab";
       const correctText = Number.isInteger(correctIndex) && options[correctIndex] ? options[correctIndex] : "-";
@@ -442,7 +445,7 @@ const reviewItems = computed(() => {
         question: question.question,
         answer: `Jawaban siswa: ${selectedText}`,
         extra: `Jawaban benar: ${correctText}`,
-        isCorrect: selectedIndex === correctIndex,
+        isCorrect: Number.isInteger(selectedIndex) && selectedIndex === correctIndex,
       };
     }
 

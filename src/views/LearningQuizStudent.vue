@@ -471,6 +471,7 @@ let pseudoFullscreenViewportBound = false;
 let lastViolationSignature = "";
 let hiddenTransitionAt = 0;
 let blurTransitionAt = 0;
+let submitLockAssignmentId = null;
 
 const resolveViolationType = (reason) => {
   const normalizedReason = String(reason || "").toLowerCase();
@@ -1129,54 +1130,84 @@ const goToNextQuestion = async (triggeredByTimer = false) => {
   refreshQuestionTimer();
 };
 
+const teardownActiveSessionGuards = () => {
+  stopQuestionTimer();
+  unbindLockedNavigation();
+  unbindAntiCheatListeners();
+};
+
+const completeSubmittedSession = async (target, triggeredAutomatically, toastType = triggeredAutomatically ? "info" : "success") => {
+  teardownActiveSessionGuards();
+  await exitQuizFullscreen();
+  clearAttemptSession(target.id);
+  pushToast({
+    title: triggeredAutomatically
+      ? `${target.is_exam ? "Ujian" : "Quiz"} Terkirim Otomatis`
+      : `${target.is_exam ? "Ujian" : "Quiz"} Berhasil Dikirim`,
+    message: triggeredAutomatically
+      ? `Waktu ${target.is_exam ? "ujian" : "quiz"} habis. Jawaban yang sempat tersimpan sudah dikirim otomatis.`
+      : "Jawaban sudah dikunci dan tidak dapat diubah.",
+    type: toastType,
+    duration: 4200,
+  });
+
+  setLayoutChromeHidden(false);
+  submissionTarget.value = null;
+  submissionForm.answers = [];
+  resetAntiCheatState();
+  await loadSubjectData();
+  window.scrollTo(0, 0);
+};
+
 const submitAssignment = async (triggeredAutomatically = false) => {
   if (!submissionTarget.value) return;
 
+  const target = submissionTarget.value;
+  if (isSubmitting.value || submitLockAssignmentId === target.id) {
+    return;
+  }
+
+  submitLockAssignmentId = target.id;
   isSubmitting.value = true;
   message.value = "";
   isError.value = false;
+  teardownActiveSessionGuards();
 
   try {
     const formData = new FormData();
     formData.append("submission_text", "");
     formData.append("answers", JSON.stringify(submissionForm.answers));
-    const response = await api.post(`/learning/assignments/${submissionTarget.value.id}/submit`, formData);
-
-    stopQuestionTimer();
-    unbindLockedNavigation();
-    unbindAntiCheatListeners();
-    exitQuizFullscreen();
-    clearAttemptSession(submissionTarget.value.id);
-    pushToast({
-      title: triggeredAutomatically
-        ? `${submissionTarget.value.is_exam ? "Ujian" : "Quiz"} Terkirim Otomatis`
-        : `${submissionTarget.value.is_exam ? "Ujian" : "Quiz"} Berhasil Dikirim`,
-      message: triggeredAutomatically
-        ? `Waktu ${submissionTarget.value.is_exam ? "ujian" : "quiz"} habis. Jawaban yang sempat tersimpan sudah dikirim otomatis.`
-        : "Jawaban sudah dikunci dan tidak dapat diubah.",
-      type: triggeredAutomatically ? "info" : "success",
-      duration: 4200,
-    });
-
-    setLayoutChromeHidden(false);
-    submissionTarget.value = null;
-    submissionForm.answers = [];
-    resetAntiCheatState();
-    await loadSubjectData();
-    window.scrollTo(0, 0);
+    await api.post(`/learning/assignments/${target.id}/submit`, formData);
+    await completeSubmittedSession(target, triggeredAutomatically);
 
   } catch (error) {
+    const normalizedMessage = String(error?.message || "");
+    if (/already been submitted/i.test(normalizedMessage)) {
+      await completeSubmittedSession(target, triggeredAutomatically);
+      return;
+    }
+
     isError.value = true;
-    message.value = error.message;
+    message.value = normalizedMessage;
     pushToast({
-      title: `Gagal Mengirim ${submissionTarget.value?.is_exam ? "Ujian" : "Quiz"}`,
-      message: error.message,
+      title: `Gagal Mengirim ${target?.is_exam ? "Ujian" : "Quiz"}`,
+      message: normalizedMessage,
       type: "error",
       duration: 4200,
     });
+    if (submissionTarget.value?.id === target.id) {
+      bindLockedNavigation();
+      bindAntiCheatListeners();
+      if (!questionTimerInterval) {
+        startQuestionTimer();
+      }
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } finally {
     isSubmitting.value = false;
+    if (submitLockAssignmentId === target.id) {
+      submitLockAssignmentId = null;
+    }
   }
 };
 
