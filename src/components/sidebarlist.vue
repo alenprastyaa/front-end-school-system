@@ -3,7 +3,7 @@
   <nav class="sidebar bg-white dark:bg-gray-800">
     <!-- sidebar head -->
     <div class="sidebar-head p-4">
-      <router-link to="/" exact class="flex">
+      <router-link to="/dashboard" exact class="flex">
         <img class="w-8 mt-1" src="@/assets/logo/logo.svg" alt="logo windzo" />
         <h2 class="text-2xl font-normal ml-3 mt-2 text-gray-800 dark:text-gray-200" translate="no">
           Windzo<span class="text-sky-600">.</span>
@@ -27,7 +27,7 @@
         <div class="wrap-item mt-4 dark:text-gray-500">
           <div class="item">
             <router-link
-              to="/"
+              to="/dashboard"
               exact
               class="w-full flex text-left rounded-md box-border p-3 hover:bg-gray-200 dark:hover:bg-gray-700"
             >

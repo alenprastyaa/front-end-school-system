@@ -21,6 +21,7 @@ import LearningQuizStudent from "../views/LearningQuizStudent.vue";
 import LearningExamStudent from "../views/LearningExamStudent.vue";
 import AdminSettings from "../views/AdminSettings.vue";
 import AcademicPeriods from "../views/AcademicPeriods.vue";
+import PublicLanding from "../views/PublicLanding.vue";
 import PublicStudentRegistration from "../views/PublicStudentRegistration.vue";
 import Login from "../views/layouts/auth/Login.vue";
 import Register from "../views/layouts/auth/Register.vue";
@@ -35,6 +36,16 @@ const appName = " - School System LMS";
 const routes = [
   {
     path: "/",
+    name: "PublicLanding",
+    component: PublicLanding,
+    meta: {
+      title: "School System LMS" + appName,
+      hideNav: true,
+      guestOnly: true,
+    },
+  },
+  {
+    path: "/dashboard",
     name: "Dashboard",
     component: Dashboard,
     meta: {

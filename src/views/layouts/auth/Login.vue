@@ -34,6 +34,10 @@
           Form registrasi siswa publik:
           <router-link to="/student-registration" class="text-sky-600 underline">Buka registrasi siswa</router-link>
         </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Halaman profil sistem:
+          <router-link to="/" class="text-sky-600 underline">Buka landing page</router-link>
+        </p>
       </form>
     </div>
   </div>
@@ -61,7 +65,7 @@ const handleLogin = async () => {
     const response = await api.post("/auth/login", { ...form });
     persistSession(response);
     sessionStorage.setItem(SHOW_PWA_INSTALL_AFTER_LOGIN_KEY, "1");
-    router.push("/");
+    router.push("/dashboard");
   } catch (error) {
     pushToast({
       title: "Login Gagal",

@@ -2,7 +2,7 @@
   <div>
     <nav class="sidebar bg-white dark:bg-gray-800 h-full">
       <div class="sidebar-head p-4 border-b dark:border-gray-700">
-        <router-link to="/" class="flex items-center gap-3">
+        <router-link to="/dashboard" class="flex items-center gap-3">
           <img class="w-8" src="@/assets/logo/logo.svg" alt="School System" />
           <div>
             <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">School System</h2>
@@ -165,12 +165,12 @@ const currentUserId = getCurrentUserId();
 
 const menuByRole = {
   SUPER_ADMIN: [
-    { key: "dashboard", to: "/", label: "Dashboard", icon: "bxs:dashboard" },
+    { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     { key: "schools", to: "/schools", label: "Sekolah", icon: "ph:buildings" },
     { key: "school-users", to: "/school-users", label: "User Sekolah", icon: "clarity:users-line" },
   ],
   ADMIN: [
-    { key: "dashboard", to: "/", label: "Dashboard", icon: "bxs:dashboard" },
+    { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     { key: "school-users", to: "/school-users", label: "User Sekolah", icon: "clarity:users-line" },
     { key: "classes", to: "/classes", label: "Kelas", icon: "mdi:google-classroom" },
     { key: "students", to: "/students", label: "Siswa", icon: "mdi:account-school-outline" },
@@ -180,7 +180,7 @@ const menuByRole = {
     { key: "admin-settings", to: "/admin-settings", label: "Setting", icon: "ph:gear-six" },
   ],
   GURU: [
-    { key: "dashboard", to: "/", label: "Dashboard", icon: "bxs:dashboard" },
+    { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     { key: "homeroom-students", to: "/homeroom-students", label: "Siswa Wali Kelas", icon: "mdi:account-school-outline" },
     {
       key: "learning-module",
@@ -198,7 +198,7 @@ const menuByRole = {
     },
   ],
   SISWA: [
-    { key: "dashboard", to: "/", label: "Dashboard", icon: "bxs:dashboard" },
+    { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     {
       key: "learning-module",
       label: "Modul Pembelajaran",

@@ -14,7 +14,7 @@ export const useSidebar = defineStore({
             name: "Dashboard",
             icon: "bxs:dashboard",
             type: "default",
-            url: "/",
+            url: "/dashboard",
           },
           {
             name: "Components",
