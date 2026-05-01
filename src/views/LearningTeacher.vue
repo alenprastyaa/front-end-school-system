@@ -465,6 +465,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { api } from "@/api";
+import { uploadFileDirect } from "@/api/upload";
 import { formatDateTime } from "@/utils/date";
 import { normalizePublicUrl } from "@/utils/url";
 
@@ -634,15 +635,21 @@ const submitMaterial = async () => {
   isError.value = false;
 
   try {
-    const formData = new FormData();
-    formData.append("subject_id", selectedSubject.value.id);
-    formData.append("title", materialForm.title);
-    formData.append("content", materialForm.content || "");
+    const payload = {
+      subject_id: selectedSubject.value.id,
+      title: materialForm.title,
+      content: materialForm.content || "",
+    };
+
     if (materialFile.value) {
-      formData.append("attachment", materialFile.value);
+      const uploadedFile = await uploadFileDirect(materialFile.value);
+      payload.attachment_url = uploadedFile.url;
+      payload.attachment_name = uploadedFile.name;
+      payload.attachment_mime_type = uploadedFile.mimeType;
+      payload.attachment_size = uploadedFile.size;
     }
 
-    const response = await api.post("/learning/materials", formData);
+    const response = await api.post("/learning/materials", payload);
     message.value = response?.message || "Materi berhasil ditambahkan";
     resetMaterialForm();
     materialModalOpen.value = false;
@@ -663,17 +670,23 @@ const submitAssignment = async () => {
   isError.value = false;
 
   try {
-    const formData = new FormData();
-    formData.append("subject_id", selectedSubject.value.id);
-    formData.append("title", assignmentForm.title);
-    formData.append("description", assignmentForm.description || "");
-    formData.append("due_date", assignmentForm.due_date || "");
-    formData.append("assignment_type", assignmentForm.assignment_type);
+    const payload = {
+      subject_id: selectedSubject.value.id,
+      title: assignmentForm.title,
+      description: assignmentForm.description || "",
+      due_date: assignmentForm.due_date || "",
+      assignment_type: assignmentForm.assignment_type,
+    };
+
     if (assignmentForm.assignment_type === "FILE" && assignmentFile.value) {
-      formData.append("attachment", assignmentFile.value);
+      const uploadedFile = await uploadFileDirect(assignmentFile.value);
+      payload.attachment_url = uploadedFile.url;
+      payload.attachment_name = uploadedFile.name;
+      payload.attachment_mime_type = uploadedFile.mimeType;
+      payload.attachment_size = uploadedFile.size;
     }
 
-    const response = await api.post("/learning/assignments", formData);
+    const response = await api.post("/learning/assignments", payload);
     message.value = response?.message || "Data penilaian berhasil ditambahkan";
     resetAssignmentForm();
     assignmentModalOpen.value = false;

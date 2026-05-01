@@ -308,6 +308,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 import { Icon } from "@iconify/vue";
 import { io } from "socket.io-client";
 import { api, realtimeConfig } from "@/api";
+import { uploadFileDirect } from "@/api/upload";
 import { formatDateTime } from "@/utils/date";
 import { getStoredRole } from "@/utils/auth";
 import { normalizePublicUrl } from "@/utils/url";
@@ -961,11 +962,17 @@ const sendMessage = async () => {
 
   try {
     const hasAttachment = Boolean(attachmentFile.value);
-    const payload = hasAttachment ? new FormData() : { message: composer.value.trim() };
+    let payload = { message: composer.value.trim() };
 
     if (hasAttachment) {
-      payload.append("message", composer.value.trim());
-      payload.append("attachment", attachmentFile.value);
+      const uploadedFile = await uploadFileDirect(attachmentFile.value);
+      payload = {
+        message: composer.value.trim(),
+        attachment_url: uploadedFile.url,
+        attachment_name: uploadedFile.name,
+        attachment_mime_type: uploadedFile.mimeType,
+        attachment_size: uploadedFile.size,
+      };
     }
 
     const response = await api.post(`/learning/subjects/${selectedSubject.value.id}/chat`, payload);
