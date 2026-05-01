@@ -1,3 +1,5 @@
+import { clearSessionAndRedirectToLogin } from "@/utils/auth";
+
 const API_BASE_URL = (process.env.VUE_APP_API_BASE_URL || "https://alentest.my.id/school/api").replace(/\/$/, "");
 
 const normalizeSocketPath = (path) => {
@@ -106,24 +108,49 @@ const normalizeError = async (response) => {
   throw requestError;
 };
 
+const isAuthFailure = (error) => {
+  const status = Number(error?.status || 0);
+  const message = String(error?.message || "").toLowerCase();
+
+  if (status === 401) {
+    return true;
+  }
+
+  if (status === 403) {
+    return /(unauthor|forbidden|invalid token|expired token|jwt|token)/i.test(message);
+  }
+
+  return /(token expired|token invalid|invalid token|jwt expired|jwt malformed|unauthorized)/i.test(message);
+};
+
 export const apiRequest = async (path, options = {}) => {
-  const response = await fetch(buildUrl(path, options.params), {
-    method: options.method || "GET",
-    headers: buildHeaders(options),
-    body: buildBody(options.body),
-  });
+  const hasToken = Boolean(localStorage.getItem("token"));
 
-  if (!response.ok) {
-    await normalizeError(response);
+  try {
+    const response = await fetch(buildUrl(path, options.params), {
+      method: options.method || "GET",
+      headers: buildHeaders(options),
+      body: buildBody(options.body),
+    });
+
+    if (!response.ok) {
+      await normalizeError(response);
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+
+    if (!contentType.includes("application/json")) {
+      return null;
+    }
+
+    return response.json();
+  } catch (error) {
+    if (hasToken && isAuthFailure(error)) {
+      clearSessionAndRedirectToLogin();
+    }
+
+    throw error;
   }
-
-  const contentType = response.headers.get("content-type") || "";
-
-  if (!contentType.includes("application/json")) {
-    return null;
-  }
-
-  return response.json();
 };
 
 export const api = {

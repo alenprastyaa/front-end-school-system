@@ -30,7 +30,7 @@ import Page500 from "../views/layouts/error/500.vue";
 import PageMaintenance from "../views/layouts/error/maintenance.vue";
 import { getStoredRole, isAuthenticated } from "@/utils/auth";
 
-const appName = " - School System";
+const appName = " - School System LMS";
 
 const routes = [
   {

@@ -40,3 +40,20 @@ export const clearSession = () => {
   localStorage.removeItem("role");
   localStorage.removeItem("user");
 };
+
+export const redirectToLogin = () => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  if (window.location.pathname === "/auth/login") {
+    return;
+  }
+
+  window.location.assign("/auth/login");
+};
+
+export const clearSessionAndRedirectToLogin = () => {
+  clearSession();
+  redirectToLogin();
+};
