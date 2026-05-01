@@ -566,6 +566,54 @@
       </div>
     </Transition>
 
+    <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
+      enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+      leave-to-class="opacity-0">
+      <div v-if="isDeleteModalOpen"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div
+          class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          @click.stop>
+          <div class="flex items-start gap-4 px-6 py-5">
+            <div
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <h2 class="text-lg font-bold text-slate-900 dark:text-white">
+                {{ deleteTargetType === 'material' ? 'Hapus Materi?' : 'Hapus Tugas?' }}
+              </h2>
+              <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                <span v-if="deleteTargetType === 'material'">Materi</span>
+                <span v-else>Tugas</span>
+                <span class="font-semibold text-slate-700 dark:text-slate-200"> {{ deleteTargetItem?.title || "-" }} </span>
+                akan dihapus. Tindakan ini tidak bisa dibatalkan.
+              </p>
+            </div>
+          </div>
+          <div
+            class="flex items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
+            <button type="button" @click="closeDeleteModal"
+              class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+              Batal
+            </button>
+            <button type="button" @click="confirmDelete" :disabled="isDeletingItem"
+              class="inline-flex items-center justify-center gap-2 rounded-lg bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-60">
+              <svg v-if="isDeletingItem" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"
+                stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+              {{ isDeletingItem ? "Menghapus..." : "Ya, Hapus" }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
   </div>
 </template>
 
@@ -601,6 +649,10 @@ const materialCreationMode = ref("manual");
 const materialAiPreview = ref(null);
 const editingMaterialId = ref(null);
 const editingAssignmentId = ref(null);
+const isDeleteModalOpen = ref(false);
+const isDeletingItem = ref(false);
+const deleteTargetType = ref("");
+const deleteTargetItem = ref(null);
 
 // State untuk Filter Meja Penilaian
 const submissionSearch = ref("");
@@ -714,6 +766,19 @@ const openMaterialEditModal = (item) => {
 const closeMaterialModal = () => {
   materialModalOpen.value = false;
   resetMaterialForm();
+};
+
+const openDeleteModal = (type, item) => {
+  deleteTargetType.value = type;
+  deleteTargetItem.value = item;
+  isDeleteModalOpen.value = true;
+};
+
+const closeDeleteModal = () => {
+  isDeleteModalOpen.value = false;
+  isDeletingItem.value = false;
+  deleteTargetType.value = "";
+  deleteTargetItem.value = null;
 };
 
 const openAssignmentEditModal = (item) => {
@@ -883,8 +948,10 @@ const generateAiMaterialPreview = async () => {
 };
 
 const deleteMaterial = async (item) => {
-  if (!window.confirm(`Hapus materi "${item.title}"?`)) return;
+  openDeleteModal("material", item);
+};
 
+const performDeleteMaterial = async (item) => {
   message.value = "";
   isError.value = false;
 
@@ -938,8 +1005,10 @@ const submitAssignment = async () => {
 };
 
 const deleteAssignment = async (item) => {
-  if (!window.confirm(`Hapus tugas "${item.title}"?`)) return;
+  openDeleteModal("assignment", item);
+};
 
+const performDeleteAssignment = async (item) => {
   message.value = "";
   isError.value = false;
 
@@ -954,6 +1023,25 @@ const deleteAssignment = async (item) => {
   } catch (error) {
     isError.value = true;
     message.value = error.message;
+  }
+};
+
+const confirmDelete = async () => {
+  if (!deleteTargetItem.value) return;
+
+  isDeletingItem.value = true;
+
+  try {
+    if (deleteTargetType.value === "material") {
+      await performDeleteMaterial(deleteTargetItem.value);
+    } else if (deleteTargetType.value === "assignment") {
+      await performDeleteAssignment(deleteTargetItem.value);
+    }
+    closeDeleteModal();
+  } catch (error) {
+    closeDeleteModal();
+  } finally {
+    isDeletingItem.value = false;
   }
 };
 
