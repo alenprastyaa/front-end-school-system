@@ -193,9 +193,10 @@
     </div>
 
     <div v-else
-      class="min-h-screen bg-slate-50/50 p-4 pb-32 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
+      class="bg-slate-50/50 p-4 pb-32 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100"
+      :class="activeSessionContainerClass" :style="activeSessionContainerStyle">
 
-      <main class="mx-auto mt-8 max-w-[1440px]">
+      <main class="mx-auto max-w-[1440px]" :class="pseudoFullscreenActive ? 'mt-0' : 'mt-8'">
         <section
           class="relative overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
           <div v-if="fullscreenRecoveryRequired"
@@ -254,6 +255,10 @@
                       ? "Kerjakan ujian dengan tenang. Sesi tetap berjalan sampai seluruh jawaban dikirim."
                       : "Kerjakan quiz dengan tenang. Setiap soal memiliki timer yang berjalan otomatis.") }}
                   </p>
+                  <div v-if="pseudoFullscreenActive"
+                    class="mt-4 inline-flex max-w-xl rounded-2xl bg-sky-50 px-4 py-3 text-xs font-semibold text-sky-800 ring-1 ring-inset ring-sky-200 dark:bg-sky-500/10 dark:text-sky-200 dark:ring-sky-500/20">
+                    Mode fokus iPhone aktif. Safari iOS tidak mendukung fullscreen penuh untuk halaman web biasa, jadi sesi ini dikunci dalam tampilan layar-penuh semu.
+                  </div>
                 </div>
               </div>
 
@@ -296,7 +301,9 @@
                   <div>
                     <strong class="font-bold">{{ submissionTarget.is_exam ? "Mode Ujian Aktif." : "Mode Quiz Aktif."
                     }}</strong>
-                    Tetap di tab ini dan gunakan mode fullscreen selama sesi berlangsung.
+                    {{ pseudoFullscreenActive
+                      ? "Tetap di tab ini. iPhone memakai mode fokus karena Safari tidak mendukung fullscreen penuh untuk halaman quiz."
+                      : "Tetap di tab ini dan gunakan mode fullscreen selama sesi berlangsung." }}
                     <div class="mt-2">
                       Pelanggaran terdeteksi:
                       <span class="font-bold">{{ violationCount }}</span> / {{ maxViolations }}
@@ -453,11 +460,14 @@ const questionTimeLeftMs = ref(0);
 const violationCount = ref(0);
 const antiCheatMessage = ref("");
 const fullscreenRecoveryRequired = ref(false);
+const pseudoFullscreenActive = ref(false);
+const pseudoViewportHeight = ref(null);
 const maxViolations = 3;
 let questionTimerInterval = null;
 let antiCheatListenersBound = false;
 let lastViolationAt = 0;
 let navigationLockBound = false;
+let pseudoFullscreenViewportBound = false;
 
 const resolveViolationType = (reason) => {
   const normalizedReason = String(reason || "").toLowerCase();
@@ -633,13 +643,95 @@ const unbindLockedNavigation = () => {
   navigationLockBound = false;
 };
 
+const isIosDevice = () => {
+  if (typeof navigator === "undefined") {
+    return false;
+  }
+
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+};
+
+const supportsNativeFullscreen = () => {
+  if (typeof document === "undefined") {
+    return false;
+  }
+
+  return Boolean(document.documentElement?.requestFullscreen);
+};
+
+const shouldUsePseudoFullscreen = () => isIosDevice() || !supportsNativeFullscreen();
+
+const syncPseudoViewportHeight = () => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  pseudoViewportHeight.value = Math.round(window.visualViewport?.height || window.innerHeight || 0);
+};
+
+const bindPseudoFullscreenViewport = () => {
+  if (pseudoFullscreenViewportBound || typeof window === "undefined") {
+    return;
+  }
+
+  syncPseudoViewportHeight();
+  window.addEventListener("resize", syncPseudoViewportHeight);
+  window.visualViewport?.addEventListener("resize", syncPseudoViewportHeight);
+  pseudoFullscreenViewportBound = true;
+};
+
+const unbindPseudoFullscreenViewport = () => {
+  if (!pseudoFullscreenViewportBound || typeof window === "undefined") {
+    return;
+  }
+
+  window.removeEventListener("resize", syncPseudoViewportHeight);
+  window.visualViewport?.removeEventListener("resize", syncPseudoViewportHeight);
+  pseudoFullscreenViewportBound = false;
+};
+
+const activatePseudoFullscreen = () => {
+  pseudoFullscreenActive.value = true;
+  bindPseudoFullscreenViewport();
+  antiCheatMessage.value = "";
+  fullscreenRecoveryRequired.value = false;
+};
+
+const deactivatePseudoFullscreen = () => {
+  pseudoFullscreenActive.value = false;
+  pseudoViewportHeight.value = null;
+  unbindPseudoFullscreenViewport();
+};
+
+const activeSessionContainerClass = computed(() => (
+  pseudoFullscreenActive.value
+    ? "fixed inset-0 z-40 overflow-y-auto overscroll-contain p-3 pb-32 md:p-6"
+    : "min-h-screen md:p-8"
+));
+
+const activeSessionContainerStyle = computed(() => {
+  if (!pseudoFullscreenActive.value) {
+    return undefined;
+  }
+
+  return pseudoViewportHeight.value
+    ? { minHeight: `${pseudoViewportHeight.value}px`, height: `${pseudoViewportHeight.value}px` }
+    : { minHeight: "100dvh", height: "100dvh" };
+});
+
 const requestQuizFullscreen = async () => {
   if (typeof document === "undefined") {
     return false;
   }
 
-  if (document.fullscreenElement) {
+  if (document.fullscreenElement || pseudoFullscreenActive.value) {
     fullscreenRecoveryRequired.value = false;
+    return true;
+  }
+
+  if (shouldUsePseudoFullscreen()) {
+    activatePseudoFullscreen();
     return true;
   }
 
@@ -661,6 +753,8 @@ const requestQuizFullscreen = async () => {
 };
 
 const exitQuizFullscreen = async () => {
+  deactivatePseudoFullscreen();
+
   if (typeof document === "undefined" || !document.fullscreenElement || !document.exitFullscreen) {
     return;
   }
@@ -726,7 +820,7 @@ const handleQuizWindowBlur = async () => {
 };
 
 const handleQuizFullscreenChange = async () => {
-  if (!submissionTarget.value || document.fullscreenElement) {
+  if (!submissionTarget.value || document.fullscreenElement || pseudoFullscreenActive.value) {
     return;
   }
 
@@ -908,6 +1002,7 @@ const selectSubject = async (subject) => {
   stopQuestionTimer();
   unbindLockedNavigation();
   unbindAntiCheatListeners();
+  deactivatePseudoFullscreen();
   setLayoutChromeHidden(false);
   submissionTarget.value = null;
   submissionForm.answers = [];
@@ -928,7 +1023,7 @@ const startSubmission = async (assignment) => {
     if (!fullscreenReady) {
       pushToast({
         title: "Fullscreen Wajib Aktif",
-        message: `Aktifkan fullscreen terlebih dahulu sebelum memulai ${assignment.is_exam ? "ujian" : "quiz"}.`,
+        message: `Aktifkan fullscreen terlebih dahulu sebelum memulai ${assignment.is_exam ? "ujian" : "quiz"}. Jika memakai iPhone, gunakan Safari terbaru lalu mulai ulang sesi.`,
         type: "error",
         duration: 3600,
       });
@@ -960,7 +1055,7 @@ const resumeFullscreenSession = async () => {
   if (!fullscreenReady) {
     pushToast({
       title: "Fullscreen Masih Belum Aktif",
-      message: "Izinkan mode fullscreen untuk melanjutkan sesi pengerjaan.",
+      message: "Izinkan mode fullscreen untuk melanjutkan sesi pengerjaan. Di iPhone, sistem akan memakai mode fokus otomatis bila fullscreen native tidak tersedia.",
       type: "error",
       duration: 3200,
     });
