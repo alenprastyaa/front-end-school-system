@@ -46,6 +46,30 @@ body {
   background-color: "#EEF6FF";
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+a,
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+label,
+summary {
+  touch-action: manipulation;
+}
+
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea,
+  button {
+    font-size: 16px !important;
+  }
+}
+
 .flex-sidebar {
   animation: slideInLeft 0.4s ease-out;
 }
