@@ -468,6 +468,9 @@ let antiCheatListenersBound = false;
 let lastViolationAt = 0;
 let navigationLockBound = false;
 let pseudoFullscreenViewportBound = false;
+let lastViolationSignature = "";
+let hiddenTransitionAt = 0;
+let blurTransitionAt = 0;
 
 const resolveViolationType = (reason) => {
   const normalizedReason = String(reason || "").toLowerCase();
@@ -608,6 +611,9 @@ const resetAntiCheatState = () => {
   antiCheatMessage.value = "";
   fullscreenRecoveryRequired.value = false;
   lastViolationAt = 0;
+  lastViolationSignature = "";
+  hiddenTransitionAt = 0;
+  blurTransitionAt = 0;
 };
 
 const handleLockedNavigationAttempt = () => {
@@ -766,17 +772,22 @@ const exitQuizFullscreen = async () => {
   }
 };
 
-const recordViolation = async (reason) => {
+const recordViolation = async (reason, signature = reason) => {
   if (!submissionTarget.value) {
     return;
   }
 
   const now = Date.now();
-  if (now - lastViolationAt < 1200) {
+  if (now - lastViolationAt < 2200 && signature === lastViolationSignature) {
+    return;
+  }
+
+  if (now - lastViolationAt < 900) {
     return;
   }
 
   lastViolationAt = now;
+  lastViolationSignature = signature;
   violationCount.value += 1;
   antiCheatMessage.value = reason;
 
@@ -804,11 +815,20 @@ const recordViolation = async (reason) => {
 };
 
 const handleQuizVisibilityChange = async () => {
-  if (!submissionTarget.value || document.visibilityState !== "hidden") {
+  if (!submissionTarget.value) {
     return;
   }
 
-  await recordViolation("Terdeteksi berpindah tab atau meminimalkan aplikasi.");
+  if (document.visibilityState === "hidden") {
+    hiddenTransitionAt = Date.now();
+    await recordViolation(
+      "Terdeteksi berpindah tab atau meminimalkan aplikasi.",
+      "TAB_HIDDEN",
+    );
+    return;
+  }
+
+  hiddenTransitionAt = 0;
 };
 
 const handleQuizWindowBlur = async () => {
@@ -816,7 +836,23 @@ const handleQuizWindowBlur = async () => {
     return;
   }
 
-  await recordViolation("Terdeteksi berpindah fokus dari halaman quiz.");
+  blurTransitionAt = Date.now();
+
+  if (document.visibilityState === "hidden") {
+    return;
+  }
+
+  await recordViolation(
+    "Terdeteksi berpindah fokus dari halaman quiz.",
+    "WINDOW_BLUR",
+  );
+};
+
+const handleQuizWindowFocus = () => {
+  blurTransitionAt = 0;
+  if (document.visibilityState === "visible") {
+    hiddenTransitionAt = 0;
+  }
 };
 
 const handleQuizFullscreenChange = async () => {
@@ -824,8 +860,20 @@ const handleQuizFullscreenChange = async () => {
     return;
   }
 
+  const now = Date.now();
+  if (document.visibilityState === "hidden") {
+    return;
+  }
+
+  if ((hiddenTransitionAt && now - hiddenTransitionAt < 2200) || (blurTransitionAt && now - blurTransitionAt < 2200)) {
+    return;
+  }
+
   fullscreenRecoveryRequired.value = true;
-  await recordViolation("Terdeteksi keluar dari mode fullscreen.");
+  await recordViolation(
+    "Terdeteksi keluar dari mode fullscreen.",
+    "FULLSCREEN_EXIT",
+  );
 };
 
 const bindAntiCheatListeners = () => {
@@ -835,6 +883,7 @@ const bindAntiCheatListeners = () => {
 
   document.addEventListener("visibilitychange", handleQuizVisibilityChange);
   window.addEventListener("blur", handleQuizWindowBlur);
+  window.addEventListener("focus", handleQuizWindowFocus);
   document.addEventListener("fullscreenchange", handleQuizFullscreenChange);
   antiCheatListenersBound = true;
 };
@@ -846,6 +895,7 @@ const unbindAntiCheatListeners = () => {
 
   document.removeEventListener("visibilitychange", handleQuizVisibilityChange);
   window.removeEventListener("blur", handleQuizWindowBlur);
+  window.removeEventListener("focus", handleQuizWindowFocus);
   document.removeEventListener("fullscreenchange", handleQuizFullscreenChange);
   antiCheatListenersBound = false;
 };
