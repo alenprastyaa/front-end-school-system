@@ -1,13 +1,13 @@
 <template>
-  <div class="h-full overflow-hidden bg-slate-100 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-    <main class="mx-auto flex h-full max-w-[1480px] flex-col md:p-8">
+  <div class="h-full min-h-0 overflow-hidden bg-slate-100 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <main class="mx-auto flex h-full min-h-0 w-full max-w-[1480px] flex-col p-4 md:p-8">
       <div
-        class="flex-1 overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+        class="flex-1 min-h-0 overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
         <div class="grid h-full min-h-0 lg:grid-cols-[340px_minmax(0,1fr)]">
           <aside
-            class="min-h-0 border-b border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-950/40 lg:border-b-0 lg:border-r"
+            class="flex min-h-0 flex-col border-b border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-950/40 lg:border-b-0 lg:border-r"
             :class="{ hidden: mobileChatOpen, 'lg:block': true }">
-            <div class="border-b border-slate-200 px-5 py-5 dark:border-slate-800">
+            <div class="shrink-0 border-b border-slate-200 px-5 py-5 dark:border-slate-800">
               <div class="flex items-center gap-3">
                 <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-sm"
                   :class="roleAccentClass">
@@ -21,7 +21,7 @@
 
             </div>
 
-            <div class="h-[calc(100%-97px)] overflow-y-auto p-3">
+            <div class="min-h-0 flex-1 overflow-y-auto p-3">
               <button v-for="subject in orderedSubjects" :key="subject.id" @click="selectSubject(subject)"
                 class="mb-2 flex w-full items-start gap-3 rounded-2xl px-4 py-4 text-left transition ring-1 ring-transparent"
                 :class="selectedSubject?.id === subject.id
@@ -83,7 +83,7 @@
             :class="{ hidden: !mobileChatOpen, 'lg:flex': true }">
             <template v-if="selectedSubject">
               <div
-                class="border-b border-slate-200 bg-white/95 px-5 py-4 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+                class="sticky top-0 z-10 shrink-0 border-b border-slate-200 bg-white/95 px-5 py-4 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
                 <div class="flex items-center gap-3">
                   <button type="button"
                     class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 lg:hidden"
@@ -127,7 +127,7 @@
               </div>
 
               <div ref="messageListRef"
-                class="min-h-0 flex-1 space-y-4 overflow-y-auto bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.8),_rgba(239,234,226,0.8)_40%,_rgba(239,234,226,1)_100%)] px-4 py-5 dark:bg-[radial-gradient(circle_at_top_left,_rgba(30,41,59,0.7),_rgba(15,23,42,0.98)_45%,_rgba(2,6,23,1)_100%)] md:px-8">
+                class="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.8),_rgba(239,234,226,0.8)_40%,_rgba(239,234,226,1)_100%)] px-4 py-5 dark:bg-[radial-gradient(circle_at_top_left,_rgba(30,41,59,0.7),_rgba(15,23,42,0.98)_45%,_rgba(2,6,23,1)_100%)] md:px-8">
                 <div v-if="isLoadingMessages"
                   class="flex h-full min-h-[420px] items-center justify-center text-sm font-medium text-slate-500 dark:text-slate-400">
                   Memuat percakapan...
@@ -195,7 +195,7 @@
               </div>
 
               <form @submit.prevent="sendMessage"
-                class="border-t border-slate-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-900 md:px-6">
+                class="sticky bottom-0 z-10 shrink-0 border-t border-slate-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-900 md:px-6">
                 <div v-if="attachmentPreviewName || isRecordingVoice || recordedVoiceUrl"
                   class="mb-3 rounded-2xl bg-slate-100 px-4 py-3 text-sm dark:bg-slate-800">
                   <div v-if="attachmentPreviewName" class="flex items-center justify-between gap-3">

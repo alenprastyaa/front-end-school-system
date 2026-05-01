@@ -2,9 +2,9 @@
   <section
     class="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_320px]"
   >
-    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+    <div class="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <div
-        class="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/40 md:flex-row md:items-center md:justify-between"
+        class="sticky top-0 z-10 shrink-0 flex flex-col gap-3 border-b border-slate-100 bg-slate-50/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/40 md:flex-row md:items-center md:justify-between"
       >
         <div>
           <h3 class="text-lg font-bold text-slate-900 dark:text-white">Live Chat Mapel</h3>
@@ -20,7 +20,7 @@
 
       <div
         ref="messageListRef"
-        class="max-h-[560px] min-h-[420px] space-y-4 overflow-y-auto bg-slate-50/40 px-5 py-5 dark:bg-slate-950/30"
+        class="min-h-[420px] flex-1 space-y-4 overflow-y-auto overscroll-contain bg-slate-50/40 px-5 py-5 dark:bg-slate-950/30"
       >
         <div v-if="isLoadingMessages" class="flex h-[360px] items-center justify-center text-sm font-medium text-slate-500 dark:text-slate-400">
           Memuat percakapan...
@@ -62,7 +62,7 @@
         </div>
       </div>
 
-      <form @submit.prevent="sendMessage" class="border-t border-slate-100 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+      <form @submit.prevent="sendMessage" class="sticky bottom-0 z-10 shrink-0 border-t border-slate-100 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
         <div class="flex flex-col gap-3 md:flex-row md:items-end">
           <div class="flex-1">
             <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Tulis pesan</label>

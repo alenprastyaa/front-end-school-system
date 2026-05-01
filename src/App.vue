@@ -30,14 +30,17 @@
         @sidebarToggle="open"
       />
 
-      <div class="flex-1 overflow-y-auto">
+      <div
+        class="flex-1 min-h-0"
+        :class="isChatLayoutRoute ? 'overflow-hidden' : 'overflow-y-auto'"
+      >
         <transition
           name="slide-up"
           mode="out-in"
         >
-          <div>
+          <div :class="isChatLayoutRoute ? 'h-full' : ''">
             <router-view />
-            <Footer v-if="!shouldHideChrome" />
+            <Footer v-if="!shouldHideChrome && !isChatLayoutRoute" />
           </div>
         </transition>
       </div>
@@ -70,6 +73,9 @@
     computed: {
       shouldHideChrome() {
         return Boolean(this.$route.meta.hideNav || layoutChromeState.hidden);
+      },
+      isChatLayoutRoute() {
+        return ["LearningChatTeacher", "LearningChatStudent"].includes(this.$route.name);
       },
     },
 
