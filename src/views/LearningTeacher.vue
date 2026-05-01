@@ -77,7 +77,19 @@
               <article v-for="item in materials" :key="item.id"
                 class="flex flex-col justify-between rounded-2xl border border-slate-100 bg-slate-50/50 p-5 dark:border-slate-800 dark:bg-slate-900/50">
                 <div>
-                  <h4 class="font-bold text-slate-900 line-clamp-2 dark:text-white">{{ item.title }}</h4>
+                  <div class="flex items-start justify-between gap-3">
+                    <h4 class="font-bold text-slate-900 line-clamp-2 dark:text-white">{{ item.title }}</h4>
+                    <div class="flex shrink-0 items-center gap-2">
+                      <button @click="openMaterialEditModal(item)"
+                        class="inline-flex rounded-lg bg-white px-2.5 py-1.5 text-xs font-bold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
+                        Edit
+                      </button>
+                      <button @click="deleteMaterial(item)"
+                        class="inline-flex rounded-lg bg-rose-50 px-2.5 py-1.5 text-xs font-bold text-rose-700 ring-1 ring-rose-200 transition hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
+                        Hapus
+                      </button>
+                    </div>
+                  </div>
                   <span class="mt-1 block text-xs font-medium text-slate-400">{{ formatDateTime(item.created_at)
                   }}</span>
                   <p class="mt-3 text-sm leading-relaxed text-slate-600 line-clamp-3 dark:text-slate-400">{{
@@ -162,6 +174,16 @@
                       class="w-full rounded-xl bg-slate-50 px-3 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-cyan-900/30 dark:hover:text-cyan-300">
                       {{ selectedAssignment?.id === item.id ? 'Sedang Dinilai' : 'Buka Penilaian' }}
                     </button>
+                    <div class="mt-3 grid grid-cols-2 gap-2">
+                      <button @click="openAssignmentEditModal(item)"
+                        class="rounded-xl bg-white px-3 py-2 text-xs font-bold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
+                        Edit
+                      </button>
+                      <button @click="deleteAssignment(item)"
+                        class="rounded-xl bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 ring-1 ring-rose-200 transition hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
+                        Hapus
+                      </button>
+                    </div>
                   </article>
 
                   <div v-if="assignments.length === 0"
@@ -305,7 +327,7 @@
           class="flex max-h-[calc(100vh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
           @click.stop>
           <div class="flex shrink-0 items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
-            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Publikasi Materi Baru</h2>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">{{ editingMaterialId ? "Edit Materi" : "Publikasi Materi Baru" }}</h2>
             <button @click="closeMaterialModal"
               class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -453,7 +475,7 @@
           class="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
           @click.stop>
           <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
-            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Buat Tugas atau Penilaian</h2>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">{{ editingAssignmentId ? "Edit Tugas atau Penilaian" : "Buat Tugas atau Penilaian" }}</h2>
             <button @click="assignmentModalOpen = false"
               class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -577,6 +599,8 @@ const materialFile = ref(null);
 const assignmentFile = ref(null);
 const materialCreationMode = ref("manual");
 const materialAiPreview = ref(null);
+const editingMaterialId = ref(null);
+const editingAssignmentId = ref(null);
 
 // State untuk Filter Meja Penilaian
 const submissionSearch = ref("");
@@ -620,6 +644,7 @@ const filteredSubmissions = computed(() => {
 });
 
 const resetMaterialForm = () => {
+  editingMaterialId.value = null;
   materialForm.title = "";
   materialForm.content = "";
   materialFile.value = null;
@@ -632,6 +657,7 @@ const resetMaterialForm = () => {
 };
 
 const resetAssignmentForm = () => {
+  editingAssignmentId.value = null;
   assignmentForm.title = "";
   assignmentForm.description = "";
   assignmentForm.due_date = "";
@@ -676,9 +702,28 @@ const openMaterialModal = (mode = "manual") => {
   materialModalOpen.value = true;
 };
 
+const openMaterialEditModal = (item) => {
+  resetMaterialForm();
+  editingMaterialId.value = item.id;
+  materialCreationMode.value = "manual";
+  materialForm.title = item.title || "";
+  materialForm.content = item.content || "";
+  materialModalOpen.value = true;
+};
+
 const closeMaterialModal = () => {
   materialModalOpen.value = false;
   resetMaterialForm();
+};
+
+const openAssignmentEditModal = (item) => {
+  resetAssignmentForm();
+  editingAssignmentId.value = item.id;
+  assignmentForm.title = item.title || "";
+  assignmentForm.description = item.description || "";
+  assignmentForm.due_date = item.due_date ? formatDateTimeLocalInput(item.due_date) : "";
+  assignmentForm.assignment_type = item.assignment_type || "FILE";
+  assignmentModalOpen.value = true;
 };
 
 const resetAiPreview = () => {
@@ -792,8 +837,10 @@ const submitMaterial = async () => {
       payload.attachment_size = uploadedFile.size;
     }
 
-    const response = await api.post("/learning/materials", payload);
-    message.value = response?.message || "Materi berhasil ditambahkan";
+    const response = editingMaterialId.value
+      ? await api.put(`/learning/materials/${editingMaterialId.value}`, payload)
+      : await api.post("/learning/materials", payload);
+    message.value = response?.message || (editingMaterialId.value ? "Materi berhasil diperbarui" : "Materi berhasil ditambahkan");
     closeMaterialModal();
     await loadSubjectData();
   } catch (error) {
@@ -835,6 +882,22 @@ const generateAiMaterialPreview = async () => {
     }
 };
 
+const deleteMaterial = async (item) => {
+  if (!window.confirm(`Hapus materi "${item.title}"?`)) return;
+
+  message.value = "";
+  isError.value = false;
+
+  try {
+    const response = await api.delete(`/learning/materials/${item.id}`);
+    message.value = response?.message || "Materi berhasil dihapus";
+    await loadSubjectData();
+  } catch (error) {
+    isError.value = true;
+    message.value = error.message;
+  }
+};
+
 const submitAssignment = async () => {
   if (!selectedSubject.value) return;
 
@@ -859,8 +922,10 @@ const submitAssignment = async () => {
       payload.attachment_size = uploadedFile.size;
     }
 
-    const response = await api.post("/learning/assignments", payload);
-    message.value = response?.message || "Data penilaian berhasil ditambahkan";
+    const response = editingAssignmentId.value
+      ? await api.put(`/learning/assignments/${editingAssignmentId.value}`, payload)
+      : await api.post("/learning/assignments", payload);
+    message.value = response?.message || (editingAssignmentId.value ? "Data penilaian berhasil diperbarui" : "Data penilaian berhasil ditambahkan");
     resetAssignmentForm();
     assignmentModalOpen.value = false;
     await loadSubjectData();
@@ -870,6 +935,34 @@ const submitAssignment = async () => {
   } finally {
     isSavingAssignment.value = false;
   }
+};
+
+const deleteAssignment = async (item) => {
+  if (!window.confirm(`Hapus tugas "${item.title}"?`)) return;
+
+  message.value = "";
+  isError.value = false;
+
+  try {
+    const response = await api.delete(`/learning/assignments/${item.id}`);
+    message.value = response?.message || "Tugas berhasil dihapus";
+    if (selectedAssignment.value?.id === item.id) {
+      selectedAssignment.value = null;
+      submissions.value = [];
+    }
+    await loadSubjectData();
+  } catch (error) {
+    isError.value = true;
+    message.value = error.message;
+  }
+};
+
+const formatDateTimeLocalInput = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (item) => String(item).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
 const loadSubmissions = async (assignment) => {
