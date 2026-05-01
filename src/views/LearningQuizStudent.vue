@@ -402,6 +402,10 @@
                   <span class="text-xs font-medium text-slate-500 sm:text-sm">Jawaban pada soal sebelumnya langsung
                     terkunci saat Anda pindah soal atau waktu habis.</span>
                   <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+                    <button v-if="isError && !isSubmitting" type="button" @click="leaveFailedSession"
+                      class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 sm:w-auto">
+                      Keluar Sementara
+                    </button>
                     <button type="button" @click="goToNextQuestion"
                       class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100 px-6 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:w-auto">
                       {{ quickAdvanceLabel }}
@@ -1134,6 +1138,26 @@ const teardownActiveSessionGuards = () => {
   stopQuestionTimer();
   unbindLockedNavigation();
   unbindAntiCheatListeners();
+};
+
+const leaveFailedSession = async () => {
+  if (!submissionTarget.value || isSubmitting.value) {
+    return;
+  }
+
+  const target = submissionTarget.value;
+  teardownActiveSessionGuards();
+  await exitQuizFullscreen();
+  setLayoutChromeHidden(false);
+  submissionTarget.value = null;
+  resetAntiCheatState();
+  await loadSubjectData();
+  pushToast({
+    title: `${target.is_exam ? "Ujian" : "Quiz"} Disimpan Sementara`,
+    message: "Sesi ditutup sementara. Jawaban lokal tetap tersimpan dan bisa dilanjutkan lagi dari daftar tugas.",
+    type: "info",
+    duration: 4200,
+  });
 };
 
 const completeSubmittedSession = async (target, triggeredAutomatically, toastType = triggeredAutomatically ? "info" : "success") => {
