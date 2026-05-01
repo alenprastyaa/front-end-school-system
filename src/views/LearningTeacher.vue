@@ -54,13 +54,23 @@
                 <h3 class="font-bold text-slate-900 dark:text-white">Library Materi</h3>
                 <p class="text-sm text-slate-500">Bahan bacaan dan modul untuk dipelajari siswa.</p>
               </div>
-              <button @click="materialModalOpen = true"
-                class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                Publikasi Materi Baru
-              </button>
+              <div class="flex flex-col gap-3 sm:flex-row">
+                <button @click="openMaterialModal('ai-pptx')"
+                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M4.5 7.5h15m-15 4.5h15m-15 4.5h9M6 4.5v15m12-15v15" />
+                  </svg>
+                  Generate PPT AI
+                </button>
+                <button @click="openMaterialModal('manual')"
+                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  </svg>
+                  Publikasi Materi Baru
+                </button>
+              </div>
             </div>
 
             <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -292,19 +302,47 @@
       <div v-if="materialModalOpen"
         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
         <div
-          class="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          class="flex max-h-[calc(100vh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
           @click.stop>
-          <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
+          <div class="flex shrink-0 items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
             <h2 class="text-lg font-bold text-slate-900 dark:text-white">Publikasi Materi Baru</h2>
-            <button @click="materialModalOpen = false"
+            <button @click="closeMaterialModal"
               class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <div class="p-6">
-            <form @submit.prevent="submitMaterial" class="space-y-5">
+          <div class="min-h-0 flex-1 overflow-y-auto">
+            <form @submit.prevent="submitMaterial" class="flex min-h-full flex-col">
+              <div class="space-y-5 p-6">
+              <div class="space-y-1.5">
+                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Mode Materi</label>
+                <div class="grid gap-3 md:grid-cols-2">
+                  <button type="button" @click="materialCreationMode = 'manual'"
+                    class="rounded-2xl border p-4 text-left transition"
+                    :class="materialCreationMode === 'manual'
+                      ? 'border-sky-500 bg-sky-50 ring-2 ring-sky-200 dark:border-cyan-400 dark:bg-cyan-500/10 dark:ring-cyan-500/20'
+                      : 'border-slate-200 bg-white hover:border-sky-200 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-cyan-700'">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-sky-700 dark:text-cyan-300">Manual</p>
+                    <h3 class="mt-2 font-bold text-slate-900 dark:text-white">Upload Materi Biasa</h3>
+                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                      Publikasikan ringkasan dan lampiran materi secara manual seperti biasa.
+                    </p>
+                  </button>
+                  <button type="button" @click="materialCreationMode = 'ai-pptx'"
+                    class="rounded-2xl border p-4 text-left transition"
+                    :class="materialCreationMode === 'ai-pptx'
+                      ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-200 dark:border-emerald-400 dark:bg-emerald-500/10 dark:ring-emerald-500/20'
+                      : 'border-slate-200 bg-white hover:border-emerald-200 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-emerald-700'">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">AI .pptx</p>
+                    <h3 class="mt-2 font-bold text-slate-900 dark:text-white">Generate PowerPoint</h3>
+                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                      AI membuat outline materi lalu sistem menghasilkan file PowerPoint `.pptx`.
+                    </p>
+                  </button>
+                </div>
+              </div>
               <div class="space-y-1.5">
                 <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Judul Materi</label>
                 <input v-model="materialForm.title" required placeholder="Contoh: Pengantar Aljabar"
@@ -315,18 +353,89 @@
                 <textarea v-model="materialForm.content" rows="4" placeholder="Tulis ringkasan atau instruksi materi..."
                   class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
               </div>
-              <div class="space-y-1.5">
+              <div v-if="materialCreationMode === 'manual'" class="space-y-1.5">
                 <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Lampiran File
                   (Opsional)</label>
                 <input type="file" @change="handleMaterialFile"
                   class="block w-full text-sm text-slate-500 file:mr-4 file:rounded-lg file:border-0 file:bg-sky-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-sky-700 hover:file:bg-sky-100 dark:text-slate-300 dark:file:bg-cyan-500/10 dark:file:text-cyan-300" />
               </div>
-              <div class="flex items-center justify-end gap-3 pt-4">
-                <button type="button" @click="materialModalOpen = false"
+              <div v-else class="space-y-5">
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <div class="space-y-1.5">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Topik Presentasi</label>
+                    <input v-model="materialAiForm.topic" required placeholder="Contoh: Persamaan Linear Satu Variabel"
+                      class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+                  </div>
+                  <div class="space-y-1.5">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jumlah Slide</label>
+                    <input v-model.number="materialAiForm.slide_count" type="number" min="3" max="15"
+                      class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+                  </div>
+                </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tujuan Pembelajaran</label>
+                  <textarea v-model="materialAiForm.learning_goals" rows="3"
+                    placeholder="Contoh: Siswa mampu memahami konsep dasar, menyelesaikan contoh soal, dan menerapkannya pada latihan sederhana."
+                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+                </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Instruksi Tambahan untuk AI</label>
+                  <textarea v-model="materialAiForm.additional_instructions" rows="3"
+                    placeholder="Contoh: Gunakan contoh sehari-hari, buat poin singkat, dan sisipkan penekanan rumus inti."
+                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+                </div>
+                <div
+                  class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200">
+                  Sistem akan membuat preview isi PowerPoint terlebih dahulu. Setelah cocok, baru Anda publikasikan sebagai file `.pptx`.
+                </div>
+                <div v-if="materialAiPreview" class="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-800/40">
+                  <div class="flex items-start justify-between gap-4">
+                    <div>
+                      <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Preview AI</p>
+                      <h3 class="mt-1 text-base font-bold text-slate-900 dark:text-white">{{ materialAiPreview.presentation_title }}</h3>
+                      <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ materialAiPreview.summary }}</p>
+                    </div>
+                    <span class="inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700">
+                      {{ materialAiPreview.slides.length }} slide
+                    </span>
+                  </div>
+
+                  <div class="max-h-72 space-y-3 overflow-y-auto pr-1">
+                    <article v-for="(slide, index) in materialAiPreview.slides" :key="`${index}-${slide.title}`"
+                      class="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                      <div class="flex items-center justify-between gap-3">
+                        <h4 class="font-bold text-slate-900 dark:text-white">Slide {{ index + 1 }}: {{ slide.title }}</h4>
+                      </div>
+                      <ul class="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                        <li v-for="(bullet, bulletIndex) in slide.bullets" :key="`${index}-${bulletIndex}`" class="flex gap-2">
+                          <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500"></span>
+                          <span>{{ bullet }}</span>
+                        </li>
+                      </ul>
+                      <p v-if="slide.speaker_notes" class="mt-3 text-xs italic text-slate-500 dark:text-slate-400">
+                        Catatan guru: {{ slide.speaker_notes }}
+                      </p>
+                    </article>
+                  </div>
+                </div>
+              </div>
+              </div>
+              <div class="sticky bottom-0 mt-auto flex shrink-0 items-center justify-end gap-3 border-t border-slate-100 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
+                <button type="button" @click="closeMaterialModal"
                   class="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">Batal</button>
-                <button :disabled="isSavingMaterial" type="submit"
-                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
-                  {{ isSavingMaterial ? "Menyimpan..." : "Publikasikan" }}
+                <button v-if="materialCreationMode === 'ai-pptx' && materialAiPreview" type="button" @click="generateAiMaterialPreview"
+                  :disabled="isGeneratingAiMaterial || isPublishingAiMaterial"
+                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-200 px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-300 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600">
+                  {{ isGeneratingAiMaterial ? "Membuat Ulang..." : "Generate Ulang" }}
+                </button>
+                <button :disabled="isSavingMaterial || isGeneratingAiMaterial || isPublishingAiMaterial" type="submit"
+                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+                  :class="materialCreationMode === 'ai-pptx' ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-sky-600 hover:bg-sky-500'">
+                  {{ materialCreationMode === 'ai-pptx'
+                    ? materialAiPreview
+                      ? (isPublishingAiMaterial ? "Mempublikasikan..." : "Publikasikan PPT")
+                      : (isGeneratingAiMaterial ? "Membuat Preview..." : "Generate Preview PPT")
+                    : (isSavingMaterial ? "Menyimpan..." : "Publikasikan") }}
                 </button>
               </div>
             </form>
@@ -462,8 +571,12 @@ const materialModalOpen = ref(false);
 const assignmentModalOpen = ref(false);
 const isSavingMaterial = ref(false);
 const isSavingAssignment = ref(false);
+const isGeneratingAiMaterial = ref(false);
+const isPublishingAiMaterial = ref(false);
 const materialFile = ref(null);
 const assignmentFile = ref(null);
+const materialCreationMode = ref("manual");
+const materialAiPreview = ref(null);
 
 // State untuk Filter Meja Penilaian
 const submissionSearch = ref("");
@@ -472,6 +585,13 @@ const submissionFilter = ref("ALL");
 const materialForm = reactive({
   title: "",
   content: "",
+});
+
+const materialAiForm = reactive({
+  topic: "",
+  slide_count: 8,
+  learning_goals: "",
+  additional_instructions: "",
 });
 
 const assignmentForm = reactive({
@@ -503,6 +623,12 @@ const resetMaterialForm = () => {
   materialForm.title = "";
   materialForm.content = "";
   materialFile.value = null;
+  materialCreationMode.value = "manual";
+  materialAiPreview.value = null;
+  materialAiForm.topic = "";
+  materialAiForm.slide_count = 8;
+  materialAiForm.learning_goals = "";
+  materialAiForm.additional_instructions = "";
 };
 
 const resetAssignmentForm = () => {
@@ -542,6 +668,21 @@ const handleMaterialFile = (event) => {
 
 const handleAssignmentFile = (event) => {
   assignmentFile.value = event.target.files?.[0] || null;
+};
+
+const openMaterialModal = (mode = "manual") => {
+  resetMaterialForm();
+  materialCreationMode.value = mode;
+  materialModalOpen.value = true;
+};
+
+const closeMaterialModal = () => {
+  materialModalOpen.value = false;
+  resetMaterialForm();
+};
+
+const resetAiPreview = () => {
+  materialAiPreview.value = null;
 };
 
 const loadSubjects = async () => {
@@ -601,6 +742,37 @@ const selectSubject = async (subject) => {
 const submitMaterial = async () => {
   if (!selectedSubject.value) return;
 
+  if (materialCreationMode.value === "ai-pptx") {
+    if (!materialAiPreview.value) {
+      await generateAiMaterialPreview();
+      return;
+    }
+
+    isPublishingAiMaterial.value = true;
+    message.value = "";
+    isError.value = false;
+
+    try {
+      const response = await api.post(`/learning/subjects/${selectedSubject.value.id}/materials/publish-ai-pptx`, {
+        title: materialForm.title,
+        content: materialForm.content || "",
+        presentation_title: materialAiPreview.value.presentation_title,
+        slides: materialAiPreview.value.slides,
+      });
+
+      message.value = response?.message || "Materi PowerPoint AI berhasil dipublikasikan";
+      closeMaterialModal();
+      await loadSubjectData();
+    } catch (error) {
+      isError.value = true;
+      message.value = error.message;
+    } finally {
+      isPublishingAiMaterial.value = false;
+    }
+
+    return;
+  }
+
   isSavingMaterial.value = true;
   message.value = "";
   isError.value = false;
@@ -622,8 +794,7 @@ const submitMaterial = async () => {
 
     const response = await api.post("/learning/materials", payload);
     message.value = response?.message || "Materi berhasil ditambahkan";
-    resetMaterialForm();
-    materialModalOpen.value = false;
+    closeMaterialModal();
     await loadSubjectData();
   } catch (error) {
     isError.value = true;
@@ -631,6 +802,37 @@ const submitMaterial = async () => {
   } finally {
     isSavingMaterial.value = false;
   }
+};
+
+const generateAiMaterialPreview = async () => {
+  if (!selectedSubject.value) return;
+
+    isGeneratingAiMaterial.value = true;
+    message.value = "";
+    isError.value = false;
+
+    try {
+      const response = await api.post(`/learning/subjects/${selectedSubject.value.id}/materials/generate-ai-pptx`, {
+        title: materialForm.title,
+        content: materialForm.content || "",
+        topic: materialAiForm.topic,
+        slide_count: materialAiForm.slide_count,
+        learning_goals: materialAiForm.learning_goals || "",
+        additional_instructions: materialAiForm.additional_instructions || "",
+      });
+
+      materialAiPreview.value = {
+        presentation_title: response?.data?.presentation_title || materialForm.title,
+        summary: response?.data?.summary || materialForm.content || "",
+        slides: Array.isArray(response?.data?.slides) ? response.data.slides : [],
+      };
+      message.value = response?.message || "Preview PowerPoint AI berhasil dibuat";
+    } catch (error) {
+      isError.value = true;
+      message.value = error.message;
+    } finally {
+      isGeneratingAiMaterial.value = false;
+    }
 };
 
 const submitAssignment = async () => {
@@ -714,6 +916,26 @@ const submitGrade = async (submission) => {
 };
 
 onMounted(loadSubjects);
+
+watch(materialCreationMode, () => {
+  resetAiPreview();
+});
+
+watch(
+  () => [
+    materialForm.title,
+    materialForm.content,
+    materialAiForm.topic,
+    materialAiForm.slide_count,
+    materialAiForm.learning_goals,
+    materialAiForm.additional_instructions,
+  ],
+  () => {
+    if (materialCreationMode.value === "ai-pptx") {
+      resetAiPreview();
+    }
+  },
+);
 
 watch(subjectError, (value) => {
   if (!value) return;
