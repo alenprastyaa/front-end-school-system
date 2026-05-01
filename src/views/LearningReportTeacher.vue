@@ -68,11 +68,6 @@
         </div>
       </section>
 
-      <div v-if="loadError"
-        class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
-        {{ loadError }}
-      </div>
-
       <section class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
         <div class="overflow-x-auto">
           <table class="min-w-[1200px] w-full text-left text-sm">
@@ -130,13 +125,13 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { api } from "@/api";
+import { pushToast } from "@/composables/useToast";
 import { downloadExcelWorksheet } from "@/utils/excelExport";
 import { formatDate } from "@/utils/date";
 
 const subjects = ref([]);
 const periods = ref([]);
 const report = ref(null);
-const loadError = ref("");
 
 const filters = reactive({
   subjectId: "",
@@ -235,7 +230,6 @@ const loadPeriods = async () => {
 };
 
 const loadReport = async () => {
-  loadError.value = "";
   report.value = null;
 
   if (!filters.subjectId) {
@@ -250,7 +244,11 @@ const loadReport = async () => {
     });
     report.value = response?.data || null;
   } catch (error) {
-    loadError.value = error.message;
+    pushToast({
+      title: "Gagal Memuat Laporan Nilai",
+      message: error.message,
+      type: "error",
+    });
   }
 };
 

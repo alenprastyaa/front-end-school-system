@@ -77,12 +77,6 @@
             </div>
           </div>
 
-          <Transition enter-active-class="transition-all duration-300" enter-from-class="opacity-0 translate-y-2"
-            enter-to-class="opacity-100 translate-y-0">
-            <div v-if="message" class="mt-5 rounded-xl px-4 py-3 text-sm font-medium" :class="messageClass">
-              {{ message }}
-            </div>
-          </Transition>
         </section>
 
         <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -189,11 +183,6 @@
           </button>
         </div>
 
-        <div v-if="loadError"
-          class="mx-6 mt-6 rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
-          {{ loadError }}
-        </div>
-
         <div class="overflow-x-auto">
           <div class="block md:hidden">
             <div v-if="attendances.length === 0" class="px-6 py-12 text-center text-slate-500">
@@ -277,6 +266,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { api } from "@/api";
+import { pushToast } from "@/composables/useToast";
 import { formatDate, formatTime } from "@/utils/date";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 
@@ -297,9 +287,6 @@ const selectedPreviewUrl = ref("");
 const attendances = ref([]);
 const isCheckingIn = ref(false);
 const isCheckingOut = ref(false);
-const loadError = ref("");
-const message = ref("");
-const isError = ref(false);
 const tableSort = createSortState("attendance_date", "desc");
 
 // Computed properti untuk mendeteksi status kehadiran hari ini
@@ -323,10 +310,6 @@ const todayRecord = computed(() => {
 const hasCheckedInToday = computed(() => !!todayRecord.value);
 const hasCheckedOutToday = computed(() => hasCheckedInToday.value && !!todayRecord.value.clock_out);
 
-const messageClass = computed(() =>
-  isError.value ? "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400" : "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400",
-);
-
 const sortedAttendances = computed(() => sortItems(attendances.value, tableSort));
 
 const handleSort = (key) => toggleSort(tableSort, key);
@@ -348,12 +331,15 @@ const handleFileChange = (event) => {
 };
 
 const loadAttendance = async () => {
-  loadError.value = "";
   try {
     const response = await api.get("/attendance");
     attendances.value = response?.data?.data || [];
   } catch (error) {
-    loadError.value = error.message;
+    pushToast({
+      title: "Gagal Memuat Absensi",
+      message: error.message,
+      type: "error",
+    });
   }
 };
 
@@ -361,14 +347,16 @@ const submitCheckIn = async () => {
   if (!selectedFile.value) return;
 
   isCheckingIn.value = true;
-  message.value = "";
-  isError.value = false;
 
   try {
     const formData = new FormData();
     formData.append("image", selectedFile.value);
     const response = await api.post("/attendance", formData);
-    message.value = response?.message || "Check-in berhasil. Selamat beraktivitas!";
+    pushToast({
+      title: "Check-in Berhasil",
+      message: response?.message || "Check-in berhasil. Selamat beraktivitas!",
+      type: "success",
+    });
     selectedFile.value = null;
     resetSelectedPreview();
 
@@ -378,8 +366,11 @@ const submitCheckIn = async () => {
 
     await loadAttendance();
   } catch (error) {
-    isError.value = true;
-    message.value = error.message;
+    pushToast({
+      title: "Check-in Gagal",
+      message: error.message,
+      type: "error",
+    });
   } finally {
     isCheckingIn.value = false;
   }
@@ -387,16 +378,21 @@ const submitCheckIn = async () => {
 
 const submitCheckOut = async () => {
   isCheckingOut.value = true;
-  message.value = "";
-  isError.value = false;
 
   try {
     const response = await api.post("/attendance/checkout", {});
-    message.value = response?.message || "Check-out berhasil dicatat. Sampai jumpa besok!";
+    pushToast({
+      title: "Check-out Berhasil",
+      message: response?.message || "Check-out berhasil dicatat. Sampai jumpa besok!",
+      type: "success",
+    });
     await loadAttendance();
   } catch (error) {
-    isError.value = true;
-    message.value = error.message;
+    pushToast({
+      title: "Check-out Gagal",
+      message: error.message,
+      type: "error",
+    });
   } finally {
     isCheckingOut.value = false;
   }

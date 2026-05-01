@@ -21,10 +21,6 @@
             class="mt-1 w-full px-3 py-2 rounded-md border dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
         </div>
 
-        <div v-if="errorMessage" class="p-3 rounded-md bg-red-50 text-red-600 text-sm">
-          {{ errorMessage }}
-        </div>
-
         <button type="submit" :disabled="isLoading"
           class="w-full px-4 py-2 rounded-md bg-primary text-white disabled:opacity-60">
           {{ isLoading ? "Masuk..." : "Masuk" }}
@@ -47,11 +43,11 @@
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { api } from "@/api";
+import { pushToast } from "@/composables/useToast";
 import { persistSession } from "@/utils/auth";
 
 const router = useRouter();
 const isLoading = ref(false);
-const errorMessage = ref("");
 const form = reactive({
   username: "",
   password: "",
@@ -59,14 +55,17 @@ const form = reactive({
 
 const handleLogin = async () => {
   isLoading.value = true;
-  errorMessage.value = "";
 
   try {
     const response = await api.post("/auth/login", { ...form });
     persistSession(response);
     router.push("/");
   } catch (error) {
-    errorMessage.value = error.message;
+    pushToast({
+      title: "Login Gagal",
+      message: error.message,
+      type: "error",
+    });
   } finally {
     isLoading.value = false;
   }

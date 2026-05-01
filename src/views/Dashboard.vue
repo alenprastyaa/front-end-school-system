@@ -53,11 +53,6 @@
         </div>
       </div>
 
-      <div v-if="errorMessage"
-        class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
-        {{ errorMessage }}
-      </div>
-
       <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div v-for="item in summaryCards" :key="item.label" class="relative overflow-hidden rounded-2xl p-5"
           :class="item.cardClass">
@@ -99,11 +94,6 @@
               {{ isSendingAttendanceEmailReport ? "Mengirim..." : "Kirim Email Sekarang" }}
             </button>
           </div>
-        </div>
-
-        <div v-if="attendanceEmailReportMessage" class="mt-4 rounded-xl px-4 py-3 text-sm font-medium"
-          :class="attendanceEmailReportError ? 'border border-red-200 bg-red-50 text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300' : 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300'">
-          {{ attendanceEmailReportMessage }}
         </div>
 
         <div v-if="attendanceEmailReportSummary" class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -266,6 +256,7 @@
 import { computed, onMounted, ref } from "vue";
 import { Icon } from "@iconify/vue";
 import { api } from "@/api";
+import { pushToast } from "@/composables/useToast";
 import { formatDate, formatDateTime, formatTime } from "@/utils/date";
 import { getStoredRole, getStoredUser } from "@/utils/auth";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
@@ -273,13 +264,10 @@ import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 const role = getStoredRole();
 const user = getStoredUser();
 const isLoading = ref(false);
-const errorMessage = ref("");
 const dashboardData = ref({});
 const primaryTableSort = createSortState("");
 const attendanceEmailReportDate = ref(new Date().toISOString().slice(0, 10));
 const isSendingAttendanceEmailReport = ref(false);
-const attendanceEmailReportMessage = ref("");
-const attendanceEmailReportError = ref(false);
 const attendanceEmailReportSummary = ref(null);
 
 const endpointByRole = {
@@ -654,20 +642,27 @@ const loadDashboard = async () => {
   const endpoint = endpointByRole[role];
 
   if (!endpoint) {
-    errorMessage.value = "Role tidak dikenali";
     dashboardData.value = {};
+    pushToast({
+      title: "Dashboard Gagal Dimuat",
+      message: "Role tidak dikenali",
+      type: "error",
+    });
     return;
   }
 
   isLoading.value = true;
-  errorMessage.value = "";
 
   try {
     const response = await api.get(endpoint);
     dashboardData.value = response?.data || {};
   } catch (error) {
-    errorMessage.value = error.message;
     dashboardData.value = {};
+    pushToast({
+      title: "Dashboard Gagal Dimuat",
+      message: error.message,
+      type: "error",
+    });
   } finally {
     isLoading.value = false;
   }
@@ -675,8 +670,6 @@ const loadDashboard = async () => {
 
 const sendAttendanceEmailReport = async () => {
   isSendingAttendanceEmailReport.value = true;
-  attendanceEmailReportMessage.value = "";
-  attendanceEmailReportError.value = false;
   attendanceEmailReportSummary.value = null;
 
   try {
@@ -687,10 +680,17 @@ const sendAttendanceEmailReport = async () => {
 
     const response = await api.post("/attendance/report/homeroom-email", payload);
     attendanceEmailReportSummary.value = response?.data || null;
-    attendanceEmailReportMessage.value = response?.message || "Laporan email berhasil diproses.";
+    pushToast({
+      title: "Laporan Email Diproses",
+      message: response?.message || "Laporan email berhasil diproses.",
+      type: "success",
+    });
   } catch (error) {
-    attendanceEmailReportError.value = true;
-    attendanceEmailReportMessage.value = error.message || "Gagal mengirim laporan email.";
+    pushToast({
+      title: "Gagal Mengirim Laporan Email",
+      message: error.message || "Gagal mengirim laporan email.",
+      type: "error",
+    });
   } finally {
     isSendingAttendanceEmailReport.value = false;
   }

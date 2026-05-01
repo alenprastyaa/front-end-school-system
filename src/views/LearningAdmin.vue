@@ -11,24 +11,6 @@
         </div>
       </section>
 
-      <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 -translate-y-2"
-        enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-200"
-        leave-from-class="opacity-100" leave-to-class="opacity-0">
-        <div v-if="pageMessage" class="flex items-center gap-3 rounded-lg p-4 text-sm font-medium ring-1 ring-inset"
-          :class="isError ? 'bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20' : 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20'">
-          <svg v-if="isError" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          <svg v-else class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          {{ pageMessage }}
-        </div>
-      </Transition>
-
       <main
         class="flex min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
 
@@ -67,11 +49,6 @@
               Tambah Mapel
             </button>
           </div>
-        </div>
-
-        <div v-if="loadError"
-          class="mx-5 mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
-          {{ loadError }}
         </div>
 
         <div class="overflow-x-auto">
@@ -136,7 +113,7 @@
                       </svg>
                       Edit
                     </button>
-                    <button @click="deleteSubject(item.id)"
+                    <button @click="openDeleteModal(item)"
                       class="inline-flex items-center justify-center rounded-lg bg-white p-1.5 text-slate-400 shadow-sm ring-1 ring-inset ring-slate-300 transition hover:bg-rose-50 hover:text-rose-600 dark:bg-slate-800 dark:ring-slate-700 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
                       title="Hapus Mapel">
                       <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -274,12 +251,64 @@
       </div>
     </Transition>
 
+    <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
+      enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+      leave-to-class="opacity-0">
+      <div v-if="isDeleteModalOpen"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div
+          class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          @click.stop>
+          <div class="flex items-start gap-4 px-6 py-5">
+            <div
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Hapus Mata Pelajaran?</h2>
+              <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                Mapel
+                <span class="font-semibold text-slate-700 dark:text-slate-200">
+                  {{ subjectToDelete?.name || "-" }}
+                </span>
+                akan dihapus beserta data terkaitnya. Tindakan ini tidak bisa dibatalkan.
+              </p>
+            </div>
+          </div>
+          <div
+            class="flex items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
+            <button type="button" @click="closeDeleteModal"
+              class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+              Batal
+            </button>
+            <button type="button" @click="confirmDeleteSubject" :disabled="isDeletingSubject"
+              class="inline-flex items-center justify-center gap-2 rounded-lg bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-60">
+              <svg v-if="isDeletingSubject" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"
+                stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+              {{ isDeletingSubject ? "Menghapus..." : "Ya, Hapus" }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <SuccessModal ref="successModal" />
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { api } from "@/api";
+import { pushToast } from "@/composables/useToast";
+import SuccessModal from "@/components/SuccessModal.vue";
+
+const successModal = ref(null);
 
 const baseForm = () => ({
   name: "",
@@ -295,14 +324,14 @@ const subjects = ref([]);
 const classes = ref([]);
 const teachers = ref([]);
 const isSubmitting = ref(false);
-const loadError = ref("");
 const chatIconFile = ref(null);
 const chatIconPreview = ref("");
+const isDeleteModalOpen = ref(false);
+const isDeletingSubject = ref(false);
+const subjectToDelete = ref(null);
 
 // State Modal & Global Alert
 const isModalOpen = ref(false);
-const pageMessage = ref("");
-const isError = ref(false);
 
 // Fitur Pencarian Client-Side
 const searchQuery = ref("");
@@ -329,6 +358,17 @@ const closeModal = () => {
   resetForm();
 };
 
+const openDeleteModal = (item) => {
+  subjectToDelete.value = item;
+  isDeleteModalOpen.value = true;
+};
+
+const closeDeleteModal = () => {
+  if (isDeletingSubject.value) return;
+  isDeleteModalOpen.value = false;
+  subjectToDelete.value = null;
+};
+
 const resetForm = () => {
   editingId.value = null;
   Object.assign(form, baseForm());
@@ -338,9 +378,6 @@ const resetForm = () => {
 
 // Fungsi Load & CRUD
 const loadData = async () => {
-  loadError.value = "";
-  pageMessage.value = ""; // Clear message on refresh
-
   try {
     const [subjectResponse, classResponse, teacherResponse] = await Promise.all([
       api.get("/learning/subjects/admin"),
@@ -352,7 +389,11 @@ const loadData = async () => {
     classes.value = classResponse?.data || [];
     teachers.value = teacherResponse?.data || [];
   } catch (error) {
-    loadError.value = error.message;
+    pushToast({
+      title: "Gagal Memuat Mata Pelajaran",
+      message: error.message,
+      type: "error",
+    });
   }
 };
 
@@ -374,25 +415,29 @@ const handleChatIconChange = (event) => {
   chatIconPreview.value = file ? URL.createObjectURL(file) : form.chat_icon_url || "";
 };
 
-const deleteSubject = async (id) => {
-  if (!window.confirm("Apakah Anda yakin ingin menghapus mapel ini?")) return;
+const confirmDeleteSubject = async () => {
+  if (!subjectToDelete.value?.id) return;
 
-  pageMessage.value = "";
+  isDeletingSubject.value = true;
   try {
-    await api.delete(`/learning/subjects/${id}`);
-    isError.value = false;
-    pageMessage.value = "Mata pelajaran berhasil dihapus";
+    await api.delete(`/learning/subjects/${subjectToDelete.value.id}`);
+    successModal.value.show("Mata pelajaran berhasil dihapus");
+    isDeleteModalOpen.value = false;
+    subjectToDelete.value = null;
     await loadData();
   } catch (error) {
-    isError.value = true;
-    pageMessage.value = error.message;
+    pushToast({
+      title: "Gagal Menghapus Mata Pelajaran",
+      message: error.message,
+      type: "error",
+    });
+  } finally {
+    isDeletingSubject.value = false;
   }
 };
 
 const submitSubject = async () => {
   isSubmitting.value = true;
-  isError.value = false;
-  pageMessage.value = "";
 
   try {
     const payload = new FormData();
@@ -408,19 +453,18 @@ const submitSubject = async () => {
       ? await api.put(`/learning/subjects/${editingId.value}`, payload)
       : await api.post("/learning/subjects", payload);
 
-    isError.value = false;
-    pageMessage.value = response?.message || "Mata pelajaran berhasil disimpan";
     closeModal();
     await loadData();
+    successModal.value.show(response?.message || "Mata pelajaran berhasil disimpan");
   } catch (error) {
-    isError.value = true;
-    pageMessage.value = error.message;
+    pushToast({
+      title: editingId.value ? "Gagal Memperbarui Mata Pelajaran" : "Gagal Membuat Mata Pelajaran",
+      message: error.message,
+      type: "error",
+    });
   } finally {
     isSubmitting.value = false;
     // Jika terjadi error, biarkan modal tetap terbuka agar pengguna bisa memperbaiki input
-    if (isError.value) {
-      isModalOpen.value = true;
-    }
   }
 };
 

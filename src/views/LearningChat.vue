@@ -19,10 +19,6 @@
                 </div>
               </div>
 
-              <div v-if="subjectError"
-                class="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-300">
-                {{ subjectError }}
-              </div>
             </div>
 
             <div class="h-[calc(100%-97px)] overflow-y-auto p-3">
@@ -128,11 +124,6 @@
                 </div>
                 <input v-if="role === 'GURU'" ref="chatIconInputRef" type="file" accept="image/*" class="hidden"
                   @change="handleChatIconUpload" />
-              </div>
-
-              <div v-if="chatError"
-                class="mx-5 mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-300">
-                {{ chatError }}
               </div>
 
               <div ref="messageListRef"
@@ -304,10 +295,11 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { Icon } from "@iconify/vue";
 import { io } from "socket.io-client";
 import { api, realtimeConfig } from "@/api";
+import { pushToast } from "@/composables/useToast";
 import { uploadFileDirect } from "@/api/upload";
 import { formatDateTime } from "@/utils/date";
 import { getStoredRole } from "@/utils/auth";
@@ -1051,5 +1043,15 @@ onUnmounted(() => {
     socket.value.disconnect();
     socket.value = null;
   }
+});
+
+watch(subjectError, (value) => {
+  if (!value) return;
+  pushToast({ title: "Gagal Memuat Grup Chat", message: value, type: "error" });
+});
+
+watch(chatError, (value) => {
+  if (!value) return;
+  pushToast({ title: "Chat Gagal", message: value, type: "error" });
 });
 </script>

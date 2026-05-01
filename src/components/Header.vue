@@ -1,6 +1,6 @@
 <template>
   <header
-    class="app-header z-40 border-b-2 bg-white/95 p-4 backdrop-blur dark:border-gray-700 dark:bg-gray-800/95"
+    class="app-header sticky top-0 z-40 shrink-0 border-b-2 bg-white/95 p-4 backdrop-blur dark:border-gray-700 dark:bg-gray-800/95"
   >
     <div class="flex items-center justify-between gap-4 flex-wrap">
       <div class="flex items-center gap-4">

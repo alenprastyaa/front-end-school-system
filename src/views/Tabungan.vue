@@ -23,10 +23,6 @@
             class="mt-1 w-full px-3 py-2 rounded-md border dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
         </div>
 
-        <div v-if="message" :class="messageClass" class="p-3 rounded-md text-sm">
-          {{ message }}
-        </div>
-
         <button type="submit" :disabled="isSubmitting"
           class="px-4 py-2 rounded-md bg-primary text-white disabled:opacity-60">
           {{ isSubmitting ? "Menyimpan..." : "Kirim Bukti" }}
@@ -42,10 +38,6 @@
           <button @click="loadReceipts" class="px-4 py-2 rounded-md border dark:border-gray-600 dark:text-white">
             Refresh
           </button>
-        </div>
-
-        <div v-if="loadError" class="mt-4 p-3 rounded-md bg-red-50 text-red-600 text-sm">
-          {{ loadError }}
         </div>
 
         <div class="mt-4 overflow-x-auto">
@@ -100,6 +92,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { api } from "@/api";
+import { pushToast } from "@/composables/useToast";
 import { formatDate, formatDateTime } from "@/utils/date";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 
@@ -112,14 +105,7 @@ const form = reactive(baseForm());
 const selectedFile = ref(null);
 const receipts = ref([]);
 const isSubmitting = ref(false);
-const loadError = ref("");
-const message = ref("");
-const isError = ref(false);
 const tableSort = createSortState("created_at", "desc");
-
-const messageClass = computed(() =>
-  isError.value ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600",
-);
 
 const sortedReceipts = computed(() =>
   sortItems(receipts.value, tableSort, {
@@ -140,13 +126,15 @@ const sortIndicator = (key) => {
 };
 
 const loadReceipts = async () => {
-  loadError.value = "";
-
   try {
     const response = await api.get("/receipt");
     receipts.value = response?.data || [];
   } catch (error) {
-    loadError.value = error.message;
+    pushToast({
+      title: "Gagal Memuat Bukti Pembayaran",
+      message: error.message,
+      type: "error",
+    });
   }
 };
 
@@ -156,14 +144,15 @@ const handleFileChange = (event) => {
 
 const submitReceipt = async () => {
   if (!selectedFile.value) {
-    isError.value = true;
-    message.value = "Bukti pembayaran wajib diunggah";
+    pushToast({
+      title: "Upload Bukti Diperlukan",
+      message: "Bukti pembayaran wajib diunggah",
+      type: "error",
+    });
     return;
   }
 
   isSubmitting.value = true;
-  message.value = "";
-  isError.value = false;
 
   try {
     const formData = new FormData();
@@ -172,13 +161,20 @@ const submitReceipt = async () => {
     formData.append("description", form.description || "");
 
     const response = await api.post("/receipt", formData);
-    message.value = response?.message || "Bukti pembayaran berhasil dikirim";
+    pushToast({
+      title: "Bukti Pembayaran Terkirim",
+      message: response?.message || "Bukti pembayaran berhasil dikirim",
+      type: "success",
+    });
     Object.assign(form, baseForm());
     selectedFile.value = null;
     await loadReceipts();
   } catch (error) {
-    isError.value = true;
-    message.value = error.message;
+    pushToast({
+      title: "Gagal Mengirim Bukti Pembayaran",
+      message: error.message,
+      type: "error",
+    });
   } finally {
     isSubmitting.value = false;
   }

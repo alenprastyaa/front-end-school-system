@@ -7,11 +7,6 @@
       <section class="mb-8">
 
 
-        <div v-if="subjectError"
-          class="mb-4 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-600 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-300">
-          {{ subjectError }}
-        </div>
-
         <div
           class="flex flex-nowrap gap-3 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button v-for="item in subjects" :key="item.id" @click="selectSubject(item)"
@@ -42,25 +37,6 @@
             </p>
 
           </div>
-
-          <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 -translate-y-2"
-            enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-200"
-            leave-from-class="opacity-100" leave-to-class="opacity-0">
-            <div v-if="message"
-              class="mx-6 mt-6 flex items-center gap-3 rounded-xl p-4 text-sm font-medium ring-1 ring-inset"
-              :class="isError ? 'bg-red-50 text-red-700 ring-red-600/20' : 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'">
-              <svg v-if="isError" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <svg v-else class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {{ message }}
-            </div>
-          </Transition>
 
           <div class="space-y-6 p-6">
             <!-- <section class="rounded-2xl border border-slate-100 bg-slate-50/70 p-5 dark:border-slate-800 dark:bg-slate-800/20">
@@ -1770,4 +1746,18 @@ const submitAssignment = async () => {
 };
 
 onMounted(loadSubjects);
+
+watch(subjectError, (value) => {
+  if (!value) return;
+  pushToast({ title: "Gagal Memuat Bank Soal", message: value, type: "error" });
+});
+
+watch(message, (value) => {
+  if (!value) return;
+  pushToast({
+    title: isError.value ? "Aksi Bank Soal Gagal" : "Aksi Bank Soal Berhasil",
+    message: value,
+    type: isError.value ? "error" : "success",
+  });
+});
 </script>

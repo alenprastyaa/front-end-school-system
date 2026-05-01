@@ -73,10 +73,6 @@
         </div>
       </div>
 
-      <div v-if="loadError" class="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-600">
-        {{ loadError }}
-      </div>
-
       <div class="mt-6 space-y-5">
         <article v-for="year in years" :key="year.id" class="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 dark:border-slate-700 dark:bg-slate-900/40">
           <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -92,7 +88,7 @@
               </p>
             </div>
             <div class="flex flex-wrap gap-2">
-              <button @click="activateYear(year)" :disabled="year.is_active || isSubmitting"
+              <button @click="openActivateYearModal(year)" :disabled="year.is_active || isSubmitting"
                 class="rounded-lg bg-white px-3 py-2 text-sm font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
                 Jadikan Aktif
               </button>
@@ -131,7 +127,7 @@
                   </td>
                   <td class="py-3 pr-0">
                     <div class="flex justify-end gap-2">
-                      <button @click="activateSemester(semester)" :disabled="semester.is_active || isSubmitting"
+                      <button @click="openActivateSemesterModal(semester)" :disabled="semester.is_active || isSubmitting"
                         class="rounded-lg bg-white px-3 py-2 text-sm font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
                         Aktifkan
                       </button>
@@ -245,6 +241,96 @@
         </form>
       </div>
     </div>
+
+    <!-- Modal Konfirmasi Aktifkan Tahun Ajaran -->
+    <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
+      enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+      leave-to-class="opacity-0">
+      <div v-if="isConfirmYearModalOpen"
+        class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div
+          class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-gray-800 dark:ring-white/10"
+          @click.stop>
+          <div class="flex items-start gap-4 px-6 py-5">
+            <div
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-600 dark:bg-sky-500/10 dark:text-sky-400">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <h2 class="text-lg font-bold text-gray-900 dark:text-white">Aktifkan Tahun Ajaran?</h2>
+              <p class="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
+                Tahun ajaran
+                <span class="font-semibold text-gray-700 dark:text-gray-200">{{ pendingActivateYear?.name || "-" }}</span>
+                akan menjadi tahun ajaran aktif. Tahun ajaran yang sebelumnya aktif akan dinonaktifkan.
+              </p>
+            </div>
+          </div>
+          <div
+            class="flex items-center justify-end gap-3 border-t border-gray-100 bg-gray-50/50 px-6 py-4 dark:border-gray-700 dark:bg-gray-800">
+            <button type="button" @click="closeConfirmYearModal"
+              class="rounded-lg px-4 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+              Batal
+            </button>
+            <button type="button" @click="confirmActivateYear" :disabled="isSubmitting"
+              class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
+              <svg v-if="isSubmitting" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+              {{ isSubmitting ? "Mengaktifkan..." : "Ya, Aktifkan" }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Modal Konfirmasi Aktifkan Semester -->
+    <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
+      enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+      leave-to-class="opacity-0">
+      <div v-if="isConfirmSemesterModalOpen"
+        class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div
+          class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-gray-800 dark:ring-white/10"
+          @click.stop>
+          <div class="flex items-start gap-4 px-6 py-5">
+            <div
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <h2 class="text-lg font-bold text-gray-900 dark:text-white">Aktifkan Semester?</h2>
+              <p class="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
+                Semester
+                <span class="font-semibold text-gray-700 dark:text-gray-200">{{ pendingActivateSemester?.name || "-" }}</span>
+                akan menjadi semester aktif. Semester yang sebelumnya aktif akan dinonaktifkan.
+              </p>
+            </div>
+          </div>
+          <div
+            class="flex items-center justify-end gap-3 border-t border-gray-100 bg-gray-50/50 px-6 py-4 dark:border-gray-700 dark:bg-gray-800">
+            <button type="button" @click="closeConfirmSemesterModal"
+              class="rounded-lg px-4 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+              Batal
+            </button>
+            <button type="button" @click="confirmActivateSemester" :disabled="isSubmitting"
+              class="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60">
+              <svg v-if="isSubmitting" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+              {{ isSubmitting ? "Mengaktifkan..." : "Ya, Aktifkan" }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -254,9 +340,13 @@ import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatDate } from "@/utils/date";
 
+const isConfirmYearModalOpen = ref(false);
+const isConfirmSemesterModalOpen = ref(false);
+const pendingActivateYear = ref(null);
+const pendingActivateSemester = ref(null);
+
 const years = ref([]);
 const activePeriod = ref(null);
-const loadError = ref("");
 const isSubmitting = ref(false);
 const showYearModal = ref(false);
 const showSemesterModal = ref(false);
@@ -332,13 +422,16 @@ const openSemesterModal = (semester = null, year = null) => {
 };
 
 const loadData = async () => {
-  loadError.value = "";
   try {
     const response = await api.get("/academic-periods");
     years.value = response?.data?.years || [];
     activePeriod.value = response?.data?.active || null;
   } catch (error) {
-    loadError.value = error.message;
+    pushToast({
+      title: "Gagal Memuat Periode Akademik",
+      message: error.message,
+      type: "error",
+    });
   }
 };
 
@@ -427,6 +520,24 @@ const activateYear = async (item) => {
   }
 };
 
+const openActivateYearModal = (item) => {
+  pendingActivateYear.value = item;
+  isConfirmYearModalOpen.value = true;
+};
+
+const closeConfirmYearModal = () => {
+  if (isSubmitting.value) return;
+  isConfirmYearModalOpen.value = false;
+  pendingActivateYear.value = null;
+};
+
+const confirmActivateYear = async () => {
+  if (!pendingActivateYear.value) return;
+  await activateYear(pendingActivateYear.value);
+  isConfirmYearModalOpen.value = false;
+  pendingActivateYear.value = null;
+};
+
 const activateSemester = async (item) => {
   isSubmitting.value = true;
   try {
@@ -446,6 +557,24 @@ const activateSemester = async (item) => {
   } finally {
     isSubmitting.value = false;
   }
+};
+
+const openActivateSemesterModal = (item) => {
+  pendingActivateSemester.value = item;
+  isConfirmSemesterModalOpen.value = true;
+};
+
+const closeConfirmSemesterModal = () => {
+  if (isSubmitting.value) return;
+  isConfirmSemesterModalOpen.value = false;
+  pendingActivateSemester.value = null;
+};
+
+const confirmActivateSemester = async () => {
+  if (!pendingActivateSemester.value) return;
+  await activateSemester(pendingActivateSemester.value);
+  isConfirmSemesterModalOpen.value = false;
+  pendingActivateSemester.value = null;
 };
 
 onMounted(loadData);

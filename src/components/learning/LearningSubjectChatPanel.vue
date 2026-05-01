@@ -18,10 +18,6 @@
         </div>
       </div>
 
-      <div v-if="chatError" class="mx-5 mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-300">
-        {{ chatError }}
-      </div>
-
       <div
         ref="messageListRef"
         class="max-h-[560px] min-h-[420px] space-y-4 overflow-y-auto bg-slate-50/40 px-5 py-5 dark:bg-slate-950/30"
@@ -133,6 +129,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { io } from "socket.io-client";
 import { api, realtimeConfig } from "@/api";
+import { pushToast } from "@/composables/useToast";
 import { formatDateTime } from "@/utils/date";
 
 const props = defineProps({
@@ -367,5 +364,10 @@ onUnmounted(() => {
     socket.value.disconnect();
     socket.value = null;
   }
+});
+
+watch(chatError, (value) => {
+  if (!value) return;
+  pushToast({ title: "Live Chat Gagal", message: value, type: "error" });
 });
 </script>

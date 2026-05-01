@@ -1,6 +1,6 @@
 <template>
   <!-- App -->
-  <div class="flex min-h-screen bg-gray-50 font-lexend dark:bg-gray-900">
+  <div class="flex h-screen overflow-hidden bg-gray-50 font-lexend dark:bg-gray-900">
     <div
       v-if="!shouldHideChrome"
       class="lg:block"
@@ -23,23 +23,24 @@
     </div>
 
     <div
-      class="flex-auto flex min-h-screen w-full flex-col transition-colors"
+      class="flex h-screen min-h-0 flex-auto w-full flex-col overflow-hidden transition-colors"
     >
       <Header
         v-if="!shouldHideChrome"
         @sidebarToggle="open"
       />
 
-      <div class="flex-1">
+      <div class="flex-1 overflow-y-auto">
         <transition
           name="slide-up"
           mode="out-in"
         >
-          <router-view />
+          <div>
+            <router-view />
+            <Footer v-if="!shouldHideChrome" />
+          </div>
         </transition>
       </div>
-
-      <Footer v-if="!shouldHideChrome" />
     </div>
   </div>
   <ToastHost />

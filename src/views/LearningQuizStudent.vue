@@ -12,11 +12,6 @@
 
           </div>
 
-          <div v-if="subjectError"
-            class="mb-4 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-600 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-300">
-            {{ subjectError }}
-          </div>
-
           <div
             class="flex flex-nowrap gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <button v-for="item in subjects" :key="item.id" @click="selectSubject(item)"
@@ -431,7 +426,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { onBeforeRouteLeave } from "vue-router";
 import { api } from "@/api";
 import { formatDateTime } from "@/utils/date";
@@ -475,10 +470,6 @@ const resolveViolationType = (reason) => {
 const submissionForm = reactive({
   answers: [],
 });
-
-const messageClass = computed(() =>
-  isError.value ? "bg-red-50 text-red-600 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/20" : "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20",
-);
 
 const isExamPage = computed(() => props.mode === "exam");
 const listTitle = computed(() => (isExamPage.value ? "Pilih Mata Pelajaran Ujian" : "Pilih Mata Pelajaran"));
@@ -1064,5 +1055,26 @@ onBeforeRouteLeave(() => {
   });
   return false;
 });
+
+watch(subjectError, (value) => {
+  if (!value) return;
+  pushToast({
+    title: "Gagal Memuat Quiz",
+    message: value,
+    type: "error",
+  });
+});
+
+watch(message, (value) => {
+  if (!value) return;
+  pushToast({
+    title: isError.value
+      ? `Aksi ${submissionTarget.value?.is_exam ? "Ujian" : "Quiz"} Gagal`
+      : `Aksi ${submissionTarget.value?.is_exam ? "Ujian" : "Quiz"} Berhasil`,
+    message: value,
+    type: isError.value ? "error" : "success",
+  });
+});
+
 onMounted(loadSubjects);
 </script>

@@ -53,11 +53,6 @@
             </div>
           </div>
 
-          <div v-if="loadError"
-            class="mx-5 mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
-            {{ loadError }}
-          </div>
-
           <div class="overflow-x-auto">
             <table class="min-w-full text-left text-sm">
               <thead
@@ -113,15 +108,22 @@
                   </td>
 
                   <td class="px-6 py-4 text-right">
-                    <button @click="startEdit(item)"
-                      class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700">
-                      <svg class="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-                      </svg>
-                      Edit
-                    </button>
+                    <div class="flex items-center justify-end gap-2">
+                      <button @click="startEdit(item)"
+                        class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700">
+                        <svg class="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                        </svg>
+                        Edit
+                      </button>
+                      <button @click="openDeleteModal(item)"
+                        class="inline-flex items-center justify-center rounded-lg bg-white p-1.5 text-slate-400 shadow-sm ring-1 ring-inset ring-slate-300 transition hover:bg-rose-50 hover:text-rose-600 dark:bg-slate-800 dark:ring-slate-700 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                        title="Hapus Siswa">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
                   </td>
                 </tr>
 
@@ -224,26 +226,6 @@
                 class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
             </div>
 
-            <Transition enter-active-class="transition ease-out duration-300"
-              enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0"
-              leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
-              leave-to-class="opacity-0">
-              <div v-if="message" class="flex items-center gap-3 rounded-lg p-3 text-sm font-medium ring-1 ring-inset"
-                :class="isError ? 'bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20' : 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20'">
-                <svg v-if="isError" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                  stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <svg v-else class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                  stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ message }}
-              </div>
-            </Transition>
-
             <div class="flex justify-end gap-3 pt-2">
               <button type="button" @click="closeModal"
                 class="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
@@ -268,12 +250,63 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal Konfirmasi Hapus Siswa -->
+  <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
+    enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+    leave-to-class="opacity-0">
+    <div v-if="isDeleteModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+      <div
+        class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+        @click.stop>
+        <div class="flex items-start gap-4 px-6 py-5">
+          <div
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Hapus Siswa?</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+              Siswa
+              <span class="font-semibold text-slate-700 dark:text-slate-200">{{ studentToDelete?.username || "-" }}</span>
+              beserta seluruh data absensi dan pembayarannya akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.
+            </p>
+          </div>
+        </div>
+        <div
+          class="flex items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
+          <button type="button" @click="closeDeleteModal"
+            class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+            Batal
+          </button>
+          <button type="button" @click="confirmDeleteStudent" :disabled="isDeletingStudent"
+            class="inline-flex items-center justify-center gap-2 rounded-lg bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-60">
+            <svg v-if="isDeletingStudent" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+            {{ isDeletingStudent ? "Menghapus..." : "Ya, Hapus" }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </Transition>
+
+  <SuccessModal ref="successModal" />
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { api } from "@/api";
+import { pushToast } from "@/composables/useToast";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
+import SuccessModal from "@/components/SuccessModal.vue";
+
+const successModal = ref(null);
 
 const baseForm = () => ({
   username: "",
@@ -283,6 +316,10 @@ const baseForm = () => ({
   phone_number: "",
 });
 
+const isDeleteModalOpen = ref(false);
+const isDeletingStudent = ref(false);
+const studentToDelete = ref(null);
+
 const form = reactive(baseForm());
 const filters = reactive({ class_id: "", page: 1, limit: 10 });
 const students = ref([]);
@@ -290,9 +327,6 @@ const classOptions = ref([]);
 const editingId = ref(null);
 const showModal = ref(false);
 const isSubmitting = ref(false);
-const loadError = ref("");
-const message = ref("");
-const isError = ref(false);
 const tableSort = createSortState("username");
 
 const sortedStudents = computed(() =>
@@ -318,8 +352,6 @@ const sortIndicator = (key) => {
 const resetForm = () => {
   Object.assign(form, baseForm());
   editingId.value = null;
-  message.value = "";
-  isError.value = false;
 };
 
 const closeModal = () => {
@@ -338,8 +370,6 @@ const loadClasses = async () => {
 };
 
 const loadStudents = async () => {
-  loadError.value = "";
-
   try {
     const params = new URLSearchParams({
       page: String(filters.page),
@@ -353,14 +383,16 @@ const loadStudents = async () => {
     const response = await api.get(`/student?${params.toString()}`);
     students.value = response?.data?.data || [];
   } catch (error) {
-    loadError.value = error.message;
+    pushToast({
+      title: "Gagal Memuat Data Siswa",
+      message: error.message,
+      type: "error",
+    });
   }
 };
 
 const createStudent = async () => {
   isSubmitting.value = true;
-  message.value = "";
-  isError.value = false;
 
   try {
     const response = await api.post("/auth/register/student", {
@@ -370,12 +402,15 @@ const createStudent = async () => {
       class_id: Number(form.class_id),
       parent_email: form.parent_email || null,
     });
-    message.value = response?.message || "Siswa berhasil didaftarkan.";
     await loadStudents();
     closeModal();
+    successModal.value.show(response?.message || "Siswa berhasil didaftarkan.");
   } catch (error) {
-    isError.value = true;
-    message.value = error.message;
+    pushToast({
+      title: "Gagal Menambahkan Siswa",
+      message: error.message,
+      type: "error",
+    });
   } finally {
     isSubmitting.value = false;
   }
@@ -391,15 +426,43 @@ const startEdit = (item) => {
   form.class_id = matchedClass?.id || "";
   form.parent_email = item.parent_email || "";
   form.phone_number = item.phone_number || "";
-  message.value = "";
-  isError.value = false;
   showModal.value = true;
+};
+
+const openDeleteModal = (item) => {
+  studentToDelete.value = item;
+  isDeleteModalOpen.value = true;
+};
+
+const closeDeleteModal = () => {
+  if (isDeletingStudent.value) return;
+  isDeleteModalOpen.value = false;
+  studentToDelete.value = null;
+};
+
+const confirmDeleteStudent = async () => {
+  if (!studentToDelete.value?.id) return;
+  isDeletingStudent.value = true;
+  try {
+    await api.delete(`/student/${studentToDelete.value.id}`);
+    isDeleteModalOpen.value = false;
+    studentToDelete.value = null;
+    await loadStudents();
+    successModal.value.show("Siswa berhasil dihapus");
+  } catch (error) {
+    isDeleteModalOpen.value = false;
+    pushToast({
+      title: "Gagal Menghapus Siswa",
+      message: error.message,
+      type: "error",
+    });
+  } finally {
+    isDeletingStudent.value = false;
+  }
 };
 
 const updateStudent = async () => {
   isSubmitting.value = true;
-  message.value = "";
-  isError.value = false;
 
   try {
     const response = await api.put(`/student/${editingId.value}`, {
@@ -409,12 +472,15 @@ const updateStudent = async () => {
       parent_email: form.parent_email || null,
       phone_number: form.phone_number || null,
     });
-    message.value = response?.message || "Data siswa berhasil diperbarui.";
     await loadStudents();
     closeModal();
+    successModal.value.show(response?.message || "Data siswa berhasil diperbarui.");
   } catch (error) {
-    isError.value = true;
-    message.value = error.message;
+    pushToast({
+      title: "Gagal Memperbarui Siswa",
+      message: error.message,
+      type: "error",
+    });
   } finally {
     isSubmitting.value = false;
   }
@@ -425,7 +491,11 @@ onMounted(async () => {
     await loadClasses();
     await loadStudents();
   } catch (error) {
-    loadError.value = error.message;
+    pushToast({
+      title: "Gagal Memuat Halaman Siswa",
+      message: error.message,
+      type: "error",
+    });
   }
 });
 </script>
