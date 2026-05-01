@@ -46,6 +46,7 @@ import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { persistSession } from "@/utils/auth";
 
+const SHOW_PWA_INSTALL_AFTER_LOGIN_KEY = "show-pwa-install-after-login";
 const router = useRouter();
 const isLoading = ref(false);
 const form = reactive({
@@ -59,6 +60,7 @@ const handleLogin = async () => {
   try {
     const response = await api.post("/auth/login", { ...form });
     persistSession(response);
+    sessionStorage.setItem(SHOW_PWA_INSTALL_AFTER_LOGIN_KEY, "1");
     router.push("/");
   } catch (error) {
     pushToast({
