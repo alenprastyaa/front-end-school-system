@@ -15,6 +15,12 @@
           class="pointer-events-auto overflow-hidden rounded-2xl border shadow-lg ring-1"
           :class="toastContainerClass(toast.type)"
         >
+          <div
+            v-if="toast.duration > 0"
+            class="toast-progress"
+            :class="toastProgressClass(toast.type)"
+            :style="{ animationDuration: `${toast.duration}ms` }"
+          />
           <div class="flex items-start gap-3 p-4">
             <div class="mt-0.5 h-2.5 w-2.5 rounded-full" :class="toastDotClass(toast.type)" />
             <div class="min-w-0 flex-1">
@@ -76,4 +82,38 @@ const toastCloseClass = (type) => {
   }
   return "text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200";
 };
+
+const toastProgressClass = (type) => {
+  if (type === "success") return "bg-white/80";
+  if (type === "error") return "bg-white/80";
+  return "bg-sky-500";
+};
 </script>
+
+<style scoped>
+.toast-progress {
+  height: 3px;
+  width: 100%;
+  transform-origin: left center;
+  animation-name: toast-progress-shrink;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes toast-progress-shrink {
+  from {
+    transform: scaleX(1);
+    opacity: 0.95;
+  }
+  to {
+    transform: scaleX(0);
+    opacity: 0.75;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast-progress {
+    animation: none;
+  }
+}
+</style>

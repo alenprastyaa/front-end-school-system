@@ -64,6 +64,11 @@ const handleLogin = async () => {
   try {
     const response = await api.post("/auth/login", { ...form });
     persistSession(response);
+    pushToast({
+      title: "Login Berhasil",
+      message: "Selamat datang, Anda berhasil masuk ke School System.",
+      type: "success",
+    });
     sessionStorage.setItem(SHOW_PWA_INSTALL_AFTER_LOGIN_KEY, "1");
     router.push("/dashboard");
   } catch (error) {

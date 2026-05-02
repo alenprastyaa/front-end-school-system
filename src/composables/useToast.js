@@ -14,19 +14,21 @@ export const pushToast = ({
   type = "info",
   duration = 3200,
 } = {}) => {
+  const normalizedDuration = Math.max(0, Number(duration) || 0);
   const nextToast = {
     id: `${Date.now()}-${toastCounter += 1}`,
     title,
     message,
     type: normalizeToastType(type),
+    duration: normalizedDuration,
   };
 
   toasts.unshift(nextToast);
 
-  if (Number(duration) > 0) {
+  if (normalizedDuration > 0) {
     window.setTimeout(() => {
       dismissToast(nextToast.id);
-    }, Number(duration));
+    }, normalizedDuration);
   }
 
   return nextToast.id;
