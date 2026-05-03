@@ -125,26 +125,24 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
 import { getStoredRole } from "@/utils/auth";
-import { api, realtimeConfig } from "@/api";
-import { io } from "socket.io-client";
+import { useSidebar } from "@/store/sidebar";
+import { useRealtimeStore } from "@/store/realtime";
 
 defineEmits(["sidebarToggle"]);
 
 const route = useRoute();
 const router = useRouter();
 const role = getStoredRole();
-const openGroups = ref([]);
-const liveChatUnreadCount = ref(0);
-const liveChatUnreadBySubject = ref({});
-const liveChatPendingUnreadBySubject = ref({});
-const chatSocket = ref(null);
-const joinedSubjectIds = ref([]);
+const sidebarStore = useSidebar();
+const realtimeStore = useRealtimeStore();
+const { liveChatUnreadCount, liveChatSubjects } = storeToRefs(sidebarStore);
 const chatToasts = ref([]);
 const learningToasts = ref([]);
-const liveChatSubjects = ref([]);
+const realtimeUnsubscribers = ref([]);
 let toastIdCounter = 0;
 
 const getCurrentUserId = () => {
@@ -222,15 +220,10 @@ const isRouteActive = (path) => route.path === path;
 
 const hasActiveChild = (item) => item.children?.some((child) => route.path === child.to);
 
-const isGroupOpen = (item) => openGroups.value.includes(item.key);
+const isGroupOpen = (item) => sidebarStore.getOpenGroups(role).includes(item.key);
 
 const toggleGroup = (key) => {
-  if (openGroups.value.includes(key)) {
-    openGroups.value = openGroups.value.filter((item) => item !== key);
-    return;
-  }
-
-  openGroups.value = [...openGroups.value, key];
+  sidebarStore.toggleGroup(role, key);
 };
 
 const getChildBadge = (child) => {
@@ -249,91 +242,18 @@ const getGroupBadge = (item) => {
   return 0;
 };
 
-const recomputeLiveChatUnreadCount = () => {
-  const subjectIds = new Set([
-    ...Object.keys(liveChatUnreadBySubject.value || {}),
-    ...Object.keys(liveChatPendingUnreadBySubject.value || {}),
-  ]);
-
-  liveChatUnreadCount.value = [...subjectIds].reduce((total, subjectId) => {
-    const baseCount = Number(liveChatUnreadBySubject.value?.[subjectId] || 0);
-    const pendingCount = Number(liveChatPendingUnreadBySubject.value?.[subjectId] || 0);
-    return total + baseCount + pendingCount;
-  }, 0);
-};
-
-const applyLiveChatSummary = (summaryItems = []) => {
-  const nextMap = {};
-
-  summaryItems.forEach((item) => {
-    const subjectId = Number(item?.subject_id || 0);
-    if (!subjectId) {
-      return;
-    }
-
-    nextMap[subjectId] = Number(item?.unread_count || 0);
-  });
-
-  liveChatUnreadBySubject.value = nextMap;
-  recomputeLiveChatUnreadCount();
-};
-
-const bumpLiveChatUnread = (subjectId) => {
-  const normalizedSubjectId = Number(subjectId || 0);
-  if (!normalizedSubjectId) {
+const refreshLiveChatSummary = async (force = false) => {
+  if (!shouldTrackLiveChat) {
+    sidebarStore.applyLiveChatSummary([]);
+    sidebarStore.clearPendingLiveChatUnread();
     return;
   }
 
-  liveChatPendingUnreadBySubject.value = {
-    ...liveChatPendingUnreadBySubject.value,
-    [normalizedSubjectId]: Number(liveChatPendingUnreadBySubject.value?.[normalizedSubjectId] || 0) + 1,
-  };
-  recomputeLiveChatUnreadCount();
+  await sidebarStore.refreshLiveChatSummary({ force });
 };
 
 const clearPendingLiveChatUnread = () => {
-  if (Object.keys(liveChatPendingUnreadBySubject.value).length === 0) {
-    return;
-  }
-
-  liveChatPendingUnreadBySubject.value = {};
-  recomputeLiveChatUnreadCount();
-};
-
-const refreshLiveChatSummary = async () => {
-  if (!shouldTrackLiveChat) {
-    liveChatUnreadCount.value = 0;
-    liveChatUnreadBySubject.value = {};
-    liveChatPendingUnreadBySubject.value = {};
-    return;
-  }
-
-  try {
-    const response = await api.get("/learning/chat/summary");
-    const summaryItems = response?.data || [];
-    applyLiveChatSummary(summaryItems);
-  } catch (error) {
-    // Keep previous badge value if request fails.
-  }
-};
-
-const joinLiveChatRooms = async () => {
-  if (!shouldTrackLiveChat || !chatSocket.value?.connected) {
-    return;
-  }
-
-  try {
-    const endpoint = role === "GURU" ? "/learning/subjects/teacher" : "/learning/subjects/student";
-    const response = await api.get(endpoint);
-    const subjects = response?.data || [];
-    liveChatSubjects.value = subjects;
-    joinedSubjectIds.value = subjects.map((item) => Number(item.id)).filter(Number.isInteger);
-    joinedSubjectIds.value.forEach((subjectId) => {
-      chatSocket.value.emit("learning-chat:join", subjectId);
-    });
-  } catch (error) {
-    joinedSubjectIds.value = [];
-  }
+  sidebarStore.clearPendingLiveChatUnread();
 };
 
 const playChatNotificationSound = () => {
@@ -491,79 +411,65 @@ const maybeShowLearningBrowserNotification = (payload) => {
   };
 };
 
-const bindLiveChatSocket = () => {
+const bindRealtimeStream = () => {
   if (!shouldTrackLiveChat) {
     return;
   }
 
   const token = localStorage.getItem("token");
-  chatSocket.value = io(realtimeConfig.url, {
-    auth: { token },
-    path: realtimeConfig.path,
-    transports: ["websocket", "polling"],
-  });
+  realtimeStore.connect(token);
 
-  chatSocket.value.on("connect", async () => {
-    await joinLiveChatRooms();
-    await refreshLiveChatSummary();
-  });
+  realtimeUnsubscribers.value = [
+    realtimeStore.on("learning-chat:new-message", (chatMessage) => {
+      if (Number(chatMessage?.sender_id) === Number(currentUserId)) {
+        return;
+      }
 
-  chatSocket.value.on("learning-chat:new-message", async (chatMessage) => {
-    if (Number(chatMessage?.sender_id) === Number(currentUserId)) {
-      return;
-    }
-
-    bumpLiveChatUnread(chatMessage?.subject_id);
-    playChatNotificationSound();
-    pushChatToast(chatMessage);
-    maybeShowBrowserNotification(chatMessage);
-  });
-
-  chatSocket.value.on("learning-chat:read-updated", async () => {
-    if (route.path === "/learning-chat-teacher" || route.path === "/learning-chat-student") {
-      clearPendingLiveChatUnread();
-    }
-    await refreshLiveChatSummary();
-  });
-
-  chatSocket.value.on("learning-notification:new", (payload) => {
-    playChatNotificationSound();
-    pushLearningToast(payload);
-    maybeShowLearningBrowserNotification(payload);
-  });
+      sidebarStore.bumpLiveChatUnread(chatMessage?.subject_id);
+      playChatNotificationSound();
+      pushChatToast(chatMessage);
+      maybeShowBrowserNotification(chatMessage);
+    }),
+    realtimeStore.on("learning-chat:read-updated", async () => {
+      if (route.path === "/learning-chat-teacher" || route.path === "/learning-chat-student") {
+        clearPendingLiveChatUnread();
+      }
+      await refreshLiveChatSummary(true);
+    }),
+    realtimeStore.on("learning-notification:new", (payload) => {
+      playChatNotificationSound();
+      pushLearningToast(payload);
+      maybeShowLearningBrowserNotification(payload);
+    }),
+  ];
 };
 
 watch(
   () => route.path,
   async () => {
-    openGroups.value = openGroups.value.filter((key) => {
-      const group = visibleMenu.value.find((item) => item.key === key);
-      return group && hasActiveChild(group);
-    });
-
     if (route.path === "/learning-chat-teacher" || route.path === "/learning-chat-student") {
       clearPendingLiveChatUnread();
     }
 
-    await refreshLiveChatSummary();
+    await refreshLiveChatSummary(false);
   },
 );
 
 onMounted(async () => {
-  await refreshLiveChatSummary();
+  await refreshLiveChatSummary(false);
+  await sidebarStore.refreshLiveChatSubjects(role);
   if (typeof window !== "undefined" && typeof Notification !== "undefined" && Notification.permission === "default") {
     Notification.requestPermission().catch(() => { });
   }
-  bindLiveChatSocket();
+  bindRealtimeStream();
 });
 
 onUnmounted(() => {
-  if (chatSocket.value) {
-    joinedSubjectIds.value.forEach((subjectId) => {
-      chatSocket.value.emit("learning-chat:leave", subjectId);
-    });
-    chatSocket.value.disconnect();
-    chatSocket.value = null;
-  }
+  realtimeUnsubscribers.value.forEach((unsubscribe) => {
+    if (typeof unsubscribe === "function") {
+      unsubscribe();
+    }
+  });
+  realtimeUnsubscribers.value = [];
 });
 </script>

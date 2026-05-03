@@ -258,8 +258,10 @@ import { computed, nextTick, onMounted, ref, watch, reactive } from "vue";
 import { api } from "@/api";
 import { formatDateTime } from "@/utils/date";
 import { pushToast } from "@/composables/useToast";
+import { useMasterDataStore } from "@/store/masterData";
 
 const subjects = ref([]);
+const masterDataStore = useMasterDataStore();
 const selectedSubject = ref(null);
 const assignments = ref([]);
 const questionBank = ref([]);
@@ -404,8 +406,7 @@ const selectExamRequest = async (assignment) => {
 const loadSubjects = async () => {
   subjectError.value = "";
   try {
-    const response = await api.get("/learning/subjects/teacher");
-    subjects.value = response?.data || [];
+    subjects.value = await masterDataStore.getTeacherSubjects();
     if (!selectedSubject.value && subjects.value.length > 0) {
       await selectSubject(subjects.value[0]);
     }

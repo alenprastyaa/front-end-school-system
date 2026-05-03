@@ -223,8 +223,10 @@ import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 import SuccessModal from "@/components/SuccessModal.vue";
+import { useMasterDataStore } from "@/store/masterData";
 
 const successModal = ref(null);
+const masterDataStore = useMasterDataStore();
 const className = ref("");
 const waliGuruId = ref("");
 const classes = ref([]);
@@ -256,8 +258,7 @@ const sortIndicator = (key) => {
 
 const loadClasses = async () => {
   try {
-    const response = await api.get("/class");
-    classes.value = response?.data || [];
+    classes.value = await masterDataStore.getClasses();
   } catch (error) {
     pushToast({
       title: "Gagal Memuat Data Kelas",
@@ -268,8 +269,7 @@ const loadClasses = async () => {
 };
 
 const loadTeachers = async () => {
-  const response = await api.get("/auth/user-school?role=GURU");
-  teachers.value = response?.data || [];
+  teachers.value = await masterDataStore.getTeacherUsers();
 };
 
 const resetForm = () => {
@@ -314,6 +314,7 @@ const confirmDeleteClass = async () => {
     successModal.value.show(res?.message || "Kelas berhasil dihapus");
     isDeleteModalOpen.value = false;
     classToDelete.value = null;
+    masterDataStore.invalidate(["classes"]);
     await loadClasses();
   } catch (error) {
     isDeleteModalOpen.value = false;
@@ -341,6 +342,7 @@ const submitClass = async () => {
       : await api.post("/class", payload);
 
     successModal.value.show(response?.message || (editingClassId.value ? "Kelas berhasil diupdate" : "Kelas berhasil dibuat"));
+    masterDataStore.invalidate(["classes"]);
     await loadClasses();
     closeModal();
   } catch (error) {

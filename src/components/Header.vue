@@ -135,16 +135,19 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
 import { fullscreen as handleFullscreen } from "@/helper/fullscreen";
-import { clearSession, getStoredUser, updateStoredUser } from "@/utils/auth";
-import { api } from "@/api";
+import { clearSession, getStoredUser } from "@/utils/auth";
 import { normalizePublicUrl } from "@/utils/url";
 import defaultAvatar from "@/assets/img/user.jpg";
+import { useProfileStore } from "@/store/profile";
 
 const router = useRouter();
 const route = useRoute();
+const profileStore = useProfileStore();
+const { profile: storedProfile } = storeToRefs(profileStore);
 
 defineEmits(["sidebarToggle"]);
 
@@ -204,20 +207,12 @@ const syncProfileForm = () => {
 
 const loadProfile = async () => {
   try {
-    const response = await api.get("/auth/profile");
-    const profile = response?.data || {};
+    const profile = await profileStore.loadProfile();
     userProfile.value = {
       ...userProfile.value,
       ...profile,
       profile_image: normalizePublicUrl(profile.profile_image) || null,
     };
-    updateStoredUser({
-      username: profile.username,
-      role: profile.role,
-      school_id: profile.school_id,
-      school_name: profile.school_name,
-      profile_image: normalizePublicUrl(profile.profile_image) || null,
-    });
     syncProfileForm();
   } catch (error) {
     userProfile.value = {
@@ -272,7 +267,7 @@ const saveProfile = async () => {
       formData.append("confirm_password", profileForm.value.confirm_password);
     }
 
-    const response = await api.put("/auth/profile", formData);
+    const response = await profileStore.saveProfile(formData);
     const profile = response?.data || {};
 
     userProfile.value = {
@@ -280,14 +275,10 @@ const saveProfile = async () => {
       ...profile,
       profile_image: normalizePublicUrl(profile.profile_image) || null,
     };
-
-    updateStoredUser({
-      username: profile.username,
-      role: profile.role,
-      school_id: profile.school_id,
-      school_name: profile.school_name,
-      profile_image: normalizePublicUrl(profile.profile_image) || null,
-    });
+    userProfile.value = {
+      ...userProfile.value,
+      ...(storedProfile.value || {}),
+    };
 
     profileMessage.value = response?.message || "Profil berhasil diperbarui.";
     syncProfileForm();

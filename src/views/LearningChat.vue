@@ -296,16 +296,21 @@
 
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 import { Icon } from "@iconify/vue";
-import { io } from "socket.io-client";
-import { api, realtimeConfig } from "@/api";
+import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { uploadFileDirect } from "@/api/upload";
 import { formatDateTime } from "@/utils/date";
 import { getStoredRole } from "@/utils/auth";
 import { normalizePublicUrl } from "@/utils/url";
+import { useSidebar } from "@/store/sidebar";
+import { useRealtimeStore } from "@/store/realtime";
 
 const role = getStoredRole();
+const sidebarStore = useSidebar();
+const realtimeStore = useRealtimeStore();
+const { connected: realtimeConnected } = storeToRefs(realtimeStore);
 const subjects = ref([]);
 const selectedSubject = ref(null);
 const subjectError = ref("");
@@ -313,7 +318,6 @@ const chatError = ref("");
 const isLoadingMessages = ref(false);
 const isSendingMessage = ref(false);
 const isUploadingChatIcon = ref(false);
-const isConnected = ref(false);
 const isRecordingVoice = ref(false);
 const composer = ref("");
 const mobileChatOpen = ref(false);
@@ -328,9 +332,10 @@ const recordedChunks = ref([]);
 const attachmentInputRef = ref(null);
 const chatIconInputRef = ref(null);
 const messageListRef = ref(null);
-const socket = ref(null);
 const messagesBySubject = ref({});
 const chatSummaryBySubject = ref({});
+const realtimeUnsubscribers = ref([]);
+const isConnected = computed(() => realtimeConnected.value);
 
 const AUDIO_MIME_EXTENSION_MAP = {
   "audio/webm": ".webm",
@@ -591,8 +596,7 @@ const upsertMessage = async (chatMessage) => {
 
 const refreshChatSummary = async () => {
   try {
-    const response = await api.get("/learning/chat/summary");
-    const summaryItems = response?.data || [];
+    const summaryItems = await sidebarStore.refreshLiveChatSummary({ force: true });
     const nextSummary = {};
 
     summaryItems.forEach((item) => {
@@ -662,15 +666,11 @@ const markCurrentSubjectAsRead = async () => {
 };
 
 const leaveSubjectRoom = (subjectId) => {
-  if (socket.value?.connected && subjectId) {
-    socket.value.emit("learning-chat:leave", subjectId);
-  }
+  return subjectId;
 };
 
 const joinSubjectRoom = (subjectId) => {
-  if (socket.value?.connected && subjectId) {
-    socket.value.emit("learning-chat:join", subjectId);
-  }
+  return subjectId;
 };
 
 const loadMessages = async (subjectId) => {
@@ -917,9 +917,7 @@ const loadSubjects = async () => {
   subjectError.value = "";
 
   try {
-    const endpoint = role === "GURU" ? "/learning/subjects/teacher" : "/learning/subjects/student";
-    const response = await api.get(endpoint);
-    subjects.value = response?.data || [];
+    subjects.value = await sidebarStore.refreshLiveChatSubjects(role);
     await refreshChatSummary();
 
     if (subjects.value.length === 0) {
@@ -932,13 +930,11 @@ const loadSubjects = async () => {
     if (currentSelected) {
       selectedSubject.value = currentSelected;
       await loadMessages(currentSelected.id);
-      joinSubjectRoom(currentSelected.id);
       return;
     }
 
     selectedSubject.value = subjects.value[0];
     await loadMessages(subjects.value[0].id);
-    joinSubjectRoom(subjects.value[0].id);
   } catch (error) {
     subjectError.value = error.message;
   }
@@ -985,53 +981,37 @@ const sendMessage = async () => {
 
 onMounted(async () => {
   const token = localStorage.getItem("token");
-  socket.value = io(realtimeConfig.url, {
-    auth: { token },
-    path: realtimeConfig.path,
-    transports: ["websocket", "polling"],
-  });
+  realtimeStore.connect(token);
 
-  socket.value.on("connect", () => {
-    isConnected.value = true;
-    joinSubjectRoom(selectedSubject.value?.id);
-  });
+  realtimeUnsubscribers.value = [
+    realtimeStore.on("learning-chat:new-message", async (chatMessage) => {
+      await upsertMessage(chatMessage);
+      const incomingSubjectId = Number(chatMessage?.subject_id || 0);
+      const isCurrentSubject = Number(selectedSubject.value?.id || 0) === incomingSubjectId;
 
-  socket.value.on("disconnect", () => {
-    isConnected.value = false;
-  });
+      if (isCurrentSubject && Number(chatMessage?.sender_id) !== Number(currentUserId)) {
+        await markCurrentSubjectAsRead();
+      } else {
+        await refreshChatSummary();
+      }
+    }),
+    realtimeStore.on("learning-chat:read-updated", async (payload) => {
+      const subjectId = Number(payload?.subject_id || 0);
+      if (!subjectId) {
+        return;
+      }
 
-  socket.value.on("learning-chat:error", (message) => {
-    chatError.value = String(message || "Gagal terhubung ke chat realtime");
-  });
+      if (Number(payload?.user_id || 0) === Number(currentUserId)) {
+        return;
+      }
 
-  socket.value.on("learning-chat:new-message", async (chatMessage) => {
-    await upsertMessage(chatMessage);
-    const incomingSubjectId = Number(chatMessage?.subject_id || 0);
-    const isCurrentSubject = Number(selectedSubject.value?.id || 0) === incomingSubjectId;
-
-    if (isCurrentSubject && Number(chatMessage?.sender_id) !== Number(currentUserId)) {
-      await markCurrentSubjectAsRead();
-    } else {
-      await refreshChatSummary();
-    }
-  });
-
-  socket.value.on("learning-chat:read-updated", async (payload) => {
-    const subjectId = Number(payload?.subject_id || 0);
-    if (!subjectId) {
-      return;
-    }
-
-    if (Number(payload?.user_id || 0) === Number(currentUserId)) {
-      return;
-    }
-
-    if (Number(selectedSubject.value?.id || 0) === subjectId) {
-      await loadMessages(subjectId);
-    } else {
-      await refreshChatSummary();
-    }
-  });
+      if (Number(selectedSubject.value?.id || 0) === subjectId) {
+        await loadMessages(subjectId);
+      } else {
+        await refreshChatSummary();
+      }
+    }),
+  ];
 
   await loadSubjects();
 });
@@ -1039,10 +1019,12 @@ onMounted(async () => {
 onUnmounted(() => {
   leaveSubjectRoom(selectedSubject.value?.id);
   clearAttachment();
-  if (socket.value) {
-    socket.value.disconnect();
-    socket.value = null;
-  }
+  realtimeUnsubscribers.value.forEach((unsubscribe) => {
+    if (typeof unsubscribe === "function") {
+      unsubscribe();
+    }
+  });
+  realtimeUnsubscribers.value = [];
 });
 
 watch(subjectError, (value) => {

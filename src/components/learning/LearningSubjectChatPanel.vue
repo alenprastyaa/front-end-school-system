@@ -127,10 +127,11 @@
 
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-import { io } from "socket.io-client";
-import { api, realtimeConfig } from "@/api";
+import { storeToRefs } from "pinia";
+import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatDateTime } from "@/utils/date";
+import { useRealtimeStore } from "@/store/realtime";
 
 const props = defineProps({
   subject: {
@@ -143,14 +144,15 @@ const props = defineProps({
   },
 });
 
+const realtimeStore = useRealtimeStore();
+const { connected: realtimeConnected } = storeToRefs(realtimeStore);
 const messages = ref([]);
 const composer = ref("");
 const chatError = ref("");
-const isConnected = ref(false);
 const isLoadingMessages = ref(false);
 const isSendingMessage = ref(false);
 const messageListRef = ref(null);
-const socket = ref(null);
+const realtimeUnsubscribers = ref([]);
 
 const getCurrentUserId = () => {
   try {
@@ -186,7 +188,7 @@ const ownMessageClass = computed(() =>
 );
 
 const connectionClass = computed(() =>
-  isConnected.value
+  realtimeConnected.value
     ? "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20"
     : "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20",
 );
@@ -269,15 +271,11 @@ const loadMessages = async () => {
 };
 
 const leaveSubjectRoom = (subjectId) => {
-  if (socket.value?.connected && subjectId) {
-    socket.value.emit("learning-chat:leave", subjectId);
-  }
+  return subjectId;
 };
 
 const joinCurrentSubjectRoom = () => {
-  if (socket.value?.connected && props.subject?.id) {
-    socket.value.emit("learning-chat:join", props.subject.id);
-  }
+  return props.subject?.id;
 };
 
 const handleComposerKeydown = (event) => {
@@ -320,30 +318,23 @@ const sendMessage = async () => {
 
 onMounted(() => {
   const token = localStorage.getItem("token");
-  socket.value = io(realtimeConfig.url, {
-    auth: {
-      token,
-    },
-    path: realtimeConfig.path,
-    transports: ["websocket", "polling"],
-  });
+  realtimeStore.connect(token);
 
-  socket.value.on("connect", () => {
-    isConnected.value = true;
-    joinCurrentSubjectRoom();
-  });
+  realtimeUnsubscribers.value = [
+    realtimeStore.on("realtime:connected", () => {
+      chatError.value = "";
+    }),
+    realtimeStore.on("learning-chat:new-message", async (chatMessage) => {
+      await upsertMessage(chatMessage);
+    }),
+    realtimeStore.on("learning-chat:read-updated", async () => {
+      if (props.subject?.id) {
+        await loadMessages();
+      }
+    }),
+  ];
 
-  socket.value.on("disconnect", () => {
-    isConnected.value = false;
-  });
-
-  socket.value.on("learning-chat:error", (message) => {
-    chatError.value = String(message || "Gagal menghubungkan chat realtime");
-  });
-
-  socket.value.on("learning-chat:new-message", async (chatMessage) => {
-    await upsertMessage(chatMessage);
-  });
+  joinCurrentSubjectRoom();
 });
 
 watch(
@@ -360,10 +351,12 @@ watch(
 
 onUnmounted(() => {
   leaveSubjectRoom(props.subject?.id);
-  if (socket.value) {
-    socket.value.disconnect();
-    socket.value = null;
-  }
+  realtimeUnsubscribers.value.forEach((unsubscribe) => {
+    if (typeof unsubscribe === "function") {
+      unsubscribe();
+    }
+  });
+  realtimeUnsubscribers.value = [];
 });
 
 watch(chatError, (value) => {

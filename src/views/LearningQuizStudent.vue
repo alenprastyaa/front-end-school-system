@@ -443,6 +443,7 @@ import { api } from "@/api";
 import { formatDateTime } from "@/utils/date";
 import { pushToast } from "@/composables/useToast";
 import { setLayoutChromeHidden } from "@/composables/useLayoutChrome";
+import { useMasterDataStore } from "@/store/masterData";
 
 const props = defineProps({
   mode: {
@@ -452,6 +453,7 @@ const props = defineProps({
 });
 
 const subjects = ref([]);
+const masterDataStore = useMasterDataStore();
 const selectedSubject = ref(null);
 const assignments = ref([]);
 const submissionTarget = ref(null);
@@ -1030,8 +1032,7 @@ const initializeAttemptSession = (assignment, startPayload) => {
 const loadSubjects = async () => {
   subjectError.value = "";
   try {
-    const response = await api.get("/learning/subjects/student");
-    subjects.value = response?.data || [];
+    subjects.value = await masterDataStore.getStudentSubjects();
     if (!selectedSubject.value && subjects.value.length > 0) {
       await selectSubject(subjects.value[0]);
     }

@@ -274,9 +274,11 @@ import { pushToast } from "@/composables/useToast";
 import { uploadFileDirect } from "@/api/upload";
 import { formatDateTime } from "@/utils/date";
 import { normalizePublicUrl } from "@/utils/url";
+import { useMasterDataStore } from "@/store/masterData";
 
 const activeTab = ref("materials");
 const subjects = ref([]);
+const masterDataStore = useMasterDataStore();
 const selectedSubject = ref(null);
 const materials = ref([]);
 const assignments = ref([]);
@@ -298,8 +300,7 @@ const loadSubjects = async () => {
   subjectError.value = "";
 
   try {
-    const response = await api.get("/learning/subjects/student");
-    subjects.value = response?.data || [];
+    subjects.value = await masterDataStore.getStudentSubjects();
     if (!selectedSubject.value && subjects.value.length > 0) {
       await selectSubject(subjects.value[0]);
     }

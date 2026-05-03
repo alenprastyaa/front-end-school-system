@@ -307,8 +307,10 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import SuccessModal from "@/components/SuccessModal.vue";
+import { useMasterDataStore } from "@/store/masterData";
 
 const successModal = ref(null);
+const masterDataStore = useMasterDataStore();
 
 const baseForm = () => ({
   name: "",
@@ -379,15 +381,15 @@ const resetForm = () => {
 // Fungsi Load & CRUD
 const loadData = async () => {
   try {
-    const [subjectResponse, classResponse, teacherResponse] = await Promise.all([
-      api.get("/learning/subjects/admin"),
-      api.get("/class"),
-      api.get("/auth/user-school?role=GURU"),
+    const [subjectItems, classItems, teacherItems] = await Promise.all([
+      masterDataStore.getAdminSubjects(),
+      masterDataStore.getClasses(),
+      masterDataStore.getTeacherUsers(),
     ]);
 
-    subjects.value = subjectResponse?.data || [];
-    classes.value = classResponse?.data || [];
-    teachers.value = teacherResponse?.data || [];
+    subjects.value = subjectItems || [];
+    classes.value = classItems || [];
+    teachers.value = teacherItems || [];
   } catch (error) {
     pushToast({
       title: "Gagal Memuat Mata Pelajaran",
@@ -424,6 +426,7 @@ const confirmDeleteSubject = async () => {
     successModal.value.show("Mata pelajaran berhasil dihapus");
     isDeleteModalOpen.value = false;
     subjectToDelete.value = null;
+    masterDataStore.invalidate(["adminSubjects", "teacherSubjects", "studentSubjects"]);
     await loadData();
   } catch (error) {
     pushToast({
@@ -454,6 +457,7 @@ const submitSubject = async () => {
       : await api.post("/learning/subjects", payload);
 
     closeModal();
+    masterDataStore.invalidate(["adminSubjects", "teacherSubjects", "studentSubjects"]);
     await loadData();
     successModal.value.show(response?.message || "Mata pelajaran berhasil disimpan");
   } catch (error) {

@@ -328,8 +328,10 @@ import { formatDateTime } from "@/utils/date";
 import { normalizePublicUrl } from "@/utils/url";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 import { downloadExcelWorksheet } from "@/utils/excelExport";
+import { useMasterDataStore } from "@/store/masterData";
 
 const subjects = ref([]);
+const masterDataStore = useMasterDataStore();
 const assignments = ref([]);
 const rows = ref([]);
 const loadError = ref("");
@@ -537,8 +539,7 @@ const openReview = (row) => {
 };
 
 const loadSubjects = async () => {
-  const response = await api.get("/learning/subjects/teacher");
-  subjects.value = response?.data || [];
+  subjects.value = await masterDataStore.getTeacherSubjects();
 };
 
 const loadRowsForSubject = async (subjectId) => {

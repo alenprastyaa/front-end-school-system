@@ -305,8 +305,10 @@ import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 import SuccessModal from "@/components/SuccessModal.vue";
+import { useMasterDataStore } from "@/store/masterData";
 
 const successModal = ref(null);
+const masterDataStore = useMasterDataStore();
 
 const baseForm = () => ({
   username: "",
@@ -365,8 +367,7 @@ const openCreateModal = () => {
 };
 
 const loadClasses = async () => {
-  const response = await api.get("/class");
-  classOptions.value = response?.data || [];
+  classOptions.value = await masterDataStore.getClasses();
 };
 
 const loadStudents = async () => {

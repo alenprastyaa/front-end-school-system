@@ -128,10 +128,12 @@ import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { downloadExcelWorksheet } from "@/utils/excelExport";
 import { formatDate } from "@/utils/date";
+import { useMasterDataStore } from "@/store/masterData";
 
 const subjects = ref([]);
 const periods = ref([]);
 const report = ref(null);
+const masterDataStore = useMasterDataStore();
 
 const filters = reactive({
   subjectId: "",
@@ -217,16 +219,15 @@ const scoreBadgeClass = (value) => {
 };
 
 const loadSubjects = async () => {
-  const response = await api.get("/learning/subjects/teacher");
-  subjects.value = response?.data || [];
+  subjects.value = await masterDataStore.getTeacherSubjects();
   if (!filters.subjectId && subjects.value.length > 0) {
     filters.subjectId = String(subjects.value[0].id);
   }
 };
 
 const loadPeriods = async () => {
-  const response = await api.get("/academic-periods");
-  periods.value = response?.data?.years || [];
+  const response = await masterDataStore.getAcademicPeriods();
+  periods.value = response?.years || [];
 };
 
 const loadReport = async () => {

@@ -339,11 +339,13 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatDate } from "@/utils/date";
+import { useMasterDataStore } from "@/store/masterData";
 
 const isConfirmYearModalOpen = ref(false);
 const isConfirmSemesterModalOpen = ref(false);
 const pendingActivateYear = ref(null);
 const pendingActivateSemester = ref(null);
+const masterDataStore = useMasterDataStore();
 
 const years = ref([]);
 const activePeriod = ref(null);
@@ -423,9 +425,9 @@ const openSemesterModal = (semester = null, year = null) => {
 
 const loadData = async () => {
   try {
-    const response = await api.get("/academic-periods");
-    years.value = response?.data?.years || [];
-    activePeriod.value = response?.data?.active || null;
+    const response = await masterDataStore.getAcademicPeriods();
+    years.value = response?.years || [];
+    activePeriod.value = response?.active || null;
   } catch (error) {
     pushToast({
       title: "Gagal Memuat Periode Akademik",
@@ -449,6 +451,7 @@ const submitYear = async () => {
       type: "success",
     });
     closeYearModal();
+    masterDataStore.invalidate(["academicPeriods"]);
     await loadData();
   } catch (error) {
     pushToast({
@@ -487,6 +490,7 @@ const submitSemester = async () => {
       type: "success",
     });
     closeSemesterModal();
+    masterDataStore.invalidate(["academicPeriods"]);
     await loadData();
   } catch (error) {
     pushToast({
@@ -508,6 +512,7 @@ const activateYear = async (item) => {
       message: response?.message || `${item.name} sekarang menjadi tahun ajaran aktif.`,
       type: "success",
     });
+    masterDataStore.invalidate(["academicPeriods"]);
     await loadData();
   } catch (error) {
     pushToast({
@@ -547,6 +552,7 @@ const activateSemester = async (item) => {
       message: response?.message || `${item.name} sekarang menjadi semester aktif.`,
       type: "success",
     });
+    masterDataStore.invalidate(["academicPeriods"]);
     await loadData();
   } catch (error) {
     pushToast({

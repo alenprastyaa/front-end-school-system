@@ -188,8 +188,10 @@ import { onMounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatDateTime } from "@/utils/date";
+import { useMasterDataStore } from "@/store/masterData";
 
 const subjects = ref([]);
+const masterDataStore = useMasterDataStore();
 const examAssignments = ref([]);
 const message = ref("");
 const isError = ref(false);
@@ -287,8 +289,7 @@ const startEditing = (assignment) => {
 };
 
 const loadSubjects = async () => {
-  const response = await api.get("/learning/subjects/admin");
-  subjects.value = response?.data || [];
+  subjects.value = await masterDataStore.getAdminSubjects();
 };
 
 const loadExamAssignments = async () => {
