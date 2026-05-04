@@ -106,8 +106,8 @@ jobs:
       - name: Upload build artifact to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
+          host: 203.194.113.253
+          username: root
           key: key.pem
           port: 22
           source: "dist/*"
