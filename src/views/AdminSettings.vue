@@ -8,6 +8,27 @@
         </p>
       </section>
 
+      <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Link Pendaftaran Siswa</h2>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Generate link khusus sekolah ini. Siswa tidak perlu pilih sekolah manual.</p>
+          </div>
+          <button @click="generateRegistrationLink" :disabled="isGeneratingLink"
+            class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-50">
+            {{ isGeneratingLink ? "Membuat..." : "Generate Link" }}
+          </button>
+        </div>
+        <div class="mt-4 flex flex-col gap-3 md:flex-row">
+          <input :value="registrationLink" type="text" readonly
+            class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+          <button @click="copyRegistrationLink" :disabled="!registrationLink"
+            class="rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white">
+            Copy Link
+          </button>
+        </div>
+      </section>
+
       <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 -translate-y-2"
         enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-200"
         leave-from-class="opacity-100" leave-to-class="opacity-0">
@@ -93,6 +114,8 @@ const message = ref("");
 const isError = ref(false);
 const confirmInputs = reactive({});
 const isResetting = reactive({});
+const registrationLink = ref("");
+const isGeneratingLink = ref(false);
 
 const loadSummary = async () => {
   isLoading.value = true;
@@ -163,6 +186,46 @@ const resetScope = async (item) => {
     });
   } finally {
     isResetting[item.key] = false;
+  }
+};
+
+const generateRegistrationLink = async () => {
+  isGeneratingLink.value = true;
+  try {
+    const response = await api.get("/admin-settings/public-registration-link");
+    const path = response?.data?.path || "";
+    registrationLink.value = `${window.location.origin}${path}`;
+    pushToast({
+      title: "Link Berhasil Dibuat",
+      message: "Link pendaftaran siswa siap dibagikan.",
+      type: "success",
+    });
+  } catch (error) {
+    pushToast({
+      title: "Gagal Generate Link",
+      message: error.message,
+      type: "error",
+    });
+  } finally {
+    isGeneratingLink.value = false;
+  }
+};
+
+const copyRegistrationLink = async () => {
+  if (!registrationLink.value) return;
+  try {
+    await navigator.clipboard.writeText(registrationLink.value);
+    pushToast({
+      title: "Link Tersalin",
+      message: "Link pendaftaran siswa sudah disalin.",
+      type: "success",
+    });
+  } catch (error) {
+    pushToast({
+      title: "Gagal Menyalin Link",
+      message: "Silakan salin manual dari kolom link.",
+      type: "error",
+    });
   }
 };
 

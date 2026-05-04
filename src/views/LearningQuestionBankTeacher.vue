@@ -1474,7 +1474,7 @@ const loadSubjectData = async () => {
   ]);
 
   assignments.value = (assignmentResponse?.data || []).filter((item) => item.assignment_type !== "FILE" && !item.is_exam);
-  questionBank.value = questionBankResponse?.data?.items || [];
+  questionBank.value = questionBankResponse?.data?.data || [];
   questionBankTotal.value = questionBankResponse?.data?.total || 0;
 };
 

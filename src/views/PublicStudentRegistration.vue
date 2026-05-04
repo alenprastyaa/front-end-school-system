@@ -1,9 +1,15 @@
 <template>
   <div class="reg-root">
     <div class="reg-card">
-
+      <div class="reg-header">
+        <div>
+          <p class="reg-eyebrow">Pendaftaran Siswa</p>
+          <h1 class="reg-title">Gabung Ke Kelas Sekarang</h1>
+          <p class="reg-subtitle">Akun siswa akan langsung terhubung ke sekolah yang membagikan link ini.</p>
+        </div>
+        <router-link to="/auth/login" class="reg-login-btn">Ke Login</router-link>
+      </div>
       <div class="reg-body">
-        <router-link to="/auth/login" class="reg-login-btn ml-auto">Ke Login →</router-link>
         <form @submit.prevent="handleSubmit">
 
           <!-- Akun -->
@@ -41,15 +47,9 @@
 
           <div class="reg-grid">
             <div class="reg-field">
-              <label class="reg-label">Sekolah <span class="required">*</span></label>
-              <select v-model="form.school_id" required :disabled="isLoadingOptions" class="reg-input reg-select">
-                <option value="">
-                  {{ isLoadingOptions ? "Memuat sekolah..." : "Pilih sekolah" }}
-                </option>
-                <option v-for="item in schools" :key="item.id" :value="String(item.id)">
-                  {{ item.name }}
-                </option>
-              </select>
+              <label class="reg-label">Sekolah</label>
+              <input :value="schoolName || (isLoadingOptions ? 'Memuat sekolah...' : '-')" type="text" readonly
+                class="reg-input" />
             </div>
 
             <div class="reg-field">
@@ -57,7 +57,7 @@
               <select v-model="form.class_id" required :disabled="availableClasses.length === 0"
                 class="reg-input reg-select">
                 <option value="">
-                  {{ form.school_id ? "Pilih kelas" : "Pilih sekolah dulu" }}
+                  {{ schoolName ? "Pilih kelas" : "Link pendaftaran tidak valid" }}
                 </option>
                 <option v-for="item in availableClasses" :key="item.id" :value="String(item.id)">
                   {{ item.class_name }}
@@ -90,7 +90,7 @@
           </div>
 
           <!-- Submit -->
-          <button type="submit" class="reg-submit" :disabled="isSubmitting || isLoadingOptions">
+          <button type="submit" class="reg-submit" :disabled="isSubmitting || isLoadingOptions || !registrationToken">
             {{ isSubmitting ? "Menyimpan registrasi..." : "Kirim Registrasi Siswa" }}
           </button>
 
@@ -104,10 +104,13 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
+import { useRoute } from "vue-router";
 import { api } from "@/api";
 
-const schools = ref([]);
+const route = useRoute();
+const registrationToken = String(route.query.token || "").trim();
+const schoolName = ref("");
 const isSubmitting = ref(false);
 const isLoadingOptions = ref(false);
 const message = ref("");
@@ -117,7 +120,6 @@ const baseForm = () => ({
   username: "",
   password: "",
   confirm_password: "",
-  school_id: "",
   class_id: "",
   parent_email: "",
   phone_number: "",
@@ -125,23 +127,16 @@ const baseForm = () => ({
 
 const form = reactive(baseForm());
 
-const availableClasses = computed(() => {
-  const currentSchool = schools.value.find((item) => String(item.id) === form.school_id);
-  return currentSchool?.classes || [];
-});
-
-watch(
-  () => form.school_id,
-  () => {
-    form.class_id = "";
-  },
-);
+const availableClasses = ref([]);
 
 const loadOptions = async () => {
   isLoadingOptions.value = true;
   try {
-    const response = await api.get("/public/registration-options");
-    schools.value = response?.data || [];
+    const response = await api.get("/public/registration-options", {
+      params: { token: registrationToken },
+    });
+    schoolName.value = response?.data?.school?.name || "";
+    availableClasses.value = response?.data?.classes || [];
   } finally {
     isLoadingOptions.value = false;
   }
@@ -162,13 +157,16 @@ const handleSubmit = async () => {
     const response = await api.post("/public/student-registration", {
       username: form.username,
       password: form.password,
+      token: registrationToken,
       class_id: Number(form.class_id),
       parent_email: form.parent_email || null,
       phone_number: form.phone_number || null,
     });
 
     message.value = response?.message || "Registrasi siswa berhasil";
+    const selectedClass = form.class_id;
     Object.assign(form, baseForm());
+    form.class_id = selectedClass;
   } catch (error) {
     isError.value = true;
     message.value = error.message;
@@ -178,6 +176,11 @@ const handleSubmit = async () => {
 };
 
 onMounted(async () => {
+  if (!registrationToken) {
+    isError.value = true;
+    message.value = "Link pendaftaran tidak valid. Gunakan link dari admin sekolah.";
+    return;
+  }
   try {
     await loadOptions();
   } catch (error) {
@@ -188,20 +191,20 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap');
-
-/* ── Palet Biru Solid ── */
-/* --blue-50:  #EBF3FB  (background ringan) */
-/* --blue-100: #C5DCF5  (border/divider)    */
-/* --blue-500: #2563EB  (aksen utama)       */
-/* --blue-600: #1D4ED8  (hover)             */
-/* --blue-900: #1E3A5F  (teks judul)        */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap');
 
 .reg-root {
-  font-family: 'DM Sans', sans-serif;
+  --ink: #0b1220;
+  --muted: #49566f;
+  --bg: #f1f3f4;
+  --card: #ffffff;
+  --line: #dadce0;
+  --brand: #1a73e8;
+  --brand-strong: #1a73e8;
+  font-family: 'Space Grotesk', sans-serif;
   min-height: 100vh;
-  background: #EBF3FB;
-  padding: 2rem 1rem;
+  background: var(--bg);
+  padding: 2rem 1rem 3rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -209,126 +212,107 @@ onMounted(async () => {
 
 .reg-card {
   width: 100%;
-  max-width: 620px;
-  background: #ffffff;
-  border-radius: 24px;
-  border: 1.5px solid #C5DCF5;
+  max-width: 700px;
+  background: var(--card);
+  border-radius: 16px;
+  border: 1px solid var(--line);
   overflow: hidden;
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.15), 0 1px 3px 1px rgba(60, 64, 67, 0.1);
 }
 
-/* ── Header ── */
 .reg-header {
-  padding: 2rem 2rem 1.5rem;
-  border-bottom: 1.5px solid #C5DCF5;
-  background: #EBF3FB;
+  padding: 1.8rem 2rem;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+  color: #202124;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.reg-badge {
-  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: #2563EB;
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 20px;
-  margin-bottom: 10px;
+  justify-content: space-between;
+  gap: 1.25rem;
 }
 
-.reg-badge-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #93C5FD;
-  display: inline-block;
-  flex-shrink: 0;
+.reg-eyebrow {
+  margin: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #5f6368;
 }
 
 .reg-title {
-  font-family: 'DM Serif Display', serif;
-  font-size: 26px;
-  font-weight: 400;
-  color: #1E3A5F;
+  font-family: 'Sora', sans-serif;
+  font-size: 29px;
+  font-weight: 800;
   line-height: 1.2;
-  margin: 0 0 6px;
+  margin: 0 0 8px;
+  color: #202124;
 }
 
 .reg-subtitle {
   font-size: 13px;
-  color: #4A6FA5;
-  line-height: 1.6;
+  color: #5f6368;
+  line-height: 1.55;
   margin: 0;
-  font-weight: 300;
 }
 
 .reg-login-btn {
   flex-shrink: 0;
-  padding: 7px 16px;
-  border-radius: 20px;
-  border: 1.5px solid #2563EB;
-  background: #ffffff;
-  color: #2563EB;
-  font-size: 12.5px;
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid #dadce0;
+  background: #fff;
+  color: #1a73e8;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.18s;
+  transition: all 0.2s ease;
   text-decoration: none;
   display: inline-block;
-  margin-top: 4px;
 }
 
 .reg-login-btn:hover {
-  background: #2563EB;
-  color: #ffffff;
+  background: #f8f9fa;
+  color: #174ea6;
 }
 
-/* ── Body ── */
 .reg-body {
-  padding: 1.75rem 2rem 2rem;
+  padding: 1.6rem 2rem 2rem;
 }
 
 .reg-section-divider {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin: 6px 0 14px;
+  gap: 12px;
+  margin: 8px 0 16px;
 }
 
 .reg-section-label {
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #4A6FA5;
+  color: #5f6368;
   white-space: nowrap;
 }
 
 .reg-section-line {
   flex: 1;
-  height: 1.5px;
-  background: #C5DCF5;
+  height: 1px;
+  background: #eceff1;
 }
 
-/* ── Grid & Fields ── */
 .reg-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: 14px 16px;
+  margin-bottom: 16px;
 }
 
 .reg-field {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
 }
 
 .reg-field.full {
@@ -337,129 +321,138 @@ onMounted(async () => {
 
 .reg-label {
   font-size: 12px;
-  font-weight: 600;
-  color: #1E3A5F;
-  letter-spacing: 0.02em;
+  font-weight: 700;
+  color: #202124;
+  letter-spacing: 0.03em;
 }
 
 .required {
-  color: #DC2626;
+  color: #d11a3f;
   margin-left: 2px;
 }
 
 .reg-input {
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1.5px solid #C5DCF5;
-  background: #F7FAFD;
-  font-size: 13.5px;
-  font-family: 'DM Sans', sans-serif;
-  color: #1E3A5F;
+  padding: 11px 13px;
+  border-radius: 8px;
+  border: 1px solid #dadce0;
+  background: #fff;
+  font-size: 14px;
+  color: #15233d;
   outline: none;
-  transition: all 0.18s;
+  transition: all 0.18s ease;
   width: 100%;
   box-sizing: border-box;
 }
 
 .reg-input:focus {
-  border-color: #2563EB;
-  background: #ffffff;
-  box-shadow: 0 0 0 3px #DBEAFE;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.14);
 }
 
 .reg-input::placeholder {
-  color: #93B4D4;
+  color: #7f94b8;
 }
 
 .reg-input:disabled {
-  opacity: 0.55;
+  opacity: 0.7;
   cursor: not-allowed;
-  background: #EBF3FB;
+  background: #f8f9fa;
 }
 
 .reg-select {
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%232563EB' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23003eb3' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 14px center;
-  background-color: #F7FAFD;
+  background-position: right 13px center;
+  background-color: #fff;
   padding-right: 36px;
   cursor: pointer;
 }
 
 .reg-hint {
   font-size: 11px;
-  color: #4A6FA5;
-  font-weight: 300;
+  color: #546a90;
 }
 
-/* ── Message ── */
 .reg-msg {
-  border-radius: 10px;
-  padding: 10px 14px;
+  border-radius: 12px;
+  padding: 11px 14px;
   font-size: 13px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   line-height: 1.5;
+  font-weight: 500;
 }
 
 .reg-msg.error {
-  background: #FEF2F2;
-  border: 1.5px solid #FECACA;
-  color: #991B1B;
+  background: #fff2f5;
+  border: 1px solid #ffcad8;
+  color: #9c1742;
 }
 
 .reg-msg.success {
-  background: #EFF6FF;
-  border: 1.5px solid #BFDBFE;
-  color: #1D4ED8;
+  background: #eef6ff;
+  border: 1px solid #b9d7ff;
+  color: #0849b8;
 }
 
-/* ── Submit ── */
 .reg-submit {
   width: 100%;
-  padding: 13px;
-  border-radius: 12px;
+  padding: 14px;
+  border-radius: 8px;
   border: none;
-  background: #2563EB;
+  background: #1a73e8;
   color: #ffffff;
-  font-size: 14.5px;
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.18s;
-  letter-spacing: 0.01em;
-  margin-top: 4px;
+  transition: all 0.2s ease;
+  letter-spacing: 0.02em;
+  margin-top: 6px;
+  box-shadow: none;
 }
 
 .reg-submit:hover:not(:disabled) {
-  background: #1D4ED8;
-  transform: translateY(-1px);
+  background: #1765cc;
+  transform: none;
 }
 
 .reg-submit:active:not(:disabled) {
-  background: #1E40AF;
-  transform: translateY(0);
+  background: #1557b0;
 }
 
 .reg-submit:disabled {
-  opacity: 0.55;
+  opacity: 0.58;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .reg-footer-note {
   text-align: center;
-  font-size: 11.5px;
-  color: #4A6FA5;
-  margin-top: 14px;
-  font-weight: 300;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 12px;
 }
 
-/* ── Responsive ── */
-@media (max-width: 480px) {
+@media (max-width: 700px) {
   .reg-header {
+    padding: 1.35rem 1.25rem;
     flex-direction: column;
-    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .reg-title {
+    font-size: 24px;
+  }
+
+  .reg-body {
+    padding: 1.2rem 1.25rem 1.4rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .reg-header {
+    gap: 10px;
   }
 
   .reg-grid {
