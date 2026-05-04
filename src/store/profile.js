@@ -23,6 +23,10 @@ export const useProfileStore = defineStore("profile", {
   }),
 
   actions: {
+    resetProfileState() {
+      this.$reset();
+    },
+
     hydrateFromStorage() {
       this.profile = {
         ...this.profile,
@@ -50,7 +54,12 @@ export const useProfileStore = defineStore("profile", {
     },
 
     async loadProfile({ force = false } = {}) {
-      if (!force && this.loadedAt && Date.now() - this.loadedAt < PROFILE_TTL) {
+      const storedUser = getStoredUser();
+      const activeUsername = storedUser?.username || "";
+      const cachedUsername = this.profile?.username || "";
+      const isSameSessionUser = activeUsername && cachedUsername && activeUsername === cachedUsername;
+
+      if (!force && isSameSessionUser && this.loadedAt && Date.now() - this.loadedAt < PROFILE_TTL) {
         return this.profile;
       }
 

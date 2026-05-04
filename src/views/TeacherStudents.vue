@@ -2,6 +2,19 @@
   <div class="min-h-screen bg-slate-50 p-4 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
     <main class="mx-auto mt-8 max-w-[1400px] space-y-6">
 
+      <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 -translate-y-2"
+        enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-200"
+        leave-from-class="opacity-100" leave-to-class="opacity-0">
+        <div v-if="summaryError || listError"
+          class="flex items-center gap-3 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-300">
+          <svg class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          {{ summaryError || listError }}
+        </div>
+      </Transition>
+
       <section
         class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
 
@@ -271,6 +284,10 @@
             </div>
           </div>
           <div class="flex-1 overflow-x-auto overflow-y-auto p-6">
+            <div v-if="attendanceError"
+              class="mb-4 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-600 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-300">
+              {{ attendanceError }}
+            </div>
             <table class="min-w-full text-left text-sm">
               <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/50">
                 <tr>
@@ -334,6 +351,10 @@
             </div>
           </div>
           <div class="flex-1 overflow-x-auto overflow-y-auto p-6">
+            <div v-if="receiptError"
+              class="mb-4 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-600 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-300">
+              {{ receiptError }}
+            </div>
             <table class="min-w-full text-left text-sm">
               <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/50">
                 <tr>
@@ -383,7 +404,6 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import { api } from "@/api";
-import { pushToast } from "@/composables/useToast";
 import { formatDate, formatDateTime, formatTime } from "@/utils/date";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 
@@ -397,6 +417,10 @@ const showAttendanceModal = ref(false);
 const showReceiptModal = ref(false);
 const showCheckedInModal = ref(false);
 const showAbsentModal = ref(false);
+const summaryError = ref("");
+const listError = ref("");
+const attendanceError = ref("");
+const receiptError = ref("");
 
 // Table Sort States
 const studentTableSort = createSortState("username");
@@ -517,14 +541,19 @@ const openAbsentModal = () => {
 const closeAttendanceModal = () => {
   showAttendanceModal.value = false;
   attendances.value = [];
+  attendanceError.value = "";
 };
 
 const closeReceiptModal = () => {
   showReceiptModal.value = false;
   receipts.value = [];
+  receiptError.value = "";
 };
 
 const loadTeacherData = async () => {
+  summaryError.value = "";
+  listError.value = "";
+
   try {
     const [classResponse, studentResponse] = await Promise.all([
       api.get("/class/my/homeroom"),
@@ -534,47 +563,36 @@ const loadTeacherData = async () => {
     homeroomClass.value = classResponse?.data || null;
     students.value = studentResponse?.data?.data || [];
   } catch (error) {
-    homeroomClass.value = null;
-    students.value = [];
-    pushToast({
-      title: "Gagal Memuat Data Wali Kelas",
-      message: error.message,
-      type: "error",
-    });
+    summaryError.value = error.message;
+    listError.value = error.message;
   }
 };
 
 const openAttendance = async (student) => {
   selectedStudent.value = student;
+  attendanceError.value = "";
   showAttendanceModal.value = true;
 
   try {
     const response = await api.get(`/student/${student.id}/attendance`);
     attendances.value = response?.data?.data || [];
   } catch (error) {
+    attendanceError.value = error.message;
     attendances.value = [];
-    pushToast({
-      title: "Gagal Memuat Riwayat Kehadiran",
-      message: error.message,
-      type: "error",
-    });
   }
 };
 
 const openReceipt = async (student) => {
   selectedStudent.value = student;
+  receiptError.value = "";
   showReceiptModal.value = true;
 
   try {
     const response = await api.get(`/student/${student.id}/receipt`);
     receipts.value = response?.data || [];
   } catch (error) {
+    receiptError.value = error.message;
     receipts.value = [];
-    pushToast({
-      title: "Gagal Memuat Riwayat Receipt",
-      message: error.message,
-      type: "error",
-    });
   }
 };
 

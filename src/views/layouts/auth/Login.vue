@@ -48,10 +48,12 @@ import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { persistSession } from "@/utils/auth";
+import { clearSession, persistSession } from "@/utils/auth";
+import { useProfileStore } from "@/store/profile";
 
 const SHOW_PWA_INSTALL_AFTER_LOGIN_KEY = "show-pwa-install-after-login";
 const router = useRouter();
+const profileStore = useProfileStore();
 const isLoading = ref(false);
 const form = reactive({
   username: "",
@@ -62,6 +64,8 @@ const handleLogin = async () => {
   isLoading.value = true;
 
   try {
+    clearSession();
+    profileStore.resetProfileState();
     const response = await api.post("/auth/login", { ...form });
     persistSession(response);
     pushToast({

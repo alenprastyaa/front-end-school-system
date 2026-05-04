@@ -239,6 +239,7 @@ const fullscreenToggle = () => {
 const logout = () => {
   realtimeStore.disconnect();
   clearSession();
+  profileStore.resetProfileState();
   router.push({ name: "Login" });
 };
 

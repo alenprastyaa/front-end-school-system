@@ -1,8 +1,8 @@
 <template>
   <div class="h-full min-h-0 overflow-hidden bg-slate-100 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-    <main class="mx-auto flex h-full min-h-0 w-full max-w-[1480px] flex-col p-4 md:p-8">
+    <main class="mx-auto flex h-full min-h-0 w-full max-w-[1480px] flex-col p-0 md:p-8">
       <div
-        class="flex-1 min-h-0 overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+        class="flex-1 min-h-0 overflow-hidden rounded-none bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10 md:rounded-[28px]">
         <div class="grid h-full min-h-0 lg:grid-cols-[340px_minmax(0,1fr)]">
           <aside
             class="flex min-h-0 flex-col border-b border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-950/40 lg:border-b-0 lg:border-r"
@@ -83,7 +83,7 @@
             :class="{ hidden: !mobileChatOpen, 'lg:flex': true }">
             <template v-if="selectedSubject">
               <div
-                class="sticky top-0 z-10 shrink-0 border-b border-slate-200 bg-white/95 px-5 py-4 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+                class="sticky top-0 z-10 shrink-0 border-b border-slate-200 bg-white/95 px-3 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 md:px-5 md:py-4">
                 <div class="flex items-center gap-3">
                   <button type="button"
                     class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 lg:hidden"
@@ -93,16 +93,16 @@
                     </svg>
                   </button>
                   <div
-                    class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl text-white shadow-sm"
+                    class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl text-white shadow-sm md:h-12 md:w-12 md:rounded-2xl"
                     :class="selectedSubject.chat_icon_url ? 'bg-slate-100 dark:bg-slate-800' : getSubjectIconClass(selectedSubject)">
                     <img v-if="selectedSubject.chat_icon_url" :src="selectedSubject.chat_icon_url" alt="Ikon grup mapel"
                       class="h-full w-full object-cover" />
                     <Icon v-else :icon="getSubjectIcon(selectedSubject)" class="h-6 w-6 opacity-95" />
                   </div>
                   <div class="min-w-0">
-                    <h2 class="truncate text-lg font-bold text-slate-900 dark:text-white">{{ selectedSubject.name }}
+                    <h2 class="truncate text-base font-bold text-slate-900 dark:text-white md:text-lg">{{ selectedSubject.name }}
                     </h2>
-                    <p class="truncate text-sm text-slate-500 dark:text-slate-400">
+                    <p class="truncate text-xs text-slate-500 dark:text-slate-400 md:text-sm">
                       {{ selectedSubject.class_name }}
                       <span v-if="selectedSubject.teacher_name">• {{ selectedSubject.teacher_name }}</span>
                     </p>
@@ -133,7 +133,7 @@
               </div>
 
               <div ref="messageListRef"
-                class="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.8),_rgba(239,234,226,0.8)_40%,_rgba(239,234,226,1)_100%)] px-4 py-5 dark:bg-[radial-gradient(circle_at_top_left,_rgba(30,41,59,0.7),_rgba(15,23,42,0.98)_45%,_rgba(2,6,23,1)_100%)] md:px-8">
+                class="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.8),_rgba(239,234,226,0.8)_40%,_rgba(239,234,226,1)_100%)] px-2 py-3 dark:bg-[radial-gradient(circle_at_top_left,_rgba(30,41,59,0.7),_rgba(15,23,42,0.98)_45%,_rgba(2,6,23,1)_100%)] md:space-y-4 md:px-8 md:py-5">
                 <div v-if="isLoadingMessages"
                   class="flex h-full min-h-[420px] items-center justify-center text-sm font-medium text-slate-500 dark:text-slate-400">
                   Memuat percakapan...
@@ -159,7 +159,7 @@
 
                 <div v-for="item in currentMessages" :key="item.id" class="flex"
                   :class="item.sender_id === currentUserId ? 'justify-end' : 'justify-start'">
-                  <article class="max-w-[85%] rounded-3xl px-4 py-3 shadow-sm md:max-w-[70%]"
+                  <article class="max-w-[90%] rounded-2xl px-3 py-2.5 shadow-sm md:max-w-[70%] md:rounded-3xl md:px-4 md:py-3"
                     :class="item.sender_id === currentUserId ? ownMessageClass : 'rounded-tl-md bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-800'">
                     <div class="flex items-center gap-2 text-xs font-semibold">
                       <span>{{ item.sender_name || "Pengguna" }}</span>
@@ -201,7 +201,8 @@
               </div>
 
               <form @submit.prevent="sendMessage"
-                class="sticky bottom-0 z-10 shrink-0 border-t border-slate-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-900 md:px-6">
+                class="sticky z-20 shrink-0 border-t border-slate-200 bg-white px-2 pt-2 dark:border-slate-800 dark:bg-slate-900 md:px-6 md:py-4"
+                :style="composerBarStyle">
                 <div v-if="attachmentPreviewName || isRecordingVoice || recordedVoiceUrl"
                   class="mb-3 rounded-2xl bg-slate-100 px-4 py-3 text-sm dark:bg-slate-800">
                   <div v-if="attachmentPreviewName" class="flex items-center justify-between gap-3">
@@ -240,32 +241,33 @@
                     </button>
                   </div>
                 </div>
-                <div class="flex items-end gap-3">
+                <div class="flex items-end gap-2 md:gap-3">
                   <div class="flex shrink-0 items-center gap-2">
                     <input ref="attachmentInputRef" type="file"
                       accept="image/*,application/pdf,audio/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" class="hidden"
                       @change="handleAttachmentChange" />
                     <button type="button"
-                      class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                      class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 md:h-12 md:w-12"
                       :disabled="isSendingMessage || isRecordingVoice" @click="openAttachmentPicker">
                       <Icon icon="ph:paperclip" class="h-5 w-5" />
                     </button>
                     <button type="button"
-                      class="inline-flex h-12 w-12 items-center justify-center rounded-full text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+                      class="inline-flex h-10 w-10 items-center justify-center rounded-full text-white transition disabled:cursor-not-allowed disabled:opacity-60 md:h-12 md:w-12"
                       :class="isRecordingVoice ? 'bg-rose-500 hover:bg-rose-400' : roleAccentClass"
                       :disabled="isSendingMessage || Boolean(attachmentFile)" @click="toggleVoiceRecording">
                       <Icon :icon="isRecordingVoice ? 'ph:stop-fill' : 'ph:microphone-fill'" class="h-5 w-5" />
                     </button>
                   </div>
                   <div
-                    class="flex-1 rounded-[24px] bg-slate-100 px-4 py-1.5 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
-                    <textarea v-model="composer" rows="1" placeholder="Tulis pesan ke grup mata pelajaran ini..."
+                    class="flex-1 rounded-[20px] bg-slate-100 px-3 py-1 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:ring-slate-700 md:rounded-[24px] md:px-4 md:py-1.5">
+                    <textarea v-model="composer" rows="1" placeholder="Tulis pesan..."
                       @input="handleComposerInput"
                       @keydown="handleComposerKeydown"
-                      class="block w-full resize-none border-0 bg-transparent p-0 text-sm text-slate-900 focus:outline-none focus:ring-0 dark:text-white leading-[48px] h-[48px]" />
+                      @focus="ensureComposerVisible"
+                      class="block w-full resize-none border-0 bg-transparent p-0 text-sm text-slate-900 focus:outline-none focus:ring-0 dark:text-white leading-6 min-h-[40px] max-h-[110px]" />
                   </div>
                   <button :disabled="isSendingMessage || !composer.trim()"
-                    class="inline-flex h-14 w-14 items-center justify-center rounded-full text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60"
+                    class="inline-flex h-11 w-11 items-center justify-center rounded-full text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60 md:h-14 md:w-14"
                     :class="roleAccentClass">
                     <svg v-if="isSendingMessage" class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"
                       stroke-width="2" stroke="currentColor">
@@ -357,6 +359,7 @@ const typingStopTimer = ref(null);
 const typingDebounceTimer = ref(null);
 const onlineUsersBySubject = ref({});
 const onlineRefreshTimer = ref(null);
+const viewportBottomInset = ref(0);
 const isConnected = computed(() => realtimeConnected.value);
 const localClientId = ref(`chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
 
@@ -464,6 +467,11 @@ const recordingDurationLabel = computed(() => {
   const seconds = recordingSeconds.value % 60;
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 });
+
+const composerBarStyle = computed(() => ({
+  bottom: `${viewportBottomInset.value}px`,
+  paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)",
+}));
 
 const currentMessages = computed(() =>
   selectedSubject.value ? messagesBySubject.value[selectedSubject.value.id] || [] : [],
@@ -636,6 +644,23 @@ const scrollToBottom = async () => {
   if (messageListRef.value) {
     messageListRef.value.scrollTop = messageListRef.value.scrollHeight;
   }
+};
+
+const updateViewportInset = () => {
+  if (typeof window === "undefined" || !window.visualViewport) {
+    viewportBottomInset.value = 0;
+    return;
+  }
+  const vv = window.visualViewport;
+  viewportBottomInset.value = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
+};
+
+const ensureComposerVisible = async () => {
+  await nextTick();
+  updateViewportInset();
+  window.setTimeout(() => {
+    scrollToBottom();
+  }, 80);
 };
 
 const sortMessages = (messages = []) =>
@@ -1199,6 +1224,12 @@ const sendMessage = async () => {
 };
 
 onMounted(async () => {
+  if (typeof window !== "undefined" && window.visualViewport) {
+    window.visualViewport.addEventListener("resize", updateViewportInset);
+    window.visualViewport.addEventListener("scroll", updateViewportInset);
+    updateViewportInset();
+  }
+
   const token = localStorage.getItem("token");
   realtimeStore.connect(token);
 
@@ -1291,6 +1322,11 @@ onUnmounted(() => {
     }
   });
   realtimeUnsubscribers.value = [];
+
+  if (typeof window !== "undefined" && window.visualViewport) {
+    window.visualViewport.removeEventListener("resize", updateViewportInset);
+    window.visualViewport.removeEventListener("scroll", updateViewportInset);
+  }
 });
 
 watch(subjectError, (value) => {
