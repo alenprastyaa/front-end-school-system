@@ -98,12 +98,17 @@ jobs:
       - name: Build application
         run: npm run build
 
+      - name: Decode SSH Key
+        run: |
+          echo "${{ secrets.VPS_SSH_KEY_B64 }}" | base64 -d > key.pem
+          chmod 600 key.pem
+
       - name: Upload build artifact to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
+          key: key.pem
           port: 22
           source: "dist/*"
           target: "/tmp/school-system-fe-build"
