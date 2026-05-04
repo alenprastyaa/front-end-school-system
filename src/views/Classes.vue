@@ -58,7 +58,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-              <tr v-for="item in sortedClasses" :key="item.id"
+              <tr v-for="item in paginatedClasses" :key="item.id"
                 class="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
                 <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ item.class_name }}</td>
                 <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ item.wali_guru_name || "-" }}</td>
@@ -101,6 +101,21 @@
               </tr>
             </tbody>
           </table>
+        </div>
+        <div class="flex items-center justify-between border-t border-slate-200 px-6 py-4 dark:border-slate-800">
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Halaman {{ currentPage }} dari {{ totalPages }} · Menampilkan {{ paginatedClasses.length }} kelas
+          </p>
+          <div class="flex items-center gap-2">
+            <button @click="goToPrevPage" :disabled="currentPage === 1"
+              class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+              Sebelumnya
+            </button>
+            <button @click="goToNextPage" :disabled="currentPage >= totalPages"
+              class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+              Berikutnya
+            </button>
+          </div>
         </div>
       </main>
     </div>
@@ -230,6 +245,9 @@ const masterDataStore = useMasterDataStore();
 const className = ref("");
 const waliGuruId = ref("");
 const classes = ref([]);
+const currentPage = ref(1);
+const pageSize = 10;
+const totalClasses = ref(0);
 const teachers = ref([]);
 const editingClassId = ref(null);
 const showModal = ref(false);
@@ -249,7 +267,25 @@ const sortedClasses = computed(() =>
   }),
 );
 
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(totalClasses.value / pageSize)),
+);
+
+const paginatedClasses = computed(() => sortedClasses.value);
+
 const handleSort = (key) => { toggleSort(tableSort, key); };
+const goToPrevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value -= 1;
+    loadClasses();
+  }
+};
+const goToNextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value += 1;
+    loadClasses();
+  }
+};
 
 const sortIndicator = (key) => {
   if (tableSort.key !== key) return "↕";
@@ -258,7 +294,15 @@ const sortIndicator = (key) => {
 
 const loadClasses = async () => {
   try {
-    classes.value = await masterDataStore.getClasses();
+    const response = await api.get("/class", {
+      params: {
+        paginate: 1,
+        page: currentPage.value,
+        limit: pageSize,
+      },
+    });
+    classes.value = response?.data?.data || [];
+    totalClasses.value = Number(response?.data?.total || 0);
   } catch (error) {
     pushToast({
       title: "Gagal Memuat Data Kelas",

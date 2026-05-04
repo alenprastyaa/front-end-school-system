@@ -82,7 +82,7 @@
             </thead>
             <tbody>
               <tr
-                v-for="item in sortedUsers"
+                v-for="item in paginatedUsers"
                 :key="item.id"
                 class="border-b dark:border-gray-700 text-gray-800 dark:text-gray-200"
               >
@@ -149,6 +149,27 @@
               </tr>
             </tbody>
           </table>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            Halaman {{ currentPage }} dari {{ totalPages }} · Menampilkan {{ paginatedUsers.length }} user
+          </p>
+          <div class="flex items-center gap-2">
+            <button
+              @click="goToPrevPage"
+              :disabled="currentPage === 1"
+              class="px-3 py-1.5 rounded-md border dark:border-gray-600 text-xs font-semibold disabled:opacity-50"
+            >
+              Sebelumnya
+            </button>
+            <button
+              @click="goToNextPage"
+              :disabled="currentPage >= totalPages"
+              class="px-3 py-1.5 rounded-md border dark:border-gray-600 text-xs font-semibold disabled:opacity-50"
+            >
+              Berikutnya
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -393,6 +414,9 @@ const userToDelete = ref(null);
 
 const form = reactive(baseForm());
 const users = ref([]);
+const currentPage = ref(1);
+const pageSize = 10;
+const totalUsers = ref(0);
 const editingUserId = ref(null);
 const showModal = ref(false);
 const isSubmitting = ref(false);
@@ -405,8 +429,15 @@ const sortedUsers = computed(() =>
   }),
 );
 
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(totalUsers.value / pageSize)),
+);
+
+const paginatedUsers = computed(() => sortedUsers.value);
+
 const handleSort = (key) => {
   toggleSort(tableSort, key);
+  currentPage.value = 1;
 };
 
 const sortIndicator = (key) => {
@@ -434,16 +465,37 @@ const openCreateModal = () => {
 
 const loadUsers = async () => {
   try {
-    const response = await api.get("/auth/user-school");
-    users.value = (response?.data || []).filter((item) =>
+    const response = await api.get("/auth/user-school", {
+      params: {
+        paginate: 1,
+        page: currentPage.value,
+        limit: pageSize,
+      },
+    });
+    users.value = (response?.data?.data || []).filter((item) =>
       ["ADMIN", "GURU"].includes(item.role),
     );
+    totalUsers.value = Number(response?.data?.total || 0);
   } catch (error) {
     pushToast({
       title: "Gagal Memuat User Sekolah",
       message: error.message,
       type: "error",
     });
+  }
+};
+
+const goToPrevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value -= 1;
+    loadUsers();
+  }
+};
+
+const goToNextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value += 1;
+    loadUsers();
   }
 };
 

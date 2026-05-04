@@ -63,7 +63,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-              <tr v-for="item in filteredSubjects" :key="item.id"
+              <tr v-for="item in paginatedFilteredSubjects" :key="item.id"
                 class="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-3">
@@ -146,6 +146,21 @@
               </tr>
             </tbody>
           </table>
+        </div>
+        <div class="flex items-center justify-between border-t border-slate-200 px-6 py-4 dark:border-slate-800">
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Halaman {{ currentPage }} dari {{ totalPages }} · Menampilkan {{ paginatedFilteredSubjects.length }} mapel
+          </p>
+          <div class="flex items-center gap-2">
+            <button @click="goToPrevPage" :disabled="currentPage === 1"
+              class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+              Sebelumnya
+            </button>
+            <button @click="goToNextPage" :disabled="currentPage >= totalPages"
+              class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+              Berikutnya
+            </button>
+          </div>
         </div>
       </main>
     </div>
@@ -303,7 +318,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import SuccessModal from "@/components/SuccessModal.vue";
@@ -331,6 +346,9 @@ const chatIconPreview = ref("");
 const isDeleteModalOpen = ref(false);
 const isDeletingSubject = ref(false);
 const subjectToDelete = ref(null);
+const currentPage = ref(1);
+const pageSize = 10;
+const totalSubjects = ref(0);
 
 // State Modal & Global Alert
 const isModalOpen = ref(false);
@@ -339,15 +357,14 @@ const isModalOpen = ref(false);
 const searchQuery = ref("");
 
 const filteredSubjects = computed(() => {
-  if (!searchQuery.value) return subjects.value;
-
-  const query = searchQuery.value.toLowerCase();
-  return subjects.value.filter(item =>
-    (item.name && item.name.toLowerCase().includes(query)) ||
-    (item.class_name && item.class_name.toLowerCase().includes(query)) ||
-    (item.teacher_name && item.teacher_name.toLowerCase().includes(query))
-  );
+  return subjects.value;
 });
+
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(totalSubjects.value / pageSize)),
+);
+
+const paginatedFilteredSubjects = computed(() => filteredSubjects.value);
 
 // Buka/Tutup Modal
 const openModal = () => {
@@ -381,13 +398,21 @@ const resetForm = () => {
 // Fungsi Load & CRUD
 const loadData = async () => {
   try {
-    const [subjectItems, classItems, teacherItems] = await Promise.all([
-      masterDataStore.getAdminSubjects(),
+    const [subjectResponse, classItems, teacherItems] = await Promise.all([
+      api.get("/learning/subjects/admin", {
+        params: {
+          paginate: 1,
+          page: currentPage.value,
+          limit: pageSize,
+          q: searchQuery.value || undefined,
+        },
+      }),
       masterDataStore.getClasses(),
       masterDataStore.getTeacherUsers(),
     ]);
 
-    subjects.value = subjectItems || [];
+    subjects.value = subjectResponse?.data?.data || [];
+    totalSubjects.value = Number(subjectResponse?.data?.total || 0);
     classes.value = classItems || [];
     teachers.value = teacherItems || [];
   } catch (error) {
@@ -398,6 +423,25 @@ const loadData = async () => {
     });
   }
 };
+
+const goToPrevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value -= 1;
+    loadData();
+  }
+};
+
+const goToNextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value += 1;
+    loadData();
+  }
+};
+
+watch(searchQuery, () => {
+  currentPage.value = 1;
+  loadData();
+});
 
 const startEdit = (item) => {
   editingId.value = item.id;

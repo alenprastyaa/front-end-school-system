@@ -38,7 +38,7 @@
                       d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
                   </svg>
                 </div>
-                <select v-model="filters.class_id" @change="loadStudents"
+                <select v-model="filters.class_id" @change="handleClassFilterChange"
                   class="block w-full rounded-lg border-0 py-2 pl-9 pr-8 text-sm text-slate-900 ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
                   <option value="">Semua Kelas</option>
                   <option v-for="item in classOptions" :key="item.id" :value="item.id">
@@ -58,6 +58,13 @@
               <thead
                 class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
                 <tr>
+                  <th class="border-b border-slate-200 px-6 py-4 font-semibold dark:border-slate-800">
+                    <button @click="handleSort('full_name')"
+                      class="group flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white">
+                      Nama Lengkap <span class="text-slate-300 transition group-hover:text-slate-500">{{
+                        sortIndicator('full_name') }}</span>
+                    </button>
+                  </th>
                   <th class="border-b border-slate-200 px-6 py-4 font-semibold dark:border-slate-800">
                     <button @click="handleSort('username')"
                       class="group flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white">
@@ -85,12 +92,18 @@
                   class="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
                   :class="editingId === item.id ? 'bg-sky-50/50 dark:bg-sky-900/10' : ''">
                   <td class="px-6 py-4">
+                    <span class="font-medium text-slate-900 dark:text-white">{{ item.full_name || "-" }}</span>
+                  </td>
+                  <td class="px-6 py-4">
                     <div class="flex items-center gap-3">
                       <div
                         class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                         {{ item.username.charAt(0).toUpperCase() }}
                       </div>
-                      <span class="font-medium text-slate-900 dark:text-white">{{ item.username }}</span>
+                      <div>
+                        <div class="font-medium text-slate-900 dark:text-white">{{ item.username }}</div>
+                        <div class="text-xs text-sky-600 dark:text-sky-400">Username login</div>
+                      </div>
                     </div>
                   </td>
 
@@ -128,7 +141,7 @@
                 </tr>
 
                 <tr v-if="students.length === 0">
-                  <td colspan="4" class="px-6 py-12 text-center">
+                  <td colspan="5" class="px-6 py-12 text-center">
                     <div class="mx-auto flex flex-col items-center">
                       <div
                         class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
@@ -146,6 +159,21 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div class="flex items-center justify-between border-t border-slate-200 px-6 py-4 dark:border-slate-800">
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              Halaman {{ filters.page }} · Menampilkan {{ students.length }} siswa
+            </p>
+            <div class="flex items-center gap-2">
+              <button @click="goToPrevPage" :disabled="filters.page <= 1"
+                class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+                Sebelumnya
+              </button>
+              <button @click="goToNextPage" :disabled="students.length < filters.limit"
+                class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+                Berikutnya
+              </button>
+            </div>
           </div>
         </main>
       </div>
@@ -189,10 +217,18 @@
 
           <form @submit.prevent="editingId ? updateStudent() : createStudent()" class="space-y-4 p-6">
             <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Nama Lengkap <span
+                  class="text-rose-500">*</span></label>
+              <input v-model="form.full_name" type="text" required placeholder="e.g. Budi Santoso"
+                class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+            </div>
+
+            <div>
               <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Username <span
                   class="text-rose-500">*</span></label>
               <input v-model="form.username" type="text" required placeholder="e.g. budi_santoso"
                 class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+              <p class="mt-1 text-xs font-medium text-sky-600 dark:text-sky-400">Gunakan username ini saat login siswa/guru.</p>
             </div>
 
             <div v-if="!editingId">
@@ -311,6 +347,7 @@ const successModal = ref(null);
 const masterDataStore = useMasterDataStore();
 
 const baseForm = () => ({
+  full_name: "",
   username: "",
   password: "",
   class_id: "",
@@ -333,6 +370,7 @@ const tableSort = createSortState("username");
 
 const sortedStudents = computed(() =>
   sortItems(students.value, tableSort, {
+    full_name: (item) => item.full_name || "",
     class_name: (item) => item.class_name || "",
     parent_email: (item) => item.parent_email || "",
     phone_number: (item) => item.phone_number || "",
@@ -392,16 +430,35 @@ const loadStudents = async () => {
   }
 };
 
+const handleClassFilterChange = async () => {
+  filters.page = 1;
+  await loadStudents();
+};
+
+const goToPrevPage = async () => {
+  if (filters.page <= 1) return;
+  filters.page -= 1;
+  await loadStudents();
+};
+
+const goToNextPage = async () => {
+  if (students.value.length < filters.limit) return;
+  filters.page += 1;
+  await loadStudents();
+};
+
 const createStudent = async () => {
   isSubmitting.value = true;
 
   try {
     const response = await api.post("/auth/register/student", {
+      full_name: form.full_name,
       username: form.username,
       password: form.password,
       role: "SISWA",
       class_id: Number(form.class_id),
       parent_email: form.parent_email || null,
+      phone_number: form.phone_number || null,
     });
     await loadStudents();
     closeModal();
@@ -423,6 +480,7 @@ const startEdit = (item) => {
   );
   editingId.value = item.id;
   form.username = item.username;
+  form.full_name = item.full_name || "";
   form.password = "";
   form.class_id = matchedClass?.id || "";
   form.parent_email = item.parent_email || "";
@@ -467,6 +525,7 @@ const updateStudent = async () => {
 
   try {
     const response = await api.put(`/student/${editingId.value}`, {
+      full_name: form.full_name || null,
       username: form.username,
       role: "SISWA",
       class_id: Number(form.class_id),
