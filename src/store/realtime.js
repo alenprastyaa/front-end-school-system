@@ -56,8 +56,10 @@ const ensureEventSource = (url) => {
 
   const eventNames = [
     "realtime:connected",
+    "learning-presence:updated",
     "learning-chat:new-message",
     "learning-chat:read-updated",
+    "learning-chat:typing",
     "learning-notification:new",
   ];
 

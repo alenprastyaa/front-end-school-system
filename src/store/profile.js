@@ -8,10 +8,13 @@ const PROFILE_TTL = 5 * 60 * 1000;
 export const useProfileStore = defineStore("profile", {
   state: () => ({
     profile: {
+      full_name: "",
       username: "User",
       role: "Guest",
       school_name: "",
       school_id: "",
+      parent_email: "",
+      phone_number: "",
       profile_image: "",
     },
     loadedAt: 0,

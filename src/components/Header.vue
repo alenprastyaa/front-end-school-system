@@ -15,6 +15,13 @@
           <h1 class="text-lg font-semibold text-gray-900 dark:text-white">
             {{ userProfile.school_name || userProfile.school_id || "Belum terhubung ke sekolah" }}
           </h1>
+          <div class="mt-1 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20">
+            <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+            <span>Pengguna LMS online</span>
+            <span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[11px] font-bold text-white dark:bg-emerald-400 dark:text-emerald-950">
+              {{ onlineLmsCount }}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -58,9 +65,9 @@
   </header>
 
   <transition name="fade">
-    <div v-if="showProfileModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/50 p-4"
+    <div v-if="showProfileModal" class="fixed inset-0 z-[60] overflow-y-auto bg-slate-950/75 p-4 backdrop-blur-sm"
       @click.self="closeProfileModal">
-      <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900">
+      <div class="mx-auto my-6 w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900">
         <div class="flex items-start justify-between gap-4">
           <div>
             <h2 class="text-xl font-semibold text-slate-900 dark:text-white">Profil Saya</h2>
@@ -92,27 +99,57 @@
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Username</label>
             <input v-model="profileForm.username" type="text" disabled
               class="mt-2 block w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-slate-500 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400" />
+            <p class="mt-1 text-xs font-medium text-sky-600 dark:text-sky-400">Username digunakan untuk login.</p>
           </div>
 
-          <div class="grid gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Nama Lengkap</label>
+            <input v-model="profileForm.full_name" type="text"
+              class="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+              placeholder="Nama lengkap pengguna" />
+          </div>
+
+          <div class="grid gap-4 md:grid-cols-2">
             <div>
-              <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Password saat ini</label>
-              <input v-model="profileForm.current_password" type="password" autocomplete="current-password"
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Email</label>
+              <input v-model="profileForm.parent_email" type="email"
                 class="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-                placeholder="Isi hanya jika ingin ganti password" />
+                placeholder="email@contoh.com" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Password baru</label>
-              <input v-model="profileForm.new_password" type="password" autocomplete="new-password"
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">No. HP</label>
+              <input v-model="profileForm.phone_number" type="text"
                 class="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-                placeholder="Minimal 6 karakter" />
+                placeholder="08xxxxxxxxxx" />
             </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Konfirmasi password
-                baru</label>
-              <input v-model="profileForm.confirm_password" type="password" autocomplete="new-password"
-                class="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-                placeholder="Ulangi password baru" />
+          </div>
+
+          <div>
+            <button type="button"
+              class="inline-flex items-center rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              @click="showPasswordFields = !showPasswordFields">
+              {{ showPasswordFields ? "Tutup Ubah Password" : "Ubah Password" }}
+            </button>
+            <div v-if="showPasswordFields" class="mt-3 grid gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Password saat ini</label>
+                <input v-model="profileForm.current_password" type="password" autocomplete="current-password"
+                  class="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                  placeholder="Password saat ini" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Password baru</label>
+                <input v-model="profileForm.new_password" type="password" autocomplete="new-password"
+                  class="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                  placeholder="Minimal 6 karakter" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Konfirmasi password
+                  baru</label>
+                <input v-model="profileForm.confirm_password" type="password" autocomplete="new-password"
+                  class="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                  placeholder="Ulangi password baru" />
+              </div>
             </div>
           </div>
 
@@ -134,7 +171,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
@@ -143,10 +180,13 @@ import { clearSession, getStoredUser } from "@/utils/auth";
 import { normalizePublicUrl } from "@/utils/url";
 import defaultAvatar from "@/assets/img/user.jpg";
 import { useProfileStore } from "@/store/profile";
+import { useRealtimeStore } from "@/store/realtime";
+import { pushToast } from "@/composables/useToast";
 
 const router = useRouter();
 const route = useRoute();
 const profileStore = useProfileStore();
+const realtimeStore = useRealtimeStore();
 const { profile: storedProfile } = storeToRefs(profileStore);
 
 defineEmits(["sidebarToggle"]);
@@ -155,19 +195,28 @@ const menu = ref(false);
 const fullscreenMode = ref(false);
 const showProfileModal = ref(false);
 const isSavingProfile = ref(false);
+const showPasswordFields = ref(false);
+const onlineLmsCount = ref(0);
+const realtimeUnsubscribers = ref([]);
 const profileError = ref(false);
 const profileMessage = ref("");
 const profilePreview = ref("");
 const profileImageFile = ref(null);
 const userProfile = ref({
+  full_name: "",
   username: "User",
   role: "Guest",
   school_name: "",
   school_id: "",
+  parent_email: "",
+  phone_number: "",
   profile_image: "",
 });
 const profileForm = ref({
+  full_name: "",
   username: "",
+  parent_email: "",
+  phone_number: "",
   current_password: "",
   new_password: "",
   confirm_password: "",
@@ -188,19 +237,24 @@ const fullscreenToggle = () => {
 };
 
 const logout = () => {
+  realtimeStore.disconnect();
   clearSession();
   router.push({ name: "Login" });
 };
 
 const syncProfileForm = () => {
   profileForm.value = {
+    full_name: userProfile.value.full_name || "",
     username: userProfile.value.username || "",
+    parent_email: userProfile.value.parent_email || "",
+    phone_number: userProfile.value.phone_number || "",
     current_password: "",
     new_password: "",
     confirm_password: "",
   };
   profilePreview.value = "";
   profileImageFile.value = null;
+  showPasswordFields.value = false;
   profileMessage.value = "";
   profileError.value = false;
 };
@@ -242,9 +296,20 @@ const handleProfileImageChange = (event) => {
 };
 
 const saveProfile = async () => {
-  if (!profileImageFile.value && !profileForm.value.new_password) {
+  if (
+    !profileImageFile.value &&
+    !profileForm.value.new_password &&
+    (profileForm.value.full_name || "") === (userProfile.value.full_name || "") &&
+    (profileForm.value.parent_email || "") === (userProfile.value.parent_email || "") &&
+    (profileForm.value.phone_number || "") === (userProfile.value.phone_number || "")
+  ) {
     profileError.value = true;
     profileMessage.value = "Belum ada perubahan yang bisa disimpan.";
+    pushToast({
+      title: "Tidak Ada Perubahan",
+      message: "Belum ada data profil yang diubah.",
+      type: "error",
+    });
     return;
   }
 
@@ -257,6 +322,9 @@ const saveProfile = async () => {
     if (profileImageFile.value) {
       formData.append("profile_image", profileImageFile.value);
     }
+    formData.append("full_name", profileForm.value.full_name || "");
+    formData.append("parent_email", profileForm.value.parent_email || "");
+    formData.append("phone_number", profileForm.value.phone_number || "");
     if (profileForm.value.current_password) {
       formData.append("current_password", profileForm.value.current_password);
     }
@@ -281,10 +349,20 @@ const saveProfile = async () => {
     };
 
     profileMessage.value = response?.message || "Profil berhasil diperbarui.";
+    pushToast({
+      title: "Profil Diperbarui",
+      message: profileMessage.value,
+      type: "success",
+    });
     syncProfileForm();
   } catch (error) {
     profileError.value = true;
     profileMessage.value = error.message;
+    pushToast({
+      title: "Gagal Memperbarui Profil",
+      message: error.message,
+      type: "error",
+    });
   } finally {
     isSavingProfile.value = false;
   }
@@ -301,6 +379,29 @@ onMounted(() => {
   };
   syncProfileForm();
   loadProfile();
+  const token = localStorage.getItem("token");
+  if (token) {
+    realtimeStore.connect(token);
+    const unsubConnected = realtimeStore.on("realtime:connected", (payload) => {
+      const count = Number(payload?.online_count || 0);
+      onlineLmsCount.value = Number.isFinite(count) && count >= 0 ? count : 0;
+    });
+    const unsubPresence = realtimeStore.on("learning-presence:updated", (payload) => {
+      const count = Number(payload?.online_count || 0);
+      onlineLmsCount.value = Number.isFinite(count) && count >= 0 ? count : 0;
+    });
+    realtimeUnsubscribers.value = [unsubConnected, unsubPresence];
+  }
+});
+
+onUnmounted(() => {
+  realtimeUnsubscribers.value.forEach((unsubscribe) => {
+    if (typeof unsubscribe === "function") {
+      unsubscribe();
+    }
+  });
+  realtimeUnsubscribers.value = [];
+  realtimeStore.disconnect();
 });
 </script>
 

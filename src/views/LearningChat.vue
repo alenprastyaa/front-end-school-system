@@ -106,6 +106,12 @@
                       {{ selectedSubject.class_name }}
                       <span v-if="selectedSubject.teacher_name">• {{ selectedSubject.teacher_name }}</span>
                     </p>
+                    <p class="truncate text-xs text-emerald-600 dark:text-emerald-400">
+                      {{ onlineIndicatorText }}
+                    </p>
+                    <p v-if="typingIndicatorText" class="truncate text-xs font-medium text-sky-600 dark:text-sky-400">
+                      {{ typingIndicatorText }}
+                    </p>
                   </div>
                   <button v-if="role === 'GURU'" type="button"
                     class="ml-auto inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
@@ -165,7 +171,7 @@
                       {{ item.message }}
                     </p>
                     <div v-if="item.attachment_url" class="mt-3">
-                      <audio v-if="item.message_type === 'VOICE'" :src="normalizePublicUrl(item.attachment_url)" controls
+                      <audio v-if="isVoiceMessage(item)" :src="normalizePublicUrl(item.attachment_url)" controls
                         class="w-full max-w-sm" />
                       <a v-else-if="item.message_type === 'IMAGE'" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
                         rel="noreferrer" class="block overflow-hidden rounded-2xl">
@@ -219,8 +225,13 @@
                     </button>
                   </div>
                   <div v-else-if="isRecordingVoice" class="flex items-center justify-between gap-3">
-                    <div>
+                    <div class="flex-1">
                       <p class="font-semibold text-slate-900 dark:text-white">Sedang merekam voice note...</p>
+                      <svg class="mt-2 h-10 w-full max-w-sm rounded-md bg-rose-50/70 dark:bg-rose-500/10"
+                        viewBox="0 0 300 40" preserveAspectRatio="none">
+                        <polyline :points="recordingWavePoints" fill="none" stroke="#ef4444" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
                       <p class="text-slate-500 dark:text-slate-400">{{ recordingDurationLabel }}</p>
                     </div>
                     <button type="button" class="rounded-full bg-rose-500 p-2 text-white hover:bg-rose-400"
@@ -249,6 +260,7 @@
                   <div
                     class="flex-1 rounded-[24px] bg-slate-100 px-4 py-1.5 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
                     <textarea v-model="composer" rows="1" placeholder="Tulis pesan ke grup mata pelajaran ini..."
+                      @input="handleComposerInput"
                       @keydown="handleComposerKeydown"
                       class="block w-full resize-none border-0 bg-transparent p-0 text-sm text-slate-900 focus:outline-none focus:ring-0 dark:text-white leading-[48px] h-[48px]" />
                   </div>
@@ -329,13 +341,24 @@ const recordingTimer = ref(null);
 const mediaRecorder = ref(null);
 const mediaStream = ref(null);
 const recordedChunks = ref([]);
+const audioContext = ref(null);
+const analyserNode = ref(null);
+const sourceNode = ref(null);
+const waveformTimer = ref(null);
+const recordingWavePoints = ref("0,20 300,20");
 const attachmentInputRef = ref(null);
 const chatIconInputRef = ref(null);
 const messageListRef = ref(null);
 const messagesBySubject = ref({});
 const chatSummaryBySubject = ref({});
 const realtimeUnsubscribers = ref([]);
+const typingStateBySubject = ref({});
+const typingStopTimer = ref(null);
+const typingDebounceTimer = ref(null);
+const onlineUsersBySubject = ref({});
+const onlineRefreshTimer = ref(null);
 const isConnected = computed(() => realtimeConnected.value);
+const localClientId = ref(`chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
 
 const AUDIO_MIME_EXTENSION_MAP = {
   "audio/webm": ".webm",
@@ -463,6 +486,47 @@ const orderedSubjects = computed(() => {
   });
 });
 
+const typingIndicatorText = computed(() => {
+  const subjectId = Number(selectedSubject.value?.id || 0);
+  if (!subjectId) {
+    return "";
+  }
+
+  const subjectTyping = typingStateBySubject.value[subjectId] || {};
+  const names = Object.values(subjectTyping)
+    .map((item) => String(item?.sender_name || "").trim())
+    .filter(Boolean);
+
+  if (names.length === 0) {
+    return "";
+  }
+  if (names.length === 1) {
+    return `${names[0]} sedang mengetik...`;
+  }
+  return `${names.length} orang sedang mengetik...`;
+});
+
+const onlineIndicatorText = computed(() => {
+  const subjectId = Number(selectedSubject.value?.id || 0);
+  if (!subjectId) {
+    return "Online: -";
+  }
+
+  const users = onlineUsersBySubject.value[subjectId] || [];
+  if (!users.length) {
+    return "Online: 0";
+  }
+
+  if (users.length <= 2) {
+    const names = users
+      .filter((item) => item && typeof item === "object")
+      .map((item) => item.full_name || item.username || "User")
+      .join(", ");
+    return `Online: ${users.length} (${names})`;
+  }
+  return `Online: ${users.length} pengguna`;
+});
+
 const getSubjectVisualIndex = (subject) => {
   const source = `${subject?.id || ""}-${subject?.name || ""}`;
   return Array.from(source).reduce((total, char) => total + char.charCodeAt(0), 0);
@@ -550,6 +614,21 @@ const ownMessageReadLabel = (message) => {
   }
 
   return "Belum dilihat";
+};
+
+const isVoiceMessage = (message) => {
+  const explicitType = String(message?.message_type || "").toUpperCase();
+  if (explicitType === "VOICE") {
+    return true;
+  }
+
+  const mimeType = String(message?.attachment_mime_type || "").toLowerCase();
+  if (mimeType.startsWith("audio/")) {
+    return true;
+  }
+
+  const attachmentName = String(message?.attachment_name || "").toLowerCase();
+  return /\.(mp3|wav|m4a|ogg|aac|webm|flac|amr|3gp|3g2)$/i.test(attachmentName);
 };
 
 const scrollToBottom = async () => {
@@ -665,6 +744,62 @@ const markCurrentSubjectAsRead = async () => {
   }
 };
 
+const clearTypingForSubject = (subjectId) => {
+  const normalizedSubjectId = Number(subjectId || 0);
+  if (!normalizedSubjectId) return;
+  if (!typingStateBySubject.value[normalizedSubjectId]) return;
+  const next = { ...typingStateBySubject.value };
+  delete next[normalizedSubjectId];
+  typingStateBySubject.value = next;
+};
+
+const sendTypingEvent = async (isTyping) => {
+  const subjectId = Number(selectedSubject.value?.id || 0);
+  if (!subjectId) return;
+  try {
+    await api.post(`/learning/subjects/${subjectId}/chat/typing`, {
+      is_typing: Boolean(isTyping),
+      client_id: localClientId.value,
+    });
+  } catch (error) {
+    // Ignore typing broadcast failures.
+  }
+};
+
+const scheduleTypingStop = () => {
+  if (typingStopTimer.value) {
+    window.clearTimeout(typingStopTimer.value);
+  }
+  typingStopTimer.value = window.setTimeout(() => {
+    sendTypingEvent(false);
+    typingStopTimer.value = null;
+  }, 1800);
+};
+
+const handleComposerInput = () => {
+  if (!selectedSubject.value) return;
+  if (!composer.value.trim()) {
+    if (typingDebounceTimer.value) {
+      window.clearTimeout(typingDebounceTimer.value);
+      typingDebounceTimer.value = null;
+    }
+    if (typingStopTimer.value) {
+      window.clearTimeout(typingStopTimer.value);
+      typingStopTimer.value = null;
+    }
+    sendTypingEvent(false);
+    return;
+  }
+
+  if (typingDebounceTimer.value) {
+    window.clearTimeout(typingDebounceTimer.value);
+  }
+  typingDebounceTimer.value = window.setTimeout(() => {
+    sendTypingEvent(true);
+    scheduleTypingStop();
+  }, 250);
+};
+
 const leaveSubjectRoom = (subjectId) => {
   return subjectId;
 };
@@ -702,8 +837,25 @@ const loadMessages = async (subjectId) => {
   }
 };
 
+const loadOnlineUsers = async (subjectId) => {
+  if (!subjectId) return;
+  try {
+    const response = await api.get(`/learning/subjects/${subjectId}/chat/online`);
+    onlineUsersBySubject.value = {
+      ...onlineUsersBySubject.value,
+      [subjectId]: response?.data?.users || [],
+    };
+  } catch (error) {
+    // Ignore online user refresh errors silently.
+  }
+};
+
 const selectSubject = async (subject) => {
   const previousSubjectId = selectedSubject.value?.id || null;
+  if (previousSubjectId && Number(previousSubjectId) !== Number(subject.id)) {
+    await sendTypingEvent(false);
+    clearTypingForSubject(previousSubjectId);
+  }
   selectedSubject.value = subject;
   composer.value = "";
   chatError.value = "";
@@ -714,6 +866,7 @@ const selectSubject = async (subject) => {
   }
 
   await loadMessages(subject.id);
+  await loadOnlineUsers(subject.id);
   joinSubjectRoom(subject.id);
 };
 
@@ -746,6 +899,44 @@ const stopRecordingTimer = () => {
   }
 };
 
+const stopWaveformTimer = () => {
+  if (waveformTimer.value) {
+    window.clearInterval(waveformTimer.value);
+    waveformTimer.value = null;
+  }
+};
+
+const resetWaveformBars = () => {
+  recordingWavePoints.value = "0,20 300,20";
+};
+
+const startWaveformTracking = () => {
+  if (!analyserNode.value) {
+    return;
+  }
+
+  const bins = new Uint8Array(analyserNode.value.fftSize);
+  stopWaveformTimer();
+
+  waveformTimer.value = window.setInterval(() => {
+    if (!analyserNode.value) return;
+    analyserNode.value.getByteTimeDomainData(bins);
+
+    const samples = 64;
+    const step = Math.max(1, Math.floor(bins.length / samples));
+    const points = [];
+    for (let i = 0; i < samples; i += 1) {
+      const idx = i * step;
+      const value = bins[idx] ?? 128;
+      const normalized = (value - 128) / 128; // -1..1
+      const x = (i / (samples - 1)) * 300;
+      const y = 20 - normalized * 14;
+      points.push(`${x.toFixed(2)},${y.toFixed(2)}`);
+    }
+    recordingWavePoints.value = points.join(" ");
+  }, 80);
+};
+
 const cleanupMediaStream = () => {
   if (mediaStream.value) {
     mediaStream.value.getTracks().forEach((track) => track.stop());
@@ -765,6 +956,8 @@ const clearAttachment = () => {
   attachmentPreviewName.value = "";
   revokeRecordedVoiceUrl();
   stopRecordingTimer();
+  stopWaveformTimer();
+  resetWaveformBars();
   cleanupMediaStream();
   recordedChunks.value = [];
   recordingSeconds.value = 0;
@@ -773,6 +966,18 @@ const clearAttachment = () => {
   }
   mediaRecorder.value = null;
   isRecordingVoice.value = false;
+  if (sourceNode.value) {
+    sourceNode.value.disconnect();
+    sourceNode.value = null;
+  }
+  if (analyserNode.value) {
+    analyserNode.value.disconnect();
+    analyserNode.value = null;
+  }
+  if (audioContext.value) {
+    audioContext.value.close();
+    audioContext.value = null;
+  }
 };
 
 const handleAttachmentChange = (event) => {
@@ -810,6 +1015,15 @@ const toggleVoiceRecording = async () => {
     clearAttachment();
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     mediaStream.value = stream;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) {
+      audioContext.value = new AudioContextClass();
+      sourceNode.value = audioContext.value.createMediaStreamSource(stream);
+      analyserNode.value = audioContext.value.createAnalyser();
+      analyserNode.value.fftSize = 512;
+      sourceNode.value.connect(analyserNode.value);
+      startWaveformTracking();
+    }
     const supportedMimeTypes = Object.keys(AUDIO_MIME_EXTENSION_MAP).filter((mimeType) => {
       try {
         return typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(mimeType);
@@ -917,7 +1131,7 @@ const loadSubjects = async () => {
   subjectError.value = "";
 
   try {
-    subjects.value = await sidebarStore.refreshLiveChatSubjects(role);
+    subjects.value = await sidebarStore.refreshLiveChatSubjects(role, { force: true });
     await refreshChatSummary();
 
     if (subjects.value.length === 0) {
@@ -930,11 +1144,13 @@ const loadSubjects = async () => {
     if (currentSelected) {
       selectedSubject.value = currentSelected;
       await loadMessages(currentSelected.id);
+      await loadOnlineUsers(currentSelected.id);
       return;
     }
 
     selectedSubject.value = subjects.value[0];
     await loadMessages(subjects.value[0].id);
+    await loadOnlineUsers(subjects.value[0].id);
   } catch (error) {
     subjectError.value = error.message;
   }
@@ -954,8 +1170,10 @@ const sendMessage = async () => {
 
     if (hasAttachment) {
       const uploadedFile = await uploadFileDirect(attachmentFile.value);
+      const isVoiceAttachment = String(uploadedFile.mimeType || "").toLowerCase().startsWith("audio/");
       payload = {
         message: composer.value.trim(),
+        message_type: isVoiceAttachment ? "VOICE" : undefined,
         attachment_url: uploadedFile.url,
         attachment_name: uploadedFile.name,
         attachment_mime_type: uploadedFile.mimeType,
@@ -964,6 +1182,7 @@ const sendMessage = async () => {
     }
 
     const response = await api.post(`/learning/subjects/${selectedSubject.value.id}/chat`, payload);
+    await sendTypingEvent(false);
     composer.value = "";
     clearAttachment();
 
@@ -1011,14 +1230,61 @@ onMounted(async () => {
         await refreshChatSummary();
       }
     }),
+    realtimeStore.on("learning-chat:typing", async (payload) => {
+      const subjectId = Number(payload?.subject_id || 0);
+      const typingUserId = Number(payload?.user_id || 0);
+      const isTyping = Boolean(payload?.is_typing);
+      if (!subjectId || !typingUserId || typingUserId === Number(currentUserId)) {
+        return;
+      }
+      if (String(payload?.origin_client_id || "") === localClientId.value) {
+        return;
+      }
+
+      const subjectTyping = { ...(typingStateBySubject.value[subjectId] || {}) };
+      if (isTyping) {
+        subjectTyping[typingUserId] = {
+          sender_name: payload?.sender_name || payload?.username || "Pengguna",
+          updated_at_unixms: Number(payload?.updated_at_unixms || Date.now()),
+        };
+      } else {
+        delete subjectTyping[typingUserId];
+      }
+
+      typingStateBySubject.value = {
+        ...typingStateBySubject.value,
+        [subjectId]: subjectTyping,
+      };
+    }),
+    realtimeStore.on("learning-presence:updated", async () => {
+      const subjectId = Number(selectedSubject.value?.id || 0);
+      if (!subjectId) return;
+      if (onlineRefreshTimer.value) {
+        window.clearTimeout(onlineRefreshTimer.value);
+      }
+      onlineRefreshTimer.value = window.setTimeout(() => {
+        loadOnlineUsers(subjectId);
+      }, 250);
+    }),
   ];
 
   await loadSubjects();
 });
 
 onUnmounted(() => {
+  sendTypingEvent(false);
+  if (typingStopTimer.value) {
+    window.clearTimeout(typingStopTimer.value);
+  }
+  if (typingDebounceTimer.value) {
+    window.clearTimeout(typingDebounceTimer.value);
+  }
+  if (onlineRefreshTimer.value) {
+    window.clearTimeout(onlineRefreshTimer.value);
+  }
   leaveSubjectRoom(selectedSubject.value?.id);
   clearAttachment();
+  stopWaveformTimer();
   realtimeUnsubscribers.value.forEach((unsubscribe) => {
     if (typeof unsubscribe === "function") {
       unsubscribe();
@@ -1037,3 +1303,6 @@ watch(chatError, (value) => {
   pushToast({ title: "Chat Gagal", message: value, type: "error" });
 });
 </script>
+
+<style scoped>
+</style>
