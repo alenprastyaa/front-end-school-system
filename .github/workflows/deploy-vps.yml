@@ -1,4 +1,4 @@
-name: Deploy VPS
+name: Deploy FE to VPS
 
 on:
   push:
@@ -16,51 +16,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build application
-        run: npm run build
-
-      - name: Upload build artifact to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
-          source: "dist/*"
-          target: "/tmp/school-system-fe-build"
-          strip_components: 1
-
-      - name: Publish release on VPS
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
+          port: ${{ secrets.VPS_PORT }}
           script: |
-            set -eu
-            TARGET_DIR="${{ secrets.VPS_TARGET_DIR }}"
-            if [ -z "$TARGET_DIR" ]; then
-              TARGET_DIR="/var/www/school-system-fe"
+            set -e
+            APP_DIR="${{ secrets.VPS_APP_DIR }}"
+            if [ -z "$APP_DIR" ]; then
+              APP_DIR="/root/FE"
             fi
 
-            sudo mkdir -p "$TARGET_DIR"
-            sudo rm -rf "$TARGET_DIR"/*
-            sudo cp -r /tmp/school-system-fe-build/. "$TARGET_DIR"/
-            sudo chown -R www-data:www-data "$TARGET_DIR"
-            rm -rf /tmp/school-system-fe-build
+            cd "$APP_DIR"
+            git fetch --all
+            git reset --hard origin/main
+            npm ci
+            npm run build
 
             if command -v systemctl >/dev/null 2>&1; then
               sudo systemctl reload nginx
