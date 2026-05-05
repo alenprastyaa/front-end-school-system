@@ -31,6 +31,70 @@
         </div>
       </section>
 
+      <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+        <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Load Test Server</h2>
+            <p class="mt-1 max-w-3xl text-sm text-slate-500 dark:text-slate-400">
+              Jalankan burst request serentak ke endpoint admin summary untuk menguji kemampuan server dan database menerima hit bersamaan.
+            </p>
+          </div>
+          <div class="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-end">
+            <label class="block md:min-w-[220px]">
+              <span class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Jumlah Hit Serentak</span>
+              <input v-model.number="loadTestForm.hitCount" type="number" min="1" max="2000"
+                class="mt-2 block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+            </label>
+            <button @click="runLoadTest" :disabled="isRunningLoadTest"
+              class="rounded-xl bg-amber-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-amber-500 disabled:opacity-50">
+              {{ isRunningLoadTest ? "Menjalankan..." : "Jalankan Load Test" }}
+            </button>
+          </div>
+        </div>
+
+        <div v-if="loadTestResult" class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <article class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-slate-800/50 dark:ring-slate-700">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Hit</p>
+            <p class="mt-2 text-2xl font-black text-slate-900 dark:text-white">{{ loadTestResult.hit_count }}</p>
+          </article>
+          <article class="rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:ring-emerald-500/20">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-500">Sukses</p>
+            <p class="mt-2 text-2xl font-black text-emerald-700 dark:text-emerald-300">{{ loadTestResult.success_count }}</p>
+          </article>
+          <article class="rounded-2xl bg-rose-50 p-4 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:ring-rose-500/20">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-rose-500">Gagal</p>
+            <p class="mt-2 text-2xl font-black text-rose-700 dark:text-rose-300">{{ loadTestResult.failure_count }}</p>
+          </article>
+          <article class="rounded-2xl bg-sky-50 p-4 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:ring-sky-500/20">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-500">Total Waktu</p>
+            <p class="mt-2 text-2xl font-black text-sky-700 dark:text-sky-300">{{ loadTestResult.total_elapsed_ms }} ms</p>
+          </article>
+          <article class="rounded-2xl bg-white p-4 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Rata-rata</p>
+            <p class="mt-2 text-xl font-black text-slate-900 dark:text-white">{{ loadTestResult.average_duration_ms }} ms</p>
+          </article>
+          <article class="rounded-2xl bg-white p-4 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">P95</p>
+            <p class="mt-2 text-xl font-black text-slate-900 dark:text-white">{{ loadTestResult.p95_duration_ms }} ms</p>
+          </article>
+          <article class="rounded-2xl bg-white p-4 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Maksimum</p>
+            <p class="mt-2 text-xl font-black text-slate-900 dark:text-white">{{ loadTestResult.max_duration_ms }} ms</p>
+          </article>
+          <article class="rounded-2xl bg-white p-4 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Target</p>
+            <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ loadTestResult.target }}</p>
+          </article>
+        </div>
+
+        <div v-if="loadTestResult?.error_samples?.length" class="mt-4 rounded-2xl bg-rose-50 p-4 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:ring-rose-500/20">
+          <p class="text-sm font-bold text-rose-700 dark:text-rose-300">Contoh Error</p>
+          <ul class="mt-2 space-y-1 text-sm text-rose-600 dark:text-rose-200">
+            <li v-for="(item, index) in loadTestResult.error_samples" :key="`load-test-error-${index}`">{{ item }}</li>
+          </ul>
+        </div>
+      </section>
+
       <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 -translate-y-2"
         enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-200"
         leave-from-class="opacity-100" leave-to-class="opacity-0">
@@ -122,6 +186,11 @@ const confirmInputs = reactive({});
 const isResetting = reactive({});
 const registrationLink = ref("");
 const isGeneratingLink = ref(false);
+const isRunningLoadTest = ref(false);
+const loadTestResult = ref(null);
+const loadTestForm = reactive({
+  hitCount: 1000,
+});
 
 const loadSummary = async () => {
   isLoading.value = true;
@@ -232,6 +301,29 @@ const copyRegistrationLink = async () => {
       message: "Silakan salin manual dari kolom link.",
       type: "error",
     });
+  }
+};
+
+const runLoadTest = async () => {
+  isRunningLoadTest.value = true;
+  try {
+    const response = await api.post("/admin-settings/load-test", {
+      hit_count: Number(loadTestForm.hitCount) || 0,
+    });
+    loadTestResult.value = response?.data || null;
+    pushToast({
+      title: "Load Test Selesai",
+      message: `${response?.data?.success_count || 0} request sukses, ${response?.data?.failure_count || 0} gagal.`,
+      type: "success",
+    });
+  } catch (error) {
+    pushToast({
+      title: "Load Test Gagal",
+      message: error.message,
+      type: "error",
+    });
+  } finally {
+    isRunningLoadTest.value = false;
   }
 };
 
