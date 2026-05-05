@@ -1,7 +1,7 @@
 <template>
   <!-- App -->
   <div class="flex h-screen overflow-hidden bg-gray-50 font-lexend dark:bg-gray-900">
-    <div v-if="!shouldHideChrome" :class="{ hidden: !sidebar, block: sidebar }">
+    <div v-if="!shouldHideChrome" :class="sidebar ? 'block' : 'hidden lg:block'">
       <div
         class="mobile-sidebar-offset lg:flex-auto w-sidebar bg-white dark:bg-gray-800 border-r-2 dark:border-gray-700 lg:z-0 z-20 overflow-auto lg:relative fixed">
         <perfect-scrollbar class="h-screen">
@@ -207,7 +207,9 @@ export default {
   },
   watch: {
     $route() {
-      this.sidebar = false;
+      if (typeof window !== "undefined" && window.innerWidth < 1024) {
+        this.sidebar = false;
+      }
       this.maybeOpenPwaInstallModal();
     },
   },
