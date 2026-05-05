@@ -52,6 +52,8 @@ import { useLayoutChrome } from "@/composables/useLayoutChrome";
 const layoutChromeState = useLayoutChrome();
 const SHOW_PWA_INSTALL_AFTER_LOGIN_KEY = "show-pwa-install-after-login";
 const PWA_INSTALLED_KEY = "school-system-pwa-installed";
+const PWA_PROMPT_SUPPRESSED_UNTIL_KEY = "school-system-pwa-prompt-suppressed-until";
+const PWA_PROMPT_SUPPRESS_DAYS = 180;
 
 export default {
   name: "App",
@@ -135,6 +137,11 @@ export default {
         return;
       }
 
+      const suppressedUntil = Number(localStorage.getItem(PWA_PROMPT_SUPPRESSED_UNTIL_KEY) || 0);
+      if (suppressedUntil && Date.now() < suppressedUntil) {
+        return;
+      }
+
       if (sessionStorage.getItem(SHOW_PWA_INSTALL_AFTER_LOGIN_KEY) !== "1") {
         return;
       }
@@ -144,6 +151,9 @@ export default {
     },
     closePwaInstallModal() {
       this.isPwaInstallModalOpen = false;
+      const suppressUntil = Date.now() + (PWA_PROMPT_SUPPRESS_DAYS * 24 * 60 * 60 * 1000);
+      localStorage.setItem(PWA_PROMPT_SUPPRESSED_UNTIL_KEY, String(suppressUntil));
+      sessionStorage.removeItem(SHOW_PWA_INSTALL_AFTER_LOGIN_KEY);
     },
     handleBeforeInstallPrompt(event) {
       event.preventDefault();
@@ -152,6 +162,7 @@ export default {
     },
     handleAppInstalled() {
       localStorage.setItem(PWA_INSTALLED_KEY, "1");
+      localStorage.removeItem(PWA_PROMPT_SUPPRESSED_UNTIL_KEY);
       this.deferredPwaPrompt = null;
       this.refreshPwaInstalledState();
       pushToast({
@@ -173,6 +184,7 @@ export default {
         const choiceResult = await promptEvent.userChoice;
         if (choiceResult?.outcome === "accepted") {
           this.isPwaInstallModalOpen = false;
+          localStorage.removeItem(PWA_PROMPT_SUPPRESSED_UNTIL_KEY);
           return;
         }
 

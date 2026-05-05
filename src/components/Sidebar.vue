@@ -256,6 +256,15 @@ const clearPendingLiveChatUnread = () => {
   sidebarStore.clearPendingLiveChatUnread();
 };
 
+const isAllowedSubjectNotification = (subjectId) => {
+  const normalized = Number(subjectId || 0);
+  if (!normalized) {
+    return false;
+  }
+
+  return liveChatSubjects.value.some((item) => Number(item.id) === normalized);
+};
+
 const playChatNotificationSound = () => {
   try {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -290,6 +299,10 @@ const playChatNotificationSound = () => {
 };
 
 const pushChatToast = (chatMessage) => {
+  if (!isAllowedSubjectNotification(chatMessage?.subject_id)) {
+    return;
+  }
+
   const subject = liveChatSubjects.value.find((item) => Number(item.id) === Number(chatMessage.subject_id));
   const preview = chatMessage.message
     || (chatMessage.message_type === "VOICE"
@@ -356,6 +369,10 @@ const openChatFromToast = (toast) => {
 };
 
 const maybeShowBrowserNotification = (chatMessage) => {
+  if (!isAllowedSubjectNotification(chatMessage?.subject_id)) {
+    return;
+  }
+
   if (typeof window === "undefined" || typeof Notification === "undefined") {
     return;
   }
@@ -422,6 +439,10 @@ const bindRealtimeStream = () => {
   realtimeUnsubscribers.value = [
     realtimeStore.on("learning-chat:new-message", (chatMessage) => {
       if (Number(chatMessage?.sender_id) === Number(currentUserId)) {
+        return;
+      }
+
+      if (!isAllowedSubjectNotification(chatMessage?.subject_id)) {
         return;
       }
 
