@@ -1,10 +1,10 @@
 <template>
-  <div class="p-6 space-y-6">
+  <div class="px-3 py-4 md:p-6 space-y-4 md:space-y-6">
 
 
-    <section class="grid xl:grid-cols-[420px,1fr] gap-6">
+    <section class="grid gap-4 md:gap-6 xl:grid-cols-[420px,1fr]">
       <form @submit.prevent="submitReceipt"
-        class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-6 space-y-4">
+        class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-4 md:p-6 space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal Pembayaran</label>
           <input v-model="form.payment_date" type="date" required
@@ -29,19 +29,54 @@
         </button>
       </form>
 
-      <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-6">
+      <div class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-4 md:p-6">
         <div class="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Riwayat bukti pembayaran</h2>
             <p class="text-sm text-gray-500 dark:text-gray-400">Data milik user login.</p>
           </div>
-          <button @click="loadReceipts" class="px-4 py-2 rounded-md border dark:border-gray-600 dark:text-white">
+          <button @click="loadReceipts" class="w-full sm:w-auto px-4 py-2 rounded-md border dark:border-gray-600 dark:text-white">
             Refresh
           </button>
         </div>
 
-        <div class="mt-4 overflow-x-auto">
-          <table class="min-w-full text-sm">
+        <div class="mt-4">
+          <div class="space-y-3 md:hidden">
+            <div v-if="receipts.length === 0" class="rounded-lg border border-dashed px-4 py-8 text-center text-gray-500 dark:border-gray-700 dark:text-gray-400">
+              Belum ada bukti pembayaran.
+            </div>
+            <div v-for="item in sortedReceipts" :key="`mobile-${item.id}`"
+              class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm dark:border-gray-700 dark:bg-gray-900/40">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Tanggal Bayar</p>
+                  <p class="font-semibold text-gray-900 dark:text-white">{{ formatDate(item.payment_date) }}</p>
+                </div>
+                <a v-if="item.image_path" :href="item.image_path" target="_blank" rel="noreferrer"
+                  class="rounded-md border px-2.5 py-1 text-xs font-semibold text-sky-700 dark:border-gray-600 dark:text-sky-300">
+                  Lihat
+                </a>
+              </div>
+              <div class="mt-3">
+                <p class="text-xs text-gray-500 dark:text-gray-400">Deskripsi</p>
+                <p class="mt-1 text-gray-800 dark:text-gray-200">{{ item.description || "-" }}</p>
+              </div>
+              <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">Dibuat {{ formatDateTime(item.created_at) }}</p>
+              <div class="mt-3 flex items-center justify-end gap-2">
+                <button @click="openEditModal(item)"
+                  class="rounded-md border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:border-gray-600 dark:text-gray-200">
+                  Edit
+                </button>
+                <button @click="openDeleteModal(item)"
+                  class="rounded-md bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 dark:bg-red-500/20 dark:text-red-300">
+                  Hapus
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="hidden overflow-x-auto md:block">
+            <table class="min-w-full text-sm">
             <thead>
               <tr class="text-left text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">
                 <th class="py-3 pr-4">
@@ -95,7 +130,8 @@
                 </td>
               </tr>
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       </div>
     </section>

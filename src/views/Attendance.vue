@@ -1,9 +1,9 @@
 <template>
   <div
-    class="min-h-screen bg-slate-50/50 pb-12 pt-4 font-sans text-slate-900 md:px-8 md:pt-8 dark:bg-slate-950 dark:text-slate-100">
+    class="min-h-screen bg-slate-50/50 px-3 pb-12 pt-4 font-sans text-slate-900 md:px-8 md:pt-8 dark:bg-slate-950 dark:text-slate-100">
     <div class="mx-auto max-w-[1440px] space-y-6">
 
-      <section class="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+      <section class="rounded-lg border border-slate-200 bg-white p-4 md:p-6 dark:border-slate-800 dark:bg-slate-900">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">Absensi</h1>
@@ -51,7 +51,7 @@
       </section>
 
       <div class="grid grid-cols-1 gap-6 xl:grid-cols-[340px,1fr]">
-        <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <section class="rounded-xl border border-slate-200 bg-white p-4 md:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div
             class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -79,7 +79,7 @@
 
         </section>
 
-        <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <section class="rounded-xl border border-slate-200 bg-white p-4 md:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div class="flex items-center justify-between gap-4 border-b border-slate-200 pb-4 dark:border-slate-800">
             <div>
               <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Aksi Kehadiran</h2>
@@ -172,7 +172,7 @@
       </div>
 
       <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div class="flex flex-col gap-4 border-b border-slate-200 p-6 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex flex-col gap-4 border-b border-slate-200 p-4 md:p-6 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Riwayat Kehadiran</h2>
             <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Catatan check-in dan check-out yang sudah tersimpan.</p>

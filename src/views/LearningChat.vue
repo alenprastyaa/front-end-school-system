@@ -163,7 +163,11 @@
                   :class="item.sender_id === currentUserId ? 'justify-end' : 'justify-start'">
                   <article
                     class="max-w-[90%] rounded-2xl px-3 py-2.5 shadow-sm md:max-w-[70%] md:rounded-3xl md:px-4 md:py-3"
-                    :class="item.sender_id === currentUserId ? ownMessageClass : 'rounded-tl-md bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-800'">
+                    :class="[
+                      item.sender_id === currentUserId ? ownMessageClass : 'rounded-tl-md bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-800',
+                      replyHighlightMessageId === Number(item.id) ? 'ring-2 ring-amber-400 dark:ring-amber-300' : '',
+                    ]"
+                    :data-message-id="item.id">
                     <div class="flex items-center justify-between gap-3 text-xs font-semibold">
                       <div class="flex items-center gap-2">
                         <span>{{ item.sender_name || "Pengguna" }}</span>
@@ -176,22 +180,25 @@
                         Balas
                       </button>
                     </div>
-                    <div v-if="parseReplyPayload(item.message).replyName" class="mt-2 rounded-xl border-l-4 px-2.5 py-2 text-xs"
+                    <button v-if="parseReplyPayload(item.message).replyName" type="button"
+                      @click="jumpToReplyTarget(item)"
+                      class="mt-2 w-full rounded-xl border-l-4 px-2.5 py-2 text-left text-xs"
                       :class="item.sender_id === currentUserId ? 'border-white/70 bg-white/15 text-white/90' : 'border-sky-500 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'">
                       <p class="font-semibold">{{ parseReplyPayload(item.message).replyName }}</p>
                       <p class="mt-0.5 line-clamp-2">{{ parseReplyPayload(item.message).replyPreview }}</p>
-                    </div>
+                    </button>
                     <p v-if="parseReplyPayload(item.message).body" class="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed">
                       {{ parseReplyPayload(item.message).body }}
                     </p>
                     <div v-if="item.attachment_url" class="mt-3">
                       <audio v-if="isVoiceMessage(item)" :src="normalizePublicUrl(item.attachment_url)" controls
                         class="w-full max-w-sm" />
-                      <a v-else-if="item.message_type === 'IMAGE'" :href="normalizePublicUrl(item.attachment_url)"
-                        target="_blank" rel="noreferrer" class="block overflow-hidden rounded-2xl">
+                      <button v-else-if="item.message_type === 'IMAGE'" type="button"
+                        @click="openImagePreview(normalizePublicUrl(item.attachment_url), item.attachment_name)"
+                        class="block w-full overflow-hidden rounded-2xl text-left">
                         <img :src="normalizePublicUrl(item.attachment_url)"
                           :alt="item.attachment_name || 'Lampiran gambar'" class="max-h-72 w-full object-cover" />
-                      </a>
+                      </button>
                       <a v-else-if="item.message_type === 'PDF'" :href="normalizePublicUrl(item.attachment_url)"
                         target="_blank" rel="noreferrer"
                         class="flex items-center gap-3 rounded-2xl bg-black/5 px-4 py-3 text-sm font-semibold hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15">
@@ -334,6 +341,34 @@
         </div>
       </div>
     </main>
+    <div v-if="showImagePreview" class="fixed inset-0 z-[80] bg-black/90" @click="closeImagePreview">
+      <div class="absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-3">
+        <p class="truncate text-xs font-semibold text-white/80">{{ previewImageName || "Preview Gambar" }}</p>
+        <div class="flex items-center gap-2">
+          <button type="button" @click.stop="zoomOutPreview"
+            class="rounded-full bg-white/15 p-2 text-white hover:bg-white/25">
+            <Icon icon="mdi:magnify-minus-outline" class="h-5 w-5" />
+          </button>
+          <button type="button" @click.stop="resetPreviewZoom"
+            class="rounded-full bg-white/15 p-2 text-white hover:bg-white/25">
+            <Icon icon="mdi:fit-to-page-outline" class="h-5 w-5" />
+          </button>
+          <button type="button" @click.stop="zoomInPreview"
+            class="rounded-full bg-white/15 p-2 text-white hover:bg-white/25">
+            <Icon icon="mdi:magnify-plus-outline" class="h-5 w-5" />
+          </button>
+          <button type="button" @click.stop="closeImagePreview"
+            class="rounded-full bg-white/15 p-2 text-white hover:bg-white/25">
+            <Icon icon="mdi:close" class="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+      <div class="flex h-full w-full items-center justify-center overflow-auto p-4 pt-16">
+        <img :src="previewImageUrl" :alt="previewImageName || 'Preview gambar'"
+          class="max-h-full max-w-full origin-center object-contain transition-transform duration-150"
+          :style="{ transform: `scale(${previewImageZoom})` }" @click.stop />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -383,6 +418,11 @@ const attachmentInputRef = ref(null);
 const chatIconInputRef = ref(null);
 const messageListRef = ref(null);
 const replyTarget = ref(null);
+const replyHighlightMessageId = ref(null);
+const showImagePreview = ref(false);
+const previewImageUrl = ref("");
+const previewImageName = ref("");
+const previewImageZoom = ref(1);
 const messagesBySubject = ref({});
 const chatSummaryBySubject = ref({});
 const realtimeUnsubscribers = ref([]);
@@ -684,9 +724,10 @@ const getMessagePreview = (message) => {
 
 const parseReplyPayload = (rawMessage) => {
   const text = String(rawMessage || "");
-  const matched = text.match(/^\[Balas (.+?): (.+?)\]\n([\s\S]*)$/);
+  const matched = text.match(/^\[Balas(?:#(\d+))?\s+(.+?): (.+?)\]\n([\s\S]*)$/);
   if (!matched) {
     return {
+      replyId: null,
       replyName: "",
       replyPreview: "",
       body: text,
@@ -694,10 +735,43 @@ const parseReplyPayload = (rawMessage) => {
   }
 
   return {
-    replyName: matched[1] || "",
-    replyPreview: matched[2] || "",
-    body: matched[3] || "",
+    replyId: matched[1] ? Number(matched[1]) : null,
+    replyName: matched[2] || "",
+    replyPreview: matched[3] || "",
+    body: matched[4] || "",
   };
+};
+
+const jumpToReplyTarget = async (messageItem) => {
+  const parsed = parseReplyPayload(messageItem?.message);
+  const replyId = Number(parsed?.replyId || 0);
+  if (!replyId) {
+    pushToast({
+      title: "Pesan Asal Tidak Ditemukan",
+      message: "Balasan ini belum menyimpan referensi pesan asal.",
+      type: "info",
+    });
+    return;
+  }
+
+  await nextTick();
+  const target = messageListRef.value?.querySelector?.(`[data-message-id="${replyId}"]`);
+  if (!target) {
+    pushToast({
+      title: "Pesan Asal Tidak Tersedia",
+      message: "Pesan asal kemungkinan di luar riwayat yang sedang dimuat.",
+      type: "info",
+    });
+    return;
+  }
+
+  target.scrollIntoView({ behavior: "smooth", block: "center" });
+  replyHighlightMessageId.value = replyId;
+  window.setTimeout(() => {
+    if (replyHighlightMessageId.value === replyId) {
+      replyHighlightMessageId.value = null;
+    }
+  }, 1600);
 };
 
 const isVoiceMessage = (message) => {
@@ -984,6 +1058,33 @@ const setReplyTarget = (message) => {
 
 const clearReplyTarget = () => {
   replyTarget.value = null;
+};
+
+const openImagePreview = (url, name = "") => {
+  if (!url) return;
+  previewImageUrl.value = url;
+  previewImageName.value = name || "";
+  previewImageZoom.value = 1;
+  showImagePreview.value = true;
+};
+
+const closeImagePreview = () => {
+  showImagePreview.value = false;
+  previewImageUrl.value = "";
+  previewImageName.value = "";
+  previewImageZoom.value = 1;
+};
+
+const zoomInPreview = () => {
+  previewImageZoom.value = Math.min(4, Number((previewImageZoom.value + 0.25).toFixed(2)));
+};
+
+const zoomOutPreview = () => {
+  previewImageZoom.value = Math.max(1, Number((previewImageZoom.value - 0.25).toFixed(2)));
+};
+
+const resetPreviewZoom = () => {
+  previewImageZoom.value = 1;
 };
 
 const backToGroupList = () => {
@@ -1295,7 +1396,7 @@ const sendMessage = async () => {
     const hasAttachment = Boolean(attachmentFile.value);
     const baseMessage = composer.value.trim();
     const replyPrefix = replyTarget.value
-      ? `[Balas ${replyTarget.value.sender_name || "Pengguna"}: ${getMessagePreview(replyTarget.value)}]`
+      ? `[Balas#${Number(replyTarget.value.id || 0)} ${replyTarget.value.sender_name || "Pengguna"}: ${getMessagePreview(replyTarget.value)}]`
       : "";
     const finalMessage = [replyPrefix, baseMessage].filter(Boolean).join("\n");
     let payload = { message: finalMessage };
