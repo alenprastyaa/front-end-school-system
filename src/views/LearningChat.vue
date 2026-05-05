@@ -560,8 +560,17 @@ const subjectMessageCount = (subjectId) => {
   return messages.length > 99 ? "99+" : String(messages.length);
 };
 
-const subjectUnreadCount = (subjectId) =>
-  Number(chatSummaryBySubject.value[subjectId]?.unread_count || 0);
+const subjectUnreadCount = (subjectId) => {
+  const normalizedSubjectId = Number(subjectId || 0);
+  if (!normalizedSubjectId) {
+    return 0;
+  }
+
+  const localCount = Number(chatSummaryBySubject.value[normalizedSubjectId]?.unread_count || 0);
+  const baseCount = Number(sidebarStore.liveChatUnreadBySubject?.[normalizedSubjectId] || 0);
+  const pendingCount = Number(sidebarStore.liveChatPendingUnreadBySubject?.[normalizedSubjectId] || 0);
+  return Math.max(localCount, baseCount, pendingCount);
+};
 
 const formatUnreadCount = (value) => (value > 99 ? "99+" : String(value));
 
@@ -749,6 +758,7 @@ const markCurrentSubjectAsRead = async () => {
         unread_count: 0,
       },
     };
+    sidebarStore.clearPendingLiveChatUnreadBySubject(subjectId);
     return;
   }
 
@@ -761,6 +771,7 @@ const markCurrentSubjectAsRead = async () => {
         last_read_message_id: currentLastReadMessageId,
       },
     };
+    sidebarStore.clearPendingLiveChatUnreadBySubject(subjectId);
     return;
   }
 
@@ -777,6 +788,7 @@ const markCurrentSubjectAsRead = async () => {
         last_read_message_id: Number(readState?.last_read_message_id || lastMessageId),
       },
     };
+    sidebarStore.clearPendingLiveChatUnreadBySubject(subjectId);
   } catch (error) {
     // Ignore read marking failures silently to avoid noisy UX.
   }

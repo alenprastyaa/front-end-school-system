@@ -141,6 +141,22 @@ export const useSidebar = defineStore("sidebar", {
       this.recomputeLiveChatUnreadCount();
     },
 
+    clearPendingLiveChatUnreadBySubject(subjectId) {
+      const normalizedSubjectId = Number(subjectId || 0);
+      if (!normalizedSubjectId) {
+        return;
+      }
+
+      if (!(normalizedSubjectId in this.liveChatPendingUnreadBySubject)) {
+        return;
+      }
+
+      const nextPending = { ...this.liveChatPendingUnreadBySubject };
+      delete nextPending[normalizedSubjectId];
+      this.liveChatPendingUnreadBySubject = nextPending;
+      this.recomputeLiveChatUnreadCount();
+    },
+
     async refreshLiveChatSummary({ force = false } = {}) {
       if (!force && this.liveChatSummaryLoadedAt && Date.now() - this.liveChatSummaryLoadedAt < SUMMARY_TTL) {
         return this.liveChatSummaryItems;
