@@ -1,27 +1,29 @@
 <template>
   <div class="min-h-screen bg-slate-50 p-4 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
     <main class="mx-auto mt-8 max-w-[1400px] space-y-6">
-      <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <article class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Tugas</p>
-          <p class="mt-2 text-3xl font-bold">{{ summary.total_assignments }}</p>
-        </article>
-        <article class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Terkumpul</p>
-          <p class="mt-2 text-3xl font-bold">{{ summary.submitted_count }}</p>
-        </article>
-        <article class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Belum Kumpul</p>
-          <p class="mt-2 text-3xl font-bold">{{ summary.pending_count }}</p>
-        </article>
-        <article class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Sudah Dinilai</p>
-          <p class="mt-2 text-3xl font-bold">{{ summary.graded_count }}</p>
-        </article>
-        <article class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Rata-rata</p>
-          <p class="mt-2 text-3xl font-bold">{{ summary.average_score ?? "-" }}</p>
-        </article>
+      <section class="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+        <div class="mb-2 flex items-center justify-between">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">Ringkasan Nilai</h2>
+          <div class="text-sm font-bold text-emerald-600 dark:text-emerald-400">Rata-rata: {{ summary.average_score ?? "-" }}</div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div class="rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800/60">
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Total</p>
+            <p class="mt-1 text-lg font-bold">{{ summary.total_assignments }}</p>
+          </div>
+          <div class="rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800/60">
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Terkumpul</p>
+            <p class="mt-1 text-lg font-bold">{{ summary.submitted_count }}</p>
+          </div>
+          <div class="rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800/60">
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Belum</p>
+            <p class="mt-1 text-lg font-bold">{{ summary.pending_count }}</p>
+          </div>
+          <div class="rounded-xl bg-slate-50 px-3 py-2 dark:bg-slate-800/60">
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Dinilai</p>
+            <p class="mt-1 text-lg font-bold">{{ summary.graded_count }}</p>
+          </div>
+        </div>
       </section>
 
       <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
@@ -42,7 +44,7 @@
           </select>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="hidden md:block overflow-x-auto">
           <table class="min-w-[980px] w-full text-sm">
             <thead class="bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/60">
               <tr>
@@ -75,6 +77,27 @@
               </tr>
             </tbody>
           </table>
+        </div>
+        <div class="space-y-2 md:hidden">
+          <article v-for="row in filteredRows" :key="`m-${row.assignment_id}-${row.subject_id}`"
+            class="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <p class="text-xs font-semibold text-slate-500">{{ row.subject_name }}</p>
+                <h3 class="text-sm font-bold">{{ row.title }}</h3>
+              </div>
+              <div class="text-right text-xs font-semibold">
+                <p>{{ row.score ?? "-" }}</p>
+              </div>
+            </div>
+            <div class="mt-2 text-xs text-slate-500">
+              <p>Tenggat: {{ formatDateTime(row.due_date) }}</p>
+              <p>Feedback: {{ row.feedback || "-" }}</p>
+            </div>
+          </article>
+          <div v-if="filteredRows.length === 0" class="py-8 text-center text-sm text-slate-500">
+            Tidak ada data nilai.
+          </div>
         </div>
       </section>
     </main>
