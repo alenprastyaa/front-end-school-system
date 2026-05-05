@@ -63,6 +63,17 @@
                   class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-10 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
               </div>
             </div>
+
+            <div class="space-y-1.5">
+              <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Baris</label>
+              <select v-model="pageSize"
+                class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-4 pr-10 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
+                <option :value="10">10 / halaman</option>
+                <option :value="20">20 / halaman</option>
+                <option :value="50">50 / halaman</option>
+                <option :value="100">100 / halaman</option>
+              </select>
+            </div>
           </div>
 
           <div class="flex flex-none gap-3 sm:w-auto">
@@ -121,7 +132,7 @@
                       class="text-slate-300 transition group-hover:text-slate-500">{{ sortIndicator('score')
                       }}</span></button></th>
                 <th class="w-[230px] px-6 py-4 font-semibold">Feedback Guru</th>
-                <th class="w-[100px] px-6 py-4 font-semibold text-right">Aksi</th>
+                <th class="w-[220px] px-6 py-4 font-semibold text-right">Aksi</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
@@ -154,7 +165,7 @@
                 </td>
 
                 <td class="px-6 py-4 align-top">
-                  <button v-if="['MCQ', 'ESSAY'].includes(row.assignment_type)" @click="openReview(row)"
+                  <button v-if="canOpenQuizReview(row)" @click="openReview(row)"
                     class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round"
@@ -236,6 +247,24 @@
               </tr>
             </tbody>
           </table>
+        </div>
+        <div class="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/70 px-6 py-4 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-800/30 dark:text-slate-400 md:flex-row md:items-center md:justify-between">
+          <div>
+            Menampilkan {{ paginationStartRow }}-{{ paginationEndRow }} dari {{ totalRows }} data
+          </div>
+          <div class="flex items-center gap-2">
+            <button @click="goToPreviousPage" :disabled="currentPage <= 1"
+              class="rounded-lg bg-white px-3 py-1.5 font-medium text-slate-700 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">
+              Sebelumnya
+            </button>
+            <span class="min-w-[90px] text-center font-medium text-slate-600 dark:text-slate-300">
+              Halaman {{ currentPage }} / {{ totalPages }}
+            </span>
+            <button @click="goToNextPage" :disabled="currentPage >= totalPages"
+              class="rounded-lg bg-white px-3 py-1.5 font-medium text-slate-700 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">
+              Berikutnya
+            </button>
+          </div>
         </div>
       </section>
     </main>
@@ -334,11 +363,15 @@ const subjects = ref([]);
 const masterDataStore = useMasterDataStore();
 const assignments = ref([]);
 const rows = ref([]);
+const totalRows = ref(0);
 const loadError = ref("");
 const message = ref("");
 const isError = ref(false);
 const reviewRow = ref(null);
 const tableSort = createSortState("submitted_at", "desc");
+const currentPage = ref(1);
+const pageSize = ref(20);
+let keywordSearchTimer = null;
 
 const filters = reactive({
   subjectId: "",
@@ -354,34 +387,7 @@ const messageClass = computed(() =>
     : "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/10 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20",
 );
 
-const filteredRows = computed(() =>
-  rows.value.filter((row) => {
-    if (filters.assignmentId && String(row.assignment_id) !== filters.assignmentId) {
-      return false;
-    }
-
-    if (filters.gradeStatus === "graded" && (row.score === null || row.score === undefined)) {
-      return false;
-    }
-
-    if (filters.gradeStatus === "ungraded" && row.score !== null && row.score !== undefined) {
-      return false;
-    }
-
-    if (filters.assignmentType && row.assignment_type !== filters.assignmentType) {
-      return false;
-    }
-
-    if (filters.keyword) {
-      const keyword = filters.keyword.toLowerCase();
-      if (!row.student_name?.toLowerCase().includes(keyword)) {
-        return false;
-      }
-    }
-
-    return true;
-  }),
-);
+const filteredRows = computed(() => rows.value);
 
 const sortedRows = computed(() =>
   sortItems(filteredRows.value, tableSort, {
@@ -392,9 +398,20 @@ const sortedRows = computed(() =>
   }),
 );
 
+const totalPages = computed(() => Math.max(1, Math.ceil(totalRows.value / Number(pageSize.value || 20))));
+const paginationStartRow = computed(() => {
+  if (totalRows.value === 0) return 0;
+  return (currentPage.value - 1) * Number(pageSize.value || 20) + 1;
+});
+const paginationEndRow = computed(() => {
+  if (totalRows.value === 0) return 0;
+  return Math.min(currentPage.value * Number(pageSize.value || 20), totalRows.value);
+});
+
 const assignmentTypeLabel = (type) => {
   if (type === "MCQ") return "Quiz PG";
   if (type === "ESSAY") return "Quiz Essay";
+  if (type === "QUIZ") return "Quiz";
   if (type === "MANUAL") return "Ujian di Luar LMS";
   return "Tugas File";
 };
@@ -422,8 +439,56 @@ const formatViolationLabel = (type) => {
   return "Pelanggaran";
 };
 
+const normalizeQuestionOptions = (options) => {
+  if (Array.isArray(options)) {
+    return options;
+  }
+
+  if (typeof options !== "string" || !options.trim()) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(options);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const getQuestionText = (question) =>
+  question?.question_text || question?.question || "Soal tidak tersedia";
+
+const toNumericIndex = (value) => {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isInteger(parsed) ? parsed : null;
+};
+
+const calculateMcqScore = (quizPayload, answerPayload) => {
+  if (!Array.isArray(quizPayload) || quizPayload.length === 0 || !Array.isArray(answerPayload)) {
+    return null;
+  }
+
+  let correctCount = 0;
+
+  quizPayload.forEach((question, index) => {
+    const selectedIndex = toNumericIndex(answerPayload[index]?.selected_option);
+    const correctIndex = toNumericIndex(question?.correct_option);
+    if (selectedIndex !== null && correctIndex !== null && selectedIndex === correctIndex) {
+      correctCount += 1;
+    }
+  });
+
+  const value = (correctCount / quizPayload.length) * 100;
+  return Math.round(value * 100) / 100;
+};
+
 const reviewItems = computed(() => {
-  if (!reviewRow.value || reviewRow.value.assignment_type === "FILE") {
+  if (!reviewRow.value || !canOpenQuizReview(reviewRow.value)) {
     return [];
   }
 
@@ -433,8 +498,8 @@ const reviewItems = computed(() => {
   return questions.map((question, index) => {
     const answer = answers[index] || {};
 
-    if (reviewRow.value.assignment_type === "MCQ") {
-      const options = Array.isArray(question.options) ? question.options : [];
+    if (reviewRow.value.assignment_type === "MCQ" || reviewRow.value.assignment_type === "QUIZ") {
+      const options = normalizeQuestionOptions(question.options);
       const selectedRaw = answer.selected_option;
       const selectedIndex = selectedRaw === null || selectedRaw === undefined || selectedRaw === ""
         ? null
@@ -444,7 +509,7 @@ const reviewItems = computed(() => {
       const correctText = Number.isInteger(correctIndex) && options[correctIndex] ? options[correctIndex] : "-";
 
       return {
-        question: question.question,
+        question: getQuestionText(question),
         answer: `Jawaban siswa: ${selectedText}`,
         extra: `Jawaban benar: ${correctText}`,
         isCorrect: Number.isInteger(selectedIndex) && selectedIndex === correctIndex,
@@ -452,7 +517,7 @@ const reviewItems = computed(() => {
     }
 
     return {
-      question: question.question,
+      question: getQuestionText(question),
       answer: answer.answer_text || "Belum ada jawaban essay.",
       extra: question.rubric ? `Rubrik: ${question.rubric}` : null,
       isCorrect: null,
@@ -535,8 +600,29 @@ const downloadExcel = () => {
 };
 
 const openReview = (row) => {
+  if (!canOpenQuizReview(row) && !canOpenFileReview(row)) {
+    pushToast({ title: "Review Jawaban", message: "Belum ada jawaban/lampiran untuk direview.", type: "error" });
+    return;
+  }
   reviewRow.value = row;
 };
+
+const parseArrayField = (value) => {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== "string" || !value.trim()) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const canOpenQuizReview = (row) =>
+  parseArrayField(row?.quiz_payload).length > 0;
+
+const canOpenFileReview = (row) =>
+  row?.assignment_type === "FILE" && !!row?.attachment_url;
 
 const loadSubjects = async () => {
   subjects.value = await masterDataStore.getTeacherSubjects();
@@ -546,42 +632,52 @@ const loadRowsForSubject = async (subjectId) => {
   if (!subjectId) {
     assignments.value = [];
     rows.value = [];
+    totalRows.value = 0;
     return;
   }
 
-  const assignmentResponse = await api.get(`/learning/subjects/${subjectId}/assignments`);
-  const assignmentItems = assignmentResponse?.data || [];
+  const gradebookResponse = await api.get(`/learning/subjects/${subjectId}/gradebook`, {
+    params: {
+      assignment_id: filters.assignmentId || "",
+      grade_status: filters.gradeStatus || "",
+      assignment_type: filters.assignmentType || "",
+      keyword: filters.keyword || "",
+      page: currentPage.value,
+      limit: pageSize.value,
+    },
+  });
+  const assignmentItems = gradebookResponse?.data?.assignments || [];
+  const submissionItems = gradebookResponse?.data?.rows || [];
   assignments.value = assignmentItems;
-
-  const submissionResponses = await Promise.all(
-    assignmentItems.map(async (assignment) => {
-      const response = await api.get(`/learning/assignments/${assignment.id}/submissions`);
-      return {
-        assignment,
-        submissions: response?.data || [],
-      };
-    }),
-  );
+  totalRows.value = Number(gradebookResponse?.data?.total || 0);
 
   const subject = subjects.value.find((item) => String(item.id) === String(subjectId));
-  rows.value = submissionResponses.flatMap(({ assignment, submissions }) =>
-    submissions.map((submission) => ({
+  rows.value = submissionItems.map((submission) => {
+    const quizPayload = parseArrayField(submission.quiz_payload);
+    const answerPayload = parseArrayField(submission.answer_payload);
+    const recalculatedScore = submission.assignment_type === "MCQ" && submission.auto_graded
+      ? calculateMcqScore(quizPayload, answerPayload)
+      : null;
+    const normalizedScore = recalculatedScore ?? submission.score ?? null;
+
+    return {
       ...submission,
-      assignment_id: assignment.id,
-      assignment_title: assignment.title,
-      due_date: assignment.due_date,
-      subject_name: subject?.name || "-",
-      class_name: subject?.class_name || "-",
-      scoreDraft: submission.score ?? "",
+      quiz_payload: quizPayload,
+      answer_payload: answerPayload,
+      score: normalizedScore,
+      subject_name: submission.subject_name || subject?.name || "-",
+      class_name: submission.class_name || subject?.class_name || "-",
+      scoreDraft: normalizedScore ?? "",
       feedbackDraft: submission.feedback ?? "",
-    })),
-  );
+    };
+  });
 };
 
 const handleSubjectChange = async () => {
   filters.assignmentId = "";
   reviewRow.value = null;
   loadError.value = "";
+  currentPage.value = 1;
 
   try {
     await loadRowsForSubject(filters.subjectId);
@@ -620,6 +716,18 @@ const submitGrade = async (row) => {
   }
 };
 
+const goToPreviousPage = async () => {
+  if (currentPage.value <= 1 || !filters.subjectId) return;
+  currentPage.value -= 1;
+  await loadRowsForSubject(filters.subjectId);
+};
+
+const goToNextPage = async () => {
+  if (currentPage.value >= totalPages.value || !filters.subjectId) return;
+  currentPage.value += 1;
+  await loadRowsForSubject(filters.subjectId);
+};
+
 onMounted(async () => {
   try {
     await loadSubjects();
@@ -645,4 +753,35 @@ watch(message, (value) => {
     type: isError.value ? "error" : "success",
   });
 });
+
+watch(
+  () => [filters.assignmentId, filters.gradeStatus, filters.assignmentType, pageSize.value],
+  async () => {
+    if (!filters.subjectId) return;
+    currentPage.value = 1;
+    try {
+      await loadRowsForSubject(filters.subjectId);
+    } catch (error) {
+      loadError.value = error.message;
+    }
+  },
+);
+
+watch(
+  () => filters.keyword,
+  (value) => {
+    if (!filters.subjectId) return;
+    if (keywordSearchTimer) {
+      clearTimeout(keywordSearchTimer);
+    }
+    keywordSearchTimer = setTimeout(async () => {
+      currentPage.value = 1;
+      try {
+        await loadRowsForSubject(filters.subjectId);
+      } catch (error) {
+        loadError.value = error.message;
+      }
+    }, value ? 350 : 0);
+  },
+);
 </script>

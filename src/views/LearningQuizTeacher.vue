@@ -7,6 +7,11 @@
       <section class="mb-8">
 
 
+        <div v-if="subjectError"
+          class="mb-4 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-600 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-300">
+          {{ subjectError }}
+        </div>
+
         <div
           class="flex flex-nowrap gap-3 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button v-for="item in subjects" :key="item.id" @click="selectSubject(item)"
@@ -37,6 +42,25 @@
             </p>
 
           </div>
+
+          <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 -translate-y-2"
+            enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-200"
+            leave-from-class="opacity-100" leave-to-class="opacity-0">
+            <div v-if="message"
+              class="mx-6 mt-6 flex items-center gap-3 rounded-xl p-4 text-sm font-medium ring-1 ring-inset"
+              :class="isError ? 'bg-red-50 text-red-700 ring-red-600/20' : 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'">
+              <svg v-if="isError" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <svg v-else class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {{ message }}
+            </div>
+          </Transition>
 
           <div class="space-y-6 p-6">
             <section class="grid gap-8 xl:grid-cols-[minmax(0,1.2fr),1fr]">
@@ -759,14 +783,11 @@ import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatDateTime } from "@/utils/date";
-import { useMasterDataStore } from "@/store/masterData";
 
 const subjects = ref([]);
-const masterDataStore = useMasterDataStore();
 const selectedSubject = ref(null);
 const assignments = ref([]);
 const questionBank = ref([]);
-const questionBankForAssignment = ref([]);
 const questionBankTotal = ref(0);
 const subjectError = ref("");
 const message = ref("");
@@ -888,7 +909,7 @@ const bankEndRow = computed(() => {
 });
 
 const filteredQuestionBankForAssignment = computed(() =>
-  questionBankForAssignment.value,
+  questionBank.value.filter((item) => item.question_type === assignmentForm.assignment_type),
 );
 
 const selectedQuestionsForPublish = computed(() =>
@@ -952,30 +973,12 @@ watch([questionBankTotal, bankPageSize], () => {
 
 watch(
   () => assignmentForm.assignment_type,
-  async () => {
-    await loadAssignmentQuestionBank();
+  () => {
     assignmentForm.selected_question_bank_ids = assignmentForm.selected_question_bank_ids.filter((id) =>
       filteredQuestionBankForAssignment.value.some((item) => item.id === id),
     );
   },
 );
-
-const normalizeQuestionBankRows = (rows) =>
-  (rows || []).map((item) => {
-    let parsedOptions = item?.options;
-    if (typeof parsedOptions === "string") {
-      try {
-        parsedOptions = JSON.parse(parsedOptions);
-      } catch (error) {
-        parsedOptions = [];
-      }
-    }
-    return {
-      ...item,
-      options: Array.isArray(parsedOptions) ? parsedOptions : [],
-      question_type: String(item?.question_type || "").toUpperCase(),
-    };
-  });
 
 const resetQuestionBankForm = () => {
   questionBankForm.question_type = "MCQ";
@@ -1124,7 +1127,8 @@ const openQuizOverview = async (assignment) => {
 const loadSubjects = async () => {
   subjectError.value = "";
   try {
-    subjects.value = await masterDataStore.getTeacherSubjects();
+    const response = await api.get("/learning/subjects/teacher");
+    subjects.value = response?.data || [];
     if (!selectedSubject.value && subjects.value.length > 0) {
       await selectSubject(subjects.value[0]);
     }
@@ -1148,22 +1152,33 @@ const loadSubjectData = async () => {
     }),
   ]);
 
-  assignments.value = (assignmentResponse?.data || []).filter((item) => item.assignment_type !== "FILE" && !item.is_exam);
-  questionBank.value = normalizeQuestionBankRows(questionBankResponse?.data?.data || []);
-  questionBankTotal.value = questionBankResponse?.data?.total || 0;
-  await loadAssignmentQuestionBank();
-};
+  const filteredAssignments = (assignmentResponse?.data || []).filter(
+    (item) => item.assignment_type !== "FILE" && !item.is_exam,
+  );
 
-const loadAssignmentQuestionBank = async () => {
-  if (!selectedSubject.value) return;
-  const response = await api.get(`/learning/subjects/${selectedSubject.value.id}/question-bank`, {
-    params: {
-      question_type: assignmentForm.assignment_type || "MCQ",
-      page: 1,
-      limit: 500,
-    },
-  });
-  questionBankForAssignment.value = normalizeQuestionBankRows(response?.data?.data || []);
+  const assignmentsWithSubmissionCount = await Promise.all(
+    filteredAssignments.map(async (assignment) => {
+      try {
+        const overviewResponse = await api.get(`/learning/assignments/${assignment.id}/overview`);
+        const overviewData = overviewResponse?.data || {};
+        const analytics = overviewData.analytics || {};
+        const submittedStudents = Array.isArray(overviewData.submitted_students) ? overviewData.submitted_students : [];
+        return {
+          ...assignment,
+          submission_count: Number(analytics.submitted_count ?? submittedStudents.length ?? 0),
+        };
+      } catch {
+        return {
+          ...assignment,
+          submission_count: Number(assignment.submission_count || 0),
+        };
+      }
+    }),
+  );
+
+  assignments.value = assignmentsWithSubmissionCount;
+  questionBank.value = questionBankResponse?.data?.data || [];
+  questionBankTotal.value = questionBankResponse?.data?.total || 0;
 };
 
 const selectSubject = async (subject) => {
@@ -1214,13 +1229,13 @@ const downloadQuestionBankTemplate = async (questionType) => {
     const downloadUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = downloadUrl;
-    link.download = `template-bank-soal-${selectedSubject.value.name || "mapel"}.docx`;
+    link.download = `template-bank-soal-${selectedSubject.value.name || "mapel"}-${String(questionType).toLowerCase()}.doc`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(downloadUrl);
 
-    message.value = `Template Word ${questionType === "MCQ" ? "pilihan ganda" : "uraian"} berhasil diunduh.`;
+    message.value = `Template ${questionType === "MCQ" ? "pilihan ganda" : "uraian"} berhasil diunduh.`;
   } catch (error) {
     isError.value = true;
     message.value = error.message;
@@ -1312,6 +1327,11 @@ const submitAssignment = async () => {
 
     const response = await api.post("/learning/assignments", formData);
     message.value = response?.message || "Quiz berhasil diterbitkan";
+    pushToast({
+      title: "Quiz Berhasil Diterbitkan",
+      message: response?.message || "Quiz berhasil diterbitkan dan siap dikerjakan siswa.",
+      type: "success",
+    });
     resetAssignmentForm();
     await loadSubjectData();
   } catch (error) {
@@ -1323,18 +1343,4 @@ const submitAssignment = async () => {
 };
 
 onMounted(loadSubjects);
-
-watch(subjectError, (value) => {
-  if (!value) return;
-  pushToast({ title: "Gagal Memuat Quiz", message: value, type: "error" });
-});
-
-watch(message, (value) => {
-  if (!value) return;
-  pushToast({
-    title: isError.value ? "Aksi Quiz Gagal" : "Aksi Quiz Berhasil",
-    message: value,
-    type: isError.value ? "error" : "success",
-  });
-});
 </script>
