@@ -49,7 +49,7 @@
                         :class="selectedSubject?.id === subject.id ? 'bg-white text-slate-900' : unreadBadgeClass">
                         {{ formatUnreadCount(subjectUnreadCount(subject.id)) }}
                       </span>
-                      <span class="text-[11px] font-semibold"
+                      <span v-if="subjectMessageCount(subject.id) > 0" class="text-[11px] font-semibold"
                         :class="selectedSubject?.id === subject.id ? 'text-white/80' : 'text-slate-400'">
                         {{ subjectMessageCount(subject.id) }}
                       </span>
@@ -557,7 +557,7 @@ const getSubjectIconClass = (subject) =>
 
 const subjectMessageCount = (subjectId) => {
   const messages = messagesBySubject.value[subjectId] || [];
-  return messages.length > 99 ? "99+" : String(messages.length);
+  return messages.length > 99 ? 99 : messages.length;
 };
 
 const subjectUnreadCount = (subjectId) => {
@@ -578,7 +578,7 @@ const latestMessagePreview = (subjectId) => {
   const messages = messagesBySubject.value[subjectId] || [];
   const lastMessage = messages[messages.length - 1];
   if (!lastMessage) {
-    return "Belum ada pesan";
+    return subjectUnreadCount(subjectId) > 0 ? "Ada pesan baru" : "Belum ada pesan";
   }
 
   if (lastMessage.message_type === "VOICE") {
