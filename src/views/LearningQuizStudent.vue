@@ -1180,12 +1180,6 @@ const submitAssignment = async (triggeredAutomatically = false) => {
 
     isError.value = true;
     message.value = normalizedMessage;
-    pushToast({
-      title: `Gagal Mengirim ${target?.is_exam ? "Ujian" : "Quiz"}`,
-      message: normalizedMessage,
-      type: "error",
-      duration: 4200,
-    });
     if (submissionTarget.value?.id === target.id) {
       bindLockedNavigation();
       bindAntiCheatListeners();
