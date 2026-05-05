@@ -116,14 +116,15 @@
                     </p>
                   </div>
                   <button v-if="role === 'GURU'" type="button"
-                    class="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 md:gap-2 md:rounded-xl md:px-3 md:py-2 md:text-xs"
+                    class="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[8px] font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 md:gap-2 md:rounded-xl md:px-3 md:py-2 md:text-xs"
                     :disabled="isUploadingChatIcon" @click="openChatIconPicker">
-                    <svg v-if="isUploadingChatIcon" class="h-3.5 w-3.5 animate-spin md:h-4 md:w-4" fill="none" viewBox="0 0 24 24"
-                      stroke-width="2" stroke="currentColor">
+                    <svg v-if="isUploadingChatIcon" class="h-3.5 w-3.5 animate-spin md:h-4 md:w-4" fill="none"
+                      viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round"
                         d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                     </svg>
-                    <svg v-else class="h-3.5 w-3.5 md:h-4 md:w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <svg v-else class="h-3.5 w-3.5 md:h-4 md:w-4" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                      stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round"
                         d="M6.75 7.5h10.5M6.75 12h10.5m-10.5 4.5h4.5" />
                     </svg>
@@ -166,11 +167,8 @@
                     :class="[
                       item.sender_id === currentUserId ? ownMessageClass : 'rounded-tl-md bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-800',
                       replyHighlightMessageId === Number(item.id) ? 'ring-2 ring-amber-400 dark:ring-amber-300' : '',
-                    ]"
-                    :data-message-id="item.id"
-                    @touchstart.passive="handleMessagePressStart(item)"
-                    @touchend="handleMessagePressEnd"
-                    @touchcancel="handleMessagePressEnd">
+                    ]" :data-message-id="item.id" @touchstart.passive="handleMessagePressStart(item)"
+                    @touchend="handleMessagePressEnd" @touchcancel="handleMessagePressEnd">
                     <div class="flex items-center justify-between gap-3 text-xs font-semibold">
                       <div class="flex items-center gap-2">
                         <span>{{ item.sender_name || "Pengguna" }}</span>
@@ -185,7 +183,8 @@
                       :class="item.sender_id === currentUserId ? 'border-white/70 bg-white/15 text-white/90' : 'border-sky-500 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'">
                       <p class="line-clamp-2">{{ parseReplyPayload(item.message).replyPreview }}</p>
                     </button>
-                    <p v-if="parseReplyPayload(item.message).body" class="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed">
+                    <p v-if="parseReplyPayload(item.message).body"
+                      class="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed">
                       {{ parseReplyPayload(item.message).body }}
                     </p>
                     <div v-if="item.attachment_url" class="mt-3">
