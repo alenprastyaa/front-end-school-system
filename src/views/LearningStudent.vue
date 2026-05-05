@@ -260,7 +260,6 @@
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { uploadFileDirect } from "@/api/upload";
 import { formatDateTime } from "@/utils/date";
 import { normalizePublicUrl } from "@/utils/url";
 import { useMasterDataStore } from "@/store/masterData";
@@ -346,16 +345,11 @@ const submitAssignment = async () => {
   isError.value = false;
 
   try {
-    const payload = {
-      submission_text: submissionForm.submission_text || "",
-    };
+    const payload = new FormData();
+    payload.append("submission_text", submissionForm.submission_text || "");
 
     if (submissionFile.value) {
-      const uploadedFile = await uploadFileDirect(submissionFile.value);
-      payload.attachment_url = uploadedFile.url;
-      payload.attachment_name = uploadedFile.name;
-      payload.attachment_mime_type = uploadedFile.mimeType;
-      payload.attachment_size = uploadedFile.size;
+      payload.append("attachment", submissionFile.value);
     }
 
     const response = await api.post(`/learning/assignments/${submissionTarget.value.id}/submit`, payload);
