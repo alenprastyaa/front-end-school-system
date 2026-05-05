@@ -419,7 +419,8 @@ const saveProfile = async () => {
       message: profileMessage.value,
       type: "success",
     });
-    closeProfileModal();
+    showProfileModal.value = false;
+    syncProfileForm();
   } catch (error) {
     profileError.value = true;
     profileMessage.value = error.message;
