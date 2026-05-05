@@ -313,6 +313,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { Icon } from "@iconify/vue";
+import { useRoute } from "vue-router";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { uploadFileDirect } from "@/api/upload";
@@ -323,6 +324,7 @@ import { useSidebar } from "@/store/sidebar";
 import { useRealtimeStore } from "@/store/realtime";
 
 const role = getStoredRole();
+const route = useRoute();
 const sidebarStore = useSidebar();
 const realtimeStore = useRealtimeStore();
 const { connected: realtimeConnected } = storeToRefs(realtimeStore);
@@ -1184,9 +1186,20 @@ const loadSubjects = async () => {
       return;
     }
 
-    selectedSubject.value = subjects.value[0];
-    await loadMessages(subjects.value[0].id);
-    await loadOnlineUsers(subjects.value[0].id);
+    const requestedSubjectId = Number(route.query?.subject || 0);
+    if (requestedSubjectId) {
+      const requestedSubject = subjects.value.find((item) => Number(item.id) === requestedSubjectId);
+      if (requestedSubject) {
+        selectedSubject.value = requestedSubject;
+        mobileChatOpen.value = true;
+        await loadMessages(requestedSubject.id);
+        await loadOnlineUsers(requestedSubject.id);
+        return;
+      }
+    }
+
+    selectedSubject.value = null;
+    mobileChatOpen.value = false;
   } catch (error) {
     subjectError.value = error.message;
   }
@@ -1349,6 +1362,24 @@ watch(chatError, (value) => {
   if (!value) return;
   pushToast({ title: "Chat Gagal", message: value, type: "error" });
 });
+
+watch(
+  () => route.query?.subject,
+  async (value) => {
+    const subjectId = Number(value || 0);
+    if (!subjectId || !subjects.value.length) {
+      return;
+    }
+    if (Number(selectedSubject.value?.id || 0) === subjectId) {
+      return;
+    }
+    const subject = subjects.value.find((item) => Number(item.id) === subjectId);
+    if (!subject) {
+      return;
+    }
+    await selectSubject(subject);
+  },
+);
 </script>
 
 <style scoped></style>

@@ -96,7 +96,7 @@ export const useSidebar = defineStore("sidebar", {
       this.liveChatUnreadCount = [...subjectIds].reduce((total, subjectId) => {
         const baseCount = Number(this.liveChatUnreadBySubject?.[subjectId] || 0);
         const pendingCount = Number(this.liveChatPendingUnreadBySubject?.[subjectId] || 0);
-        return total + baseCount + pendingCount;
+        return total + Math.max(baseCount, pendingCount);
       }, 0);
     },
 
