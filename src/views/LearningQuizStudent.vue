@@ -357,8 +357,10 @@
                     <span
                       class="mr-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm text-slate-500 dark:bg-slate-800">{{
                         activeQuestionIndex + 1 }}</span>
-                    {{ currentQuestion.question }}
+                    {{ currentQuestionText }}
                   </h3>
+                  <img v-if="currentQuestionImageUrl" :src="currentQuestionImageUrl" alt="Gambar pertanyaan"
+                    class="mt-4 max-h-64 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
 
                   <div class="mt-6 space-y-3 pl-0 sm:pl-11">
                     <label v-for="(option, optionIndex) in currentQuestion.options || []"
@@ -373,7 +375,12 @@
                           :name="`answer-${activeQuestionIndex}`" :value="optionIndex"
                           class="h-5 w-5 cursor-pointer border-slate-300 text-rose-600 focus:ring-rose-600 dark:border-slate-600 dark:bg-slate-700 dark:focus:ring-rose-500" />
                       </div>
-                      <span class="font-medium leading-relaxed">{{ option }}</span>
+                      <div class="space-y-2">
+                        <span class="font-medium leading-relaxed">{{ optionText(option) }}</span>
+                        <img v-if="optionImageUrl(option)" :src="optionImageUrl(option)"
+                          :alt="`Opsi ${String.fromCharCode(65 + optionIndex)}`"
+                          class="max-h-40 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+                      </div>
                     </label>
                   </div>
                 </article>
@@ -386,8 +393,10 @@
                     <span
                       class="mr-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm text-slate-500 dark:bg-slate-800">{{
                         activeQuestionIndex + 1 }}</span>
-                    {{ currentQuestion.question }}
+                    {{ currentQuestionText }}
                   </h3>
+                  <img v-if="currentQuestionImageUrl" :src="currentQuestionImageUrl" alt="Gambar pertanyaan"
+                    class="mt-4 max-h-64 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
 
                   <div class="mt-6 pl-0 sm:pl-11">
                     <textarea v-model="currentAnswer.answer_text" rows="6" placeholder="Ketik jawaban Anda di sini..."
@@ -514,6 +523,27 @@ const completedAssignments = computed(() => assignments.value.filter((item) => B
 const pendingAssignments = computed(() => assignments.value.filter((item) => !item.submission_id).length);
 const totalQuestions = computed(() => (submissionTarget.value?.quiz_payload || []).length);
 const currentQuestion = computed(() => submissionTarget.value?.quiz_payload?.[activeQuestionIndex.value] || null);
+const QUESTION_IMAGE_MARKER = "[[QUESTION_IMAGE_URL]]";
+const parseQuestionContent = (rawText) => {
+  const text = String(rawText || "");
+  const markerIndex = text.lastIndexOf(QUESTION_IMAGE_MARKER);
+  if (markerIndex < 0) {
+    return {
+      question_text: text.trim(),
+      question_image_url: "",
+    };
+  }
+  return {
+    question_text: text.slice(0, markerIndex).trim(),
+    question_image_url: text.slice(markerIndex + QUESTION_IMAGE_MARKER.length).trim(),
+  };
+};
+const currentQuestionText = computed(() =>
+  parseQuestionContent(currentQuestion.value?.question || currentQuestion.value?.question_text || "").question_text,
+);
+const currentQuestionImageUrl = computed(() =>
+  parseQuestionContent(currentQuestion.value?.question || currentQuestion.value?.question_text || "").question_image_url,
+);
 const currentAnswer = computed(() => submissionForm.answers[activeQuestionIndex.value] || {});
 const questionDurationSeconds = computed(() => Number(submissionTarget.value?.question_duration_seconds || 0));
 const isSessionTimedExam = computed(() => Boolean(submissionTarget.value?.is_exam));
@@ -540,6 +570,46 @@ const examCategoryLabel = (type) => {
   if (type === "CUSTOM") return "Ujian Custom";
   return "Ujian";
 };
+
+const optionText = (option) => {
+  if (option && typeof option === "object" && !Array.isArray(option)) {
+    return String(option.text || option.label || "").trim();
+  }
+  return String(option || "").trim();
+};
+
+const optionImageUrl = (option) => {
+  if (option && typeof option === "object" && !Array.isArray(option)) {
+    return String(option.image_url || option.imageUrl || "").trim();
+  }
+  return "";
+};
+
+const safeParseJSONArray = (value) => {
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string") {
+    const text = value.trim();
+    if (!text) return [];
+    try {
+      const parsed = JSON.parse(text);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      return [];
+    }
+  }
+  return [];
+};
+
+const normalizeAssignment = (item) => ({
+  ...item,
+  assignment_type: String(item?.assignment_type || "").toUpperCase(),
+  quiz_payload: safeParseJSONArray(item?.quiz_payload).map((question) => {
+    const normalized = { ...(question || {}) };
+    normalized.options = safeParseJSONArray(normalized.options);
+    return normalized;
+  }),
+  answer_payload: safeParseJSONArray(item?.answer_payload),
+});
 
 const isExamNotStarted = (assignment) =>
   Boolean(assignment?.is_exam && assignment?.start_at && new Date(assignment.start_at).getTime() > Date.now());
@@ -1044,8 +1114,8 @@ const loadSubjects = async () => {
 const loadSubjectData = async () => {
   if (!selectedSubject.value) return;
   const response = await api.get(`/learning/subjects/${selectedSubject.value.id}/assignments`);
-  assignments.value = (response?.data || []).filter((item) => {
-    if (item.assignment_type === "FILE") {
+  assignments.value = (response?.data || []).map(normalizeAssignment).filter((item) => {
+    if (item.assignment_type !== "MCQ" && item.assignment_type !== "ESSAY") {
       return false;
     }
 

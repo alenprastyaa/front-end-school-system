@@ -766,6 +766,7 @@ const masterDataStore = useMasterDataStore();
 const selectedSubject = ref(null);
 const assignments = ref([]);
 const questionBank = ref([]);
+const questionBankForAssignment = ref([]);
 const questionBankTotal = ref(0);
 const subjectError = ref("");
 const message = ref("");
@@ -887,7 +888,7 @@ const bankEndRow = computed(() => {
 });
 
 const filteredQuestionBankForAssignment = computed(() =>
-  questionBank.value.filter((item) => item.question_type === assignmentForm.assignment_type),
+  questionBankForAssignment.value,
 );
 
 const selectedQuestionsForPublish = computed(() =>
@@ -951,12 +952,30 @@ watch([questionBankTotal, bankPageSize], () => {
 
 watch(
   () => assignmentForm.assignment_type,
-  () => {
+  async () => {
+    await loadAssignmentQuestionBank();
     assignmentForm.selected_question_bank_ids = assignmentForm.selected_question_bank_ids.filter((id) =>
       filteredQuestionBankForAssignment.value.some((item) => item.id === id),
     );
   },
 );
+
+const normalizeQuestionBankRows = (rows) =>
+  (rows || []).map((item) => {
+    let parsedOptions = item?.options;
+    if (typeof parsedOptions === "string") {
+      try {
+        parsedOptions = JSON.parse(parsedOptions);
+      } catch (error) {
+        parsedOptions = [];
+      }
+    }
+    return {
+      ...item,
+      options: Array.isArray(parsedOptions) ? parsedOptions : [],
+      question_type: String(item?.question_type || "").toUpperCase(),
+    };
+  });
 
 const resetQuestionBankForm = () => {
   questionBankForm.question_type = "MCQ";
@@ -1130,8 +1149,21 @@ const loadSubjectData = async () => {
   ]);
 
   assignments.value = (assignmentResponse?.data || []).filter((item) => item.assignment_type !== "FILE" && !item.is_exam);
-  questionBank.value = questionBankResponse?.data?.items || [];
+  questionBank.value = normalizeQuestionBankRows(questionBankResponse?.data?.data || []);
   questionBankTotal.value = questionBankResponse?.data?.total || 0;
+  await loadAssignmentQuestionBank();
+};
+
+const loadAssignmentQuestionBank = async () => {
+  if (!selectedSubject.value) return;
+  const response = await api.get(`/learning/subjects/${selectedSubject.value.id}/question-bank`, {
+    params: {
+      question_type: assignmentForm.assignment_type || "MCQ",
+      page: 1,
+      limit: 500,
+    },
+  });
+  questionBankForAssignment.value = normalizeQuestionBankRows(response?.data?.data || []);
 };
 
 const selectSubject = async (subject) => {
@@ -1182,7 +1214,7 @@ const downloadQuestionBankTemplate = async (questionType) => {
     const downloadUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = downloadUrl;
-    link.download = `template-bank-soal-${selectedSubject.value.name || "mapel"}-${String(questionType).toLowerCase()}.doc`;
+    link.download = `template-bank-soal-${selectedSubject.value.name || "mapel"}.docx`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

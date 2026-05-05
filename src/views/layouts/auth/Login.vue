@@ -5,7 +5,7 @@
         class="w-full max-w-md bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl p-8 space-y-6  mt-40">
         <div>
           <p class="text-sm uppercase tracking-wide text-gray-400">School System</p>
-          <h1 class="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">Login System Daffa</h1>
+          <h1 class="mt-2 text-3xl font-semibold text-gray-900 dark:text-white">Login System </h1>
           <p class="mt-4">Login Untuk mengakses halaman LMS</p>
         </div>
 

@@ -97,14 +97,13 @@
               </div>
             </div>
 
-            <section
+            <section v-if="false"
               class="grid gap-5 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:grid-cols-[1.15fr,0.85fr]">
               <div class="space-y-3">
                 <div>
                   <h3 class="font-semibold text-slate-900 dark:text-white">Impor soal dari template MS Word</h3>
                   <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                    Unduh template `.doc`, isi sesuai blok `[SOAL]` yang sudah disediakan, lalu unggah kembali.
-                    Satu blok = satu soal.
+                    Unduh template `.docx`, isi sesuai format yang sudah disediakan, lalu unggah kembali.
                   </p>
                 </div>
                 <div class="flex flex-wrap gap-3">
@@ -112,22 +111,18 @@
                     class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50">
                     {{ isDownloadingTemplate ? "Menyiapkan..." : "Download Template Pilihan Ganda" }}
                   </button>
-                  <button type="button" @click="downloadQuestionBankTemplate('ESSAY')" :disabled="isDownloadingTemplate"
-                    class="rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-700">
-                    Download Template Uraian
-                  </button>
                 </div>
               </div>
 
-              <div
+              <div v-if="false"
                 class="space-y-3 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-900/5 dark:bg-slate-800/50 dark:ring-white/5">
                 <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500">Upload Dokumen Template
                   Soal</label>
-                <input ref="questionBankDocumentInput" type="file" accept=".doc,.txt,.csv"
+                <input ref="questionBankDocumentInput" type="file" accept=".docx"
                   @change="handleQuestionBankDocumentChange"
                   class="block w-full rounded-xl border-0 bg-white px-3 py-2.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 file:mr-3 file:rounded-lg file:border-0 file:bg-sky-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-sky-700 dark:bg-slate-900 dark:text-white dark:ring-slate-700 dark:file:bg-sky-500/10 dark:file:text-sky-300" />
                 <p class="text-xs leading-5 text-slate-500 dark:text-slate-400">
-                  Format didukung: `.doc` (template Word), `.txt`, dan kompatibel `.csv`.
+                  Format didukung: `.docx` (template Word).
                 </p>
                 <div v-if="questionBankImportFileName"
                   class="rounded-xl bg-white px-3 py-2 text-sm text-slate-600 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700">
@@ -218,7 +213,10 @@
                       </td>
                       <td class="px-5 py-4">
                         <p class="max-w-3xl font-medium leading-relaxed text-slate-900 dark:text-white">{{
-                          item.question_text }}</p>
+                          parseQuestionContent(item.question_text).question_text }}</p>
+                        <img v-if="parseQuestionContent(item.question_text).question_image_url"
+                          :src="parseQuestionContent(item.question_text).question_image_url" alt="Gambar pertanyaan"
+                          class="mt-2 max-h-40 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
                         <p class="mt-1 text-xs text-slate-400">Dibuat: {{ formatDateTime(item.created_at) }}</p>
                       </td>
                       <td class="px-5 py-4 align-top">
@@ -451,8 +449,11 @@
                           </span>
                         </div>
                         <p class="mt-3 text-sm font-semibold leading-6 text-slate-900 dark:text-white">
-                          {{ item.question_text }}
+                          {{ parseQuestionContent(item.question_text).question_text }}
                         </p>
+                        <img v-if="parseQuestionContent(item.question_text).question_image_url"
+                          :src="parseQuestionContent(item.question_text).question_image_url" alt="Gambar pertanyaan"
+                          class="mt-3 max-h-48 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
 
                         <div v-if="item.question_type === 'MCQ'" class="mt-4 grid gap-2">
                           <div v-for="(option, optionIndex) in item.options || []"
@@ -460,7 +461,7 @@
                             :class="optionIndex === item.correct_option
                               ? 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300'
                               : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300'">
-                            {{ String.fromCharCode(65 + optionIndex) }}. {{ option }}
+                            <div>{{ String.fromCharCode(65 + optionIndex) }}. {{ parseOptionItem(option).text }}</div>
                           </div>
                         </div>
 
@@ -505,7 +506,7 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
 
         <div
-          class="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          class="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
           @click.stop>
 
           <div
@@ -521,8 +522,8 @@
 
           <form @submit.prevent="submitQuestionBank" class="flex min-h-0 flex-1 flex-col">
 
-            <div class="flex-1 overflow-y-auto p-6 space-y-6">
-              <div class="grid gap-6 md:grid-cols-[200px,1fr]">
+            <div class="flex-1 overflow-y-auto p-5 space-y-4">
+              <div class="space-y-4">
                 <div class="space-y-1.5">
                   <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tipe Soal</label>
                   <select v-model="questionBankForm.question_type"
@@ -536,10 +537,24 @@
                   <textarea v-model="questionBankForm.question_text" rows="3"
                     placeholder="Tuliskan pertanyaan di sini..."
                     class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+                  <div class="mt-2 flex flex-wrap items-center gap-2">
+                    <label
+                      class="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                      <input type="file" accept="image/*" class="hidden" @change="uploadQuestionImageForCreate" />
+                      {{ isUploadingQuestionImage ? "Uploading..." : "Upload Gambar Pertanyaan" }}
+                    </label>
+                    <button v-if="questionBankForm.question_image_url" type="button" @click="questionBankForm.question_image_url = ''"
+                      class="rounded-lg bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300">
+                      Hapus Gambar
+                    </button>
+                  </div>
+                  <img v-if="questionBankForm.question_image_url" :src="questionBankForm.question_image_url"
+                    alt="Preview gambar pertanyaan"
+                    class="mt-2 max-h-48 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
                 </div>
               </div>
 
-              <div v-if="questionBankForm.question_type === 'MCQ'" class="grid gap-4 md:grid-cols-2">
+              <div v-if="questionBankForm.question_type === 'MCQ'" class="grid gap-3">
                 <div v-for="(option, index) in questionBankForm.options" :key="`option-${index}`"
                   class="rounded-xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                   <div class="mb-3 flex items-center justify-between">
@@ -816,8 +831,12 @@
                   </span>
                 </div>
                 <p class="mt-4 text-base font-semibold leading-7 text-slate-900 dark:text-white">
-                  {{ questionPreviewModal.question.question_text }}
+                  {{ parseQuestionContent(questionPreviewModal.question.question_text).question_text }}
                 </p>
+                <img v-if="parseQuestionContent(questionPreviewModal.question.question_text).question_image_url"
+                  :src="parseQuestionContent(questionPreviewModal.question.question_text).question_image_url"
+                  alt="Gambar pertanyaan"
+                  class="mt-3 max-h-56 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
               </section>
 
               <section class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
@@ -831,6 +850,21 @@
                     <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Pertanyaan</label>
                     <textarea v-model="questionPreviewForm.question_text" rows="4"
                       class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700" />
+                    <div class="mt-2 flex flex-wrap items-center gap-2">
+                      <label
+                        class="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                        <input type="file" accept="image/*" class="hidden" @change="uploadQuestionImageForPreview" />
+                        {{ isUploadingPreviewQuestionImage ? "Uploading..." : "Upload Gambar Pertanyaan" }}
+                      </label>
+                      <button v-if="questionPreviewForm.question_image_url" type="button"
+                        @click="questionPreviewForm.question_image_url = ''"
+                        class="rounded-lg bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300">
+                        Hapus Gambar
+                      </button>
+                    </div>
+                    <img v-if="questionPreviewForm.question_image_url" :src="questionPreviewForm.question_image_url"
+                      alt="Preview gambar pertanyaan"
+                      class="mt-2 max-h-56 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
                   </div>
 
                   <div v-if="questionPreviewModal.question.question_type === 'MCQ'" class="grid gap-4 md:grid-cols-2">
@@ -878,7 +912,9 @@
                           :class="optionIndex === normalizedPreviewCorrectOption ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-200'">
                           {{ String.fromCharCode(65 + optionIndex) }}
                         </span>
-                        <p class="text-sm font-medium leading-6 text-slate-800 dark:text-slate-200">{{ option }}</p>
+                        <div>
+                          <p class="text-sm font-medium leading-6 text-slate-800 dark:text-slate-200">{{ option }}</p>
+                        </div>
                       </div>
                       <span v-if="optionIndex === normalizedPreviewCorrectOption"
                         class="rounded-full bg-emerald-600 px-2.5 py-1 text-[11px] font-semibold text-white">
@@ -930,12 +966,14 @@ import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatDateTime } from "@/utils/date";
 import { useMasterDataStore } from "@/store/masterData";
+import { uploadFileDirect } from "@/api/upload";
 
 const subjects = ref([]);
 const masterDataStore = useMasterDataStore();
 const selectedSubject = ref(null);
 const assignments = ref([]);
 const questionBank = ref([]);
+const questionBankForAssignment = ref([]);
 const questionBankTotal = ref(0);
 const subjectError = ref("");
 const message = ref("");
@@ -943,6 +981,8 @@ const isError = ref(false);
 const isSavingAssignment = ref(false);
 const isSavingQuestionBank = ref(false);
 const isSavingQuestionPreview = ref(false);
+const isUploadingQuestionImage = ref(false);
+const isUploadingPreviewQuestionImage = ref(false);
 const pendingDeleteQuestionId = ref(null);
 const isDownloadingTemplate = ref(false);
 const isImportingQuestionBank = ref(false);
@@ -975,6 +1015,7 @@ const questionPreviewModal = reactive({
 });
 const questionPreviewForm = reactive({
   question_text: "",
+  question_image_url: "",
   options: ["", "", "", "", ""],
   correct_option: 0,
   rubric: "",
@@ -1016,10 +1057,50 @@ const assignmentForm = reactive({
 const questionBankForm = reactive({
   question_type: "MCQ",
   question_text: "",
+  question_image_url: "",
   options: ["", "", "", "", ""],
   correct_option: 0,
   rubric: "",
 });
+
+const QUESTION_IMAGE_MARKER = "[[QUESTION_IMAGE_URL]]";
+
+const parseQuestionContent = (rawText) => {
+  const text = String(rawText || "");
+  const markerIndex = text.lastIndexOf(QUESTION_IMAGE_MARKER);
+  if (markerIndex < 0) {
+    return {
+      question_text: text.trim(),
+      question_image_url: "",
+    };
+  }
+  const questionPart = text.slice(0, markerIndex).trim();
+  const imagePart = text.slice(markerIndex + QUESTION_IMAGE_MARKER.length).trim();
+  return {
+    question_text: questionPart,
+    question_image_url: imagePart,
+  };
+};
+
+const composeQuestionText = (questionText, questionImageUrl) => {
+  const cleanQuestion = String(questionText || "").trim();
+  const cleanImage = String(questionImageUrl || "").trim();
+  if (!cleanImage) {
+    return cleanQuestion;
+  }
+  return `${cleanQuestion}\n${QUESTION_IMAGE_MARKER}${cleanImage}`;
+};
+
+const parseOptionItem = (option) => {
+  if (option && typeof option === "object" && !Array.isArray(option)) {
+    return {
+      text: String(option.text || option.label || "").trim(),
+    };
+  }
+  return {
+    text: String(option || "").trim(),
+  };
+};
 
 const aiGeneratorForm = reactive({
   question_type: "MCQ",
@@ -1086,9 +1167,7 @@ const bankEndRow = computed(() => {
   return Math.min(bankCurrentPage.value * Number(bankPageSize.value || 20), questionBankTotal.value);
 });
 
-const filteredQuestionBankForAssignment = computed(() =>
-  questionBank.value.filter((item) => item.question_type === assignmentForm.assignment_type),
-);
+const filteredQuestionBankForAssignment = computed(() => questionBankForAssignment.value);
 const selectedGeneratedAiQuestions = computed(() =>
   generatedAiQuestions.value.filter((item) => selectedGeneratedAiQuestionIds.value.includes(item.temp_id)),
 );
@@ -1101,7 +1180,7 @@ const selectedQuestionsForPublish = computed(() =>
 const selectedQuestionCount = computed(() => selectedQuestionsForPublish.value.length);
 const normalizedPreviewOptions = computed(() =>
   questionPreviewModal.question?.question_type === "MCQ"
-    ? questionPreviewForm.options.map((item) => String(item || "").trim()).filter(Boolean)
+    ? questionPreviewForm.options.map((item) => String(item || "").trim())
     : [],
 );
 const normalizedPreviewCorrectOption = computed(() =>
@@ -1155,7 +1234,8 @@ watch([questionBankTotal, bankPageSize], () => {
 
 watch(
   () => assignmentForm.assignment_type,
-  () => {
+  async () => {
+    await loadAssignmentQuestionBank();
     assignmentForm.selected_question_bank_ids = assignmentForm.selected_question_bank_ids.filter((id) =>
       filteredQuestionBankForAssignment.value.some((item) => item.id === id),
     );
@@ -1165,6 +1245,7 @@ watch(
 const resetQuestionBankForm = () => {
   questionBankForm.question_type = "MCQ";
   questionBankForm.question_text = "";
+  questionBankForm.question_image_url = "";
   questionBankForm.options = ["", "", "", "", ""];
   questionBankForm.correct_option = 0;
   questionBankForm.rubric = "";
@@ -1256,10 +1337,12 @@ const openQuestionPreview = (question, source = "bank", questionNumber = null) =
   questionPreviewModal.source = source;
   questionPreviewModal.sourceLabel = source === "selected" ? "Soal yang akan diterbitkan" : "Review sebelum dipilih";
   questionPreviewModal.questionNumber = questionNumber;
-  questionPreviewForm.question_text = question.question_text || "";
+  const parsedQuestion = parseQuestionContent(question.question_text || "");
+  questionPreviewForm.question_text = parsedQuestion.question_text;
+  questionPreviewForm.question_image_url = parsedQuestion.question_image_url;
   questionPreviewForm.options = Array.from(
     { length: Math.max(5, Array.isArray(question.options) ? question.options.length : 0) },
-    (_, index) => question.options?.[index] || "",
+    (_, index) => parseOptionItem(question.options?.[index]).text,
   );
   questionPreviewForm.correct_option = Number(question.correct_option || 0);
   questionPreviewForm.rubric = question.rubric || "";
@@ -1273,6 +1356,7 @@ const closeQuestionPreview = () => {
   questionPreviewModal.questionNumber = null;
   pendingDeleteQuestionId.value = null;
   questionPreviewForm.question_text = "";
+  questionPreviewForm.question_image_url = "";
   questionPreviewForm.options = ["", "", "", "", ""];
   questionPreviewForm.correct_option = 0;
   questionPreviewForm.rubric = "";
@@ -1286,8 +1370,12 @@ const saveQuestionPreviewChanges = async () => {
   isError.value = false;
 
   try {
+    const questionTextPayload = composeQuestionText(
+      questionPreviewForm.question_text,
+      questionPreviewForm.question_image_url,
+    );
     const payload = {
-      question_text: questionPreviewForm.question_text,
+      question_text: questionTextPayload,
       rubric: questionPreviewModal.question.question_type === "ESSAY" ? questionPreviewForm.rubric || null : null,
     };
 
@@ -1302,10 +1390,12 @@ const saveQuestionPreviewChanges = async () => {
     if (updatedQuestion) {
       questionPreviewModal.question = { ...updatedQuestion };
       if (questionPreviewModal.source === "selected") {
-        questionPreviewForm.question_text = updatedQuestion.question_text || "";
+        const parsedUpdatedQuestion = parseQuestionContent(updatedQuestion.question_text || "");
+        questionPreviewForm.question_text = parsedUpdatedQuestion.question_text;
+        questionPreviewForm.question_image_url = parsedUpdatedQuestion.question_image_url;
         questionPreviewForm.options = Array.from(
           { length: Math.max(5, Array.isArray(updatedQuestion.options) ? updatedQuestion.options.length : 0) },
-          (_, index) => updatedQuestion.options?.[index] || "",
+          (_, index) => parseOptionItem(updatedQuestion.options?.[index]).text,
         );
         questionPreviewForm.correct_option = Number(updatedQuestion.correct_option || 0);
         questionPreviewForm.rubric = updatedQuestion.rubric || "";
@@ -1475,6 +1565,19 @@ const loadSubjectData = async () => {
   assignments.value = (assignmentResponse?.data || []).filter((item) => item.assignment_type !== "FILE" && !item.is_exam);
   questionBank.value = questionBankResponse?.data?.data || [];
   questionBankTotal.value = questionBankResponse?.data?.total || 0;
+  await loadAssignmentQuestionBank();
+};
+
+const loadAssignmentQuestionBank = async () => {
+  if (!selectedSubject.value) return;
+  const response = await api.get(`/learning/subjects/${selectedSubject.value.id}/question-bank`, {
+    params: {
+      question_type: assignmentForm.assignment_type || "MCQ",
+      page: 1,
+      limit: 500,
+    },
+  });
+  questionBankForAssignment.value = response?.data?.data || [];
 };
 
 const selectSubject = async (subject) => {
@@ -1531,7 +1634,7 @@ const downloadQuestionBankTemplate = async (questionType) => {
     const downloadUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = downloadUrl;
-    link.download = `template-bank-soal-${selectedSubject.value.name || "mapel"}-${String(questionType).toLowerCase()}.doc`;
+    link.download = `template-bank-soal-${selectedSubject.value.name || "mapel"}.docx`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1690,10 +1793,14 @@ const submitQuestionBank = async () => {
   isError.value = false;
 
   try {
+    const questionTextPayload = composeQuestionText(
+      questionBankForm.question_text,
+      questionBankForm.question_image_url,
+    );
     const payload = {
       subject_id: selectedSubject.value.id,
       question_type: questionBankForm.question_type,
-      question_text: questionBankForm.question_text,
+      question_text: questionTextPayload,
       rubric: questionBankForm.rubric || null,
     };
 
@@ -1712,6 +1819,38 @@ const submitQuestionBank = async () => {
     message.value = error.message;
   } finally {
     isSavingQuestionBank.value = false;
+  }
+};
+
+const uploadQuestionImageForCreate = async (event) => {
+  const file = event?.target?.files?.[0];
+  if (!file) return;
+  isUploadingQuestionImage.value = true;
+  try {
+    const uploaded = await uploadFileDirect(file);
+    questionBankForm.question_image_url = uploaded?.url || "";
+  } catch (error) {
+    isError.value = true;
+    message.value = error.message;
+  } finally {
+    isUploadingQuestionImage.value = false;
+    event.target.value = "";
+  }
+};
+
+const uploadQuestionImageForPreview = async (event) => {
+  const file = event?.target?.files?.[0];
+  if (!file) return;
+  isUploadingPreviewQuestionImage.value = true;
+  try {
+    const uploaded = await uploadFileDirect(file);
+    questionPreviewForm.question_image_url = uploaded?.url || "";
+  } catch (error) {
+    isError.value = true;
+    message.value = error.message;
+  } finally {
+    isUploadingPreviewQuestionImage.value = false;
+    event.target.value = "";
   }
 };
 
