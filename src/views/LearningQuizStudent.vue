@@ -227,9 +227,19 @@
           </div>
 
           <div class="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/20">
-            <div
-              class="inline-flex rounded-full bg-white px-4 py-2 text-sm font-bold text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700">
-              Pelanggaran: {{ violationCount }} / {{ maxViolations }}
+            <div class="flex items-center justify-between gap-3">
+              <div
+                class="inline-flex rounded-full bg-white px-4 py-2 text-sm font-bold text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700">
+                Pelanggaran: {{ violationCount }} / {{ maxViolations }}
+              </div>
+              <div
+                class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-rose-700 ring-1 ring-inset ring-rose-200 dark:bg-slate-900 dark:text-rose-300 dark:ring-rose-500/20">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 6v6l4 2.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ formattedQuestionTimeLeft }}
+              </div>
             </div>
           </div>
 
@@ -292,6 +302,23 @@
                 </article>
               </div>
 
+              <div v-if="isLastQuestion" class="pb-24">
+                <button type="submit" :disabled="isSubmitting"
+                  class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-rose-600 px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-rose-600/30 transition hover:bg-rose-500 hover:shadow-rose-600/50 disabled:opacity-60 disabled:shadow-none sm:w-auto sm:min-w-[220px]">
+                  <svg v-if="isSubmitting" class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"
+                    stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                  </svg>
+                  <svg v-else class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                  </svg>
+                  {{ isSubmitting ? "Memproses..." : primarySubmitLabel }}
+                </button>
+              </div>
+
               <div
                 class="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
                 <div class="mx-auto flex max-w-[1400px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -303,20 +330,6 @@
                     <button type="button" @click="goToNextQuestion"
                       class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:w-auto">
                       {{ quickAdvanceLabel }}
-                    </button>
-                    <button type="submit" :disabled="isSubmitting"
-                      class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-rose-600 px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-rose-600/30 transition hover:bg-rose-500 hover:shadow-rose-600/50 disabled:opacity-60 disabled:shadow-none sm:w-auto sm:min-w-[200px]">
-                      <svg v-if="isSubmitting" class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"
-                        stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                      </svg>
-                      <svg v-else class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                      </svg>
-                      {{ isSubmitting ? "Memproses..." : primarySubmitLabel }}
                     </button>
                   </div>
                 </div>
@@ -399,9 +412,7 @@ const workspaceDescription = computed(() => (isExamPage.value
 const sessionLabel = computed(() => (submissionTarget.value?.is_exam ? "Sesi Ujian Aktif" : "Sesi Quiz Aktif"));
 const progressLabel = computed(() => (submissionTarget.value?.is_exam ? "Progres Ujian" : "Progres Quiz"));
 const primarySubmitLabel = computed(() => (submissionTarget.value?.is_exam ? "Selesai & Kirim Ujian" : "Selesai & Kirim Quiz"));
-const quickAdvanceLabel = computed(() => (isLastQuestion.value
-  ? submissionTarget.value?.is_exam ? "Kirim Ujian Sekarang" : "Kirim Quiz Sekarang"
-  : "Kunci & Lanjut"));
+const quickAdvanceLabel = computed(() => (isLastQuestion.value ? "Tetap di Soal Terakhir" : "Kunci & Lanjut"));
 
 const gradedAssignments = computed(() => assignments.value.filter((item) => item.score !== null && item.score !== undefined).length);
 const completedAssignments = computed(() => assignments.value.filter((item) => Boolean(item.submission_id)).length);
