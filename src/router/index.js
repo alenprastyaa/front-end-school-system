@@ -19,6 +19,7 @@ import LearningQuizTeacher from "../views/LearningQuizTeacher.vue";
 import LearningQuestionBankTeacher from "../views/LearningQuestionBankTeacher.vue";
 import LearningQuizStudent from "../views/LearningQuizStudent.vue";
 import LearningExamStudent from "../views/LearningExamStudent.vue";
+import LearningGradesStudent from "../views/LearningGradesStudent.vue";
 import AdminSettings from "../views/AdminSettings.vue";
 import AcademicPeriods from "../views/AcademicPeriods.vue";
 import PublicLanding from "../views/PublicLanding.vue";
@@ -261,6 +262,16 @@ const routes = [
     component: LearningExamStudent,
     meta: {
       title: "Ujian Resmi Siswa" + appName,
+      requiresAuth: true,
+      roles: ["SISWA"],
+    },
+  },
+  {
+    path: "/learning-grades-student",
+    name: "LearningGradesStudent",
+    component: LearningGradesStudent,
+    meta: {
+      title: "Nilai Siswa" + appName,
       requiresAuth: true,
       roles: ["SISWA"],
     },

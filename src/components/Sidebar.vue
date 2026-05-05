@@ -206,6 +206,7 @@ const menuByRole = {
         { to: "/learning-chat-student", label: "Live Chat", icon: "ph:chats-circle" },
         { to: "/learning-quiz-student", label: "Quiz", icon: "ph:brain" },
         { to: "/learning-exams-student", label: "Ujian Resmi", icon: "ph:exam" },
+        { to: "/learning-grades-student", label: "Nilai Saya", icon: "ph:chart-line-up" },
       ],
     },
     { key: "attendance", to: "/attendance", label: "Absensi", icon: "mdi:calendar-check-outline" },
