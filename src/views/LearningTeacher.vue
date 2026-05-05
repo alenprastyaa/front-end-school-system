@@ -147,8 +147,34 @@
                     </p>
                   </div>
                 </div>
+                <div class="mb-3 grid gap-2">
+                  <input
+                    v-model="assignmentSearch"
+                    type="text"
+                    placeholder="Cari judul/deskripsi tugas..."
+                    class="block w-full rounded-xl border-0 bg-white py-2.5 px-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
+                  />
+                  <div class="grid grid-cols-2 gap-2">
+                    <select
+                      v-model="assignmentTypeFilter"
+                      class="block rounded-xl border-0 bg-white py-2.5 px-3 text-xs text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
+                    >
+                      <option value="ALL">Semua Jenis</option>
+                      <option value="FILE">Dalam LMS</option>
+                      <option value="MANUAL">Di Luar LMS</option>
+                    </select>
+                    <select
+                      v-model="assignmentSort"
+                      class="block rounded-xl border-0 bg-white py-2.5 px-3 text-xs text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
+                    >
+                      <option value="NEWEST">Terbaru</option>
+                      <option value="DUE_ASC">Tenggat Terdekat</option>
+                      <option value="DUE_DESC">Tenggat Terjauh</option>
+                    </select>
+                  </div>
+                </div>
                 <div class="flex max-h-[600px] flex-col gap-3 overflow-y-auto pr-2">
-                  <article v-for="item in assignments" :key="item.id"
+                  <article v-for="item in filteredAssignments" :key="item.id"
                     class="group relative rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all hover:border-sky-200 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-cyan-700"
                     :class="selectedAssignment?.id === item.id ? 'ring-2 ring-sky-600 dark:ring-cyan-500' : ''">
                     <div class="absolute right-3 top-3 flex items-center gap-1.5">
@@ -171,8 +197,8 @@
                         </svg>
                       </button>
                     </div>
-                    <h4 class="font-bold text-slate-900 dark:text-white">{{ item.title }}</h4>
-                    <div class="mt-2.5 mb-4 flex flex-wrap items-center gap-2 text-xs font-semibold">
+                    <h4 class="pr-16 font-bold text-slate-900 dark:text-white">{{ item.title }}</h4>
+                    <div class="mt-2 mb-3 flex flex-wrap items-center gap-2 text-[11px] font-semibold">
                       <span :class="assignmentTypeBadgeClass(item.assignment_type)"
                         class="inline-flex items-center rounded-md px-2 py-1">
                         {{ assignmentTypeLabel(item.assignment_type) }}
@@ -191,7 +217,7 @@
                       </span>
                     </div>
                     <button @click="loadSubmissions(item)"
-                      class="w-full rounded-xl bg-slate-50 px-3 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-cyan-900/30 dark:hover:text-cyan-300">
+                      class="w-full rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-cyan-900/30 dark:hover:text-cyan-300">
                       {{ selectedAssignment?.id === item.id ? 'Sedang Dinilai' : 'Buka Penilaian' }}
                     </button>
                     <a v-if="item.attachment_url"
@@ -203,9 +229,9 @@
                     </a>
                   </article>
 
-                  <div v-if="assignments.length === 0"
+                  <div v-if="filteredAssignments.length === 0"
                     class="rounded-2xl border-2 border-dashed border-slate-200 py-8 text-center text-sm text-slate-500 dark:border-slate-800">
-                    Belum ada tugas atau penilaian.
+                    Tidak ada tugas sesuai filter.
                   </div>
                 </div>
               </section>
@@ -683,6 +709,9 @@ const deleteTargetItem = ref(null);
 // State untuk Filter Meja Penilaian
 const submissionSearch = ref("");
 const submissionFilter = ref("ALL");
+const assignmentSearch = ref("");
+const assignmentTypeFilter = ref("ALL");
+const assignmentSort = ref("NEWEST");
 
 const materialForm = reactive({
   title: "",
@@ -719,6 +748,29 @@ const filteredSubmissions = computed(() => {
 
     return matchSearch && matchFilter;
   });
+});
+
+const filteredAssignments = computed(() => {
+  const keyword = assignmentSearch.value.trim().toLowerCase();
+  const next = assignments.value.filter((item) => {
+    const matchKeyword = !keyword
+      || String(item.title || "").toLowerCase().includes(keyword)
+      || String(item.description || "").toLowerCase().includes(keyword);
+    const matchType = assignmentTypeFilter.value === "ALL" || item.assignment_type === assignmentTypeFilter.value;
+    return matchKeyword && matchType;
+  });
+
+  next.sort((a, b) => {
+    if (assignmentSort.value === "DUE_ASC") {
+      return new Date(a?.due_date || 0).getTime() - new Date(b?.due_date || 0).getTime();
+    }
+    if (assignmentSort.value === "DUE_DESC") {
+      return new Date(b?.due_date || 0).getTime() - new Date(a?.due_date || 0).getTime();
+    }
+    return Number(b?.id || 0) - Number(a?.id || 0);
+  });
+
+  return next;
 });
 
 const resetMaterialForm = () => {
