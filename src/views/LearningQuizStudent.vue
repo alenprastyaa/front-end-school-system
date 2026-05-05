@@ -226,127 +226,14 @@
             </div>
           </div>
 
-          <div class="border-b border-slate-100 bg-slate-50/50 px-6 py-6 dark:border-slate-800 dark:bg-slate-800/20">
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div class="flex items-start gap-4">
-                <div>
-                  <div class="flex flex-wrap items-center gap-2">
-                    <span
-                      class="inline-flex rounded-md bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-700 ring-1 ring-inset ring-rose-600/20 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
-                      {{ assignmentTypeLabel(submissionTarget.assignment_type) }}
-                    </span>
-                    <span
-                      class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                      <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Tenggat: {{ formatDateTime(submissionTarget.due_date) }}
-                    </span>
-                  </div>
-
-                  <h1 class="mt-3 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{{
-                    submissionTarget.title }}</h1>
-                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    {{ selectedSubject.name }} &bull; {{ selectedSubject.class_name }}
-                  </p>
-                  <p class="mt-3 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-400">
-                    {{ submissionTarget.description || (submissionTarget.is_exam
-                      ? "Kerjakan ujian dengan tenang. Sesi tetap berjalan sampai seluruh jawaban dikirim."
-                      : "Kerjakan quiz dengan tenang. Setiap soal memiliki timer yang berjalan otomatis.") }}
-                  </p>
-                  <div v-if="pseudoFullscreenActive"
-                    class="mt-4 inline-flex max-w-xl rounded-2xl bg-sky-50 px-4 py-3 text-xs font-semibold text-sky-800 ring-1 ring-inset ring-sky-200 dark:bg-sky-500/10 dark:text-sky-200 dark:ring-sky-500/20">
-                    Mode fokus iPhone aktif. Safari iOS tidak mendukung fullscreen penuh untuk halaman web biasa, jadi sesi ini dikunci dalam tampilan layar-penuh semu.
-                  </div>
-                </div>
-              </div>
-
-              <div
-                class="inline-flex self-start rounded-full bg-white px-3 py-1.5 text-xs font-bold text-slate-600 ring-1 ring-inset ring-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700">
-                {{ sessionLabel }}
-              </div>
+          <div class="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/20">
+            <div
+              class="inline-flex rounded-full bg-white px-4 py-2 text-sm font-bold text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700">
+              Pelanggaran: {{ violationCount }} / {{ maxViolations }}
             </div>
           </div>
 
           <div class="p-6">
-            <div class="mb-6 grid gap-4 xl:grid-cols-[minmax(0,1.2fr),320px]">
-              <div
-                class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-medium text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400">
-                <div class="flex items-start gap-3">
-                  <svg class="mt-0.5 h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  <div>
-                    <strong class="font-bold">Perhatian!</strong> Timer tetap berjalan selama sesi aktif. Saat waktu
-                    {{ submissionTarget.is_exam
-                      ? 'ujian resmi habis, seluruh jawaban akan langsung dikirim otomatis.'
-                      : 'satu soal habis, jawaban soal itu langsung terkunci dan sistem pindah ke soal berikutnya.' }}
-                  </div>
-                </div>
-              </div>
-
-              <div class="rounded-2xl border p-4 text-sm font-medium"
-                :class="violationCount > 0
-                  ? 'border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300'
-                  : 'border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300'">
-                <div class="flex items-start gap-3">
-                  <svg class="mt-0.5 h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M9 12.75L11.25 15 15 9.75M3 13.5l6.75 6.75L21 9" />
-                  </svg>
-                  <div>
-                    <strong class="font-bold">{{ submissionTarget.is_exam ? "Mode Ujian Aktif." : "Mode Quiz Aktif."
-                    }}</strong>
-                    {{ pseudoFullscreenActive
-                      ? "Tetap di tab ini. iPhone memakai mode fokus karena Safari tidak mendukung fullscreen penuh untuk halaman quiz."
-                      : "Tetap di tab ini dan gunakan mode fullscreen selama sesi berlangsung." }}
-                    <div class="mt-2">
-                      Pelanggaran terdeteksi:
-                      <span class="font-bold">{{ violationCount }}</span> / {{ maxViolations }}
-                    </div>
-                    <div v-if="antiCheatMessage" class="mt-1 text-xs font-semibold">
-                      {{ antiCheatMessage }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <aside
-                class="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-800/40">
-                <div class="flex items-center justify-between gap-3">
-                  <div>
-                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-                      {{ progressLabel }}</p>
-                    <p class="mt-1 text-lg font-bold text-slate-900 dark:text-white">Soal {{ activeQuestionIndex + 1 }}
-                      / {{ totalQuestions }}</p>
-                  </div>
-                  <div
-                    class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm font-bold text-rose-700 ring-1 ring-inset ring-rose-200 dark:bg-slate-900 dark:text-rose-300 dark:ring-rose-500/20">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M12 6v6l4 2.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {{ formattedQuestionTimeLeft }}
-                  </div>
-                </div>
-
-                <p class="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                  {{ submissionTarget.is_exam
-                    ? `Durasi sesi ujian ${formatDuration(questionDurationSeconds)}.`
-                    : `Durasi per soal ${formatDuration(questionDurationSeconds)}.` }}
-                </p>
-
-                <div
-                  class="mt-4 h-3 overflow-hidden rounded-full bg-white ring-1 ring-inset ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
-                  <div class="h-full rounded-full bg-rose-500 transition-[width] duration-1000"
-                    :style="{ width: `${questionProgressPercent}%` }"></div>
-                </div>
-              </aside>
-            </div>
 
             <form @submit.prevent="submitAssignment" class="space-y-8">
 
@@ -408,15 +295,13 @@
               <div
                 class="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
                 <div class="mx-auto flex max-w-[1400px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <span class="text-xs font-medium text-slate-500 sm:text-sm">Jawaban pada soal sebelumnya langsung
-                    terkunci saat Anda pindah soal atau waktu habis.</span>
                   <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
                     <button v-if="isError && !isSubmitting" type="button" @click="leaveFailedSession"
                       class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 sm:w-auto">
                       Keluar Sementara
                     </button>
                     <button type="button" @click="goToNextQuestion"
-                      class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100 px-6 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:w-auto">
+                      class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:w-auto">
                       {{ quickAdvanceLabel }}
                     </button>
                     <button type="submit" :disabled="isSubmitting"
