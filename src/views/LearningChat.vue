@@ -1,5 +1,6 @@
 <template>
-  <div class="h-full min-h-0 overflow-hidden bg-slate-100 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+  <div
+    class="h-full min-h-0 overflow-hidden bg-slate-100 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
     <main class="mx-auto flex h-full min-h-0 w-full max-w-[1480px] flex-col p-0 md:p-8">
       <div
         class="flex-1 min-h-0 overflow-hidden rounded-none bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10 md:rounded-[28px]">
@@ -100,7 +101,8 @@
                     <Icon v-else :icon="getSubjectIcon(selectedSubject)" class="h-6 w-6 opacity-95" />
                   </div>
                   <div class="min-w-0">
-                    <h2 class="truncate text-base font-bold text-slate-900 dark:text-white md:text-lg">{{ selectedSubject.name }}
+                    <h2 class="truncate text-base font-bold text-slate-900 dark:text-white md:text-lg">{{
+                      selectedSubject.name }}
                     </h2>
                     <p class="truncate text-xs text-slate-500 dark:text-slate-400 md:text-sm">
                       {{ selectedSubject.class_name }}
@@ -132,7 +134,7 @@
                   @change="handleChatIconUpload" />
               </div>
 
-              <div ref="messageListRef"
+              <div ref="messageListRef" :style="messageListStyle"
                 class="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.8),_rgba(239,234,226,0.8)_40%,_rgba(239,234,226,1)_100%)] px-2 py-3 dark:bg-[radial-gradient(circle_at_top_left,_rgba(30,41,59,0.7),_rgba(15,23,42,0.98)_45%,_rgba(2,6,23,1)_100%)] md:space-y-4 md:px-8 md:py-5">
                 <div v-if="isLoadingMessages"
                   class="flex h-full min-h-[420px] items-center justify-center text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -159,7 +161,8 @@
 
                 <div v-for="item in currentMessages" :key="item.id" class="flex"
                   :class="item.sender_id === currentUserId ? 'justify-end' : 'justify-start'">
-                  <article class="max-w-[90%] rounded-2xl px-3 py-2.5 shadow-sm md:max-w-[70%] md:rounded-3xl md:px-4 md:py-3"
+                  <article
+                    class="max-w-[90%] rounded-2xl px-3 py-2.5 shadow-sm md:max-w-[70%] md:rounded-3xl md:px-4 md:py-3"
                     :class="item.sender_id === currentUserId ? ownMessageClass : 'rounded-tl-md bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-800'">
                     <div class="flex items-center gap-2 text-xs font-semibold">
                       <span>{{ item.sender_name || "Pengguna" }}</span>
@@ -173,13 +176,13 @@
                     <div v-if="item.attachment_url" class="mt-3">
                       <audio v-if="isVoiceMessage(item)" :src="normalizePublicUrl(item.attachment_url)" controls
                         class="w-full max-w-sm" />
-                      <a v-else-if="item.message_type === 'IMAGE'" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
-                        rel="noreferrer" class="block overflow-hidden rounded-2xl">
-                        <img :src="normalizePublicUrl(item.attachment_url)" :alt="item.attachment_name || 'Lampiran gambar'"
-                          class="max-h-72 w-full object-cover" />
+                      <a v-else-if="item.message_type === 'IMAGE'" :href="normalizePublicUrl(item.attachment_url)"
+                        target="_blank" rel="noreferrer" class="block overflow-hidden rounded-2xl">
+                        <img :src="normalizePublicUrl(item.attachment_url)"
+                          :alt="item.attachment_name || 'Lampiran gambar'" class="max-h-72 w-full object-cover" />
                       </a>
-                      <a v-else-if="item.message_type === 'PDF'" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
-                        rel="noreferrer"
+                      <a v-else-if="item.message_type === 'PDF'" :href="normalizePublicUrl(item.attachment_url)"
+                        target="_blank" rel="noreferrer"
                         class="flex items-center gap-3 rounded-2xl bg-black/5 px-4 py-3 text-sm font-semibold hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15">
                         <Icon icon="ph:file-pdf" class="h-6 w-6 shrink-0" />
                         <span class="truncate">{{ item.attachment_name || "Buka PDF" }}</span>
@@ -201,7 +204,7 @@
               </div>
 
               <form @submit.prevent="sendMessage"
-                class="sticky z-20 shrink-0 border-t border-slate-200 bg-white px-2 pt-2 dark:border-slate-800 dark:bg-slate-900 md:px-6 md:py-4"
+                class="fixed inset-x-0 z-20 shrink-0 border-t border-slate-200 bg-white px-2 pt-2 dark:border-slate-800 dark:bg-slate-900 md:sticky md:inset-auto md:px-6 md:py-4"
                 :style="composerBarStyle">
                 <div v-if="attachmentPreviewName || isRecordingVoice || recordedVoiceUrl"
                   class="mb-3 rounded-2xl bg-slate-100 px-4 py-3 text-sm dark:bg-slate-800">
@@ -260,10 +263,8 @@
                   </div>
                   <div
                     class="flex-1 rounded-[20px] bg-slate-100 px-3 py-1 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:ring-slate-700 md:rounded-[24px] md:px-4 md:py-1.5">
-                    <textarea v-model="composer" rows="1" placeholder="Tulis pesan..."
-                      @input="handleComposerInput"
-                      @keydown="handleComposerKeydown"
-                      @focus="ensureComposerVisible"
+                    <textarea v-model="composer" rows="1" placeholder="Tulis pesan..." @input="handleComposerInput"
+                      @keydown="handleComposerKeydown" @focus="ensureComposerVisible"
                       class="block w-full resize-none border-0 bg-transparent p-0 text-sm text-slate-900 focus:outline-none focus:ring-0 dark:text-white leading-6 min-h-[40px] max-h-[110px]" />
                   </div>
                   <button :disabled="isSendingMessage || !composer.trim()"
@@ -360,6 +361,7 @@ const typingDebounceTimer = ref(null);
 const onlineUsersBySubject = ref({});
 const onlineRefreshTimer = ref(null);
 const viewportBottomInset = ref(0);
+const isMobileViewport = ref(false);
 const isConnected = computed(() => realtimeConnected.value);
 const localClientId = ref(`chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
 
@@ -473,6 +475,12 @@ const composerBarStyle = computed(() => ({
   paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)",
 }));
 
+const messageListStyle = computed(() => ({
+  paddingBottom: isMobileViewport.value
+    ? `calc(${viewportBottomInset.value}px + env(safe-area-inset-bottom, 0px) + 104px)`
+    : "",
+}));
+
 const currentMessages = computed(() =>
   selectedSubject.value ? messagesBySubject.value[selectedSubject.value.id] || [] : [],
 );
@@ -530,7 +538,7 @@ const onlineIndicatorText = computed(() => {
       .filter((item) => item && typeof item === "object")
       .map((item) => item.full_name || item.username || "User")
       .join(", ");
-    return `Online: ${users.length} (${names})`;
+    return `Online: ${users.length} `;
   }
   return `Online: ${users.length} pengguna`;
 });
@@ -647,6 +655,9 @@ const scrollToBottom = async () => {
 };
 
 const updateViewportInset = () => {
+  if (typeof window !== "undefined") {
+    isMobileViewport.value = window.innerWidth < 768;
+  }
   if (typeof window === "undefined" || !window.visualViewport) {
     viewportBottomInset.value = 0;
     return;
@@ -1340,5 +1351,4 @@ watch(chatError, (value) => {
 });
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
