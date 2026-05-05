@@ -1,7 +1,7 @@
 <template>
   <!-- App -->
   <div class="flex h-screen overflow-hidden bg-gray-50 font-lexend dark:bg-gray-900">
-    <div v-if="!shouldHideChrome" class="lg:block" :class="{ 'lg:block hidden': !sidebar, block: sidebar }">
+    <div v-if="!shouldHideChrome" :class="{ hidden: !sidebar, block: sidebar }">
       <div
         class="mobile-sidebar-offset lg:flex-auto w-sidebar bg-white dark:bg-gray-800 border-r-2 dark:border-gray-700 lg:z-0 z-20 overflow-auto lg:relative fixed">
         <perfect-scrollbar class="h-screen">
@@ -15,7 +15,7 @@
     </div>
 
     <div class="flex h-screen min-h-0 flex-auto w-full flex-col overflow-hidden transition-colors">
-      <Header v-if="!shouldHideChrome" @sidebarToggle="open" />
+      <Header v-if="!shouldHideChrome" @sidebarToggle="toggleSidebar" />
 
       <div class="flex-1 min-h-0" :class="isChatLayoutRoute ? 'overflow-hidden' : 'overflow-y-auto'">
         <transition name="slide-up" mode="out-in">
@@ -61,7 +61,7 @@ export default {
   data() {
     return {
       sidebarDark: false,
-      sidebar: false,
+      sidebar: true,
       deferredPwaPrompt: null,
       isPwaInstallModalOpen: false,
       isPwaInstalled: false,
@@ -109,6 +109,9 @@ export default {
   methods: {
     open() {
       this.sidebar = true;
+    },
+    toggleSidebar() {
+      this.sidebar = !this.sidebar;
     },
     close() {
       this.sidebar = false;

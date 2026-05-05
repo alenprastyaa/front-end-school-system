@@ -800,7 +800,7 @@ const loadSubjects = async () => {
   subjectError.value = "";
 
   try {
-    subjects.value = await masterDataStore.getTeacherSubjects();
+    subjects.value = await masterDataStore.getTeacherSubjects({ force: true });
     if (!selectedSubject.value && subjects.value.length > 0) {
       await selectSubject(subjects.value[0]);
     }
