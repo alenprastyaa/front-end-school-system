@@ -452,9 +452,6 @@ const bindRealtimeStream = () => {
       maybeShowBrowserNotification(chatMessage);
     }),
     realtimeStore.on("learning-chat:read-updated", async () => {
-      if (route.path === "/learning-chat-teacher" || route.path === "/learning-chat-student") {
-        clearPendingLiveChatUnread();
-      }
       await refreshLiveChatSummary(true);
     }),
     realtimeStore.on("learning-notification:new", (payload) => {
@@ -468,10 +465,6 @@ const bindRealtimeStream = () => {
 watch(
   () => route.path,
   async () => {
-    if (route.path === "/learning-chat-teacher" || route.path === "/learning-chat-student") {
-      clearPendingLiveChatUnread();
-    }
-
     await refreshLiveChatSummary(false);
   },
 );
