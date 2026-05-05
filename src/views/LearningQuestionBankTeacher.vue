@@ -101,10 +101,10 @@
               class="grid gap-5 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:grid-cols-[1.15fr,0.85fr]">
               <div class="space-y-3">
                 <div>
-                  <h3 class="font-semibold text-slate-900 dark:text-white">Impor soal dari Microsoft Word</h3>
+                  <h3 class="font-semibold text-slate-900 dark:text-white">Impor soal dari template CSV</h3>
                   <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                    Unduh template `.doc`, isi soal di Word sesuai marker, lalu unggah kembali agar soal otomatis
-                    masuk ke bank soal.
+                    Unduh template `.csv`, isi langsung pada kolom yang sudah disediakan, lalu unggah kembali.
+                    Satu baris = satu soal.
                   </p>
                 </div>
                 <div class="flex flex-wrap gap-3">
@@ -121,14 +121,13 @@
 
               <div
                 class="space-y-3 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-900/5 dark:bg-slate-800/50 dark:ring-white/5">
-                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500">Upload Dokumen
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500">Upload File Template
                   Soal</label>
-                <input ref="questionBankDocumentInput" type="file" accept=".doc,.docx,.rtf,.txt"
+                <input ref="questionBankDocumentInput" type="file" accept=".csv,.txt"
                   @change="handleQuestionBankDocumentChange"
                   class="block w-full rounded-xl border-0 bg-white px-3 py-2.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 file:mr-3 file:rounded-lg file:border-0 file:bg-sky-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-sky-700 dark:bg-slate-900 dark:text-white dark:ring-slate-700 dark:file:bg-sky-500/10 dark:file:text-sky-300" />
                 <p class="text-xs leading-5 text-slate-500 dark:text-slate-400">
-                  Format didukung: `.doc`, `.docx`, `.rtf`, `.txt`. Guru dapat menambah banyak blok `[SOAL]` dalam
-                  satu dokumen.
+                  Format didukung: `.csv` (utama) atau `.txt` berformat CSV. Jangan ubah nama kolom header template.
                 </p>
                 <div v-if="questionBankImportFileName"
                   class="rounded-xl bg-white px-3 py-2 text-sm text-slate-600 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700">
@@ -137,7 +136,7 @@
                 <button type="button" @click="importQuestionBankDocument"
                   :disabled="isImportingQuestionBank || !questionBankImportFile"
                   class="w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50">
-                  {{ isImportingQuestionBank ? "Mengimpor soal..." : "Upload dan Generate Soal" }}
+                  {{ isImportingQuestionBank ? "Mengimpor soal..." : "Upload dan Import Soal" }}
                 </button>
               </div>
             </section>
@@ -1532,13 +1531,13 @@ const downloadQuestionBankTemplate = async (questionType) => {
     const downloadUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = downloadUrl;
-    link.download = `template-bank-soal-${selectedSubject.value.name || "mapel"}-${String(questionType).toLowerCase()}.doc`;
+    link.download = `template-bank-soal-${selectedSubject.value.name || "mapel"}-${String(questionType).toLowerCase()}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(downloadUrl);
 
-    message.value = `Template ${questionType === "MCQ" ? "pilihan ganda" : "uraian"} berhasil diunduh.`;
+    message.value = `Template CSV ${questionType === "MCQ" ? "pilihan ganda" : "uraian"} berhasil diunduh.`;
   } catch (error) {
     isError.value = true;
     message.value = error.message;

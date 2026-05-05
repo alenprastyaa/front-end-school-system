@@ -1182,13 +1182,13 @@ const downloadQuestionBankTemplate = async (questionType) => {
     const downloadUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = downloadUrl;
-    link.download = `template-bank-soal-${selectedSubject.value.name || "mapel"}-${String(questionType).toLowerCase()}.doc`;
+    link.download = `template-bank-soal-${selectedSubject.value.name || "mapel"}-${String(questionType).toLowerCase()}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(downloadUrl);
 
-    message.value = `Template ${questionType === "MCQ" ? "pilihan ganda" : "uraian"} berhasil diunduh.`;
+    message.value = `Template CSV ${questionType === "MCQ" ? "pilihan ganda" : "uraian"} berhasil diunduh.`;
   } catch (error) {
     isError.value = true;
     message.value = error.message;
