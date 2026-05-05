@@ -167,7 +167,7 @@
                       </span>
                       <span
                         class="inline-flex items-center rounded-md bg-sky-50 px-2 py-1 text-sky-700 dark:bg-cyan-500/10 dark:text-cyan-300">
-                        📦 {{ item.submission_count || 0 }} Terkumpul
+                        📦 {{ item.submission_count ?? item.submissions?.length ?? 0 }} Terkumpul
                       </span>
                     </div>
                     <button @click="loadSubmissions(item)"
@@ -184,6 +184,13 @@
                         Hapus
                       </button>
                     </div>
+                    <a v-if="item.attachment_url"
+                      :href="normalizePublicUrl(item.attachment_url)"
+                      target="_blank"
+                      rel="noreferrer"
+                      class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-50 px-3 py-2 text-xs font-bold text-sky-700 transition hover:bg-sky-100 dark:bg-cyan-500/10 dark:text-cyan-300 dark:hover:bg-cyan-500/20">
+                      Buka Lampiran Soal
+                    </a>
                   </article>
 
                   <div v-if="assignments.length === 0"
@@ -547,6 +554,13 @@
                     (Opsional)</label>
                   <input type="file" @change="handleAssignmentFile" :disabled="assignmentForm.assignment_type === 'MANUAL'"
                     class="block w-full text-sm text-slate-500 file:mr-4 file:rounded-lg file:border-0 file:bg-sky-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-sky-700 hover:file:bg-sky-100 dark:text-slate-300 dark:file:bg-cyan-500/10 dark:file:text-cyan-300" />
+                  <a v-if="currentAssignmentAttachmentUrl && assignmentForm.assignment_type === 'FILE'"
+                    :href="normalizePublicUrl(currentAssignmentAttachmentUrl)"
+                    target="_blank"
+                    rel="noreferrer"
+                    class="inline-flex items-center gap-1 text-xs font-bold text-sky-700 hover:text-sky-600 dark:text-cyan-300 dark:hover:text-cyan-200">
+                    Lihat lampiran soal saat ini
+                  </a>
                   <p v-if="assignmentForm.assignment_type === 'MANUAL'" class="text-xs text-slate-500">
                     Lampiran dimatikan karena siswa tidak mengumpulkan tugas pada tipe ini.
                   </p>
@@ -650,6 +664,7 @@ const materialCreationMode = ref("manual");
 const materialAiPreview = ref(null);
 const editingMaterialId = ref(null);
 const editingAssignmentId = ref(null);
+const currentAssignmentAttachmentUrl = ref("");
 const isDeleteModalOpen = ref(false);
 const isDeletingItem = ref(false);
 const deleteTargetType = ref("");
@@ -711,6 +726,7 @@ const resetMaterialForm = () => {
 
 const resetAssignmentForm = () => {
   editingAssignmentId.value = null;
+  currentAssignmentAttachmentUrl.value = "";
   assignmentForm.title = "";
   assignmentForm.description = "";
   assignmentForm.due_date = "";
@@ -789,6 +805,7 @@ const openAssignmentEditModal = (item) => {
   assignmentForm.description = item.description || "";
   assignmentForm.due_date = item.due_date ? formatDateTimeLocalInput(item.due_date) : "";
   assignmentForm.assignment_type = item.assignment_type || "FILE";
+  currentAssignmentAttachmentUrl.value = item.attachment_url || "";
   assignmentModalOpen.value = true;
 };
 
@@ -827,11 +844,13 @@ const loadSubjectData = async () => {
         return {
           ...assignment,
           submissions: submissionResponse?.data || [],
+          submission_count: Array.isArray(submissionResponse?.data) ? submissionResponse.data.length : 0,
         };
       } catch (error) {
         return {
           ...assignment,
           submissions: [],
+          submission_count: 0,
         };
       }
     }),
@@ -1054,6 +1073,7 @@ const loadSubmissions = async (assignment) => {
     const response = await api.get(`/learning/assignments/${assignment.id}/submissions`);
     submissions.value = (response?.data || []).map((item) => ({
       ...item,
+      student_name: item.student_name || item.full_name || item.username || "-",
       scoreDraft: item.score ?? "",
       feedbackDraft: item.feedback ?? "",
     }));
