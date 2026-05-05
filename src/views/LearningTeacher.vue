@@ -889,18 +889,12 @@ const submitMaterial = async () => {
   isError.value = false;
 
   try {
-    const payload = {
-      subject_id: selectedSubject.value.id,
-      title: materialForm.title,
-      content: materialForm.content || "",
-    };
-
+    const payload = new FormData();
+    payload.append("subject_id", String(selectedSubject.value.id));
+    payload.append("title", materialForm.title || "");
+    payload.append("content", materialForm.content || "");
     if (materialFile.value) {
-      const uploadedFile = await uploadFileDirect(materialFile.value);
-      payload.attachment_url = uploadedFile.url;
-      payload.attachment_name = uploadedFile.name;
-      payload.attachment_mime_type = uploadedFile.mimeType;
-      payload.attachment_size = uploadedFile.size;
+      payload.append("attachment", materialFile.value);
     }
 
     const response = editingMaterialId.value
