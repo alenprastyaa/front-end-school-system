@@ -369,6 +369,9 @@ const submitAssignment = async () => {
     const response = await api.post(`/learning/assignments/${submissionTarget.value.id}/submit`, payload);
     message.value = response?.message || "Tugas berhasil dikirim";
     await loadSubjectData();
+    submissionTarget.value = null;
+    submissionForm.submission_text = "";
+    submissionFile.value = null;
   } catch (error) {
     isError.value = true;
     message.value = error.message;
