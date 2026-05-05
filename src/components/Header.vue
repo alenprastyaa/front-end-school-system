@@ -224,6 +224,144 @@ const profileForm = ref({
 
 const avatarSrc = computed(() => normalizePublicUrl(userProfile.value.profile_image) || defaultAvatar);
 
+const readExifOrientation = async (file) => {
+  if (!file || !/jpe?g/i.test(file.type || "")) {
+    return 1;
+  }
+
+  const buffer = await file.arrayBuffer();
+  const view = new DataView(buffer);
+
+  if (view.getUint16(0, false) !== 0xFFD8) {
+    return 1;
+  }
+
+  let offset = 2;
+  while (offset + 4 < view.byteLength) {
+    const marker = view.getUint16(offset, false);
+    offset += 2;
+
+    if (marker === 0xFFE1) {
+      const segmentLength = view.getUint16(offset, false);
+      offset += 2;
+
+      if (view.getUint32(offset, false) !== 0x45786966) {
+        return 1;
+      }
+
+      offset += 6;
+      const little = view.getUint16(offset, false) === 0x4949;
+      const firstIFDOffset = view.getUint32(offset + 4, little);
+      let dirStart = offset + firstIFDOffset;
+
+      if (dirStart >= view.byteLength) {
+        return 1;
+      }
+
+      const entries = view.getUint16(dirStart, little);
+      dirStart += 2;
+
+      for (let i = 0; i < entries; i += 1) {
+        const entryOffset = dirStart + (i * 12);
+        if (entryOffset + 12 > view.byteLength) {
+          break;
+        }
+        const tag = view.getUint16(entryOffset, little);
+        if (tag === 0x0112) {
+          return view.getUint16(entryOffset + 8, little) || 1;
+        }
+      }
+      return 1;
+    }
+
+    if ((marker & 0xFF00) !== 0xFF00) {
+      break;
+    }
+
+    offset += view.getUint16(offset, false);
+  }
+
+  return 1;
+};
+
+const loadImageFromFile = (file) =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Gagal memproses gambar profil."));
+    };
+    image.src = objectUrl;
+  });
+
+const normalizeProfileImageOrientation = async (file) => {
+  if (!file || !file.type?.startsWith("image/")) {
+    return file;
+  }
+
+  const orientation = await readExifOrientation(file);
+  if (orientation === 1) {
+    return file;
+  }
+
+  const image = await loadImageFromFile(file);
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    return file;
+  }
+
+  const needsSwap = [5, 6, 7, 8].includes(orientation);
+  canvas.width = needsSwap ? image.height : image.width;
+  canvas.height = needsSwap ? image.width : image.height;
+
+  switch (orientation) {
+    case 2:
+      ctx.transform(-1, 0, 0, 1, canvas.width, 0);
+      break;
+    case 3:
+      ctx.transform(-1, 0, 0, -1, canvas.width, canvas.height);
+      break;
+    case 4:
+      ctx.transform(1, 0, 0, -1, 0, canvas.height);
+      break;
+    case 5:
+      ctx.transform(0, 1, 1, 0, 0, 0);
+      break;
+    case 6:
+      ctx.transform(0, 1, -1, 0, canvas.width, 0);
+      break;
+    case 7:
+      ctx.transform(0, -1, -1, 0, canvas.width, canvas.height);
+      break;
+    case 8:
+      ctx.transform(0, -1, 1, 0, 0, canvas.height);
+      break;
+    default:
+      break;
+  }
+
+  ctx.drawImage(image, 0, 0);
+
+  const normalizedBlob = await new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), file.type || "image/jpeg", 0.95);
+  });
+
+  if (!normalizedBlob) {
+    return file;
+  }
+
+  return new File([normalizedBlob], file.name, {
+    type: normalizedBlob.type || file.type || "image/jpeg",
+    lastModified: Date.now(),
+  });
+};
+
 watch(
   () => route.path,
   () => {
@@ -290,10 +428,22 @@ const closeProfileModal = () => {
   syncProfileForm();
 };
 
-const handleProfileImageChange = (event) => {
+const handleProfileImageChange = async (event) => {
   const file = event.target.files?.[0] || null;
-  profileImageFile.value = file;
-  profilePreview.value = file ? URL.createObjectURL(file) : "";
+  if (!file) {
+    profileImageFile.value = null;
+    profilePreview.value = "";
+    return;
+  }
+
+  try {
+    const normalized = await normalizeProfileImageOrientation(file);
+    profileImageFile.value = normalized;
+    profilePreview.value = URL.createObjectURL(normalized);
+  } catch (error) {
+    profileImageFile.value = file;
+    profilePreview.value = URL.createObjectURL(file);
+  }
 };
 
 const saveProfile = async () => {
