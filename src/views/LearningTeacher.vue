@@ -151,6 +151,26 @@
                   <article v-for="item in assignments" :key="item.id"
                     class="group relative rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all hover:border-sky-200 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-cyan-700"
                     :class="selectedAssignment?.id === item.id ? 'ring-2 ring-sky-600 dark:ring-cyan-500' : ''">
+                    <div class="absolute right-3 top-3 flex items-center gap-1.5">
+                      <button
+                        @click="openAssignmentEditModal(item)"
+                        class="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-500 ring-1 ring-slate-200 transition hover:bg-slate-50 hover:text-slate-700 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-800"
+                        title="Edit"
+                      >
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 3.487a2.1 2.1 0 0 1 2.97 2.97L8.65 17.64l-4.15 1.18 1.18-4.15L16.862 3.487Z" />
+                        </svg>
+                      </button>
+                      <button
+                        @click="deleteAssignment(item)"
+                        class="inline-flex h-7 w-7 items-center justify-center rounded-md text-rose-600 ring-1 ring-rose-200 transition hover:bg-rose-50 dark:text-rose-300 dark:ring-rose-500/30 dark:hover:bg-rose-500/10"
+                        title="Hapus"
+                      >
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16m-10 4v6m4-6v6M9 4h6l1 2H8l1-2Zm-2 3h10l-1 13H8L7 7Z" />
+                        </svg>
+                      </button>
+                    </div>
                     <h4 class="font-bold text-slate-900 dark:text-white">{{ item.title }}</h4>
                     <div class="mt-2.5 mb-4 flex flex-wrap items-center gap-2 text-xs font-semibold">
                       <span :class="assignmentTypeBadgeClass(item.assignment_type)"
@@ -174,16 +194,6 @@
                       class="w-full rounded-xl bg-slate-50 px-3 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-cyan-900/30 dark:hover:text-cyan-300">
                       {{ selectedAssignment?.id === item.id ? 'Sedang Dinilai' : 'Buka Penilaian' }}
                     </button>
-                    <div class="mt-3 grid grid-cols-2 gap-2">
-                      <button @click="openAssignmentEditModal(item)"
-                        class="rounded-xl bg-white px-3 py-2 text-xs font-bold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
-                        Edit
-                      </button>
-                      <button @click="deleteAssignment(item)"
-                        class="rounded-xl bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 ring-1 ring-rose-200 transition hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
-                        Hapus
-                      </button>
-                    </div>
                     <a v-if="item.attachment_url"
                       :href="normalizePublicUrl(item.attachment_url)"
                       target="_blank"
