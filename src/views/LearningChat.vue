@@ -1266,17 +1266,17 @@ onMounted(async () => {
 
       if (isCurrentSubject && !isFromCurrentUser) {
         await markCurrentSubjectAsRead();
+        await refreshChatSummary();
+      } else if (!isCurrentSubject && !isFromCurrentUser && incomingSubjectId) {
+        const currentState = chatSummaryBySubject.value[incomingSubjectId] || {};
+        chatSummaryBySubject.value = {
+          ...chatSummaryBySubject.value,
+          [incomingSubjectId]: {
+            ...currentState,
+            unread_count: Number(currentState.unread_count || 0) + 1,
+          },
+        };
       } else {
-        if (!isCurrentSubject && !isFromCurrentUser && incomingSubjectId) {
-          const currentState = chatSummaryBySubject.value[incomingSubjectId] || {};
-          chatSummaryBySubject.value = {
-            ...chatSummaryBySubject.value,
-            [incomingSubjectId]: {
-              ...currentState,
-              unread_count: Number(currentState.unread_count || 0) + 1,
-            },
-          };
-        }
         await refreshChatSummary();
       }
     }),
