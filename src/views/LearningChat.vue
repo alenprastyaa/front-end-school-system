@@ -1262,10 +1262,21 @@ onMounted(async () => {
       await upsertMessage(chatMessage);
       const incomingSubjectId = Number(chatMessage?.subject_id || 0);
       const isCurrentSubject = Number(selectedSubject.value?.id || 0) === incomingSubjectId;
+      const isFromCurrentUser = Number(chatMessage?.sender_id || 0) === Number(currentUserId);
 
-      if (isCurrentSubject && Number(chatMessage?.sender_id) !== Number(currentUserId)) {
+      if (isCurrentSubject && !isFromCurrentUser) {
         await markCurrentSubjectAsRead();
       } else {
+        if (!isCurrentSubject && !isFromCurrentUser && incomingSubjectId) {
+          const currentState = chatSummaryBySubject.value[incomingSubjectId] || {};
+          chatSummaryBySubject.value = {
+            ...chatSummaryBySubject.value,
+            [incomingSubjectId]: {
+              ...currentState,
+              unread_count: Number(currentState.unread_count || 0) + 1,
+            },
+          };
+        }
         await refreshChatSummary();
       }
     }),
