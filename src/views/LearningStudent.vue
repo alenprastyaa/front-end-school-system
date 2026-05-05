@@ -235,6 +235,13 @@
             <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Unggah File (Jika diminta)</label>
             <input type="file" :disabled="isSubmitting" @change="handleSubmissionFile"
               class="block w-full text-sm text-slate-500 file:mr-4 file:cursor-pointer file:rounded-xl file:border-0 file:bg-emerald-50 file:px-4 file:py-2.5 file:text-sm file:font-bold file:text-emerald-700 hover:file:bg-emerald-100 dark:text-slate-400 dark:file:bg-emerald-500/10 dark:file:text-emerald-400 dark:hover:file:bg-emerald-500/20" />
+            <div v-if="submissionTarget?.submission_attachment_url" class="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
+              <span class="font-semibold">File saat ini:</span>
+              <a :href="normalizePublicUrl(submissionTarget.submission_attachment_url)" target="_blank" rel="noreferrer"
+                class="ml-1 font-bold text-emerald-600 hover:text-emerald-500 dark:text-emerald-400">
+                Lihat file jawaban
+              </a>
+            </div>
           </div>
 
           <div class="mt-1 flex items-center justify-end gap-3">
