@@ -5,21 +5,21 @@
       <section class="mb-8">
 
         <div
-          class="flex flex-nowrap gap-3 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          class="flex flex-nowrap gap-2 overflow-x-auto pb-3 pt-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button v-for="item in subjects" :key="item.id" @click="selectSubject(item)"
-            class="group relative flex min-w-[240px] flex-none snap-start flex-col items-start overflow-hidden rounded-2xl p-4 text-left transition-all"
+            class="group relative flex min-w-[200px] flex-none snap-start flex-col items-start overflow-hidden rounded-xl px-3 py-2.5 text-left transition-all"
             :class="selectedSubject?.id === item.id
               ? 'bg-sky-600 shadow-md ring-1 ring-sky-600 dark:bg-cyan-600'
               : 'bg-white shadow-sm ring-1 ring-slate-900/5 hover:bg-slate-50 dark:bg-slate-900 dark:ring-white/10 dark:hover:bg-slate-800/80'">
             <span :class="selectedSubject?.id === item.id ? 'text-white' : 'text-slate-900 dark:text-white'"
-              class="font-bold tracking-tight">{{ item.name }}</span>
+              class="line-clamp-1 text-sm font-bold tracking-tight">{{ item.name }}</span>
             <span
               :class="selectedSubject?.id === item.id ? 'text-sky-200 dark:text-cyan-100' : 'text-slate-500 dark:text-slate-400'"
-              class="mt-1 text-xs font-medium">
+              class="mt-0.5 line-clamp-1 text-[11px] font-medium">
               {{ item.class_name }}
             </span>
             <div v-if="selectedSubject?.id === item.id"
-              class="absolute right-4 top-4 h-2 w-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
+              class="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
           </button>
         </div>
       </section>
@@ -237,6 +237,7 @@
               </section>
 
               <section
+                ref="gradingDeskRef"
                 class="flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900 lg:col-span-8 xl:col-span-9">
 
                 <div
@@ -683,6 +684,7 @@ const selectedAssignment = ref(null);
 const materials = ref([]);
 const assignments = ref([]);
 const submissions = ref([]);
+const gradingDeskRef = ref(null);
 const subjectError = ref("");
 const message = ref("");
 const isError = ref(false);
@@ -1130,6 +1132,7 @@ const loadSubmissions = async (assignment) => {
   selectedAssignment.value = assignment;
   submissionSearch.value = ""; // Reset pencarian saat buka tugas baru
   submissionFilter.value = "ALL";
+  gradingDeskRef.value?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   try {
     const response = await api.get(`/learning/assignments/${assignment.id}/submissions`);
