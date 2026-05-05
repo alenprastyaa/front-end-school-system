@@ -93,13 +93,18 @@
                       <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                     </svg>
                   </button>
-                  <div
+                  <button type="button"
                     class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl text-white shadow-sm md:h-12 md:w-12 md:rounded-2xl"
-                    :class="selectedSubject.chat_icon_url ? 'bg-slate-100 dark:bg-slate-800' : getSubjectIconClass(selectedSubject)">
+                    :class="[
+                      selectedSubject.chat_icon_url ? 'bg-slate-100 dark:bg-slate-800' : getSubjectIconClass(selectedSubject),
+                      role === 'GURU' ? 'ring-2 ring-transparent transition hover:ring-sky-400/50' : '',
+                    ]"
+                    :disabled="role !== 'GURU' || isUploadingChatIcon"
+                    @click="openChatIconModal">
                     <img v-if="selectedSubject.chat_icon_url" :src="selectedSubject.chat_icon_url" alt="Ikon grup mapel"
                       class="h-full w-full object-cover" />
                     <Icon v-else :icon="getSubjectIcon(selectedSubject)" class="h-6 w-6 opacity-95" />
-                  </div>
+                  </button>
                   <div class="min-w-0">
                     <h2 class="truncate text-base font-bold text-slate-900 dark:text-white md:text-lg">{{
                       selectedSubject.name }}
@@ -115,24 +120,7 @@
                       {{ typingIndicatorText }}
                     </p>
                   </div>
-                  <button v-if="role === 'GURU'" type="button"
-                    class="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[8px] font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 md:gap-2 md:rounded-xl md:px-3 md:py-2 md:text-xs"
-                    :disabled="isUploadingChatIcon" @click="openChatIconPicker">
-                    <svg v-if="isUploadingChatIcon" class="h-3.5 w-3.5 animate-spin md:h-4 md:w-4" fill="none"
-                      viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                    </svg>
-                    <svg v-else class="h-3.5 w-3.5 md:h-4 md:w-4" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                      stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M6.75 7.5h10.5M6.75 12h10.5m-10.5 4.5h4.5" />
-                    </svg>
-                    {{ isUploadingChatIcon ? "Mengunggah..." : "Ubah Ikon" }}
-                  </button>
                 </div>
-                <input v-if="role === 'GURU'" ref="chatIconInputRef" type="file" accept="image/*" class="hidden"
-                  @change="handleChatIconUpload" />
               </div>
 
               <div ref="messageListRef" :style="messageListStyle"
@@ -335,6 +323,38 @@
         </div>
       </div>
     </main>
+    <div v-if="showChatIconModal && role === 'GURU'" class="fixed inset-0 z-[75] bg-black/45" @click="closeChatIconModal">
+      <div class="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white p-4 shadow-2xl dark:bg-slate-900 sm:mx-auto sm:my-16 sm:inset-auto sm:w-full sm:max-w-md sm:rounded-2xl"
+        @click.stop>
+        <h3 class="text-base font-semibold text-slate-900 dark:text-white">Ubah Ikon Grup</h3>
+        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Pilih gambar baru untuk ikon mapel ini.</p>
+
+        <div class="mt-4 flex items-center gap-3">
+          <div class="h-16 w-16 overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+            <img v-if="chatIconPreviewUrl || selectedSubject?.chat_icon_url"
+              :src="chatIconPreviewUrl || selectedSubject?.chat_icon_url" alt="Preview ikon grup"
+              class="h-full w-full object-cover" />
+            <div v-else class="flex h-full w-full items-center justify-center text-slate-500 dark:text-slate-300">
+              <Icon icon="ph:chats-circle-duotone" class="h-7 w-7" />
+            </div>
+          </div>
+          <input type="file" accept="image/*" @change="handleChatIconFileChange"
+            class="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:font-semibold file:text-slate-700 hover:file:bg-slate-200 dark:text-slate-300 dark:file:bg-slate-800 dark:file:text-slate-200 dark:hover:file:bg-slate-700" />
+        </div>
+
+        <div class="mt-5 flex items-center justify-end gap-2">
+          <button type="button" @click="closeChatIconModal"
+            class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-300">
+            Batal
+          </button>
+          <button type="button" :disabled="isUploadingChatIcon || !chatIconDraftFile" @click="submitChatIconUpload"
+            class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+            {{ isUploadingChatIcon ? "Menyimpan..." : "Simpan" }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div v-if="showImagePreview" class="fixed inset-0 z-[80] bg-black/90" @click="closeImagePreview">
       <div class="absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-3">
         <p class="truncate text-xs font-semibold text-white/80">{{ previewImageName || "Preview Gambar" }}</p>
@@ -410,6 +430,9 @@ const isUploadingChatIcon = ref(false);
 const isRecordingVoice = ref(false);
 const composer = ref("");
 const mobileChatOpen = ref(false);
+const showChatIconModal = ref(false);
+const chatIconDraftFile = ref(null);
+const chatIconPreviewUrl = ref("");
 const attachmentFile = ref(null);
 const attachmentPreviewName = ref("");
 const recordedVoiceUrl = ref("");
@@ -424,7 +447,6 @@ const sourceNode = ref(null);
 const waveformTimer = ref(null);
 const recordingWavePoints = ref("0,20 300,20");
 const attachmentInputRef = ref(null);
-const chatIconInputRef = ref(null);
 const messageListRef = ref(null);
 const replyTarget = ref(null);
 const replyHighlightMessageId = ref(null);
@@ -1343,10 +1365,24 @@ const toggleVoiceRecording = async () => {
   }
 };
 
-const openChatIconPicker = () => {
-  if (!isUploadingChatIcon.value) {
-    chatIconInputRef.value?.click();
+const resetChatIconDraft = () => {
+  chatIconDraftFile.value = null;
+  if (chatIconPreviewUrl.value) {
+    URL.revokeObjectURL(chatIconPreviewUrl.value);
   }
+  chatIconPreviewUrl.value = "";
+};
+
+const openChatIconModal = () => {
+  if (role !== "GURU" || isUploadingChatIcon.value) {
+    return;
+  }
+  showChatIconModal.value = true;
+};
+
+const closeChatIconModal = () => {
+  showChatIconModal.value = false;
+  resetChatIconDraft();
 };
 
 const applyUpdatedSubject = (updatedSubject) => {
@@ -1366,11 +1402,20 @@ const applyUpdatedSubject = (updatedSubject) => {
   }
 };
 
-const handleChatIconUpload = async (event) => {
+const handleChatIconFileChange = (event) => {
   const file = event.target.files?.[0] || null;
   event.target.value = "";
+  if (!file) {
+    return;
+  }
 
-  if (!file || !selectedSubject.value || role !== "GURU") {
+  resetChatIconDraft();
+  chatIconDraftFile.value = file;
+  chatIconPreviewUrl.value = URL.createObjectURL(file);
+};
+
+const submitChatIconUpload = async () => {
+  if (!chatIconDraftFile.value || !selectedSubject.value || role !== "GURU") {
     return;
   }
 
@@ -1379,11 +1424,12 @@ const handleChatIconUpload = async (event) => {
 
   try {
     const formData = new FormData();
-    formData.append("chat_icon", file);
+    formData.append("chat_icon", chatIconDraftFile.value);
     const response = await api.put(`/learning/subjects/${selectedSubject.value.id}/chat-icon`, formData);
     if (response?.data) {
       applyUpdatedSubject(response.data);
     }
+    closeChatIconModal();
   } catch (error) {
     chatError.value = error.message;
   } finally {
@@ -1581,6 +1627,7 @@ onUnmounted(() => {
     window.clearTimeout(onlineRefreshTimer.value);
   }
   leaveSubjectRoom(selectedSubject.value?.id);
+  closeChatIconModal();
   clearAttachment();
   stopWaveformTimer();
   realtimeUnsubscribers.value.forEach((unsubscribe) => {
