@@ -73,7 +73,7 @@
             <h2 class="text-xl font-semibold text-slate-900 dark:text-white">Profil Saya</h2>
             <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Username tidak dapat diubah.</p>
           </div>
-          <button class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200" @click="closeProfileModal">
+          <button class="text-slate-500 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:text-slate-200" :disabled="isSavingProfile" @click="closeProfileModal">
             <Icon icon="mdi:close" class="text-2xl" />
           </button>
         </div>
@@ -83,13 +83,14 @@
           {{ profileMessage }}
         </div>
 
-        <form class="mt-5 space-y-5" @submit.prevent="saveProfile">
+        <form class="mt-5 space-y-5" :class="{ 'pointer-events-none opacity-80': isSavingProfile }" @submit.prevent="saveProfile">
           <div class="flex items-center gap-4">
             <img :src="profilePreview || avatarSrc" alt="Foto profil"
               class="h-20 w-20 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700" />
             <div class="flex-1">
               <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Foto profil</label>
               <input type="file" accept="image/*"
+                :disabled="isSavingProfile"
                 class="mt-2 block w-full text-sm text-slate-500 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:font-medium file:text-slate-700 hover:file:bg-slate-200 dark:file:bg-slate-800 dark:file:text-slate-200"
                 @change="handleProfileImageChange" />
             </div>
@@ -105,6 +106,7 @@
           <div>
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Nama Lengkap</label>
             <input v-model="profileForm.full_name" type="text"
+              :disabled="isSavingProfile"
               class="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
               placeholder="Nama lengkap pengguna" />
           </div>
@@ -113,12 +115,14 @@
             <div>
               <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Email</label>
               <input v-model="profileForm.parent_email" type="email"
+                :disabled="isSavingProfile"
                 class="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                 placeholder="email@contoh.com" />
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">No. HP</label>
               <input v-model="profileForm.phone_number" type="text"
+                :disabled="isSavingProfile"
                 class="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                 placeholder="08xxxxxxxxxx" />
             </div>
@@ -126,6 +130,7 @@
 
           <div>
             <button type="button"
+              :disabled="isSavingProfile"
               class="inline-flex items-center rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               @click="showPasswordFields = !showPasswordFields">
               {{ showPasswordFields ? "Tutup Ubah Password" : "Ubah Password" }}
@@ -134,12 +139,14 @@
               <div>
                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Password saat ini</label>
                 <input v-model="profileForm.current_password" type="password" autocomplete="current-password"
+                  :disabled="isSavingProfile"
                   class="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                   placeholder="Password saat ini" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Password baru</label>
                 <input v-model="profileForm.new_password" type="password" autocomplete="new-password"
+                  :disabled="isSavingProfile"
                   class="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                   placeholder="Minimal 6 karakter" />
               </div>
@@ -147,6 +154,7 @@
                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Konfirmasi password
                   baru</label>
                 <input v-model="profileForm.confirm_password" type="password" autocomplete="new-password"
+                  :disabled="isSavingProfile"
                   class="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                   placeholder="Ulangi password baru" />
               </div>
@@ -155,6 +163,7 @@
 
           <div class="flex justify-end gap-3">
             <button type="button"
+              :disabled="isSavingProfile"
               class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-200"
               @click="closeProfileModal">
               Batal
@@ -321,6 +330,9 @@ const openProfileModal = async () => {
 };
 
 const closeProfileModal = () => {
+  if (isSavingProfile.value) {
+    return;
+  }
   showProfileModal.value = false;
   syncProfileForm();
 };
@@ -364,6 +376,11 @@ const saveProfile = async () => {
   isSavingProfile.value = true;
   profileError.value = false;
   profileMessage.value = "";
+  pushToast({
+    title: "Menyimpan Profil",
+    message: "Perubahan profil sedang diproses.",
+    type: "info",
+  });
 
   try {
     const formData = new FormData();
@@ -402,7 +419,7 @@ const saveProfile = async () => {
       message: profileMessage.value,
       type: "success",
     });
-    syncProfileForm();
+    closeProfileModal();
   } catch (error) {
     profileError.value = true;
     profileMessage.value = error.message;
