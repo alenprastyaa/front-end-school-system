@@ -621,7 +621,6 @@
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { uploadFileDirect } from "@/api/upload";
 import { formatDateTime } from "@/utils/date";
 import { normalizePublicUrl } from "@/utils/url";
 import { useMasterDataStore } from "@/store/masterData";
@@ -968,20 +967,18 @@ const submitAssignment = async () => {
   isError.value = false;
 
   try {
-    const payload = {
-      subject_id: selectedSubject.value.id,
-      title: assignmentForm.title,
-      description: assignmentForm.description || "",
-      due_date: assignmentForm.due_date || "",
-      assignment_type: assignmentForm.assignment_type,
-    };
+    const payload = new FormData();
+    payload.append("subject_id", String(selectedSubject.value.id));
+    payload.append("title", assignmentForm.title || "");
+    payload.append("description", assignmentForm.description || "");
+    payload.append("due_date", assignmentForm.due_date || "");
+    payload.append("assignment_type", assignmentForm.assignment_type || "FILE");
 
     if (assignmentForm.assignment_type === "FILE" && assignmentFile.value) {
-      const uploadedFile = await uploadFileDirect(assignmentFile.value);
-      payload.attachment_url = uploadedFile.url;
-      payload.attachment_name = uploadedFile.name;
-      payload.attachment_mime_type = uploadedFile.mimeType;
-      payload.attachment_size = uploadedFile.size;
+      payload.append("attachment", assignmentFile.value);
+    }
+    if (assignmentForm.assignment_type === "MANUAL") {
+      payload.append("remove_attachment", "true");
     }
 
     const response = editingAssignmentId.value
