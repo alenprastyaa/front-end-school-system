@@ -164,11 +164,17 @@
                   <article
                     class="max-w-[90%] rounded-2xl px-3 py-2.5 shadow-sm md:max-w-[70%] md:rounded-3xl md:px-4 md:py-3"
                     :class="item.sender_id === currentUserId ? ownMessageClass : 'rounded-tl-md bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-800'">
-                    <div class="flex items-center gap-2 text-xs font-semibold">
-                      <span>{{ item.sender_name || "Pengguna" }}</span>
-                      <span class="rounded-full px-2 py-0.5" :class="roleBadgeClass(item.sender_role)">
-                        {{ roleLabel(item.sender_role) }}
-                      </span>
+                    <div class="flex items-center justify-between gap-3 text-xs font-semibold">
+                      <div class="flex items-center gap-2">
+                        <span>{{ item.sender_name || "Pengguna" }}</span>
+                        <span class="rounded-full px-2 py-0.5" :class="roleBadgeClass(item.sender_role)">
+                          {{ roleLabel(item.sender_role) }}
+                        </span>
+                      </div>
+                      <button type="button" @click="setReplyTarget(item)"
+                        class="rounded-md px-2 py-0.5 text-[11px] font-semibold opacity-80 hover:bg-black/10 hover:opacity-100 dark:hover:bg-white/10">
+                        Balas
+                      </button>
                     </div>
                     <p v-if="item.message" class="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed">
                       {{ item.message }}
@@ -206,6 +212,23 @@
               <form @submit.prevent="sendMessage"
                 class="fixed inset-x-0 z-20 shrink-0 border-t border-slate-200 bg-white px-2 pt-2 dark:border-slate-800 dark:bg-slate-900 md:sticky md:inset-auto md:px-6 md:py-4"
                 :style="composerBarStyle">
+                <div v-if="replyTarget"
+                  class="mb-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-800">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="font-semibold text-slate-800 dark:text-slate-200">
+                        Membalas {{ replyTarget.sender_name || "Pengguna" }}
+                      </p>
+                      <p class="mt-0.5 truncate text-slate-500 dark:text-slate-400">
+                        {{ getMessagePreview(replyTarget) }}
+                      </p>
+                    </div>
+                    <button type="button" @click="clearReplyTarget"
+                      class="rounded-full p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200">
+                      <Icon icon="mdi:close" class="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
                 <div v-if="attachmentPreviewName || isRecordingVoice || recordedVoiceUrl"
                   class="mb-3 rounded-2xl bg-slate-100 px-4 py-3 text-sm dark:bg-slate-800">
                   <div v-if="attachmentPreviewName" class="flex items-center justify-between gap-3">
@@ -354,6 +377,7 @@ const recordingWavePoints = ref("0,20 300,20");
 const attachmentInputRef = ref(null);
 const chatIconInputRef = ref(null);
 const messageListRef = ref(null);
+const replyTarget = ref(null);
 const messagesBySubject = ref({});
 const chatSummaryBySubject = ref({});
 const realtimeUnsubscribers = ref([]);
@@ -643,6 +667,16 @@ const ownMessageReadLabel = (message) => {
   return "Belum dilihat";
 };
 
+const getMessagePreview = (message) => {
+  if (!message) return "-";
+  if (message.message) return String(message.message).replace(/\s+/g, " ").slice(0, 120);
+  if (message.message_type === "VOICE") return "Voice note";
+  if (message.message_type === "IMAGE") return "Gambar";
+  if (message.message_type === "PDF") return "PDF";
+  if (message.attachment_name) return message.attachment_name;
+  return "Pesan";
+};
+
 const isVoiceMessage = (message) => {
   const explicitType = String(message?.message_type || "").toUpperCase();
   if (explicitType === "VOICE") {
@@ -908,6 +942,7 @@ const selectSubject = async (subject) => {
   }
   selectedSubject.value = subject;
   composer.value = "";
+  replyTarget.value = null;
   chatError.value = "";
   mobileChatOpen.value = true;
 
@@ -918,6 +953,14 @@ const selectSubject = async (subject) => {
   await loadMessages(subject.id);
   await loadOnlineUsers(subject.id);
   joinSubjectRoom(subject.id);
+};
+
+const setReplyTarget = (message) => {
+  replyTarget.value = message || null;
+};
+
+const clearReplyTarget = () => {
+  replyTarget.value = null;
 };
 
 const backToGroupList = () => {
@@ -1227,13 +1270,18 @@ const sendMessage = async () => {
 
   try {
     const hasAttachment = Boolean(attachmentFile.value);
-    let payload = { message: composer.value.trim() };
+    const baseMessage = composer.value.trim();
+    const replyPrefix = replyTarget.value
+      ? `[Balas ${replyTarget.value.sender_name || "Pengguna"}: ${getMessagePreview(replyTarget.value)}]`
+      : "";
+    const finalMessage = [replyPrefix, baseMessage].filter(Boolean).join("\n");
+    let payload = { message: finalMessage };
 
     if (hasAttachment) {
       const uploadedFile = await uploadFileDirect(attachmentFile.value);
       const isVoiceAttachment = String(uploadedFile.mimeType || "").toLowerCase().startsWith("audio/");
       payload = {
-        message: composer.value.trim(),
+        message: finalMessage,
         message_type: isVoiceAttachment ? "VOICE" : undefined,
         attachment_url: uploadedFile.url,
         attachment_name: uploadedFile.name,
@@ -1245,6 +1293,7 @@ const sendMessage = async () => {
     const response = await api.post(`/learning/subjects/${selectedSubject.value.id}/chat`, payload);
     await sendTypingEvent(false);
     composer.value = "";
+    clearReplyTarget();
     clearAttachment();
 
     if (response?.data) {
