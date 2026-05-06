@@ -3,20 +3,35 @@
     <section
       class="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-6"
     >
-      <div class="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
-            User Sekolah
-          </h1>
+        <div class="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
+              User Sekolah
+            </h1>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              @click="downloadGuruTemplate"
+              class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
+            >
+              Download Template Guru XLSX
+            </button>
+            <button
+              @click="openGuruImportPicker"
+              :disabled="isImportingGuru"
+              class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {{ isImportingGuru ? "Memproses..." : "Upload Excel Guru" }}
+            </button>
+            <button
+              @click="openCreateModal"
+              class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Tambah User Sekolah
+            </button>
+          </div>
         </div>
-        <button
-          @click="openCreateModal"
-          class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          Tambah User Sekolah
-        </button>
-      </div>
-    </section>
+      </section>
 
     <section>
       <div
@@ -47,10 +62,10 @@
               >
                 <th class="py-3 pr-4">
                   <button
-                    @click="handleSort('username')"
+                    @click="handleSort('full_name')"
                     class="inline-flex items-center gap-1 font-medium"
                   >
-                    Username {{ sortIndicator("username") }}
+                    Nama Lengkap {{ sortIndicator("full_name") }}
                   </button>
                 </th>
                 <th class="py-3 pr-4">
@@ -86,7 +101,7 @@
                 :key="item.id"
                 class="border-b dark:border-gray-700 text-gray-800 dark:text-gray-200"
               >
-                <td class="py-3 pr-4">{{ item.username }}</td>
+                <td class="py-3 pr-4">{{ item.full_name || item.username || "-" }}</td>
                 <td class="py-3 pr-4">{{ item.role }}</td>
                 <td class="py-3 pr-4">{{ item.parent_email || "-" }}</td>
                 <td class="py-3 pr-4">{{ item.phone_number || "-" }}</td>
@@ -343,7 +358,7 @@
               >
                 User
                 <span class="font-semibold text-gray-700 dark:text-gray-200">{{
-                  userToDelete?.username || "-"
+                  userToDelete?.full_name || userToDelete?.username || "-"
                 }}</span>
                 ({{ userToDelete?.role }}) akan dihapus permanen dari sistem.
                 Tindakan ini tidak bisa dibatalkan.
@@ -388,6 +403,13 @@
     </Transition>
 
     <SuccessModal ref="successModal" />
+    <input
+      ref="guruImportInput"
+      type="file"
+      accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      class="hidden"
+      @change="handleGuruImportFileChange"
+    />
   </div>
 </template>
 
@@ -399,6 +421,7 @@ import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 import SuccessModal from "@/components/SuccessModal.vue";
 
 const successModal = ref(null);
+const guruImportInput = ref(null);
 
 const baseForm = () => ({
   username: "",
@@ -420,10 +443,12 @@ const totalUsers = ref(0);
 const editingUserId = ref(null);
 const showModal = ref(false);
 const isSubmitting = ref(false);
-const tableSort = createSortState("username");
+const isImportingGuru = ref(false);
+const tableSort = createSortState("full_name");
 
 const sortedUsers = computed(() =>
   sortItems(users.value, tableSort, {
+    full_name: (item) => item.full_name || item.username || "",
     parent_email: (item) => item.parent_email || "",
     phone_number: (item) => item.phone_number || "",
   }),
@@ -461,6 +486,80 @@ const closeModal = () => {
 const openCreateModal = () => {
   resetForm();
   showModal.value = true;
+};
+
+const downloadGuruTemplate = () => {
+  const token = localStorage.getItem("token");
+  fetch(`${api.baseUrl}/auth/user-school/template`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        throw new Error("Gagal mengunduh template guru");
+      }
+      return response.blob();
+    })
+    .then((blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "template-guru.xlsx";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    })
+    .catch((error) => {
+      pushToast({
+        title: "Gagal Download Template",
+        message: error.message,
+        type: "error",
+      });
+    });
+};
+
+const openGuruImportPicker = () => {
+  guruImportInput.value?.click();
+};
+
+const handleGuruImportFileChange = async (event) => {
+  const file = event?.target?.files?.[0];
+  if (!file) return;
+
+  isImportingGuru.value = true;
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await api.post("/auth/register/user-school/import", formData);
+    const imported = Number(response?.data?.imported || 0);
+    const failed = Number(response?.data?.failed || 0);
+
+    await loadUsers();
+    pushToast({
+      title: "Import Guru Selesai",
+      message: `${imported} guru berhasil diimport${failed > 0 ? `, ${failed} baris gagal` : ""}.`,
+      type: "success",
+    });
+    if (failed > 0) {
+      pushToast({
+        title: "Sebagian Baris Gagal",
+        message: "Periksa data yang kosong atau username yang sudah ada.",
+        type: "error",
+      });
+    }
+  } catch (error) {
+    pushToast({
+      title: "Gagal Import Guru",
+      message: error.message,
+      type: "error",
+    });
+  } finally {
+    isImportingGuru.value = false;
+    if (guruImportInput.value) {
+      guruImportInput.value.value = "";
+    }
+  }
 };
 
 const loadUsers = async () => {

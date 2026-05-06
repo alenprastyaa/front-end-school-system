@@ -46,7 +46,7 @@
 <script setup>
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import { api } from "@/api";
+import { api, cancelPendingApiRequests } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { clearSession, persistSession } from "@/utils/auth";
 import { useProfileStore } from "@/store/profile";
@@ -64,6 +64,7 @@ const handleLogin = async () => {
   isLoading.value = true;
 
   try {
+    cancelPendingApiRequests();
     clearSession();
     profileStore.resetProfileState();
     const response = await api.post("/auth/login", { ...form });

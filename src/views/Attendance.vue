@@ -1,7 +1,7 @@
 <template>
   <div
     class="min-h-screen bg-slate-50/50 px-3 pb-12 pt-4 font-sans text-slate-900 md:px-8 md:pt-8 dark:bg-slate-950 dark:text-slate-100">
-    <div class="mx-auto max-w-[1440px] space-y-6">
+    <div class="mx-auto  space-y-6">
 
       <section class="rounded-lg border border-slate-200 bg-white p-4 md:p-6 dark:border-slate-800 dark:bg-slate-900">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -26,7 +26,8 @@
             {{ hasCheckedOutToday ? "Sudah Check-out" : hasCheckedInToday ? "Sudah Check-in" : "Belum Check-in" }}
           </p>
           <p class="mt-2 text-xs text-white/70">
-            {{ hasCheckedOutToday ? "Aktivitas hari ini sudah lengkap." : hasCheckedInToday ? "Tinggal lakukan check-out saat selesai." : "Silakan lakukan absensi masuk." }}
+            {{ hasCheckedOutToday ? "Aktivitas hari ini sudah lengkap."
+              : hasCheckedInToday ? "Tinggal lakukan check-out saat selesai." : "Silakan lakukan absensi masuk." }}
           </p>
           <span class="mt-4 inline-flex rounded-full px-3 py-1 text-xs font-semibold"
             :class="hasCheckedOutToday ? 'bg-white/20 text-white' : hasCheckedInToday ? 'bg-emerald-400/20 text-emerald-100' : 'bg-amber-300/20 text-amber-50'">
@@ -51,7 +52,8 @@
       </section>
 
       <div class="grid grid-cols-1 gap-6 xl:grid-cols-[340px,1fr]">
-        <section class="rounded-xl border border-slate-200 bg-white p-4 md:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <section
+          class="rounded-xl border border-slate-200 bg-white p-4 md:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div
             class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -79,12 +81,14 @@
 
         </section>
 
-        <section class="rounded-xl border border-slate-200 bg-white p-4 md:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <section
+          class="rounded-xl border border-slate-200 bg-white p-4 md:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div class="flex items-center justify-between gap-4 border-b border-slate-200 pb-4 dark:border-slate-800">
             <div>
               <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Aksi Kehadiran</h2>
               <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                {{ !hasCheckedInToday ? "Ambil foto lalu kirim check-in." : "Check-in sudah tercatat. Lanjutkan dengan check-out saat selesai." }}
+                {{ !hasCheckedInToday ? "Ambil foto lalu kirim check-in."
+                  : "Check-in sudah tercatat. Lanjutkan dengan check - out saat selesai." }}
               </p>
             </div>
             <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold"
@@ -112,11 +116,13 @@
                     </svg>
                   </div>
                   <p class="text-base font-semibold text-slate-900 dark:text-white">Ambil Foto Check-in</p>
-                  <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Ketuk area ini untuk membuka kamera selfie.</p>
+                  <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Ketuk area ini untuk membuka kamera selfie.
+                  </p>
                 </div>
 
                 <div v-else class="flex w-full flex-col items-center">
-                  <div class="mb-4 h-40 w-40 overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm dark:border-emerald-500/20 dark:bg-slate-900">
+                  <div
+                    class="mb-4 h-40 w-40 overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm dark:border-emerald-500/20 dark:bg-slate-900">
                     <img v-if="selectedPreviewUrl" :src="selectedPreviewUrl" alt="Preview selfie"
                       class="h-full w-full object-cover" />
                     <div v-else
@@ -154,7 +160,8 @@
               </div>
               <h3 class="mt-4 text-xl font-semibold text-slate-900 dark:text-white">Check-in Sudah Tercatat</h3>
               <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                {{ hasCheckedOutToday ? "Anda sudah menyelesaikan absensi hari ini." : "Silakan lakukan check-out ketika sesi belajar berakhir." }}
+                {{ hasCheckedOutToday ? "Anda sudah menyelesaikan absensi hari ini."
+                  : "Silakan lakukan check-out ketika sesi belajar berakhir." }}
               </p>
             </div>
 
@@ -165,17 +172,21 @@
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
               </svg>
-              {{ hasCheckedOutToday ? "Sesi Telah Berakhir" : isCheckingOut ? "Mengirim Check-out..." : "Akhiri Sesi (Check-out)" }}
+              {{ hasCheckedOutToday ? "Sesi Telah Berakhir" : isCheckingOut ? "Mengirim Check-out..."
+                : "Akhiri Sesi (Check - out)" }}
             </button>
           </div>
         </section>
       </div>
 
-      <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div class="flex flex-col gap-4 border-b border-slate-200 p-4 md:p-6 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
+      <section
+        class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div
+          class="flex flex-col gap-4 border-b border-slate-200 p-4 md:p-6 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Riwayat Kehadiran</h2>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Catatan check-in dan check-out yang sudah tersimpan.</p>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Catatan check-in dan check-out yang sudah
+              tersimpan.</p>
           </div>
           <button @click="loadAttendance"
             class="inline-flex h-10 items-center justify-center rounded-lg bg-white px-4 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-800">
@@ -195,15 +206,15 @@
                   <div>
                     <p class="font-semibold text-slate-900 dark:text-white">{{ formatDate(item.attendance_date) }}</p>
                     <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                      Masuk {{ formatTime(item.clock_in) }} • Pulang {{ item.clock_out ? formatTime(item.clock_out) : "-" }}
+                      Masuk {{ formatTime(item.clock_in) }} • Pulang {{ item.clock_out ? formatTime(item.clock_out) :
+                        "-" }}
                     </p>
                   </div>
-                  <span class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium"
-                    :class="{
-                      'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300': item.status?.toLowerCase() === 'hadir',
-                      'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300': item.status?.toLowerCase() === 'terlambat',
-                      'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300': !['hadir', 'terlambat'].includes(item.status?.toLowerCase())
-                    }">
+                  <span class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium" :class="{
+                    'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300': item.status?.toLowerCase() === 'hadir',
+                    'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300': item.status?.toLowerCase() === 'terlambat',
+                    'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300': !['hadir', 'terlambat'].includes(item.status?.toLowerCase())
+                  }">
                     {{ item.status || "Hadir" }}
                   </span>
                 </div>
@@ -224,15 +235,18 @@
                 <th class="border-b border-slate-200 px-6 py-4 font-semibold dark:border-slate-800">Check-in</th>
                 <th class="border-b border-slate-200 px-6 py-4 font-semibold dark:border-slate-800">Check-out</th>
                 <th class="border-b border-slate-200 px-6 py-4 font-semibold dark:border-slate-800">Status</th>
-                <th class="border-b border-slate-200 px-6 py-4 text-right font-semibold dark:border-slate-800">Bukti</th>
+                <th class="border-b border-slate-200 px-6 py-4 text-right font-semibold dark:border-slate-800">Bukti
+                </th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
               <tr v-for="item in sortedAttendances" :key="item.id || `${item.attendance_date}-${item.clock_in}`"
                 class="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
-                <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ formatDate(item.attendance_date) }}</td>
+                <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ formatDate(item.attendance_date) }}
+                </td>
                 <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ formatTime(item.clock_in) }}</td>
-                <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ item.clock_out ? formatTime(item.clock_out) : "-" }}</td>
+                <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ item.clock_out ? formatTime(item.clock_out)
+                  : "-" }}</td>
                 <td class="px-6 py-4">
                   <span class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium" :class="{
                     'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300': item.status?.toLowerCase() === 'hadir',

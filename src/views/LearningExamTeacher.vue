@@ -53,8 +53,8 @@
                     {{ examCategoryLabel(item.exam_category) }}
                   </span>
                   <span class="inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ring-1 ring-inset"
-                    :class="examStatusBadgeClass(item.exam_status)">
-                    {{ examStatusLabel(item.exam_status) }}
+                    :class="examStatusBadgeClass(getEffectiveExamStatus(item))">
+                    {{ examStatusLabel(getEffectiveExamStatus(item)) }}
                   </span>
                   <span class="inline-flex rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
                     Kode: {{ item.exam_code }}
@@ -74,7 +74,7 @@
                   <p>Target dari admin: {{ item.exam_target_question_count || 0 }} soal</p>
                 </div>
                 <div class="mt-4 flex justify-end">
-                  <button v-if="item.exam_status === 'REQUESTED'" @click="selectExamRequest(item)"
+                  <button v-if="getEffectiveExamStatus(item) === 'REQUESTED'" @click="selectExamRequest(item)"
                     class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500">
                     {{ Number(activeExamRequestId) === Number(item.id) ? "Task Sedang Aktif" : "Susun Task Ini" }}
                   </button>
@@ -314,6 +314,32 @@ const examStatusBadgeClass = (status) => {
   return "bg-slate-100 text-slate-700 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700";
 };
 
+const parseArrayField = (value) => {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== "string" || !value.trim()) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const getEffectiveExamStatus = (item) => {
+  const currentStatus = String(item?.effective_exam_status || item?.exam_status || "").toUpperCase();
+  if (currentStatus === "PUBLISHED" || currentStatus === "SUBMITTED") {
+    return currentStatus;
+  }
+  if (
+    item?.exam_submitted_at
+    || parseArrayField(item?.quiz_payload).length > 0
+    || parseArrayField(item?.question_bank_ids).length > 0
+  ) {
+    return "SUBMITTED";
+  }
+  return currentStatus || "REQUESTED";
+};
+
 const formatDurationSeconds = (value) => {
   const totalSeconds = Number(value || 0);
   if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) return "-";
@@ -479,6 +505,17 @@ const submitExamPackageForAdmin = async () => {
       type: "success",
       duration: 4200,
     });
+    assignments.value = assignments.value.map((item) =>
+      Number(item.id) === Number(activeExamRequest.value?.id)
+        ? {
+          ...item,
+          exam_status: "SUBMITTED",
+          effective_exam_status: "SUBMITTED",
+          exam_submitted_at: new Date().toISOString(),
+          question_bank_ids: JSON.stringify([...assignmentForm.selected_question_bank_ids]),
+        }
+        : item,
+    );
     activeExamRequestId.value = null;
     resetAssignmentForm();
     await loadSubjectData();

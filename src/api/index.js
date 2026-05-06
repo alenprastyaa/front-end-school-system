@@ -1,6 +1,7 @@
 import { clearSessionAndRedirectToLogin } from "@/utils/auth";
 
 const API_BASE_URL = (process.env.VUE_APP_API_BASE_URL || "https://alentest.my.id/school/api").replace(/\/$/, "");
+const pendingRequestControllers = new Set();
 
 const normalizeSocketPath = (path) => {
   if (!path) {
@@ -38,7 +39,7 @@ const buildRealtimeConfig = () => {
 
 const buildHeaders = (options = {}) => {
   const headers = { ...(options.headers || {}) };
-  const token = localStorage.getItem("token");
+  const token = options.authTokenOverride ?? localStorage.getItem("token");
 
   if (!(options.body instanceof FormData)) {
     headers["Content-Type"] = headers["Content-Type"] || "application/json";
@@ -124,13 +125,22 @@ const isAuthFailure = (error) => {
 };
 
 export const apiRequest = async (path, options = {}) => {
-  const hasToken = Boolean(localStorage.getItem("token"));
+  const requestToken = localStorage.getItem("token");
+  const hasToken = Boolean(requestToken);
+  const suppressAuthRedirect = Boolean(options.suppressAuthRedirect);
+  const controller = options.signal ? null : new AbortController();
+  const signal = options.signal || controller?.signal;
+
+  if (controller) {
+    pendingRequestControllers.add(controller);
+  }
 
   try {
     const response = await fetch(buildUrl(path, options.params), {
       method: options.method || "GET",
-      headers: buildHeaders(options),
+      headers: buildHeaders({ ...options, authTokenOverride: requestToken }),
       body: buildBody(options.body),
+      signal,
     });
 
     if (!response.ok) {
@@ -145,12 +155,36 @@ export const apiRequest = async (path, options = {}) => {
 
     return response.json();
   } catch (error) {
-    if (hasToken && isAuthFailure(error)) {
+    if (error?.name === "AbortError") {
+      error.isAborted = true;
+      throw error;
+    }
+
+    const activeToken = localStorage.getItem("token");
+    const isSameSessionToken = requestToken && activeToken && requestToken === activeToken;
+
+    if (!suppressAuthRedirect && hasToken && isSameSessionToken && isAuthFailure(error)) {
+      cancelPendingApiRequests();
       clearSessionAndRedirectToLogin();
     }
 
     throw error;
+  } finally {
+    if (controller) {
+      pendingRequestControllers.delete(controller);
+    }
   }
+};
+
+export const cancelPendingApiRequests = () => {
+  pendingRequestControllers.forEach((controller) => {
+    try {
+      controller.abort();
+    } catch (error) {
+      // ignore abort failures
+    }
+  });
+  pendingRequestControllers.clear();
 };
 
 export const api = {

@@ -6,67 +6,62 @@
       <div class="landing-grid" :style="gridParallaxStyle"></div>
     </div>
 
-    <header class="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/85 backdrop-blur-md">
-      <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10">
+    <header class="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#07111f]/85 backdrop-blur-md">
+      <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-5 lg:px-10">
         <div class="flex items-center gap-3">
           <div
             class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white ring-1 ring-slate-900/10 shadow-sm">
             <img class="w-7" src="@/assets/logo/logo.svg" alt="School System" />
           </div>
           <div>
-            <p class="text-[11px] font-semibold uppercase tracking-[0.28em] text-sky-300">CMS + LMS</p>
+            <!-- <p class="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-300">Presentasi CMS + LMS</p> -->
             <h1 class="text-lg font-semibold tracking-tight text-white">School System</h1>
           </div>
         </div>
 
-        <div class="hidden items-center gap-3 md:flex">
-          <a href="#fitur"
-            class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-sky-400/40 hover:bg-white/10">
-            Fitur
+        <nav class="hidden items-center gap-3 md:flex">
+          <a v-for="item in navItems" :key="item.href" :href="item.href"
+            class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-cyan-400/40 hover:bg-white/10">
+            {{ item.label }}
           </a>
-          <a href="#penggunaan"
-            class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-sky-400/40 hover:bg-white/10">
-            Cara Pakai
-          </a>
-          <router-link to="/student-registration"
-            class="rounded-full border border-rose-400/30 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-500/20">
-            Registrasi Siswa
-          </router-link>
           <router-link to="/auth/login"
             class="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-100">
             Login CMS
           </router-link>
-        </div>
+        </nav>
       </div>
     </header>
 
     <main class="relative z-10">
-      <section class="mx-auto max-w-7xl px-6 pb-16 pt-32 lg:px-10 lg:pb-24 lg:pt-36">
-        <div class="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+      <section id="ringkasan" class="mx-auto max-w-7xl px-6 pb-16 pt-32 lg:px-10 lg:pb-24 lg:pt-36">
+        <div class="grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-start">
           <div class="animate-rise-in" :style="heroCopyStyle">
-
+            <p
+              class="inline-flex rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-200">
+              Materi Presentasi Siap Pakai
+            </p>
             <h2
-              class="mt-6 max-w-4xl text-2xl font-black leading-[0.95] tracking-tight text-white md:text-2xl lg:text-6xl animate-fade-in-delayed-2">
-              Landing page profesional untuk menampilkan isi CMS, alur penggunaan, dan kelebihan LMS sekolah.
+              class="mt-6 max-w-5xl text-4xl font-black leading-[0.95] tracking-tight text-white md:text-5xl lg:text-7xl">
+              Dokumentasi LEARNING MANGEMENT SYSTEM.
             </h2>
-            <p class="mt-6 max-w-3xl text-base leading-8 text-slate-300 md:text-lg animate-fade-in-delayed-3">
-              School System menggabungkan CMS akademik dan LMS pembelajaran dalam satu panel yang rapi. Admin mengelola
-              struktur sekolah, guru menyiapkan materi dan evaluasi, sementara siswa belajar, mengerjakan quiz, ikut
-              ujian, dan memantau aktivitas dari satu akun.
+            <p class="mt-6 max-w-3xl text-base leading-8 text-slate-300 md:text-lg">
+              Halaman ini merangkum cara kerja sistem untuk <strong class="text-white">Admin</strong>, <strong
+                class="text-white">Guru</strong>, dan <strong class="text-white">User/Siswa</strong>, lengkap dengan
+              contoh dashboard, alur operasional, tabel data dummy, serta skenario penggunaan harian.
             </p>
 
-            <div class="mt-8 flex flex-wrap gap-4 animate-fade-in-delayed-4">
+            <div class="mt-8 flex flex-wrap gap-4">
               <router-link to="/auth/login"
                 class="inline-flex items-center justify-center rounded-2xl bg-rose-500 px-6 py-3.5 text-sm font-bold text-white shadow-[0_16px_30px_rgba(244,63,94,0.18)] transition hover:-translate-y-0.5 hover:bg-rose-400">
                 Masuk ke Sistem
               </router-link>
               <router-link to="/student-registration"
                 class="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-bold text-slate-100 transition hover:bg-white/10">
-                Buka Registrasi Publik
+                Registrasi Publik
               </router-link>
             </div>
 
-            <div class="mt-10 grid gap-4 sm:grid-cols-3 animate-fade-in-delayed-5">
+            <div class="mt-10 grid gap-4 sm:grid-cols-3">
               <article v-for="metric in heroMetrics" :key="metric.label"
                 class="rounded-[28px] border border-white/10 bg-white/5 p-5 shadow-[0_18px_32px_rgba(0,0,0,0.2)] backdrop-blur transition duration-300 hover:-translate-y-1 hover:bg-white/[0.07]">
                 <p class="text-3xl font-black tracking-tight text-white">{{ metric.value }}</p>
@@ -74,26 +69,32 @@
                 <p class="mt-1 text-xs leading-6 text-slate-400">{{ metric.caption }}</p>
               </article>
             </div>
+
+            <div class="mt-10 grid gap-3 md:grid-cols-2">
+              <div v-for="item in presentationChecklist" :key="item"
+                class="rounded-2xl border border-white/10 bg-slate-950/50 px-4 py-3 text-sm text-slate-200">
+                {{ item }}
+              </div>
+            </div>
           </div>
 
           <div class="grid gap-4 animate-float-panel" :style="heroPanelStyle">
             <article
-              class="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-[0_24px_40px_rgba(0,0,0,0.22)] backdrop-blur animate-fade-in-delayed-2">
-              <div class="flex items-center justify-between">
+              class="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-[0_24px_40px_rgba(0,0,0,0.22)] backdrop-blur">
+              <div class="flex items-center justify-between gap-4">
                 <div>
-
-                  <h3 class="mt-2 text-2xl font-black tracking-tight text-white">Isi CMS yang langsung siap dipakai
-                  </h3>
+                  <p class="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-200">Ringkasan Presentasi</p>
+                  <h3 class="mt-2 text-2xl font-black tracking-tight text-white">Apa yang akan user lihat</h3>
                 </div>
                 <div
                   class="rounded-2xl bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-200 ring-1 ring-emerald-400/20">
-                  Aktif
+                  Live Demo
                 </div>
               </div>
 
               <div class="mt-6 space-y-3">
                 <div v-for="highlight in featureHighlights" :key="highlight.title"
-                  class="rounded-2xl border border-slate-900/10 bg-slate-800 p-4 shadow-sm transition duration-300 hover:-translate-y-1 hover:bg-slate-700">
+                  class="rounded-2xl border border-slate-900/10 bg-slate-800/90 p-4 shadow-sm transition duration-300 hover:-translate-y-1 hover:bg-slate-700">
                   <div class="flex items-start gap-3">
                     <div class="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl"
                       :class="highlight.tone">
@@ -110,8 +111,8 @@
 
             <article class="grid gap-4 sm:grid-cols-2">
               <div
-                class="rounded-[28px] border border-white/10 bg-white/5 p-5 shadow-[0_18px_30px_rgba(0,0,0,0.18)] animate-fade-in-delayed-3">
-                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-rose-200">Alur Cepat</p>
+                class="rounded-[28px] border border-white/10 bg-[#0f172a]/80 p-5 shadow-[0_18px_30px_rgba(0,0,0,0.18)]">
+                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-rose-200">Agenda Admin</p>
                 <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-200">
                   <li v-for="item in quickFlow" :key="item" class="flex gap-3">
                     <span class="mt-1 h-2 w-2 rounded-full bg-rose-400"></span>
@@ -120,11 +121,11 @@
                 </ul>
               </div>
               <div
-                class="rounded-[28px] border border-white/10 bg-white/5 p-5 shadow-[0_18px_30px_rgba(0,0,0,0.18)] animate-fade-in-delayed-4">
-                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-amber-200">Kelebihan Utama</p>
+                class="rounded-[28px] border border-white/10 bg-[#10231f]/80 p-5 shadow-[0_18px_30px_rgba(0,0,0,0.18)]">
+                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-200">Nilai Jual Sistem</p>
                 <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-200">
                   <li v-for="item in quickAdvantages" :key="item" class="flex gap-3">
-                    <span class="mt-1 h-2 w-2 rounded-full bg-amber-300"></span>
+                    <span class="mt-1 h-2 w-2 rounded-full bg-emerald-300"></span>
                     <span>{{ item }}</span>
                   </li>
                 </ul>
@@ -134,16 +135,16 @@
         </div>
       </section>
 
-      <section id="fitur" class="relative border-y border-white/10 bg-transparent py-16 lg:py-24">
+      <section id="fitur" class="border-y border-white/10 py-16 lg:py-24">
         <div class="mx-auto grid max-w-7xl gap-10 px-6 lg:px-10 xl:grid-cols-[0.72fr_1.28fr]">
           <div class="max-w-3xl xl:sticky xl:top-28 xl:self-start">
-            <p class="text-xs font-semibold uppercase tracking-[0.26em] text-sky-200">List Isi CMS</p>
+            <p class="text-xs font-semibold uppercase tracking-[0.26em] text-cyan-200">Modul Sistem</p>
             <h3 class="mt-3 text-3xl font-black tracking-tight text-white md:text-4xl">
-              Modul lengkap untuk operasional sekolah dan pembelajaran digital
+              Modul inti yang bisa dijelaskan saat presentasi produk
             </h3>
             <p class="mt-4 text-base leading-8 text-slate-300">
-              Halaman ini merangkum komponen utama yang tersedia di sistem, mulai dari pengelolaan akademik sampai
-              pelaksanaan quiz dan ujian resmi.
+              Bagian ini menjelaskan ruang lingkup sistem, supaya user langsung paham bahwa aplikasi bukan hanya LMS,
+              tetapi juga panel operasional sekolah.
             </p>
           </div>
 
@@ -166,16 +167,81 @@
         </div>
       </section>
 
-      <section id="penggunaan" class="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-24">
-        <div class="grid gap-10 xl:grid-cols-[0.78fr_1.22fr]">
+      <section id="dashboard" class="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-24">
+        <div class="grid gap-10 xl:grid-cols-[0.8fr_1.2fr]">
+          <div class="xl:sticky xl:top-28 xl:self-start">
+            <p class="text-xs font-semibold uppercase tracking-[0.26em] text-amber-200">Contoh Dashboard</p>
+            <h3 class="mt-3 text-3xl font-black tracking-tight text-white md:text-4xl">
+              Ilustrasi ringkas tampilan yang relevan untuk tiap role
+            </h3>
+            <p class="mt-4 text-base leading-8 text-slate-300">
+              Angka di bawah adalah data dummy presentasi. Tujuannya agar user langsung memahami apa yang dipantau oleh
+              admin, guru, dan siswa setiap hari.
+            </p>
+          </div>
+
+          <div class="space-y-6">
+            <article v-for="(panel, panelIndex) in dashboardPanels" :key="panel.role"
+              class="reveal-on-scroll rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-[0_22px_36px_rgba(0,0,0,0.22)]"
+              :style="{ transitionDelay: `${Math.min(panelIndex * 70, 180)}ms` }">
+              <div
+                class="flex flex-col gap-4 border-b border-white/10 pb-5 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-[0.22em]" :class="panel.tone">{{ panel.caption }}
+                  </p>
+                  <h4 class="mt-2 text-2xl font-black tracking-tight text-white">{{ panel.role }}</h4>
+                  <p class="mt-2 max-w-2xl text-sm leading-7 text-slate-300">{{ panel.description }}</p>
+                </div>
+                <div
+                  class="rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm font-semibold text-slate-200">
+                  {{ panel.summary }}
+                </div>
+              </div>
+
+              <div class="mt-6 grid gap-4 md:grid-cols-4">
+                <div v-for="metric in panel.metrics" :key="metric.label"
+                  class="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
+                  <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ metric.label }}</p>
+                  <p class="mt-3 text-3xl font-black text-white">{{ metric.value }}</p>
+                  <p class="mt-2 text-xs leading-6 text-slate-400">{{ metric.note }}</p>
+                </div>
+              </div>
+
+              <div class="mt-6 grid gap-4 lg:grid-cols-2">
+                <div class="rounded-2xl border border-white/10 bg-[#0b1322]/80 p-4">
+                  <p class="text-sm font-bold text-white">Menu utama yang dibuka</p>
+                  <div class="mt-4 flex flex-wrap gap-2">
+                    <span v-for="menu in panel.menuPreview" :key="menu"
+                      class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-200">
+                      {{ menu }}
+                    </span>
+                  </div>
+                </div>
+                <div class="rounded-2xl border border-white/10 bg-[#1b1423]/80 p-4">
+                  <p class="text-sm font-bold text-white">Aktivitas yang biasanya dipantau</p>
+                  <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-300">
+                    <li v-for="item in panel.highlights" :key="item" class="flex gap-3">
+                      <span class="mt-1 h-2 w-2 rounded-full bg-amber-300"></span>
+                      <span>{{ item }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="penggunaan" class="border-y border-white/10 py-16 lg:py-24">
+        <div class="mx-auto grid max-w-7xl gap-10 px-6 lg:px-10 xl:grid-cols-[0.78fr_1.22fr]">
           <div class="xl:sticky xl:top-28 xl:self-start">
             <p class="text-xs font-semibold uppercase tracking-[0.26em] text-rose-200">Cara Penggunaan</p>
             <h3 class="mt-3 text-3xl font-black tracking-tight text-white md:text-4xl">
-              Alur penggunaan yang jelas untuk admin, guru, dan siswa
+              Dokumentasi penggunaan lengkap per role
             </h3>
             <p class="mt-4 text-base leading-8 text-slate-300">
-              Setiap peran memiliki fokus kerja yang berbeda. Struktur berikut bisa dipakai sebagai panduan onboarding
-              maupun materi presentasi produk.
+              Struktur ini bisa langsung dipakai saat demo user. Mulai dari login, menu yang dipakai, sampai hasil yang
+              diharapkan dari setiap role.
             </p>
           </div>
 
@@ -212,33 +278,133 @@
                   </div>
                 </div>
               </div>
+
+              <div class="mt-6 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+                <div class="rounded-2xl border border-white/10 bg-[#111827]/80 p-4">
+                  <p class="text-sm font-bold text-white">Menu yang diperkenalkan saat demo</p>
+                  <div class="mt-4 flex flex-wrap gap-2">
+                    <span v-for="menu in role.menus" :key="menu"
+                      class="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-200">
+                      {{ menu }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="rounded-2xl border border-white/10 bg-[#0f1d2d]/80 p-4">
+                  <p class="text-sm font-bold text-white">Output yang diharapkan</p>
+                  <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-300">
+                    <li v-for="item in role.outcomes" :key="item" class="flex gap-3">
+                      <span class="mt-1 h-2 w-2 rounded-full bg-cyan-300"></span>
+                      <span>{{ item }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </article>
           </div>
         </div>
       </section>
 
-      <section class="border-y border-white/10 bg-transparent py-16 lg:py-24">
-        <div class="mx-auto grid max-w-7xl gap-10 px-6 lg:px-10 xl:grid-cols-[0.72fr_1.28fr]">
-          <div class="max-w-3xl xl:sticky xl:top-28 xl:self-start">
-            <p class="text-xs font-semibold uppercase tracking-[0.26em] text-emerald-200">Kelebihan LMS</p>
+      <section id="alur" class="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-24">
+        <div class="grid gap-10 xl:grid-cols-[0.72fr_1.28fr]">
+          <div class="xl:sticky xl:top-28 xl:self-start">
+            <p class="text-xs font-semibold uppercase tracking-[0.26em] text-emerald-200">Alur Bisnis</p>
             <h3 class="mt-3 text-3xl font-black tracking-tight text-white md:text-4xl">
-              Nilai lebih yang membedakan LMS ini dari panel sekolah biasa
+              Contoh alur operasional dari awal sampai hasil belajar
             </h3>
             <p class="mt-4 text-base leading-8 text-slate-300">
-              Sistem tidak berhenti di administrasi. Ia juga mendukung siklus pembelajaran penuh, evaluasi, kontrol
-              akses, dan interaksi harian.
+              Bagian ini cocok dipakai untuk menjelaskan hubungan antar role, supaya user paham siapa menyiapkan apa dan
+              siapa menerima hasilnya.
             </p>
           </div>
 
-          <div class="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            <article v-for="(item, index) in advantages" :key="item.title"
-              class="reveal-on-scroll rounded-[30px] border border-white/10 bg-white/5 p-6 shadow-[0_20px_34px_rgba(0,0,0,0.2)] transition duration-300 hover:-translate-y-1 hover:bg-white/[0.07]"
-              :style="{ transitionDelay: `${Math.min(index * 60, 180)}ms` }">
-              <div class="flex h-12 w-12 items-center justify-center rounded-2xl" :class="item.tone">
-                <span class="text-lg font-black text-white">{{ item.index }}</span>
+          <div class="grid gap-5">
+            <article v-for="(flow, index) in crossRoleFlow" :key="flow.title"
+              class="reveal-on-scroll rounded-[28px] border border-white/10 bg-white/5 p-6 shadow-[0_18px_34px_rgba(0,0,0,0.2)]"
+              :style="{ transitionDelay: `${Math.min(index * 70, 210)}ms` }">
+              <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <div class="max-w-3xl">
+                  <div
+                    class="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-200">
+                    Tahap {{ index + 1 }}
+                  </div>
+                  <h4 class="mt-3 text-2xl font-black tracking-tight text-white">{{ flow.title }}</h4>
+                  <p class="mt-3 text-sm leading-7 text-slate-300">{{ flow.description }}</p>
+                </div>
+                <div
+                  class="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm font-semibold text-slate-200">
+                  {{ flow.owner }}
+                </div>
               </div>
-              <h4 class="mt-5 text-xl font-black tracking-tight text-white">{{ item.title }}</h4>
-              <p class="mt-3 text-sm leading-7 text-slate-300">{{ item.description }}</p>
+
+              <div class="mt-5 grid gap-4 md:grid-cols-3">
+                <div class="rounded-2xl border border-white/10 bg-[#0c1627]/80 p-4">
+                  <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Input</p>
+                  <p class="mt-3 text-sm leading-7 text-slate-200">{{ flow.input }}</p>
+                </div>
+                <div class="rounded-2xl border border-white/10 bg-[#1c1121]/80 p-4">
+                  <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Proses</p>
+                  <p class="mt-3 text-sm leading-7 text-slate-200">{{ flow.process }}</p>
+                </div>
+                <div class="rounded-2xl border border-white/10 bg-[#102019]/80 p-4">
+                  <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Output</p>
+                  <p class="mt-3 text-sm leading-7 text-slate-200">{{ flow.output }}</p>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="dummy" class="border-y border-white/10 py-16 lg:py-24">
+        <div class="mx-auto max-w-7xl px-6 lg:px-10">
+          <div class="max-w-4xl">
+            <p class="text-xs font-semibold uppercase tracking-[0.26em] text-fuchsia-200">Data Dummy Presentasi</p>
+            <h3 class="mt-3 text-3xl font-black tracking-tight text-white md:text-4xl">
+              Tabel contoh agar user langsung memahami isi data di dalam aplikasi
+            </h3>
+            <p class="mt-4 text-base leading-8 text-slate-300">
+              Semua tabel di bawah adalah contoh dummy yang aman dipakai saat presentasi. Isinya mewakili data yang
+              biasanya muncul di dashboard admin, panel guru, dan halaman siswa.
+            </p>
+          </div>
+
+          <div class="mt-10 grid gap-6">
+            <article v-for="(table, index) in dummyTables" :key="table.title"
+              class="reveal-on-scroll rounded-[30px] border border-white/10 bg-white/5 p-6 shadow-[0_20px_36px_rgba(0,0,0,0.2)]"
+              :style="{ transitionDelay: `${Math.min(index * 60, 180)}ms` }">
+              <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-[0.22em]" :class="table.tone">{{ table.caption }}
+                  </p>
+                  <h4 class="mt-2 text-2xl font-black tracking-tight text-white">{{ table.title }}</h4>
+                  <p class="mt-2 text-sm leading-7 text-slate-300">{{ table.description }}</p>
+                </div>
+                <div
+                  class="rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm font-semibold text-slate-200">
+                  {{ table.summary }}
+                </div>
+              </div>
+
+              <div class="mt-6 overflow-x-auto rounded-2xl border border-white/10">
+                <table class="min-w-full divide-y divide-white/10 text-left text-sm">
+                  <thead class="bg-white/5 text-xs uppercase tracking-[0.22em] text-slate-300">
+                    <tr>
+                      <th v-for="header in table.headers" :key="header" class="px-4 py-3 font-semibold">
+                        {{ header }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-white/10 bg-slate-950/40">
+                    <tr v-for="(row, rowIndex) in table.rows" :key="`${table.title}-${rowIndex}`" class="align-top">
+                      <td v-for="(cell, cellIndex) in row" :key="`${table.title}-${rowIndex}-${cellIndex}`"
+                        class="px-4 py-3 text-slate-200">
+                        {{ cell }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </article>
           </div>
         </div>
@@ -249,31 +415,34 @@
           class="reveal-on-scroll rounded-[36px] border border-white/10 bg-white/5 p-8 shadow-[0_22px_44px_rgba(0,0,0,0.24)] backdrop-blur lg:p-10">
           <div class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.26em] text-sky-200">Siap dipresentasikan</p>
+              <p class="text-xs font-semibold uppercase tracking-[0.26em] text-cyan-200">Penutup Presentasi</p>
               <h3 class="mt-3 text-3xl font-black tracking-tight text-white md:text-4xl">
-                Gunakan halaman ini sebagai beranda resmi produk CMS sekolah Anda
+                Halaman ini sekarang bisa dipakai sebagai dokumen demo produk
               </h3>
               <p class="mt-4 text-base leading-8 text-slate-300">
-                Cocok untuk profil sistem, presentasi calon sekolah, onboarding user baru, atau halaman awal sebelum
-                login ke dashboard internal.
+                Saat presentasi, Anda cukup scroll dari atas ke bawah: mulai dari ringkasan sistem, peran user, contoh
+                dashboard, alur proses, lalu tutup dengan data dummy agar calon user memahami isi aplikasi secara
+                konkret.
               </p>
             </div>
 
             <div class="grid gap-4 sm:grid-cols-2">
               <router-link to="/auth/login"
-                class="flex min-h-[140px] flex-col justify-between rounded-[28px] border border-slate-900/10 bg-slate-950 p-5 transition hover:bg-slate-800">
-                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-sky-200">Akses Internal</p>
+                class="flex min-h-[150px] flex-col justify-between rounded-[28px] border border-slate-900/10 bg-slate-950 p-5 transition hover:bg-slate-800">
+                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-200">Akses Internal</p>
                 <div>
                   <p class="text-xl font-black tracking-tight text-white">Login CMS & LMS</p>
-                  <p class="mt-2 text-sm leading-6 text-slate-200">Masuk sebagai admin, guru, atau siswa.</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-200">Masuk sebagai admin, guru, atau siswa untuk demo
+                    langsung.</p>
                 </div>
               </router-link>
               <router-link to="/student-registration"
-                class="flex min-h-[140px] flex-col justify-between rounded-[28px] border border-rose-400/20 bg-rose-500/10 p-5 transition hover:bg-rose-500/15">
+                class="flex min-h-[150px] flex-col justify-between rounded-[28px] border border-rose-400/20 bg-rose-500/10 p-5 transition hover:bg-rose-500/15">
                 <p class="text-xs font-semibold uppercase tracking-[0.24em] text-rose-200">Akses Publik</p>
                 <div>
                   <p class="text-xl font-black tracking-tight text-white">Registrasi Siswa</p>
-                  <p class="mt-2 text-sm leading-6 text-slate-200">Buka formulir pendaftaran siswa secara langsung.</p>
+                  <p class="mt-2 text-sm leading-6 text-slate-200">Tunjukkan juga proses onboarding siswa dari halaman
+                    publik.</p>
                 </div>
               </router-link>
             </div>
@@ -369,69 +538,83 @@ const shellParallaxStyle = computed(() => ({
   backgroundPosition: `center ${Math.min(parallaxScrollY.value * 0.06, 40)}px`,
 }));
 
+const navItems = [
+  { href: "#ringkasan", label: "Ringkasan" },
+  { href: "#dashboard", label: "Dashboard" },
+  { href: "#penggunaan", label: "Penggunaan" },
+  { href: "#dummy", label: "Data Dummy" },
+];
+
 const heroMetrics = [
-  { value: "12+", label: "Modul utama", caption: "Mencakup panel sekolah, akademik, dan pembelajaran." },
-  { value: "3 peran", label: "Alur pengguna", caption: "Admin, guru, dan siswa punya workflow masing-masing." },
-  { value: "1 sistem", label: "Data terpusat", caption: "Operasional sekolah dan LMS berjalan di platform yang sama." },
+  { value: "3 role", label: "Role utama", caption: "Admin, Guru, dan Siswa mendapat alur kerja yang berbeda." },
+  { value: "10+", label: "Modul aktif", caption: "Mencakup struktur sekolah, pembelajaran, evaluasi, dan layanan siswa." },
+  { value: "1 page", label: "Materi presentasi", caption: "Seluruh ringkasan penggunaan sudah dirangkum di landing page ini." },
+];
+
+const presentationChecklist = [
+  "Ringkasan sistem dan ruang lingkup modul untuk admin, guru, dan siswa.",
+  "Contoh dashboard role-based agar user paham apa yang mereka lihat setelah login.",
+  "Panduan penggunaan langkah demi langkah untuk onboarding dan training.",
+  "Tabel dummy presentasi untuk menggambarkan data nyata tanpa memakai data produksi.",
 ];
 
 const featureHighlights = [
   {
     index: "01",
-    title: "Struktur sekolah tertata",
-    description: "Kelola sekolah, user, kelas, dan tahun ajaran tanpa berpindah sistem.",
-    tone: "bg-sky-600",
+    title: "Panel admin sekolah",
+    description: "Admin mengelola user, kelas, periode akademik, dan pengaturan inti sebelum aktivitas belajar dimulai.",
+    tone: "bg-cyan-600",
   },
   {
     index: "02",
-    title: "Pembelajaran aktif",
-    description: "Guru dapat menyusun materi, bank soal, quiz, chat, dan penilaian dari satu workspace.",
+    title: "Workspace guru",
+    description: "Guru menyiapkan materi, bank soal, quiz, ujian, penilaian, serta komunikasi mapel dari satu area kerja.",
     tone: "bg-rose-500",
   },
   {
     index: "03",
-    title: "Kontrol pelaksanaan ujian",
-    description: "Ada alur resmi admin-guru-siswa untuk penyusunan, publikasi, dan pengawasan ujian.",
+    title: "Pengalaman siswa",
+    description: "Siswa menerima materi, mengerjakan evaluasi, memantau nilai, absensi, dan layanan lain dalam akun yang sama.",
     tone: "bg-emerald-600",
   },
 ];
 
 const quickFlow = [
-  "Admin menyiapkan sekolah, kelas, user, periode, dan pengaturan inti.",
-  "Guru mengelola materi, bank soal, quiz, nilai, serta komunikasi kelas.",
-  "Siswa belajar, mengerjakan quiz, mengikuti ujian, dan memantau aktivitas dari dashboard.",
+  "Siapkan tahun ajaran, semester, kelas, mapel, dan akun user.",
+  "Pastikan guru mengisi materi, tugas, bank soal, dan jadwal evaluasi.",
+  "Pantau progres siswa melalui quiz, ujian resmi, nilai, dan kehadiran.",
 ];
 
 const quickAdvantages = [
-  "CMS dan LMS menyatu dalam satu pengalaman pengguna.",
-  "Mendukung quiz dan ujian resmi dengan alur yang berbeda.",
-  "Lebih mudah dipakai untuk monitoring pembelajaran harian.",
+  "Presentasi produk lebih mudah karena user langsung melihat contoh role dan datanya.",
+  "CMS dan LMS tidak dipisah, jadi alur operasional sekolah terasa lebih realistis.",
+  "Data dummy membantu user non-teknis membayangkan isi dashboard tanpa harus login dulu.",
 ];
 
 const cmsModules = [
   {
     tag: "Core CMS",
-    tagTone: "text-sky-200",
+    tagTone: "text-cyan-200",
     title: "Dashboard Eksekutif",
     badge: "Ringkasan",
-    badgeTone: "bg-sky-500/10 text-sky-200 ring-sky-400/20",
-    description: "Menampilkan ringkasan aktivitas utama sesuai role, termasuk konteks sekolah, status modul, dan pintasan ke panel penting.",
+    badgeTone: "bg-cyan-500/10 text-cyan-200 ring-cyan-400/20",
+    description: "Menampilkan ringkasan aktivitas utama sesuai role, termasuk status user, kelas, pembelajaran, dan evaluasi.",
   },
   {
     tag: "Core CMS",
-    tagTone: "text-sky-200",
-    title: "Manajemen Sekolah & User",
+    tagTone: "text-cyan-200",
+    title: "Manajemen User Sekolah",
     badge: "Admin",
-    badgeTone: "bg-sky-500/10 text-sky-200 ring-sky-400/20",
-    description: "Mengelola data sekolah, akun user sekolah, peran admin, guru, dan siswa dalam satu struktur akses yang jelas.",
+    badgeTone: "bg-cyan-500/10 text-cyan-200 ring-cyan-400/20",
+    description: "Mengelola akun admin, guru, dan siswa, termasuk relasi kelas, mapel, dan status akses akun.",
   },
   {
     tag: "Akademik",
     tagTone: "text-emerald-200",
-    title: "Kelas & Periode Akademik",
+    title: "Kelas & Tahun Ajaran",
     badge: "Terstruktur",
     badgeTone: "bg-emerald-500/10 text-emerald-200 ring-emerald-400/20",
-    description: "Menyusun kelas, wali kelas, tahun ajaran, dan semester aktif agar seluruh modul pembelajaran mengikuti kalender akademik yang sama.",
+    description: "Menentukan kelas aktif, wali kelas, tahun ajaran, dan semester agar semua modul mengikuti struktur yang sama.",
   },
   {
     tag: "LMS Guru",
@@ -439,15 +622,15 @@ const cmsModules = [
     title: "Materi Pembelajaran",
     badge: "Konten",
     badgeTone: "bg-rose-500/10 text-rose-200 ring-rose-400/20",
-    description: "Guru dapat mengunggah materi, membagikan file, dan menyiapkan bahan pembelajaran yang mudah diakses siswa.",
+    description: "Guru dapat menyiapkan konten belajar, file, dan materi yang bisa diakses siswa berdasarkan mapel dan kelas.",
   },
   {
-    tag: "LMS Guru",
-    tagTone: "text-rose-200",
+    tag: "Interaksi",
+    tagTone: "text-violet-200",
     title: "Live Chat Kelas",
-    badge: "Interaktif",
-    badgeTone: "bg-rose-500/10 text-rose-200 ring-rose-400/20",
-    description: "Komunikasi real-time antara guru dan siswa per mata pelajaran, termasuk ringkasan unread untuk memudahkan tindak lanjut.",
+    badge: "Realtime",
+    badgeTone: "bg-violet-500/10 text-violet-200 ring-violet-400/20",
+    description: "Memfasilitasi diskusi antara guru dan siswa per mapel agar pembelajaran tidak berhenti di materi statis.",
   },
   {
     tag: "Evaluasi",
@@ -455,7 +638,7 @@ const cmsModules = [
     title: "Bank Soal",
     badge: "Reusable",
     badgeTone: "bg-amber-500/10 text-amber-200 ring-amber-400/20",
-    description: "Soal dapat disimpan, dipakai ulang, dipilih per tipe, lalu dirakit menjadi quiz atau paket ujian secara efisien.",
+    description: "Guru menyimpan soal pilihan ganda atau essay untuk digunakan kembali pada quiz dan ujian resmi.",
   },
   {
     tag: "Evaluasi",
@@ -463,7 +646,7 @@ const cmsModules = [
     title: "Quiz Harian",
     badge: "Cepat",
     badgeTone: "bg-amber-500/10 text-amber-200 ring-amber-400/20",
-    description: "Cocok untuk evaluasi ringan dan rutin dengan dukungan pilihan ganda atau essay, durasi, dan status pengerjaan siswa.",
+    description: "Dipakai untuk evaluasi rutin dengan durasi tertentu, status pengerjaan, dan penilaian yang mudah dipantau.",
   },
   {
     tag: "Evaluasi",
@@ -471,23 +654,23 @@ const cmsModules = [
     title: "Ujian Resmi",
     badge: "Terkontrol",
     badgeTone: "bg-amber-500/10 text-amber-200 ring-amber-400/20",
-    description: "Admin membuat task ujian, guru menyerahkan paket soal, lalu admin menerbitkannya ke siswa lewat jalur resmi yang lebih aman.",
+    description: "Admin membuat task ujian, guru menyerahkan paket soal, lalu admin menerbitkan sesi ke siswa secara resmi.",
   },
   {
     tag: "Monitoring",
-    tagTone: "text-cyan-200",
-    title: "Penilaian & Rapor Mapel",
+    tagTone: "text-sky-200",
+    title: "Nilai & Rapor Mapel",
     badge: "Analitik",
-    badgeTone: "bg-cyan-500/10 text-cyan-200 ring-cyan-400/20",
-    description: "Guru bisa memeriksa submission, memberi nilai, melihat rekap performa, dan membaca hasil akhir pembelajaran per mapel.",
+    badgeTone: "bg-sky-500/10 text-sky-200 ring-sky-400/20",
+    description: "Guru membaca hasil belajar, memeriksa submission, dan menyusun rekap performa siswa per mata pelajaran.",
   },
   {
     tag: "Siswa",
     tagTone: "text-fuchsia-200",
-    title: "Absensi & Bukti Pembayaran",
+    title: "Absensi & Pembayaran",
     badge: "Layanan",
     badgeTone: "bg-fuchsia-500/10 text-fuchsia-200 ring-fuchsia-400/20",
-    description: "Siswa memiliki akses ke modul absensi dan bukti pembayaran sehingga pengalaman pengguna tidak hanya berhenti di kelas online.",
+    description: "Selain belajar, siswa juga dapat mengakses kehadiran dan bukti pembayaran dari akun yang sama.",
   },
   {
     tag: "Operasional",
@@ -495,15 +678,75 @@ const cmsModules = [
     title: "Pengaturan Admin",
     badge: "Konfigurasi",
     badgeTone: "bg-indigo-500/10 text-indigo-200 ring-indigo-400/20",
-    description: "Panel pengaturan membantu admin mengendalikan konfigurasi penting yang mempengaruhi operasional harian sekolah.",
+    description: "Digunakan untuk mengendalikan parameter penting yang memengaruhi operasional aplikasi sekolah sehari-hari.",
   },
   {
     tag: "Publik",
     tagTone: "text-teal-200",
     title: "Registrasi Siswa Publik",
-    badge: "Eksternal",
+    badge: "Onboarding",
     badgeTone: "bg-teal-500/10 text-teal-200 ring-teal-400/20",
-    description: "Form registrasi publik memudahkan onboarding siswa baru sebelum mereka masuk ke area login dan dashboard internal.",
+    description: "Formulir publik mempermudah proses pendaftaran siswa baru sebelum mereka masuk ke area internal.",
+  },
+];
+
+const dashboardPanels = [
+  {
+    role: "Dashboard Admin",
+    caption: "Role pengendali operasional",
+    tone: "text-cyan-200",
+    summary: "Fokus pada kontrol sekolah, user, kelas, dan ujian resmi.",
+    description: "Admin memakai dashboard untuk memastikan struktur sekolah siap dipakai, akun user aktif, dan agenda pembelajaran berjalan sesuai kalender akademik.",
+    metrics: [
+      { label: "Total Guru", value: "28", note: "Guru aktif di seluruh mapel semester ini." },
+      { label: "Total Siswa", value: "486", note: "Siswa aktif terdaftar di kelas reguler." },
+      { label: "Kelas Aktif", value: "18", note: "Kelas yang sedang berjalan pada semester genap." },
+      { label: "Ujian Resmi", value: "6", note: "Task ujian yang sudah dijadwalkan admin." },
+    ],
+    menuPreview: ["Dashboard", "User Sekolah", "Kelas", "Tahun Ajaran", "Pembelajaran Admin", "Ujian Resmi", "Setting Admin"],
+    highlights: [
+      "Akun guru dan siswa yang belum lengkap atau belum aktif.",
+      "Kelas yang belum memiliki wali kelas atau mapel lengkap.",
+      "Task ujian resmi yang menunggu paket soal dari guru.",
+    ],
+  },
+  {
+    role: "Dashboard Guru",
+    caption: "Role pengajar",
+    tone: "text-rose-200",
+    summary: "Fokus pada mapel, materi, quiz, ujian, dan penilaian.",
+    description: "Guru memakai dashboard untuk melihat beban mengajar, tugas evaluasi yang masih berjalan, chat kelas, dan submission yang menunggu penilaian.",
+    metrics: [
+      { label: "Mapel Diampu", value: "4", note: "Mapel aktif yang terhubung ke kelas guru." },
+      { label: "Materi Aktif", value: "17", note: "Materi yang sudah dipublikasikan ke siswa." },
+      { label: "Quiz Minggu Ini", value: "3", note: "Quiz yang sedang dibuka atau baru selesai." },
+      { label: "Belum Dinilai", value: "24", note: "Submission siswa yang masih menunggu review." },
+    ],
+    menuPreview: ["Pembelajaran", "Bank Soal", "Quiz Guru", "Ujian Guru", "Nilai", "Rapor Mapel", "Live Chat"],
+    highlights: [
+      "Materi baru yang perlu dipublikasikan untuk minggu berjalan.",
+      "Quiz aktif dan daftar siswa yang belum submit.",
+      "Submission essay yang perlu koreksi manual.",
+    ],
+  },
+  {
+    role: "Dashboard Siswa",
+    caption: "Role user / peserta belajar",
+    tone: "text-emerald-200",
+    summary: "Fokus pada materi, tugas, ujian, nilai, dan layanan siswa.",
+    description: "Siswa memakai dashboard untuk melihat daftar materi terbaru, jadwal quiz atau ujian, nilai terakhir, absensi, dan pengumuman penting dari sekolah.",
+    metrics: [
+      { label: "Mapel Aktif", value: "8", note: "Mapel yang tampil sesuai kelas siswa." },
+      { label: "Tugas Aktif", value: "5", note: "Materi atau evaluasi yang masih perlu dikerjakan." },
+      { label: "Nilai Rata-rata", value: "88", note: "Rata-rata nilai quiz dan tugas terbaru." },
+      { label: "Kehadiran", value: "96%", note: "Persentase absensi semester berjalan." },
+    ],
+    menuPreview: ["Dashboard", "Pembelajaran", "Quiz", "Ujian", "Nilai", "Absensi", "Bukti Pembayaran"],
+    highlights: [
+      "Materi baru dari guru yang harus dibaca minggu ini.",
+      "Quiz atau ujian yang jadwalnya segera dimulai.",
+      "Nilai terbaru dan feedback guru setelah submission dinilai.",
+    ],
   },
 ];
 
@@ -511,72 +754,164 @@ const usageFlows = [
   {
     role: "Untuk Admin Sekolah",
     caption: "Role pengendali sistem",
-    summary: "Fokus pada struktur, user, kalender akademik, dan kebijakan ujian.",
-    roleTone: "text-sky-200",
-    stepTone: "bg-sky-600",
+    summary: "Mengatur struktur sekolah, user, akademik, dan ujian resmi.",
+    roleTone: "text-cyan-200",
+    stepTone: "bg-cyan-600",
+    menus: ["Dashboard", "User Sekolah", "Kelas", "Tahun Ajaran", "Pembelajaran Admin", "Ujian Resmi", "Setting Admin"],
+    outcomes: [
+      "Semua akun guru dan siswa terdaftar dengan peran yang benar.",
+      "Kalender akademik aktif sehingga modul lain tersusun rapi.",
+      "Ujian resmi terjadwal, dipublikasikan, dan dapat dimonitor.",
+    ],
     steps: [
-      { title: "Siapkan struktur data sekolah", description: "Buat akun user sekolah, kelas, dan hubungan antar peran sejak awal." },
-      { title: "Atur tahun ajaran dan semester", description: "Tetapkan periode aktif agar modul pembelajaran dan penilaian tersusun rapi." },
-      { title: "Pantau panel pembelajaran admin", description: "Periksa modul belajar, daftar mapel, dan kesiapan operasional dari dashboard." },
-      { title: "Kelola ujian resmi", description: "Buat request ujian, verifikasi paket soal dari guru, lalu publikasikan ke siswa." },
+      { title: "Login sebagai admin", description: "Masuk ke dashboard lalu cek ringkasan user, kelas, dan status modul yang sedang aktif." },
+      { title: "Kelola user sekolah", description: "Tambahkan akun guru, siswa, dan admin sekolah bila diperlukan, lalu pastikan role masing-masing benar." },
+      { title: "Siapkan kelas dan periode", description: "Buat kelas, wali kelas, tahun ajaran, serta semester aktif agar data pembelajaran terstruktur." },
+      { title: "Monitoring pembelajaran", description: "Periksa panel pembelajaran admin untuk memastikan mapel, guru, dan kegiatan evaluasi sudah siap." },
+      { title: "Jalankan ujian resmi", description: "Buat task ujian, tunggu guru mengirim paket soal, lalu terbitkan ke siswa sesuai jadwal." },
+      { title: "Tinjau setting admin", description: "Lakukan penyesuaian konfigurasi umum bila ada kebutuhan operasional tambahan." },
     ],
   },
   {
     role: "Untuk Guru",
     caption: "Role pengajar",
-    summary: "Fokus pada materi, interaksi kelas, bank soal, quiz, nilai, dan laporan mapel.",
+    summary: "Mengelola materi, bank soal, evaluasi, nilai, dan laporan mapel.",
     roleTone: "text-rose-200",
     stepTone: "bg-rose-500",
+    menus: ["Pembelajaran", "Live Chat", "Bank Soal", "Quiz Guru", "Ujian Guru", "Nilai", "Rapor Mapel"],
+    outcomes: [
+      "Materi belajar terbit sesuai mapel dan kelas.",
+      "Soal tersimpan rapi dan bisa dipakai ulang untuk evaluasi berikutnya.",
+      "Nilai dan feedback siswa tercatat serta mudah dibaca kembali.",
+    ],
     steps: [
-      { title: "Masuk ke modul pembelajaran", description: "Pilih mata pelajaran yang diampu lalu kelola materi dan aktivitas kelas dari sana." },
-      { title: "Bangun bank soal", description: "Simpan soal MCQ atau essay agar dapat dipakai ulang untuk quiz maupun ujian resmi." },
-      { title: "Publikasikan quiz atau siapkan ujian", description: "Guru dapat menerbitkan quiz harian atau menyerahkan paket ujian sesuai task admin." },
-      { title: "Nilai dan evaluasi hasil", description: "Buka submission siswa, beri penilaian, lalu gunakan rapor mapel untuk membaca performa kelas." },
+      { title: "Masuk ke modul pembelajaran", description: "Buka mapel yang diampu, lalu cek materi yang sudah tayang dan daftar kelas yang terhubung." },
+      { title: "Unggah atau perbarui materi", description: "Tambahkan konten pembelajaran agar siswa bisa membaca materi sebelum quiz atau ujian." },
+      { title: "Siapkan bank soal", description: "Masukkan soal MCQ atau essay untuk membangun aset evaluasi yang reusable." },
+      { title: "Buat quiz harian", description: "Tentukan judul, durasi, kelas target, dan soal yang akan dipakai untuk evaluasi cepat." },
+      { title: "Penuhi task ujian resmi", description: "Jika ada task dari admin, guru menyusun paket soal lalu menyerahkannya untuk diverifikasi." },
+      { title: "Nilai hasil siswa", description: "Periksa submission, beri skor, tambahkan feedback, lalu pantau rapor mapel." },
     ],
   },
   {
-    role: "Untuk Siswa",
+    role: "Untuk User / Siswa",
     caption: "Role peserta belajar",
-    summary: "Fokus pada konsumsi materi, diskusi, tugas evaluasi, absensi, dan layanan pribadi.",
+    summary: "Belajar, berdiskusi, mengerjakan evaluasi, dan memantau progres pribadi.",
     roleTone: "text-emerald-200",
     stepTone: "bg-emerald-600",
+    menus: ["Dashboard", "Pembelajaran", "Live Chat", "Quiz", "Ujian", "Nilai", "Absensi", "Bukti Pembayaran"],
+    outcomes: [
+      "Siswa tahu materi apa yang harus dipelajari dan kapan evaluasi dibuka.",
+      "Siswa bisa mengirim jawaban dan melihat nilai tanpa berpindah sistem.",
+      "Layanan pendukung seperti absensi dan pembayaran tetap tersedia dalam akun yang sama.",
+    ],
     steps: [
-      { title: "Buka materi mata pelajaran", description: "Siswa mempelajari konten dari mapel yang terhubung dengan kelasnya." },
-      { title: "Gunakan live chat bila perlu", description: "Ajukan pertanyaan atau lanjutkan diskusi langsung pada kanal mapel yang tersedia." },
-      { title: "Kerjakan quiz dan ujian", description: "Siswa masuk ke sesi evaluasi, mengikuti aturan waktu, lalu mengirim jawaban dari panel khusus." },
-      { title: "Pantau layanan lain", description: "Akses absensi dan bukti pembayaran tetap tersedia dalam ekosistem yang sama." },
+      { title: "Login ke dashboard siswa", description: "Buka dashboard untuk melihat ringkasan mapel aktif, tugas berjalan, dan pengumuman sekolah." },
+      { title: "Pelajari materi", description: "Masuk ke panel pembelajaran untuk membaca materi dari guru sesuai kelas." },
+      { title: "Gunakan live chat", description: "Kirim pertanyaan ke guru bila ada materi yang belum dipahami." },
+      { title: "Kerjakan quiz", description: "Masuk ke modul quiz saat jadwal aktif, lalu kirim jawaban sebelum waktu habis." },
+      { title: "Ikuti ujian resmi", description: "Buka sesi ujian yang dijadwalkan admin dan kerjakan dengan aturan yang berlaku." },
+      { title: "Pantau hasil", description: "Cek nilai, feedback guru, kehadiran, dan data pembayaran dari dashboard atau menu terkait." },
     ],
   },
 ];
 
-const advantages = [
+const crossRoleFlow = [
   {
-    index: "A1",
-    title: "Satu platform, dua kebutuhan",
-    description: "CMS mengurus operasional sekolah, sedangkan LMS menangani proses belajar. Keduanya berjalan dalam satu basis data dan satu pengalaman login.",
-    tone: "bg-sky-600",
+    title: "Persiapan semester baru",
+    owner: "Owner: Admin",
+    description: "Admin memulai periode baru dengan menyiapkan struktur sekolah agar semua modul pembelajaran dapat dipakai tanpa konflik data.",
+    input: "Data kelas, guru, siswa, tahun ajaran, semester, dan mata pelajaran.",
+    process: "Admin membuat atau memvalidasi seluruh master data, lalu menetapkan periode yang aktif.",
+    output: "Seluruh role siap bekerja di semester baru dengan struktur data yang jelas.",
   },
   {
-    index: "A2",
-    title: "Workflow per role lebih jelas",
-    description: "Admin, guru, dan siswa tidak melihat panel yang sama. Setiap role mendapat menu dan tanggung jawab yang lebih fokus.",
-    tone: "bg-rose-500",
+    title: "Pelaksanaan pembelajaran harian",
+    owner: "Owner: Guru",
+    description: "Guru mengelola materi, komunikasi mapel, dan evaluasi kecil seperti quiz untuk memastikan ritme belajar berjalan teratur.",
+    input: "Materi ajar, bank soal, daftar kelas, dan target pembelajaran mingguan.",
+    process: "Guru mempublikasikan materi, membuka chat, lalu memberi quiz sesuai kebutuhan kelas.",
+    output: "Siswa menerima materi, berinteraksi, dan mengerjakan evaluasi rutin.",
   },
   {
-    index: "A3",
-    title: "Evaluasi pembelajaran lengkap",
-    description: "Mulai dari bank soal, quiz, ujian resmi, penilaian, sampai rekap rapor mapel, semuanya saling terhubung.",
-    tone: "bg-emerald-600",
+    title: "Ujian resmi terkontrol",
+    owner: "Owner: Admin + Guru",
+    description: "Untuk ujian resmi, admin dan guru bekerja dalam alur yang lebih ketat agar paket soal dan jadwal pelaksanaan terdokumentasi dengan baik.",
+    input: "Task ujian dari admin, paket soal dari guru, jadwal sesi, dan kelas target.",
+    process: "Guru menyerahkan paket soal, admin meninjau lalu menerbitkannya ke siswa pada waktu yang ditentukan.",
+    output: "Siswa mengerjakan ujian resmi melalui sesi yang terjadwal dan lebih aman.",
   },
   {
-    index: "A4",
-    title: "Siap untuk penggunaan harian",
-    description: "Karena mencakup komunikasi kelas, absensi, dan pembayaran, sistem ini lebih realistis dipakai sebagai panel sekolah sehari-hari.",
-    tone: "bg-amber-500",
+    title: "Penilaian dan tindak lanjut",
+    owner: "Owner: Guru + Siswa",
+    description: "Setelah evaluasi selesai, guru menilai hasil siswa dan siswa dapat membaca skor maupun umpan balik untuk perbaikan.",
+    input: "Submission quiz atau ujian, kunci jawaban, rubric, dan catatan guru.",
+    process: "Guru menilai, memberi feedback, lalu hasil tampil kembali di panel siswa.",
+    output: "Nilai tersimpan, performa kelas dapat dipantau, dan siswa tahu area yang perlu diperbaiki.",
+  },
+];
+
+const dummyTables = [
+  {
+    caption: "Dummy Admin",
+    tone: "text-cyan-200",
+    title: "Contoh data master user dan kelas",
+    description: "Tabel ini menggambarkan data yang biasanya diperiksa admin saat onboarding awal semester.",
+    summary: "Dipakai untuk demo manajemen user sekolah.",
+    headers: ["Nama", "Role", "Kelas / Tanggung Jawab", "Status", "Catatan"],
+    rows: [
+      ["Nadia Putri", "Admin", "Operasional Sekolah", "Aktif", "Mengelola user, kelas, dan ujian resmi"],
+      ["Budi Santoso", "Guru", "Matematika - Kelas 10A, 10B", "Aktif", "Guru mapel sekaligus pembuat quiz"],
+      ["Rina Lestari", "Guru", "Bahasa Indonesia - Kelas 10A", "Aktif", "Aktif di live chat dan penilaian essay"],
+      ["Alya Ramadhani", "Siswa", "Kelas 10A", "Aktif", "Mengikuti 8 mapel semester genap"],
+      ["Farhan Akbar", "Siswa", "Kelas 10B", "Menunggu", "Akun dibuat, belum login pertama kali"],
+    ],
+  },
+  {
+    caption: "Dummy Guru",
+    tone: "text-rose-200",
+    title: "Contoh data quiz dan evaluasi mapel",
+    description: "Tabel ini membantu menjelaskan apa yang dilihat guru saat mengelola evaluasi harian.",
+    summary: "Dipakai untuk demo workflow bank soal dan quiz.",
+    headers: ["Quiz", "Mapel", "Kelas", "Jadwal", "Status", "Partisipasi"],
+    rows: [
+      ["Quiz Aljabar Linear", "Matematika", "10A", "08 Mei 2026 09:00", "Terjadwal", "32 siswa"],
+      ["Latihan Pecahan", "Matematika", "10B", "06 Mei 2026 10:00", "Aktif", "29 dari 31 siswa submit"],
+      ["Essay Cerpen", "Bahasa Indonesia", "10A", "04 Mei 2026 11:00", "Selesai", "30 submission, 8 belum dinilai"],
+      ["Kuis Kosakata", "Bahasa Inggris", "10A", "02 Mei 2026 08:30", "Selesai", "Nilai otomatis sudah terbit"],
+    ],
+  },
+  {
+    caption: "Dummy Siswa",
+    tone: "text-emerald-200",
+    title: "Contoh data tugas dan progres siswa",
+    description: "Tabel ini menggambarkan apa yang dilihat siswa setelah login ke dashboard atau modul pembelajaran.",
+    summary: "Dipakai untuk demo pengalaman user akhir.",
+    headers: ["Mapel", "Materi / Tugas", "Deadline", "Status", "Nilai / Feedback"],
+    rows: [
+      ["Matematika", "Quiz Aljabar Linear", "08 Mei 2026 10:00", "Belum Dikerjakan", "-"],
+      ["Bahasa Indonesia", "Essay Cerpen", "04 Mei 2026 13:00", "Sudah Submit", "Menunggu penilaian guru"],
+      ["Biologi", "Materi Sistem Organ", "Tidak ada", "Sudah Dibaca", "Materi selesai dipelajari"],
+      ["Sejarah", "Rangkuman Bab 5", "07 Mei 2026 15:00", "Dalam Proses", "Draft tersimpan"],
+      ["PPKn", "Quiz Kewarganegaraan", "03 Mei 2026 09:30", "Selesai", "92/100 - bagus, pertahankan"],
+    ],
+  },
+  {
+    caption: "Dummy Ujian Resmi",
+    tone: "text-amber-200",
+    title: "Contoh data monitoring ujian resmi",
+    description: "Tabel ini relevan saat presentasi fitur ujian resmi admin dan guru.",
+    summary: "Dipakai untuk demo alur task ujian resmi.",
+    headers: ["Nama Ujian", "Mapel", "Kelas", "Guru", "Status", "Keterangan"],
+    rows: [
+      ["UTS Matematika Genap", "Matematika", "10A", "Budi Santoso", "PUBLISHED", "Sudah dibuka ke siswa"],
+      ["UTS Bahasa Indonesia", "Bahasa Indonesia", "10A", "Rina Lestari", "READY_REVIEW", "Paket soal menunggu verifikasi admin"],
+      ["Ujian Sekolah Biologi", "Biologi", "12IPA", "Dewi Sartika", "DRAFT", "Admin sudah buat task, guru belum submit soal"],
+      ["UAS Sejarah", "Sejarah", "11IPS", "Arif Nugroho", "COMPLETED", "Pelaksanaan selesai, hasil siap direkap"],
+    ],
   },
 ];
 </script>
-<!-- comment -->
 
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap");
@@ -584,15 +919,20 @@ const advantages = [
 .landing-shell {
   font-family: "Roboto", sans-serif;
   position: relative;
-  background: #2d2c2c;
-  color: #b3b4b7;
+  background:
+    radial-gradient(circle at top left, rgba(6, 182, 212, 0.12), transparent 28%),
+    radial-gradient(circle at 85% 15%, rgba(244, 63, 94, 0.14), transparent 24%),
+    linear-gradient(180deg, #06101d 0%, #091524 42%, #050914 100%);
+  color: #cbd5e1;
 }
 
 .landing-shell::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: transparent;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.02), transparent 24%, transparent 76%, rgba(255, 255, 255, 0.02)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.01), transparent 30%);
   pointer-events: none;
   z-index: 0;
 }
@@ -609,15 +949,15 @@ const advantages = [
   position: absolute;
   border-radius: 9999px;
   filter: blur(80px);
-  opacity: 0.5;
+  opacity: 0.55;
 }
 
 .orb-one {
-  top: 32px;
+  top: 24px;
   left: -120px;
   height: 360px;
   width: 360px;
-  background: transparent;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.4), transparent 68%);
 }
 
 .orb-two {
@@ -625,7 +965,7 @@ const advantages = [
   top: 420px;
   height: 420px;
   width: 420px;
-  background: transparent;
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.28), transparent 70%);
 }
 
 .landing-grid {
@@ -635,53 +975,33 @@ const advantages = [
     linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
     linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
   background-size: 84px 84px;
-  opacity: 0.38;
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.86), transparent 90%);
+  opacity: 0.3;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent 92%);
 }
 
 .animate-rise-in {
-  animation: riseIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.animate-fade-in-delayed-2 {
-  animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
-}
-
-.animate-fade-in-delayed-3 {
-  animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.22s both;
-}
-
-.animate-fade-in-delayed-4 {
-  animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.32s both;
-}
-
-.animate-fade-in-delayed-5 {
-  animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.42s both;
+  animation: rise-in 0.9s ease-out both;
 }
 
 .animate-float-panel {
-  animation: riseIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both, floatPanel 6s ease-in-out 1s infinite;
+  animation: float-panel 8s ease-in-out infinite alternate;
 }
 
 .reveal-on-scroll {
   opacity: 0;
-  transform: translate3d(0, 36px, 0) scale(0.985);
-  transition:
-    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 0.3s ease;
-  will-change: transform, opacity;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
 }
 
 .reveal-on-scroll.is-visible {
   opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
+  transform: translateY(0);
 }
 
-@keyframes riseIn {
+@keyframes rise-in {
   from {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(26px);
   }
 
   to {
@@ -690,44 +1010,19 @@ const advantages = [
   }
 }
 
-@keyframes fadeInUp {
+@keyframes float-panel {
   from {
-    opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(0);
   }
 
   to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes floatPanel {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
     transform: translateY(-8px);
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-
-  .animate-rise-in,
-  .animate-fade-in-delayed-2,
-  .animate-fade-in-delayed-3,
-  .animate-fade-in-delayed-4,
-  .animate-fade-in-delayed-5,
-  .animate-float-panel,
-  .reveal-on-scroll,
-  .reveal-on-scroll.is-visible {
-    animation: none !important;
-    transition: none !important;
-    opacity: 1 !important;
-    transform: none !important;
+@media (max-width: 768px) {
+  .animate-float-panel {
+    animation: none;
   }
 }
 </style>

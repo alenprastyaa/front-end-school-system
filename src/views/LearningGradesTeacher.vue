@@ -156,9 +156,9 @@
                   <div class="line-clamp-2 font-medium leading-5 text-slate-900 dark:text-white">{{ row.assignment_title
                   }}</div>
                   <div class="mt-2 flex flex-wrap items-center gap-2">
-                    <span :class="assignmentTypeBadgeClass(row.assignment_type)"
+                    <span :class="assignmentTypeBadgeClass(row)"
                       class="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset">
-                      {{ assignmentTypeLabel(row.assignment_type) }}
+                      {{ assignmentTypeLabel(row) }}
                     </span>
                     <span class="truncate text-xs text-slate-400">{{ row.subject_name }}</span>
                   </div>
@@ -285,7 +285,7 @@
               <div class="mt-1 flex items-center gap-2 text-sm text-slate-500">
                 <span>{{ reviewRow.assignment_title }}</span>
                 <span class="h-1 w-1 rounded-full bg-slate-300"></span>
-                <span>{{ assignmentTypeLabel(reviewRow.assignment_type) }}</span>
+                <span>{{ assignmentTypeLabel(reviewRow) }}</span>
                 <span v-if="Number(reviewRow.violation_count || 0) > 0"
                   class="h-1 w-1 rounded-full bg-slate-300"></span>
                 <span v-if="Number(reviewRow.violation_count || 0) > 0" class="text-amber-600 dark:text-amber-300">
@@ -408,24 +408,53 @@ const paginationEndRow = computed(() => {
   return Math.min(currentPage.value * Number(pageSize.value || 20), totalRows.value);
 });
 
-const assignmentTypeLabel = (type) => {
-  if (type === "MCQ") return "Quiz PG";
-  if (type === "ESSAY") return "Quiz Essay";
-  if (type === "QUIZ") return "Quiz";
-  if (type === "MANUAL") return "Ujian di Luar LMS";
+const normalizeAssignmentMeta = (value, maybeIsExam = false, maybeExamCategory = "") => {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return {
+      type: String(value.assignment_type || "").toUpperCase(),
+      isExam: Boolean(value.is_exam),
+      examCategory: String(value.exam_category || "").toUpperCase(),
+    };
+  }
+
+  return {
+    type: String(value || "").toUpperCase(),
+    isExam: Boolean(maybeIsExam),
+    examCategory: String(maybeExamCategory || "").toUpperCase(),
+  };
+};
+
+const assignmentTypeLabel = (value, isExam = false, examCategory = "") => {
+  const meta = normalizeAssignmentMeta(value, isExam, examCategory);
+  if (meta.isExam) {
+    if (meta.examCategory === "UTS") return "UTS";
+    if (meta.examCategory === "UAS") return "UAS";
+    if (meta.examCategory === "UJIAN_SEKOLAH") return "Ujian Sekolah";
+    if (meta.examCategory === "CUSTOM") return "Ujian Resmi";
+    return "Ujian Resmi";
+  }
+  if (meta.type === "MCQ") return "Quiz PG";
+  if (meta.type === "ESSAY") return "Quiz Essay";
+  if (meta.type === "QUIZ") return "Quiz";
+  if (meta.type === "MANUAL") return "Ujian di Luar LMS";
   return "Tugas File";
 };
 
-const assignmentTypeBadgeClass = (type) => {
-  if (type === "MCQ") {
+const assignmentTypeBadgeClass = (value, isExam = false, examCategory = "") => {
+  const meta = normalizeAssignmentMeta(value, isExam, examCategory);
+  if (meta.isExam) {
+    return "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300";
+  }
+
+  if (meta.type === "MCQ") {
     return "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300";
   }
 
-  if (type === "ESSAY") {
+  if (meta.type === "ESSAY") {
     return "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300";
   }
 
-  if (type === "MANUAL") {
+  if (meta.type === "MANUAL") {
     return "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300";
   }
 

@@ -165,7 +165,6 @@ const menuByRole = {
   SUPER_ADMIN: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     { key: "schools", to: "/schools", label: "Sekolah", icon: "ph:buildings" },
-    { key: "school-users", to: "/school-users", label: "User Sekolah", icon: "clarity:users-line" },
   ],
   ADMIN: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
@@ -173,7 +172,18 @@ const menuByRole = {
     { key: "classes", to: "/classes", label: "Kelas", icon: "mdi:google-classroom" },
     { key: "students", to: "/students", label: "Siswa", icon: "mdi:account-school-outline" },
     { key: "academic-periods", to: "/academic-periods", label: "Tahun Ajaran", icon: "ph:calendar-blank" },
-    { key: "learning-admin", to: "/learning-admin", label: "Pembelajaran", icon: "ph:books" },
+    {
+      key: "curriculum-module",
+      label: "Kurikulum",
+      icon: "ph:books",
+      children: [
+        { to: "/learning-admin", label: "Mata Pelajaran", icon: "ph:book-open-text" },
+        { to: "/learning-admin/teacher-loads", label: "Beban Guru", icon: "ph:chalkboard-teacher" },
+        { to: "/learning-admin/class-distributions", label: "Distribusi Guru ke Kelas", icon: "ph:git-branch" },
+        { to: "/learning-admin/schedule", label: "Jadwal Pembelajaran", icon: "ph:calendar-blank" },
+        { to: "/learning-admin/generate", label: "Generate Pembagian", icon: "ph:magic-wand" },
+      ],
+    },
     { key: "learning-exams-admin", to: "/learning-exams-admin", label: "Ujian Resmi", icon: "ph:exam" },
     { key: "admin-settings", to: "/admin-settings", label: "Setting", icon: "ph:gear-six" },
   ],

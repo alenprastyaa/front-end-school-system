@@ -1,7 +1,7 @@
 <template>
   <div
     class="h-full min-h-0 overflow-hidden bg-slate-100 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-    <main class="mx-auto flex h-full min-h-0 w-full max-w-[1480px] flex-col p-0 md:p-8">
+    <main class="mx-auto flex h-full min-h-0 w-full  flex-col p-0 md:p-8">
       <div
         class="flex-1 min-h-0 overflow-hidden rounded-none bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10 md:rounded-[28px]">
         <div class="grid h-full min-h-0 lg:grid-cols-[340px_minmax(0,1fr)]">
@@ -98,9 +98,7 @@
                     :class="[
                       selectedSubject.chat_icon_url ? 'bg-slate-100 dark:bg-slate-800' : getSubjectIconClass(selectedSubject),
                       role === 'GURU' ? 'ring-2 ring-transparent transition hover:ring-sky-400/50' : '',
-                    ]"
-                    :disabled="role !== 'GURU' || isUploadingChatIcon"
-                    @click="openChatIconModal">
+                    ]" :disabled="role !== 'GURU' || isUploadingChatIcon" @click="openChatIconModal">
                     <img v-if="selectedSubject.chat_icon_url" :src="selectedSubject.chat_icon_url" alt="Ikon grup mapel"
                       class="h-full w-full object-cover" />
                     <Icon v-else :icon="getSubjectIcon(selectedSubject)" class="h-6 w-6 opacity-95" />
@@ -323,14 +321,17 @@
         </div>
       </div>
     </main>
-    <div v-if="showChatIconModal && role === 'GURU'" class="fixed inset-0 z-[75] bg-black/45" @click="closeChatIconModal">
-      <div class="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white p-4 shadow-2xl dark:bg-slate-900 sm:mx-auto sm:my-16 sm:inset-auto sm:w-full sm:max-w-md sm:rounded-2xl"
+    <div v-if="showChatIconModal && role === 'GURU'" class="fixed inset-0 z-[75] bg-black/45"
+      @click="closeChatIconModal">
+      <div
+        class="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white p-4 shadow-2xl dark:bg-slate-900 sm:mx-auto sm:my-16 sm:inset-auto sm:w-full sm:max-w-md sm:rounded-2xl"
         @click.stop>
         <h3 class="text-base font-semibold text-slate-900 dark:text-white">Ubah Ikon Grup</h3>
         <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Pilih gambar baru untuk ikon mapel ini.</p>
 
         <div class="mt-4 flex items-center gap-3">
-          <div class="h-16 w-16 overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+          <div
+            class="h-16 w-16 overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
             <img v-if="chatIconPreviewUrl || selectedSubject?.chat_icon_url"
               :src="chatIconPreviewUrl || selectedSubject?.chat_icon_url" alt="Preview ikon grup"
               class="h-full w-full object-cover" />

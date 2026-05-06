@@ -1,7 +1,7 @@
 <template>
   <div
     class="min-h-screen bg-slate-50/50 pb-12 pt-4 font-sans text-slate-900 md:px-8 md:pt-8 dark:bg-slate-950 dark:text-slate-100">
-    <div class="mx-auto max-w-[1440px] space-y-6">
+    <div class="mx-auto  space-y-6">
 
       <section class="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
         <div class="flex items-center justify-between gap-4 flex-wrap">
@@ -43,13 +43,15 @@
                 <th class="border-b border-slate-200 px-6 py-4 font-semibold dark:border-slate-800">
                   <button @click="handleSort('class_name')"
                     class="group flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white">
-                    Nama Kelas <span class="text-slate-300 transition group-hover:text-slate-500">{{ sortIndicator('class_name') }}</span>
+                    Nama Kelas <span class="text-slate-300 transition group-hover:text-slate-500">{{
+                      sortIndicator('class_name') }}</span>
                   </button>
                 </th>
                 <th class="border-b border-slate-200 px-6 py-4 font-semibold dark:border-slate-800">
                   <button @click="handleSort('wali_guru_name')"
                     class="group flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white">
-                    Wali Kelas <span class="text-slate-300 transition group-hover:text-slate-500">{{ sortIndicator('wali_guru_name') }}</span>
+                    Wali Kelas <span class="text-slate-300 transition group-hover:text-slate-500">{{
+                      sortIndicator('wali_guru_name') }}</span>
                   </button>
                 </th>
                 <th class="border-b border-slate-200 px-6 py-4 font-semibold dark:border-slate-800">Email Wali</th>
@@ -89,13 +91,17 @@
               <tr v-if="classes.length === 0">
                 <td colspan="5" class="px-6 py-16 text-center">
                   <div class="mx-auto flex max-w-sm flex-col items-center">
-                    <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                      <svg class="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
+                    <div
+                      class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                      <svg class="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
                       </svg>
                     </div>
                     <span class="text-sm font-semibold text-slate-900 dark:text-white">Belum Ada Kelas</span>
-                    <span class="mt-1 text-sm text-slate-500">Silakan buat kelas baru menggunakan tombol Tambah Kelas.</span>
+                    <span class="mt-1 text-sm text-slate-500">Silakan buat kelas baru menggunakan tombol Tambah
+                      Kelas.</span>
                   </div>
                 </td>
               </tr>
@@ -156,13 +162,12 @@
                 class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-8 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
                 <option value="">Belum ditentukan</option>
                 <option v-for="teacher in teachers" :key="teacher.id" :value="teacher.id">
-                  {{ teacher.username }}
+                  {{ teacher.full_name || teacher.username }}
                 </option>
               </select>
             </div>
 
-            <div
-              class="flex items-center justify-end gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+            <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
               <button type="button" @click="closeModal"
                 class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
                 Batal
@@ -203,7 +208,8 @@
               <h2 class="text-lg font-bold text-slate-900 dark:text-white">Hapus Kelas?</h2>
               <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
                 Kelas
-                <span class="font-semibold text-slate-700 dark:text-slate-200">{{ classToDelete?.class_name || "-" }}</span>
+                <span class="font-semibold text-slate-700 dark:text-slate-200">{{ classToDelete?.class_name || "-"
+                  }}</span>
                 akan dihapus. Siswa di kelas ini akan kehilangan data kelasnya. Tindakan ini tidak bisa dibatalkan.
               </p>
             </div>
@@ -216,8 +222,8 @@
             </button>
             <button type="button" @click="confirmDeleteClass" :disabled="isDeletingClass"
               class="inline-flex items-center justify-center gap-2 rounded-lg bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-60">
-              <svg v-if="isDeletingClass" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"
-                stroke-width="2" stroke="currentColor">
+              <svg v-if="isDeletingClass" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
               </svg>

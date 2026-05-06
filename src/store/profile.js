@@ -4,6 +4,12 @@ import { getStoredUser, updateStoredUser } from "@/utils/auth";
 import { normalizePublicUrl } from "@/utils/url";
 
 const PROFILE_TTL = 5 * 60 * 1000;
+const PROFILE_RETRY_DELAY_MS = 250;
+
+const wait = (duration) =>
+  new Promise((resolve) => {
+    window.setTimeout(resolve, duration);
+  });
 
 export const useProfileStore = defineStore("profile", {
   state: () => ({
@@ -70,7 +76,20 @@ export const useProfileStore = defineStore("profile", {
       this.loading = true;
       this.inFlight = (async () => {
         try {
-          const response = await api.get("/auth/profile");
+          let response;
+          try {
+            response = await api.get("/auth/profile", {
+              suppressAuthRedirect: true,
+            });
+          } catch (error) {
+            const shouldRetry = Number(error?.status || 0) === 401 && Boolean(localStorage.getItem("token"));
+            if (!shouldRetry) {
+              throw error;
+            }
+
+            await wait(PROFILE_RETRY_DELAY_MS);
+            response = await api.get("/auth/profile");
+          }
           const profile = response?.data || {};
           return this.applyProfile(profile);
         } catch (error) {

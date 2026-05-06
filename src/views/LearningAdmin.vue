@@ -1,7 +1,7 @@
 <template>
   <div
     class="min-h-screen bg-slate-50/50 pb-12 pt-4 font-sans text-slate-900 md:px-8 md:pt-8 dark:bg-slate-950 dark:text-slate-100">
-    <div class="mx-auto max-w-[1440px] space-y-6">
+    <div class="mx-auto  space-y-6">
 
       <section class="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
         <div class="flex items-center justify-between gap-4 flex-wrap">
@@ -67,10 +67,14 @@
                 class="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
-                      <img v-if="item.chat_icon_url" :src="item.chat_icon_url" alt="Ikon grup mapel" class="h-full w-full object-cover" />
-                      <svg v-else class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v11.494m-5.747-8.62l11.494 5.747M6.253 14.873l11.494-5.747" />
+                    <div
+                      class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+                      <img v-if="item.chat_icon_url" :src="item.chat_icon_url" alt="Ikon grup mapel"
+                        class="h-full w-full object-cover" />
+                      <svg v-else class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 6.253v11.494m-5.747-8.62l11.494 5.747M6.253 14.873l11.494-5.747" />
                       </svg>
                     </div>
                     <div class="min-w-0">
@@ -215,7 +219,7 @@
                   class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-8 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
                   <option value="" disabled>-- Pilih Guru --</option>
                   <option v-for="item in teachers" :key="item.id" :value="item.id">
-                    {{ item.username }}
+                    {{ item.full_name || item.username }}
                   </option>
                 </select>
               </div>
@@ -228,18 +232,24 @@
               </div>
 
               <div>
-                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Ikon Grup Chat</label>
+                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Ikon Grup
+                  Chat</label>
                 <div class="flex items-center gap-4">
-                  <div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
-                    <img v-if="chatIconPreview" :src="chatIconPreview" alt="Preview ikon grup" class="h-full w-full object-cover" />
-                    <svg v-else class="h-7 w-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v11.494m-5.747-8.62l11.494 5.747M6.253 14.873l11.494-5.747" />
+                  <div
+                    class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+                    <img v-if="chatIconPreview" :src="chatIconPreview" alt="Preview ikon grup"
+                      class="h-full w-full object-cover" />
+                    <svg v-else class="h-7 w-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                      stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 6.253v11.494m-5.747-8.62l11.494 5.747M6.253 14.873l11.494-5.747" />
                     </svg>
                   </div>
                   <div class="flex-1">
                     <input type="file" accept="image/*" @change="handleChatIconChange"
                       class="block w-full text-sm text-slate-500 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-100 file:px-4 file:py-2.5 file:font-semibold file:text-slate-700 hover:file:bg-slate-200 dark:file:bg-slate-800 dark:file:text-slate-200" />
-                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Upload ikon khusus untuk grup chat mapel ini.</p>
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Upload ikon khusus untuk grup chat mapel
+                      ini.</p>
                   </div>
                 </div>
               </div>

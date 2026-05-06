@@ -1,13 +1,7 @@
 <template>
   <div class="min-h-screen bg-slate-50 p-4 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
     <main class="mx-auto mt-8 max-w-[1400px] space-y-6">
-      <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
-        <h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Setting Admin</h1>
-        <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">
-          Reset data dilakukan per modul dan hanya berlaku untuk sekolah admin yang sedang login. Setiap aksi wajib
-          dikonfirmasi dengan mengetik <span class="font-bold text-slate-900 dark:text-white">RESET</span>.
-        </p>
-      </section>
+
 
       <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
         <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -31,7 +25,7 @@
         </div>
       </section>
 
-      <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+      <!-- <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
         <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <h2 class="text-lg font-bold text-slate-900 dark:text-white">Load Test Server</h2>
@@ -93,9 +87,9 @@
             <li v-for="(item, index) in loadTestResult.error_samples" :key="`load-test-error-${index}`">{{ item }}</li>
           </ul>
         </div>
-      </section>
+      </section> -->
 
-      <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+      <!-- <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
         <div class="flex flex-col gap-3">
           <div>
             <h2 class="text-lg font-bold text-slate-900 dark:text-white">Load Test Login</h2>
@@ -133,29 +127,36 @@
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Hit</p>
             <p class="mt-2 text-2xl font-black text-slate-900 dark:text-white">{{ loginLoadTestResult.hit_count }}</p>
           </article>
-          <article class="rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:ring-emerald-500/20">
+          <article
+            class="rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:ring-emerald-500/20">
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-500">Login Sukses</p>
-            <p class="mt-2 text-2xl font-black text-emerald-700 dark:text-emerald-300">{{ loginLoadTestResult.success_count }}</p>
+            <p class="mt-2 text-2xl font-black text-emerald-700 dark:text-emerald-300">{{
+              loginLoadTestResult.success_count }}</p>
           </article>
           <article class="rounded-2xl bg-rose-50 p-4 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:ring-rose-500/20">
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-rose-500">Login Gagal</p>
-            <p class="mt-2 text-2xl font-black text-rose-700 dark:text-rose-300">{{ loginLoadTestResult.failure_count }}</p>
+            <p class="mt-2 text-2xl font-black text-rose-700 dark:text-rose-300">{{ loginLoadTestResult.failure_count }}
+            </p>
           </article>
           <article class="rounded-2xl bg-sky-50 p-4 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:ring-sky-500/20">
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-500">Total Waktu</p>
-            <p class="mt-2 text-2xl font-black text-sky-700 dark:text-sky-300">{{ loginLoadTestResult.total_elapsed_ms }} ms</p>
+            <p class="mt-2 text-2xl font-black text-sky-700 dark:text-sky-300">{{ loginLoadTestResult.total_elapsed_ms
+              }} ms</p>
           </article>
           <article class="rounded-2xl bg-white p-4 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Rata-rata</p>
-            <p class="mt-2 text-xl font-black text-slate-900 dark:text-white">{{ loginLoadTestResult.average_duration_ms }} ms</p>
+            <p class="mt-2 text-xl font-black text-slate-900 dark:text-white">{{ loginLoadTestResult.average_duration_ms
+              }} ms</p>
           </article>
           <article class="rounded-2xl bg-white p-4 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">P95</p>
-            <p class="mt-2 text-xl font-black text-slate-900 dark:text-white">{{ loginLoadTestResult.p95_duration_ms }} ms</p>
+            <p class="mt-2 text-xl font-black text-slate-900 dark:text-white">{{ loginLoadTestResult.p95_duration_ms }}
+              ms</p>
           </article>
           <article class="rounded-2xl bg-white p-4 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Maksimum</p>
-            <p class="mt-2 text-xl font-black text-slate-900 dark:text-white">{{ loginLoadTestResult.max_duration_ms }} ms</p>
+            <p class="mt-2 text-xl font-black text-slate-900 dark:text-white">{{ loginLoadTestResult.max_duration_ms }}
+              ms</p>
           </article>
           <article class="rounded-2xl bg-white p-4 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Target</p>
@@ -163,13 +164,15 @@
           </article>
         </div>
 
-        <div v-if="loginLoadTestResult?.error_samples?.length" class="mt-4 rounded-2xl bg-rose-50 p-4 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:ring-rose-500/20">
+        <div v-if="loginLoadTestResult?.error_samples?.length"
+          class="mt-4 rounded-2xl bg-rose-50 p-4 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:ring-rose-500/20">
           <p class="text-sm font-bold text-rose-700 dark:text-rose-300">Contoh Error Login</p>
           <ul class="mt-2 space-y-1 text-sm text-rose-600 dark:text-rose-200">
-            <li v-for="(item, index) in loginLoadTestResult.error_samples" :key="`login-load-test-error-${index}`">{{ item }}</li>
+            <li v-for="(item, index) in loginLoadTestResult.error_samples" :key="`login-load-test-error-${index}`">{{
+              item }}</li>
           </ul>
         </div>
-      </section>
+      </section> -->
 
       <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 -translate-y-2"
         enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-200"
@@ -210,38 +213,54 @@
             </div>
           </div>
 
-          <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <article v-for="item in settingsItems" :key="item.key"
-              class="rounded-3xl border border-slate-200 bg-slate-50/70 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-800/30">
-              <div class="flex items-start justify-between gap-4">
-                <div>
-                  <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Modul</p>
-                  <h3 class="mt-2 text-lg font-black tracking-tight text-slate-900 dark:text-white">{{ item.label }}
-                  </h3>
-                </div>
-                <div
-                  class="rounded-2xl bg-white px-3 py-2 text-right ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
-                  <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Jumlah</p>
-                  <p class="mt-1 text-2xl font-black text-slate-900 dark:text-white">{{ item.count }}</p>
-                </div>
+          <div v-else class="space-y-8">
+            <section v-for="group in groupedSettingsItems" :key="group.key" class="space-y-4">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">{{ group.label }}</p>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ group.description }}</p>
               </div>
 
-              <p class="mt-4 min-h-[72px] text-sm leading-6 text-slate-500 dark:text-slate-400">
-                {{ item.description }}
-              </p>
-
-              <div class="mt-5 space-y-3">
-                <label class="block">
-                  <span class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Ketik RESET</span>
-                  <input v-model="confirmInputs[item.key]" type="text" placeholder="RESET"
-                    class="mt-2 block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-rose-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700" />
-                </label>
-                <button @click="resetScope(item)" :disabled="isResetting[item.key]"
-                  class="w-full rounded-xl bg-rose-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-rose-500 disabled:opacity-50">
-                  {{ isResetting[item.key] ? "Mereset..." : `Reset ${item.label}` }}
-                </button>
+              <div class="overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <table class="min-w-full text-left text-sm">
+                  <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
+                    <tr>
+                      <th class="px-4 py-3 font-medium sm:px-6">Modul</th>
+                      <th class="px-4 py-3 font-medium sm:px-6">Jumlah</th>
+                      <th class="px-4 py-3 font-medium sm:px-6">Keterangan</th>
+                      <th class="px-4 py-3 font-medium sm:px-6">Konfirmasi</th>
+                      <th class="px-4 py-3 font-medium text-right sm:px-6">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tr v-for="item in group.items" :key="item.key" class="align-top hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+                      <td class="px-4 py-4 sm:px-6">
+                        <div class="font-semibold text-slate-900 dark:text-white">{{ item.label }}</div>
+                      </td>
+                      <td class="px-4 py-4 sm:px-6">
+                        <span class="inline-flex min-w-[44px] items-center justify-center rounded-xl bg-slate-100 px-3 py-2 text-base font-black text-slate-900 dark:bg-slate-800 dark:text-white">
+                          {{ item.count }}
+                        </span>
+                      </td>
+                      <td class="px-4 py-4 text-slate-600 dark:text-slate-300 sm:px-6">
+                        {{ item.description }}
+                      </td>
+                      <td class="px-4 py-4 sm:px-6">
+                        <input v-model="confirmInputs[item.key]" type="text" placeholder="RESET"
+                          class="block w-full min-w-[120px] rounded-xl border-0 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-rose-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700" />
+                      </td>
+                      <td class="px-4 py-4 sm:px-6">
+                        <div class="flex justify-end">
+                          <button @click="resetScope(item)" :disabled="isResetting[item.key]"
+                            class="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-rose-500 disabled:opacity-50">
+                            {{ isResetting[item.key] ? "Mereset..." : "Reset" }}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-            </article>
+            </section>
           </div>
         </div>
       </section>
@@ -250,7 +269,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 
@@ -273,6 +292,60 @@ const loginLoadTestForm = reactive({
   username: "",
   password: "",
   hitCount: 1000,
+});
+
+const groupedSettingsItems = computed(() => {
+  const groups = [
+    {
+      key: "curriculum",
+      label: "Kurikulum",
+      description: "Modul penyusunan jam belajar, beban guru, distribusi kelas, dan generate jadwal.",
+      itemKeys: [
+        "curriculum_subjects",
+        "curriculum_teacher_loads",
+        "curriculum_class_distributions",
+        "curriculum_schedule_slots",
+        "curriculum_schedule_entries",
+      ],
+    },
+    {
+      key: "lms",
+      label: "LMS",
+      description: "Modul pembelajaran lama seperti mapel LMS, materi, chat, tugas, quiz, dan ujian.",
+      itemKeys: [
+        "subjects",
+        "materials",
+        "learning_chat",
+        "question_bank",
+        "file_tasks",
+        "manual_assessments",
+        "quizzes",
+        "official_exams",
+      ],
+    },
+    {
+      key: "school-data",
+      label: "Data Sekolah",
+      description: "Data inti sekolah seperti guru, siswa, kelas, periode akademik, absensi, dan pembayaran.",
+      itemKeys: [
+        "teachers",
+        "students",
+        "classes",
+        "academic_periods",
+        "attendance",
+        "receipts",
+      ],
+    },
+  ];
+
+  return groups
+    .map((group) => ({
+      ...group,
+      items: group.itemKeys
+        .map((key) => settingsItems.value.find((item) => item.key === key))
+        .filter(Boolean),
+    }))
+    .filter((group) => group.items.length > 0);
 });
 
 const loadSummary = async () => {

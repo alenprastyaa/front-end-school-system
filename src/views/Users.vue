@@ -1,7 +1,7 @@
 <template>
   <div
     class="min-h-screen bg-slate-50/50 pb-12 pt-4 font-sans text-slate-900 md:px-8 md:pt-8 dark:bg-slate-950 dark:text-slate-100">
-    <div class="mx-auto max-w-[1440px] space-y-6">
+    <div class="mx-auto  space-y-6">
 
       <section class="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
         <div class="flex items-center justify-between gap-4 flex-wrap">
@@ -124,8 +124,10 @@
                     <div class="flex items-center justify-end gap-2">
                       <button @click="startEdit(item)"
                         class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700">
-                        <svg class="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                        <svg class="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                          stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
                         </svg>
                         Edit
                       </button>
@@ -133,7 +135,8 @@
                         class="inline-flex items-center justify-center rounded-lg bg-white p-1.5 text-slate-400 shadow-sm ring-1 ring-inset ring-slate-300 transition hover:bg-rose-50 hover:text-rose-600 dark:bg-slate-800 dark:ring-slate-700 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
                         title="Hapus Siswa">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </button>
                     </div>
@@ -228,7 +231,8 @@
                   class="text-rose-500">*</span></label>
               <input v-model="form.username" type="text" required placeholder="e.g. budi_santoso"
                 class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-              <p class="mt-1 text-xs font-medium text-sky-600 dark:text-sky-400">Gunakan username ini saat login siswa/guru.</p>
+              <p class="mt-1 text-xs font-medium text-sky-600 dark:text-sky-400">Gunakan username ini saat login
+                siswa/guru.</p>
             </div>
 
             <div v-if="!editingId">
@@ -308,7 +312,8 @@
             <h2 class="text-lg font-bold text-slate-900 dark:text-white">Hapus Siswa?</h2>
             <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
               Siswa
-              <span class="font-semibold text-slate-700 dark:text-slate-200">{{ studentToDelete?.username || "-" }}</span>
+              <span class="font-semibold text-slate-700 dark:text-slate-200">{{ studentToDelete?.username || "-"
+                }}</span>
               beserta seluruh data absensi dan pembayarannya akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.
             </p>
           </div>
@@ -321,7 +326,8 @@
           </button>
           <button type="button" @click="confirmDeleteStudent" :disabled="isDeletingStudent"
             class="inline-flex items-center justify-center gap-2 rounded-lg bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-60">
-            <svg v-if="isDeletingStudent" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <svg v-if="isDeletingStudent" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2"
+              stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round"
                 d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
             </svg>

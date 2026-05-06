@@ -305,7 +305,7 @@
             <div>
               <h2 class="text-lg font-bold text-slate-900 dark:text-white">Generate Soal dengan AI</h2>
               <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Soal akan dibuat oleh Gemini dan langsung disimpan ke bank soal mapel ini.
+                Soal akan dibuat oleh AI dan langsung disimpan ke bank soal mapel ini.
               </p>
             </div>
             <button @click="aiGeneratorModalOpen = false"
@@ -330,7 +330,7 @@
                     </svg>
                   </div>
                   <div class="min-w-0 flex-1">
-                    <h3 class="font-semibold text-sky-900 dark:text-sky-100">Gemini sedang menyusun soal</h3>
+                    <h3 class="font-semibold text-sky-900 dark:text-sky-100">AI sedang menyusun soal</h3>
                     <p class="mt-1 text-sm text-sky-800 dark:text-sky-200">
                       {{ activeAiGenerationStage }}
                     </p>
@@ -687,7 +687,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                       <tr v-for="item in quizOverviewModal.submittedStudents" :key="`submitted-${item.id}`">
-                        <td class="px-5 py-3 font-medium text-slate-900 dark:text-white">{{ item.username }}</td>
+                        <td class="px-5 py-3 font-medium text-slate-900 dark:text-white">{{ item.full_name || item.username }}</td>
                         <td class="px-5 py-3 text-slate-500 dark:text-slate-400">{{ formatDateTime(item.submitted_at) }}
                         </td>
                         <td class="px-5 py-3 font-bold text-slate-700 dark:text-slate-300">{{ item.score ?? "-" }}</td>
@@ -729,7 +729,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                       <tr v-for="item in quizOverviewModal.pendingStudents" :key="`pending-${item.id}`">
-                        <td class="px-5 py-3 font-medium text-slate-900 dark:text-white">{{ item.username }}</td>
+                        <td class="px-5 py-3 font-medium text-slate-900 dark:text-white">{{ item.full_name || item.username }}</td>
                         <td class="px-5 py-3 text-slate-500 dark:text-slate-400">{{ item.parent_email || "-" }}</td>
                         <td class="px-5 py-3">
                           <div class="font-semibold"
@@ -1102,6 +1102,23 @@ const parseOptionItem = (option) => {
   };
 };
 
+const parseOptionsField = (value) => {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== "string" || !value.trim()) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const normalizeQuestionBankItem = (item) => ({
+  ...item,
+  options: parseOptionsField(item?.options),
+  correct_option: Number.isInteger(Number(item?.correct_option)) ? Number(item.correct_option) : 0,
+});
+
 const aiGeneratorForm = reactive({
   question_type: "MCQ",
   question_count: 5,
@@ -1332,20 +1349,21 @@ const closeQuizOverview = () => {
 };
 
 const openQuestionPreview = (question, source = "bank", questionNumber = null) => {
+  const normalizedQuestion = normalizeQuestionBankItem(question || {});
   questionPreviewModal.open = true;
-  questionPreviewModal.question = { ...question };
+  questionPreviewModal.question = { ...normalizedQuestion };
   questionPreviewModal.source = source;
   questionPreviewModal.sourceLabel = source === "selected" ? "Soal yang akan diterbitkan" : "Review sebelum dipilih";
   questionPreviewModal.questionNumber = questionNumber;
-  const parsedQuestion = parseQuestionContent(question.question_text || "");
+  const parsedQuestion = parseQuestionContent(normalizedQuestion.question_text || "");
   questionPreviewForm.question_text = parsedQuestion.question_text;
   questionPreviewForm.question_image_url = parsedQuestion.question_image_url;
   questionPreviewForm.options = Array.from(
-    { length: Math.max(5, Array.isArray(question.options) ? question.options.length : 0) },
-    (_, index) => parseOptionItem(question.options?.[index]).text,
+    { length: Math.max(5, Array.isArray(normalizedQuestion.options) ? normalizedQuestion.options.length : 0) },
+    (_, index) => parseOptionItem(normalizedQuestion.options?.[index]).text,
   );
-  questionPreviewForm.correct_option = Number(question.correct_option || 0);
-  questionPreviewForm.rubric = question.rubric || "";
+  questionPreviewForm.correct_option = Number(normalizedQuestion.correct_option || 0);
+  questionPreviewForm.rubric = normalizedQuestion.rubric || "";
 };
 
 const closeQuestionPreview = () => {
@@ -1385,11 +1403,11 @@ const saveQuestionPreviewChanges = async () => {
     }
 
     const response = await api.put(`/learning/question-bank/${questionPreviewModal.question.id}`, payload);
-    const updatedQuestion = response?.data;
+    const updatedQuestion = normalizeQuestionBankItem(response?.data || {});
 
     if (updatedQuestion) {
       questionPreviewModal.question = { ...updatedQuestion };
-      if (questionPreviewModal.source === "selected") {
+      if (questionPreviewModal.source === "selected" || questionPreviewModal.source === "bank") {
         const parsedUpdatedQuestion = parseQuestionContent(updatedQuestion.question_text || "");
         questionPreviewForm.question_text = parsedUpdatedQuestion.question_text;
         questionPreviewForm.question_image_url = parsedUpdatedQuestion.question_image_url;
@@ -1563,7 +1581,7 @@ const loadSubjectData = async () => {
   ]);
 
   assignments.value = (assignmentResponse?.data || []).filter((item) => item.assignment_type !== "FILE" && !item.is_exam);
-  questionBank.value = questionBankResponse?.data?.data || [];
+  questionBank.value = (questionBankResponse?.data?.data || []).map(normalizeQuestionBankItem);
   questionBankTotal.value = questionBankResponse?.data?.total || 0;
   await loadAssignmentQuestionBank();
 };
@@ -1577,7 +1595,7 @@ const loadAssignmentQuestionBank = async () => {
       limit: 500,
     },
   });
-  questionBankForAssignment.value = response?.data?.data || [];
+  questionBankForAssignment.value = (response?.data?.data || []).map(normalizeQuestionBankItem);
 };
 
 const selectSubject = async (subject) => {

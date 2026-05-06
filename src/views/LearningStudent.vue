@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-slate-50/50 p-4 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
 
-    <main class="mx-auto mt-8 max-w-[1440px]">
+    <main class="mx-auto mt-8 ">
 
       <section class="mb-8">
         <div class="mb-4 flex items-center justify-between">
@@ -92,7 +92,8 @@
                 </div>
 
                 <div class="mt-5 pt-4 border-t border-slate-200/60 dark:border-slate-700/60">
-                      <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank" rel="noreferrer"
+                  <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
+                    rel="noreferrer"
                     class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-3 py-2.5 text-xs font-bold text-emerald-700 shadow-sm ring-1 ring-inset ring-slate-200 transition hover:bg-emerald-50 hover:ring-emerald-200 dark:bg-slate-900 dark:text-emerald-400 dark:ring-slate-700 dark:hover:bg-emerald-500/10 dark:hover:ring-emerald-500/30">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round"
@@ -158,7 +159,8 @@
                         }}
                       </div>
 
-                      <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank" rel="noreferrer"
+                      <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
+                        rel="noreferrer"
                         class="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-emerald-600 transition hover:text-emerald-500 dark:text-emerald-400">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round"
@@ -211,31 +213,38 @@
   </div>
 
   <transition name="fade">
-    <div v-if="submissionTarget" class="fixed inset-0 z-[70] bg-slate-950/70 p-4 backdrop-blur-sm" @click.self="closeSubmissionModal">
+    <div v-if="submissionTarget" class="fixed inset-0 z-[70] bg-slate-950/70 p-4 backdrop-blur-sm"
+      @click.self="closeSubmissionModal">
       <div class="mx-auto mt-8 w-full max-w-2xl rounded-2xl bg-white shadow-2xl dark:bg-slate-900">
         <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 dark:border-slate-800">
           <div>
             <h3 class="font-extrabold text-slate-900 dark:text-white">Meja Pengumpulan</h3>
-            <p class="mt-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">{{ submissionTarget?.title }}</p>
+            <p class="mt-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">{{ submissionTarget?.title }}
+            </p>
           </div>
-          <button type="button" class="rounded-lg p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50 dark:hover:bg-slate-800 dark:hover:text-slate-200" :disabled="isSubmitting" @click="closeSubmissionModal">
+          <button type="button"
+            class="rounded-lg p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            :disabled="isSubmitting" @click="closeSubmissionModal">
             ✕
           </button>
         </div>
 
         <form class="flex flex-col gap-5 p-5" @submit.prevent="submitAssignment">
           <div>
-            <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Teks Jawaban / Catatan</label>
+            <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Teks Jawaban /
+              Catatan</label>
             <textarea v-model="submissionForm.submission_text" rows="8"
               placeholder="Ketik jawaban Anda di sini atau tambahkan catatan untuk guru..."
               class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 focus:bg-white focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700 dark:focus:bg-slate-900" />
           </div>
 
           <div>
-            <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Unggah File (Jika diminta)</label>
+            <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Unggah File (Jika
+              diminta)</label>
             <input type="file" :disabled="isSubmitting" @change="handleSubmissionFile"
               class="block w-full text-sm text-slate-500 file:mr-4 file:cursor-pointer file:rounded-xl file:border-0 file:bg-emerald-50 file:px-4 file:py-2.5 file:text-sm file:font-bold file:text-emerald-700 hover:file:bg-emerald-100 dark:text-slate-400 dark:file:bg-emerald-500/10 dark:file:text-emerald-400 dark:hover:file:bg-emerald-500/20" />
-            <div v-if="submissionTarget?.submission_attachment_url" class="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
+            <div v-if="submissionTarget?.submission_attachment_url"
+              class="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
               <span class="font-semibold">File saat ini:</span>
               <a :href="normalizePublicUrl(submissionTarget.submission_attachment_url)" target="_blank" rel="noreferrer"
                 class="ml-1 font-bold text-emerald-600 hover:text-emerald-500 dark:text-emerald-400">
@@ -245,12 +254,15 @@
           </div>
 
           <div class="mt-1 flex items-center justify-end gap-3">
-            <button type="button" :disabled="isSubmitting" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 disabled:opacity-60 dark:border-slate-700 dark:text-slate-200" @click="closeSubmissionModal">
+            <button type="button" :disabled="isSubmitting"
+              class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 disabled:opacity-60 dark:border-slate-700 dark:text-slate-200"
+              @click="closeSubmissionModal">
               Batal
             </button>
             <button :disabled="isSubmitting"
               class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-500 disabled:opacity-60">
-              <svg v-if="isSubmitting" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <svg v-if="isSubmitting" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
               </svg>

@@ -539,7 +539,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                       <tr v-for="item in quizOverviewModal.submittedStudents" :key="`submitted-${item.id}`">
-                        <td class="px-5 py-3 font-medium text-slate-900 dark:text-white">{{ item.username }}</td>
+                        <td class="px-5 py-3 font-medium text-slate-900 dark:text-white">{{ item.full_name || item.username }}</td>
                         <td class="px-5 py-3 text-slate-500 dark:text-slate-400">{{ formatDateTime(item.submitted_at) }}
                         </td>
                         <td class="px-5 py-3 font-bold text-slate-700 dark:text-slate-300">{{ item.score ?? "-" }}</td>
@@ -578,7 +578,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                       <tr v-for="item in quizOverviewModal.pendingStudents" :key="`pending-${item.id}`">
-                        <td class="px-5 py-3 font-medium text-slate-900 dark:text-white">{{ item.username }}</td>
+                        <td class="px-5 py-3 font-medium text-slate-900 dark:text-white">{{ item.full_name || item.username }}</td>
                         <td class="px-5 py-3 text-slate-500 dark:text-slate-400">{{ item.parent_email || "-" }}</td>
                         <td class="px-5 py-3">
                           <div class="font-semibold" :class="item.violation_count > 0 ? 'text-amber-700 dark:text-amber-300' : 'text-slate-500 dark:text-slate-400'">

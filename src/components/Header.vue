@@ -35,7 +35,7 @@
             <img :src="avatarSrc" class="rounded-full w-10 h-10 p-1 ring-1 ring-gray-300 dark:ring-gray-500"
               alt="avatar" />
             <div class="text-left hidden md:block">
-              <h2 class="text-gray-800 dark:text-white">{{ userProfile.username || "User" }}</h2>
+              <h2 class="text-gray-800 dark:text-white">{{ userProfile.full_name || userProfile.username || "User" }}</h2>
               <p class="text-xs text-gray-400 capitalize">{{ userProfile.role || "Guest" }}</p>
             </div>
           </button>
@@ -44,7 +44,7 @@
             <div v-show="menu"
               class="absolute right-0 mt-2 z-50 w-56 border dark:border-gray-700 bg-white dark:bg-gray-800 rounded divide-y dark:divide-gray-700 divide-gray-100 shadow">
               <div class="py-3 px-4 text-sm text-gray-900 dark:text-gray-200">
-                <div>{{ userProfile.username || "-" }}</div>
+                <div>{{ userProfile.full_name || userProfile.username || "-" }}</div>
                 <div class="font-medium truncate">{{ userProfile.role || "-" }}</div>
               </div>
               <div class="py-1">
@@ -184,6 +184,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
+import { cancelPendingApiRequests } from "@/api";
 import { fullscreen as handleFullscreen } from "@/helper/fullscreen";
 import { clearSession, getStoredUser } from "@/utils/auth";
 import { normalizePublicUrl } from "@/utils/url";
@@ -281,6 +282,7 @@ const fullscreenToggle = () => {
 };
 
 const logout = () => {
+  cancelPendingApiRequests();
   realtimeStore.disconnect();
   clearSession();
   profileStore.resetProfileState();
@@ -314,6 +316,9 @@ const loadProfile = async () => {
     };
     syncProfileForm();
   } catch (error) {
+    if (error?.isAborted) {
+      return;
+    }
     userProfile.value = {
       ...userProfile.value,
       ...(getStoredUser() || {}),

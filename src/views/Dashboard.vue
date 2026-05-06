@@ -1,7 +1,7 @@
 <template>
   <div
     class="min-h-screen bg-slate-50/50 px-3 pb-10 pt-3 font-sans text-slate-900 sm:px-4 sm:pt-4 md:px-8 md:pb-12 md:pt-8 dark:bg-slate-950 dark:text-slate-100">
-    <div class="mx-auto max-w-[1440px] space-y-5 sm:space-y-6">
+    <div class="mx-auto  space-y-5 sm:space-y-6">
 
       <header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <div>
@@ -305,15 +305,15 @@ const createSummaryCard = ({
 });
 
 const heroTitle = computed(() => {
-  if (role === "SUPER_ADMIN") return "Ikhtisar Sistem Terpadu";
+  if (role === "SUPER_ADMIN") return "Dashboard Super Admin Sekolah";
   if (role === "ADMIN") return `Dashboard Admin ${dashboardData.value?.school?.name || user?.school_name || ""}`.trim();
   if (role === "GURU") return `Kelas Wali: ${dashboardData.value?.homeroom?.class_name || ""}`.trim();
-  if (role === "SISWA") return `Halo, ${dashboardData.value?.student?.username || user?.username || "Siswa"}`;
+  if (role === "SISWA") return `Halo, ${dashboardData.value?.student?.full_name || user?.full_name || user?.username || "Siswa"}`;
   return "Dashboard Overview";
 });
 
 const heroDescription = computed(() => {
-  if (role === "SUPER_ADMIN") return "Pemantauan komprehensif metrik sekolah dan aktivitas pengguna sistem.";
+  if (role === "SUPER_ADMIN") return "Pantau kesiapan setiap sekolah, admin sekolah, struktur kelas, dan aktivitas operasional dari satu panel pusat.";
   if (role === "ADMIN") return "Metrik operasional sekolah, status absensi, dan data kelas secara real-time.";
   if (role === "GURU") return "Ringkasan data absensi siswa dan administrasi untuk kelas perwalian Anda.";
   if (role === "SISWA") return "Pantau riwayat absensi, status administrasi, dan tugas akademik Anda.";
@@ -325,10 +325,10 @@ const summaryCards = computed(() => {
 
   return role === "SUPER_ADMIN"
     ? [
-      createSummaryCard({ label: "Total Sekolah", value: numberValue(overview.schools), caption: "Unit aktif terdaftar", icon: "ph:buildings", cardClass: "bg-sky-600" }),
-      createSummaryCard({ label: "Total Pengguna", value: numberValue(overview.users), caption: "Seluruh entitas user", icon: "ph:users-three", cardClass: "bg-indigo-600" }),
-      createSummaryCard({ label: "Total Guru", value: numberValue(overview.teachers), caption: "Pengajar terdaftar", icon: "ph:chalkboard-teacher", cardClass: "bg-emerald-600" }),
-      createSummaryCard({ label: "Total Siswa", value: numberValue(overview.students), caption: "Siswa terdaftar", icon: "ph:student", cardClass: "bg-amber-500" }),
+      createSummaryCard({ label: "Total Sekolah", value: numberValue(overview.schools), caption: "Unit sekolah terdaftar", icon: "ph:buildings", cardClass: "bg-sky-600" }),
+      createSummaryCard({ label: "Admin Sekolah", value: numberValue(overview.admins), caption: `${numberValue(overview.schools_with_admin)} sekolah sudah punya admin`, icon: "ph:user-gear", cardClass: "bg-indigo-600" }),
+      createSummaryCard({ label: "Sekolah Tanpa Admin", value: numberValue(overview.schools_without_admin), caption: "Perlu onboarding admin sekolah", icon: "ph:warning-circle", cardClass: "bg-rose-600" }),
+      createSummaryCard({ label: "Total Siswa", value: numberValue(overview.students), caption: `${numberValue(overview.schools_with_classes)} sekolah sudah punya kelas`, icon: "ph:student", cardClass: "bg-emerald-600" }),
     ]
     : role === "ADMIN"
       ? [
@@ -369,19 +369,23 @@ const studentAssignmentAlert = computed(() => {
 });
 
 const primarySortAccessors = computed(() => ({
+  full_name: (item) => item.full_name || item.username || "",
   checked_in_today: (item) => (item.checked_in_today ? 1 : 0),
 }));
 
 const primaryPanel = computed(() => {
   if (role === "SUPER_ADMIN") {
     return {
-      title: "Distribusi Sekolah",
-      description: "Data sekolah berdasarkan volume pengguna.",
+      title: "Portofolio Sekolah",
+      description: "Pantau kesiapan sekolah dari admin, kelas, siswa, kurikulum, dan aktivitas bulan berjalan.",
       columns: [
         { key: "name", label: "Sekolah" },
-        { key: "total_users", label: "Users" },
+        { key: "total_admins", label: "Admin" },
+        { key: "total_classes", label: "Kelas" },
+        { key: "curriculum_subjects", label: "Mapel Kurikulum" },
         { key: "total_teachers", label: "Guru" },
         { key: "total_students", label: "Siswa" },
+        { key: "receipts_this_month", label: "Receipt Bulan Ini" },
       ],
       rows: dashboardData.value?.schools || [],
       emptyMessage: "Data sekolah kosong.",
@@ -407,7 +411,7 @@ const primaryPanel = computed(() => {
       title: "Monitoring Kehadiran Kelas Wali",
       description: "Status check-in harian siswa.",
       columns: [
-        { key: "username", label: "Nama Siswa" },
+        { key: "full_name", label: "Nama Siswa" },
         { key: "phone_number", label: "Kontak" },
         {
           key: "checked_in_today",
@@ -452,11 +456,24 @@ const primarySortIndicator = (key) => {
 
 const secondaryPanel = computed(() => {
   if (role === "SUPER_ADMIN" || role === "ADMIN" || role === "GURU") {
+    if (role === "SUPER_ADMIN") {
+      return {
+        title: "Sekolah Perlu Perhatian",
+        description: "Sekolah yang belum lengkap secara operasional dan perlu ditindaklanjuti.",
+        items: (dashboardData.value?.schoolAlerts || []).map((item) => ({
+          title: item.name || "-",
+          subtitle: `${item.issue || "-"} • Admin ${numberValue(item.total_admins)} • Kelas ${numberValue(item.total_classes)} • Siswa ${numberValue(item.total_students)}`,
+          meta: `Mapel ${numberValue(item.curriculum_subjects)}`,
+        })),
+        emptyMessage: "Semua sekolah sudah memiliki struktur dasar yang baik.",
+      };
+    }
+
     return {
       title: "Log Kehadiran Terbaru",
       description: "Rekam jejak check-in terakhir.",
       items: (dashboardData.value?.recentAttendance || []).map((item) => ({
-        title: item.username || "-",
+        title: item.full_name || item.username || "-",
         subtitle: `${item.school_name || item.class_name || "Data"} • ${item.status || "-"}`,
         meta: formatTime(item.clock_in),
       })),
@@ -479,8 +496,8 @@ const secondaryPanel = computed(() => {
 const spotlight = computed(() => {
   if (role === "SUPER_ADMIN") return {
     cards: [
-      { label: "Top School", value: dashboardData.value?.schools?.[0]?.name || "-", caption: "Siswa Terbanyak", icon: "ph:buildings", cardClass: "bg-sky-700" },
-      { label: "Top Activity", value: dashboardData.value?.recentReceipts?.[0]?.username || "-", caption: "Receipt Terakhir", icon: "ph:activity", cardClass: "bg-indigo-700" },
+      { label: "Sekolah Terbesar", value: dashboardData.value?.schools?.[0]?.name || "-", caption: `${numberValue(dashboardData.value?.schools?.[0]?.total_students)} siswa`, icon: "ph:buildings", cardClass: "bg-sky-700" },
+      { label: "Kurikulum Aktif", value: numberValue(dashboardData.value?.overview?.schools_with_curriculum), caption: "Sekolah sudah isi mapel kurikulum", icon: "ph:books", cardClass: "bg-indigo-700" },
     ]
   };
   if (role === "ADMIN") return {
@@ -505,8 +522,8 @@ const spotlight = computed(() => {
 
 const visualPanel = computed(() => {
   if (role === "SUPER_ADMIN") return {
-    title: "Metrik Kepadatan Sekolah",
-    description: "Populasi siswa per unit sekolah.",
+    title: "Siswa per Sekolah",
+    description: "Bandingkan populasi siswa antar sekolah untuk melihat skala operasional.",
     chartType: "bar",
     labels: (dashboardData.value?.schools || []).slice(0, 6).map((item) => item.name),
     series: [{ name: "Siswa", data: (dashboardData.value?.schools || []).slice(0, 6).map((item) => numberValue(item.total_students)) }],
@@ -593,10 +610,17 @@ const visualChartOptions = computed(() => {
 });
 
 const compositionChartSeries = computed(() =>
-  summaryCards.value.map((item) => {
-    const numeric = Number(item.value);
-    return Number.isFinite(numeric) ? numeric : 0;
-  }),
+  role === "SUPER_ADMIN"
+    ? [
+      numberValue(dashboardData.value?.overview?.schools_with_admin),
+      numberValue(dashboardData.value?.overview?.schools_without_admin),
+      numberValue(dashboardData.value?.overview?.schools_with_classes),
+      numberValue(dashboardData.value?.overview?.schools_with_curriculum),
+    ]
+    : summaryCards.value.map((item) => {
+      const numeric = Number(item.value);
+      return Number.isFinite(numeric) ? numeric : 0;
+    }),
 );
 
 const compositionChartOptions = computed(() => ({
@@ -604,7 +628,9 @@ const compositionChartOptions = computed(() => ({
     fontFamily: "inherit",
     toolbar: { show: false },
   },
-  labels: summaryCards.value.map((item) => item.label),
+  labels: role === "SUPER_ADMIN"
+    ? ["Sudah Punya Admin", "Belum Punya Admin", "Sudah Punya Kelas", "Sudah Isi Kurikulum"]
+    : summaryCards.value.map((item) => item.label),
   colors: chartPalette,
   stroke: { width: 2, colors: ['#ffffff'] }, // Outline putih bersih
   dataLabels: { enabled: false },
@@ -657,6 +683,9 @@ const loadDashboard = async () => {
     const response = await api.get(endpoint);
     dashboardData.value = response?.data || {};
   } catch (error) {
+    if (error?.isAborted) {
+      return;
+    }
     dashboardData.value = {};
     pushToast({
       title: "Dashboard Gagal Dimuat",

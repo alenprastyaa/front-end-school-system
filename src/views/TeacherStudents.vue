@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-slate-50 p-4 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
-    <main class="mx-auto mt-8 max-w-[1400px] space-y-6">
+    <main class="mx-auto max-w-[1400px] space-y-4">
 
       <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 -translate-y-2"
         enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-200"
@@ -44,10 +44,10 @@
               class="bg-white text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-900 dark:text-slate-400">
               <tr class="border-b border-slate-100 dark:border-slate-800">
                 <th class="px-5 py-4 font-semibold">
-                  <button @click="handleStudentSort('username')"
+                  <button @click="handleStudentSort('full_name')"
                     class="group flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-200">
-                    Siswa <span class="text-slate-300 transition group-hover:text-slate-500">{{
-                      sortIndicator(studentTableSort, 'username') }}</span>
+                    Nama Siswa <span class="text-slate-300 transition group-hover:text-slate-500">{{
+                      sortIndicator(studentTableSort, 'full_name') }}</span>
                   </button>
                 </th>
                 <th class="px-5 py-4 font-semibold">Kontak Wali/Ortu</th>
@@ -68,10 +68,10 @@
                   <div class="flex items-center gap-3">
                     <div
                       class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-sky-100 font-bold text-sky-700 dark:bg-sky-900/50 dark:text-sky-300">
-                      {{ item.username.charAt(0).toUpperCase() }}
+                      {{ (item.full_name || item.username || "?").charAt(0).toUpperCase() }}
                     </div>
                     <div>
-                      <div class="font-bold text-slate-900 dark:text-white">{{ item.username }}</div>
+                      <div class="font-bold text-slate-900 dark:text-white">{{ item.full_name || item.username }}</div>
                       <div class="text-xs text-slate-500">{{ item.class_name || "-" }}</div>
                     </div>
                   </div>
@@ -163,8 +163,8 @@
             <table class="min-w-full text-left text-sm">
               <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/50">
                 <tr>
-                  <th class="px-4 py-3 font-semibold"><button @click="handleCheckedInSort('username')"
-                      class="flex items-center gap-1">Username {{ sortIndicator(checkedInTableSort, 'username')
+                  <th class="px-4 py-3 font-semibold"><button @click="handleCheckedInSort('full_name')"
+                      class="flex items-center gap-1">Nama Siswa {{ sortIndicator(checkedInTableSort, 'full_name')
                       }}</button></th>
                   <th class="px-4 py-3 font-semibold"><button @click="handleCheckedInSort('class_name')"
                       class="flex items-center gap-1">Kelas {{ sortIndicator(checkedInTableSort, 'class_name')
@@ -183,7 +183,8 @@
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                 <tr v-for="item in sortedCheckedInStudents" :key="`checked-${item.id}`"
                   class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                  <td class="px-4 py-3 font-medium text-slate-900 dark:text-white">{{ item.username }}</td>
+                  <td class="px-4 py-3 font-medium text-slate-900 dark:text-white">{{ item.full_name || item.username }}
+                  </td>
                   <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ item.class_name || "-" }}</td>
                   <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ formatTime(item.clock_in) }}</td>
                   <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ formatTime(item.clock_out) }}</td>
@@ -224,8 +225,9 @@
             <table class="min-w-full text-left text-sm">
               <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/50">
                 <tr>
-                  <th class="px-4 py-3 font-semibold"><button @click="handleAbsentSort('username')"
-                      class="flex items-center gap-1">Username {{ sortIndicator(absentTableSort, 'username') }}</button>
+                  <th class="px-4 py-3 font-semibold"><button @click="handleAbsentSort('full_name')"
+                      class="flex items-center gap-1">Nama Siswa {{ sortIndicator(absentTableSort, 'full_name')
+                      }}</button>
                   </th>
                   <th class="px-4 py-3 font-semibold"><button @click="handleAbsentSort('class_name')"
                       class="flex items-center gap-1">Kelas {{ sortIndicator(absentTableSort, 'class_name') }}</button>
@@ -241,7 +243,8 @@
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                 <tr v-for="item in sortedAbsentStudents" :key="`modal-absent-${item.id}`"
                   class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                  <td class="px-4 py-3 font-medium text-slate-900 dark:text-white">{{ item.username }}</td>
+                  <td class="px-4 py-3 font-medium text-slate-900 dark:text-white">{{ item.full_name || item.username }}
+                  </td>
                   <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ item.class_name || "-" }}</td>
                   <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ item.parent_email || "-" }}</td>
                   <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ item.phone_number || "-" }}</td>
@@ -267,7 +270,7 @@
           <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
             <div>
               <h2 class="text-lg font-bold text-slate-900 dark:text-white">Riwayat Kehadiran: {{
-                selectedStudent?.username || "" }}</h2>
+                selectedStudent?.full_name || selectedStudent?.username || "" }}</h2>
               <p class="text-sm text-slate-500 dark:text-slate-400">Catatan kehadiran siswa yang Anda walikan.</p>
             </div>
             <div class="flex items-center gap-2">
@@ -333,8 +336,9 @@
           @click.stop>
           <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
             <div>
-              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Receipt: {{ selectedStudent?.username || ""
-                }}</h2>
+              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Receipt: {{ selectedStudent?.full_name ||
+                selectedStudent?.username || ""
+              }}</h2>
               <p class="text-sm text-slate-500 dark:text-slate-400">Riwayat bukti pembayaran/administrasi.</p>
             </div>
             <div class="flex items-center gap-2">
@@ -359,7 +363,8 @@
               <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/50">
                 <tr>
                   <th class="px-4 py-3 font-semibold"><button @click="handleReceiptSort('payment_date')"
-                      class="flex items-center gap-1">Tanggal Bayar {{ sortIndicator(receiptTableSort, 'payment_date') }}</button>
+                      class="flex items-center gap-1">Tanggal Bayar {{ sortIndicator(receiptTableSort, 'payment_date')
+                      }}</button>
                   </th>
                   <th class="px-4 py-3 font-semibold"><button @click="handleReceiptSort('description')"
                       class="flex items-center gap-1">Deskripsi {{ sortIndicator(receiptTableSort, 'description')
@@ -423,15 +428,16 @@ const attendanceError = ref("");
 const receiptError = ref("");
 
 // Table Sort States
-const studentTableSort = createSortState("username");
+const studentTableSort = createSortState("full_name");
 const checkedInTableSort = createSortState("clock_in", "desc");
-const absentTableSort = createSortState("username");
+const absentTableSort = createSortState("full_name");
 const attendanceTableSort = createSortState("attendance_date", "desc");
 const receiptTableSort = createSortState("created_at", "desc");
 
 const normalizedSearch = computed(() => search.value.trim().toLowerCase());
 
 const studentAccessors = {
+  full_name: (item) => item.full_name || item.username || "",
   class_name: (item) => item.class_name || "",
   parent_email: (item) => item.parent_email || "",
   phone_number: (item) => item.phone_number || "",
@@ -449,6 +455,7 @@ const filteredStudents = computed(() =>
     }
 
     return [
+      item.full_name,
       item.username,
       item.class_name,
       item.parent_email,

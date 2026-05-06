@@ -1,140 +1,70 @@
-const escapeXml = (value) =>
-  String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
+import * as XLSX from "xlsx";
 
-const cell = (value, styleId = "Cell") => `
-      <Cell ss:StyleID="${styleId}">
-        <Data ss:Type="String">${escapeXml(value)}</Data>
-      </Cell>`;
+const normalizeFilename = (filename) => {
+  const trimmed = String(filename || "export.xlsx").trim();
+  if (trimmed.toLowerCase().endsWith(".xlsx")) {
+    return trimmed;
+  }
+  return trimmed.replace(/\.[^.]+$/, "") + ".xlsx";
+};
 
-const row = (cells) => `
-    <Row>
-${cells.join("\n")}
-    </Row>`;
+const buildSheetRows = ({ title, subtitle, columns, rows, summary }) => {
+  const sheetRows = [];
+  const headerLabels = columns.map((column) => column.label);
 
-export const downloadExcelWorksheet = ({ filename, sheetName, title, subtitle, columns, rows, summary = [] }) => {
-  const summaryRows = summary
+  if (title) {
+    sheetRows.push([title]);
+  }
+  if (subtitle) {
+    sheetRows.push([subtitle]);
+  }
+  if (title || subtitle) {
+    sheetRows.push([]);
+  }
+
+  summary
     .filter((item) => item?.label)
-    .map((item) => row([cell(item.label, "LabelCell"), cell(item.value || "-", "Cell")]))
-    .join("\n");
+    .forEach((item) => {
+      sheetRows.push([item.label, item.value || "-"]);
+    });
 
-  const headerRow = row(columns.map((column) => cell(column.label, "HeaderCell")));
+  if (summary.length > 0) {
+    sheetRows.push([]);
+  }
 
-  const bodyRows = rows
-    .map((item) =>
-      row(
-        columns.map((column) => {
-          const value = typeof column.value === "function" ? column.value(item) : item?.[column.key];
-          return cell(value ?? "-", "Cell");
-        }),
-      ),
-    )
-    .join("\n");
+  sheetRows.push(headerLabels);
 
-  const xml = `<?xml version="1.0"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:o="urn:schemas-microsoft-com:office:office"
- xmlns:x="urn:schemas-microsoft-com:office:excel"
- xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:html="http://www.w3.org/TR/REC-html40">
-  <Styles>
-    <Style ss:ID="Default" ss:Name="Normal">
-      <Alignment ss:Vertical="Center"/>
-      <Borders/>
-      <Font ss:FontName="Calibri" ss:Size="11" ss:Color="#0F172A"/>
-      <Interior/>
-      <NumberFormat/>
-      <Protection/>
-    </Style>
-    <Style ss:ID="TitleCell">
-      <Font ss:FontName="Calibri" ss:Size="16" ss:Bold="1" ss:Color="#0F172A"/>
-    </Style>
-    <Style ss:ID="SubtitleCell">
-      <Font ss:FontName="Calibri" ss:Size="11" ss:Color="#475569"/>
-    </Style>
-    <Style ss:ID="LabelCell">
-      <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#0F172A"/>
-      <Interior ss:Color="#E2E8F0" ss:Pattern="Solid"/>
-      <Borders>
-        <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
-        <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
-        <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
-        <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
-      </Borders>
-    </Style>
-    <Style ss:ID="HeaderCell">
-      <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
-      <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#FFFFFF"/>
-      <Interior ss:Color="#0F766E" ss:Pattern="Solid"/>
-      <Borders>
-        <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#0F766E"/>
-        <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#0F766E"/>
-        <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#0F766E"/>
-        <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#0F766E"/>
-      </Borders>
-    </Style>
-    <Style ss:ID="Cell">
-      <Alignment ss:Vertical="Top" ss:WrapText="1"/>
-      <Borders>
-        <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
-        <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
-        <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
-        <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
-      </Borders>
-    </Style>
-  </Styles>
-  <Worksheet ss:Name="${escapeXml(sheetName || "Sheet1")}">
-    <Table>
-      <Column ss:AutoFitWidth="1" ss:Width="140"/>
-      <Column ss:AutoFitWidth="1" ss:Width="200"/>
-      <Column ss:AutoFitWidth="1" ss:Width="160"/>
-      <Column ss:AutoFitWidth="1" ss:Width="150"/>
-      <Column ss:AutoFitWidth="1" ss:Width="140"/>
-      <Column ss:AutoFitWidth="1" ss:Width="80"/>
-      <Column ss:AutoFitWidth="1" ss:Width="220"/>
-      <Column ss:AutoFitWidth="1" ss:Width="120"/>
-      <Row>
-        <Cell ss:MergeAcross="${Math.max(columns.length - 1, 1)}" ss:StyleID="TitleCell">
-          <Data ss:Type="String">${escapeXml(title)}</Data>
-        </Cell>
-      </Row>
-      <Row>
-        <Cell ss:MergeAcross="${Math.max(columns.length - 1, 1)}" ss:StyleID="SubtitleCell">
-          <Data ss:Type="String">${escapeXml(subtitle || "")}</Data>
-        </Cell>
-      </Row>
-      <Row />
-${summaryRows}
-      <Row />
-${headerRow}
-${bodyRows}
-    </Table>
-    <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
-      <FreezePanes/>
-      <FrozenNoSplit/>
-      <SplitHorizontal>1</SplitHorizontal>
-      <TopRowBottomPane>1</TopRowBottomPane>
-      <ProtectObjects>False</ProtectObjects>
-      <ProtectScenarios>False</ProtectScenarios>
-    </WorksheetOptions>
-  </Worksheet>
-</Workbook>`;
-
-  const blob = new Blob([xml], {
-    type: "application/vnd.ms-excel;charset=utf-8;",
+  rows.forEach((item) => {
+    sheetRows.push(
+      columns.map((column) => (typeof column.value === "function" ? column.value(item) : item?.[column.key]) ?? "-"),
+    );
   });
 
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  return sheetRows;
+};
+
+export const downloadExcelWorksheet = ({ filename, sheetName, title, subtitle, columns, rows, summary = [] }) => {
+  const workbook = XLSX.utils.book_new();
+  const sheetRows = buildSheetRows({ title, subtitle, columns, rows, summary });
+  const worksheet = XLSX.utils.aoa_to_sheet(sheetRows);
+  const headerRowIndex = (title ? 1 : 0) + (subtitle ? 1 : 0) + (title || subtitle ? 1 : 0) + summary.filter((item) => item?.label).length + (summary.length > 0 ? 1 : 0);
+
+  worksheet["!cols"] = columns.map((column) => ({
+    wch: Math.max(14, String(column.label || "").length + 4),
+  }));
+
+  if (columns.length > 0 && headerRowIndex >= 0) {
+    const mergeEndColumn = Math.max(columns.length - 1, 0);
+    worksheet["!merges"] = [];
+    if (title) {
+      worksheet["!merges"].push({ s: { r: 0, c: 0 }, e: { r: 0, c: mergeEndColumn } });
+    }
+    if (subtitle) {
+      const subtitleRow = title ? 1 : 0;
+      worksheet["!merges"].push({ s: { r: subtitleRow, c: 0 }, e: { r: subtitleRow, c: mergeEndColumn } });
+    }
+  }
+
+  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName || "Sheet1");
+  XLSX.writeFile(workbook, normalizeFilename(filename), { bookType: "xlsx" });
 };

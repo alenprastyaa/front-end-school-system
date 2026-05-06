@@ -1,15 +1,17 @@
 <template>
   <div class="min-h-screen bg-slate-50 p-4 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
-    <main class="mx-auto max-w-[1440px] space-y-6">
+    <main class="mx-auto  space-y-6">
       <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
         <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Manajemen Ujian Resmi</h1>
         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Admin membuat permintaan ujian ke guru mapel. Guru memilih soal dan menyerahkan paket ujian kembali. Setelah itu admin menerbitkan ke siswa.
+          Admin membuat permintaan ujian ke guru mapel. Guru memilih soal dan menyerahkan paket ujian kembali. Setelah
+          itu admin menerbitkan ke siswa.
         </p>
       </section>
 
       <div class="grid gap-6 xl:grid-cols-[0.95fr,1.05fr]">
-        <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+        <section
+          class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
           <div class="flex items-start justify-between gap-4">
             <div>
               <h2 class="text-lg font-bold text-slate-900 dark:text-white">
@@ -84,7 +86,8 @@
             </div>
 
             <div class="space-y-1.5">
-              <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Durasi Sesi Ujian (menit)</label>
+              <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Durasi Sesi Ujian
+                (menit)</label>
               <input v-model="form.question_duration_minutes" type="number" min="1" max="180"
                 class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
             </div>
@@ -110,13 +113,15 @@
           </div>
         </section>
 
-        <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+        <section
+          class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
           <div class="flex items-center justify-between gap-4">
             <div>
               <h2 class="text-lg font-bold text-slate-900 dark:text-white">Pipeline Ujian</h2>
-              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Pantau task yang belum dikerjakan guru, paket yang sudah masuk, dan ujian yang sudah terbit.</p>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Pantau task yang belum dikerjakan guru, paket
+                yang sudah masuk, dan ujian yang sudah terbit.</p>
             </div>
-            <button @click="loadExamAssignments"
+            <button @click="refreshExamAdminData"
               class="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
               Refresh
             </button>
@@ -127,13 +132,15 @@
               class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-800/20">
               <div class="flex flex-wrap items-center gap-2">
                 <span class="inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ring-1 ring-inset"
-                  :class="statusBadgeClass(item.exam_status)">
-                  {{ examStatusLabel(item.exam_status) }}
+                  :class="statusBadgeClass(getEffectiveExamStatus(item))">
+                  {{ examStatusLabel(getEffectiveExamStatus(item)) }}
                 </span>
-                <span class="inline-flex rounded-md bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">
+                <span
+                  class="inline-flex rounded-md bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">
                   {{ examCategoryLabel(item.exam_category) }}
                 </span>
-                <span class="inline-flex rounded-md bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20">
+                <span
+                  class="inline-flex rounded-md bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20">
                   Kode: {{ item.exam_code }}
                 </span>
               </div>
@@ -165,7 +172,7 @@
                     : 'bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20'">
                   {{ pendingDeleteId === item.id ? "Klik Lagi untuk Hapus" : "Hapus" }}
                 </button>
-                <button v-if="item.exam_status === 'SUBMITTED'" @click="publishExam(item)"
+                <button v-if="canPublishExam(item)" @click="publishExam(item)"
                   class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500">
                   Terbitkan ke Siswa
                 </button>
@@ -179,6 +186,78 @@
           </div>
         </section>
       </div>
+
+      <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Akses Ujian Terblokir</h2>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Generate kode baru untuk siswa ujian resmi yang terkena batas pelanggaran agar bisa masuk kembali ke sesi
+              ujian.
+            </p>
+          </div>
+          <button @click="refreshExamAdminData"
+            class="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
+            Refresh
+          </button>
+        </div>
+
+        <div class="mt-4 overflow-x-auto">
+          <table class="min-w-full text-left text-sm">
+            <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/60">
+              <tr>
+                <th class="px-4 py-3 font-semibold">Ujian</th>
+                <th class="px-4 py-3 font-semibold">Siswa</th>
+                <th class="px-4 py-3 font-semibold">Status</th>
+                <th class="px-4 py-3 font-semibold">Pelanggaran</th>
+                <th class="px-4 py-3 font-semibold">Kode Terakhir</th>
+                <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              <tr v-for="row in blockedExamRows" :key="row.id">
+                <td class="px-4 py-3">
+                  <div class="font-semibold text-slate-900 dark:text-white">{{ row.assignment_title }}</div>
+                  <div class="text-xs text-slate-500">{{ examCategoryLabel(row.exam_category) }} • {{ row.subject_name
+                    || "-" }} • {{ row.class_name || "-" }}</div>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="font-medium text-slate-900 dark:text-white">{{ row.student_name || "-" }}</div>
+                  <div class="text-xs text-slate-500">{{ row.parent_email || "-" }}</div>
+                </td>
+                <td class="px-4 py-3">
+                  <span
+                    class="inline-flex rounded-md bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20">
+                    Butuh Kode Baru
+                  </span>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="font-semibold text-slate-700 dark:text-slate-300">{{ Number(row.violation_count || 0) }}x
+                  </div>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="font-mono text-sm font-semibold text-slate-900 dark:text-white">{{
+                    row.generated_access_code || "-" }}</div>
+                  <div v-if="row.generated_access_code_at" class="text-xs text-slate-500">
+                    {{ formatDateTime(row.generated_access_code_at) }}
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <button @click="generateBlockedExamCode(row)" :disabled="generatingSubmissionId === row.id"
+                    class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-50">
+                    {{ generatingSubmissionId === row.id ? "Membuat..." : row.generated_access_code ? "Generate Ulang Kode" : "Generate Kode Baru" }}
+                  </button>
+                </td>
+              </tr>
+              <tr v-if="blockedExamRows.length === 0">
+                <td colspan="6" class="px-4 py-10 text-center text-sm text-slate-500">
+                  Belum ada siswa ujian resmi yang terblokir.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </main>
   </div>
 </template>
@@ -187,7 +266,7 @@
 import { onMounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { formatDateTime } from "@/utils/date";
+import { formatDateTime, formatDateTimeLocalInput } from "@/utils/date";
 import { useMasterDataStore } from "@/store/masterData";
 
 const subjects = ref([]);
@@ -198,6 +277,8 @@ const isError = ref(false);
 const isSubmitting = ref(false);
 const editingAssignmentId = ref(null);
 const pendingDeleteId = ref(null);
+const blockedExamRows = ref([]);
+const generatingSubmissionId = ref(null);
 
 const form = reactive({
   subject_id: "",
@@ -217,14 +298,6 @@ const formatDurationMinutes = (value) => {
   if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) return "-";
   const totalMinutes = Math.max(1, Math.round(totalSeconds / 60));
   return `${totalMinutes} menit`;
-};
-
-const toDateTimeLocalValue = (value) => {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  const pad = (item) => String(item).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
 const examCategoryLabel = (type) => {
@@ -249,6 +322,35 @@ const statusBadgeClass = (status) => {
   return "bg-slate-100 text-slate-700 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700";
 };
 
+const parseArrayField = (value) => {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== "string" || !value.trim()) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const getEffectiveExamStatus = (item) => {
+  const currentStatus = String(item?.effective_exam_status || item?.exam_status || "").toUpperCase();
+  if (currentStatus === "PUBLISHED" || currentStatus === "SUBMITTED") {
+    return currentStatus;
+  }
+  if (
+    item?.exam_submitted_at
+    || parseArrayField(item?.quiz_payload).length > 0
+    || parseArrayField(item?.question_bank_ids).length > 0
+  ) {
+    return "SUBMITTED";
+  }
+  return currentStatus || "REQUESTED";
+};
+
+const canPublishExam = (item) =>
+  getEffectiveExamStatus(item) === "SUBMITTED";
+
 const resetForm = () => {
   form.subject_id = "";
   form.exam_category = "UTS";
@@ -268,8 +370,8 @@ const fillFormFromAssignment = (assignment) => {
   form.assignment_type = assignment.assignment_type || "MCQ";
   form.title = assignment.title || "";
   form.exam_code = assignment.exam_code || "";
-  form.start_at = toDateTimeLocalValue(assignment.start_at);
-  form.due_date = toDateTimeLocalValue(assignment.due_date);
+  form.start_at = formatDateTimeLocalInput(assignment.start_at);
+  form.due_date = formatDateTimeLocalInput(assignment.due_date);
   form.question_duration_minutes = Math.max(1, Math.round(Number(assignment.question_duration_seconds || 0) / 60) || 60);
   form.exam_target_question_count = Math.max(1, Number(assignment.exam_target_question_count || 20));
   form.description = assignment.description || "";
@@ -311,6 +413,66 @@ const loadExamAssignments = async () => {
     .sort((left, right) => new Date(right.created_at || 0).getTime() - new Date(left.created_at || 0).getTime());
 };
 
+const loadBlockedExamSubmissions = async () => {
+  const publishedAssignments = examAssignments.value.filter((item) => getEffectiveExamStatus(item) === "PUBLISHED");
+  if (publishedAssignments.length === 0) {
+    blockedExamRows.value = [];
+    return;
+  }
+
+  const responses = await Promise.all(
+    publishedAssignments.map(async (assignment) => {
+      const response = await api.get(`/learning/assignments/${assignment.id}/submissions`);
+      const items = Array.isArray(response?.data) ? response.data : [];
+      return items
+        .filter((item) => Boolean(item.access_blocked) && !item.is_submitted)
+        .map((item) => ({
+          ...item,
+          assignment_title: assignment.title,
+          exam_category: assignment.exam_category,
+          subject_name: assignment.subject_name,
+          class_name: assignment.class_name,
+          generated_access_code: item.access_code || "",
+          generated_access_code_at: item.access_code_generated_at || null,
+          student_name: item.student_name || item.full_name || item.username || "-",
+        }));
+    }),
+  );
+
+  blockedExamRows.value = responses
+    .flat()
+    .sort((left, right) => new Date(right.started_at || right.created_at || 0).getTime() - new Date(left.started_at || left.created_at || 0).getTime());
+};
+
+const refreshExamAdminData = async () => {
+  await loadExamAssignments();
+  await loadBlockedExamSubmissions();
+};
+
+const generateBlockedExamCode = async (row) => {
+  generatingSubmissionId.value = row.id;
+  try {
+    const response = await api.post(`/learning/submissions/${row.id}/exam-access-code`);
+    const payload = response?.data || {};
+    row.generated_access_code = payload.access_code || "-";
+    row.generated_access_code_at = payload.access_code_generated_at || new Date().toISOString();
+    pushToast({
+      title: "Kode Baru Dibuat",
+      message: `Kode akses baru untuk ${row.student_name} berhasil dibuat.`,
+      type: "success",
+    });
+    await loadBlockedExamSubmissions();
+  } catch (error) {
+    pushToast({
+      title: "Gagal Membuat Kode Baru",
+      message: error.message || "Terjadi kesalahan.",
+      type: "error",
+    });
+  } finally {
+    generatingSubmissionId.value = null;
+  }
+};
+
 const createExamRequest = async () => {
   isSubmitting.value = true;
   message.value = "";
@@ -338,7 +500,7 @@ const createExamRequest = async () => {
       type: "success",
     });
     resetForm();
-    await loadExamAssignments();
+    await refreshExamAdminData();
   } catch (error) {
     isError.value = true;
     message.value = error.message;
@@ -382,7 +544,7 @@ const updateExamRequest = async () => {
       type: "success",
     });
     cancelEditing();
-    await loadExamAssignments();
+    await refreshExamAdminData();
   } catch (error) {
     isError.value = true;
     message.value = error.message;
@@ -415,7 +577,7 @@ const publishExam = async (assignment) => {
       message: response?.message || "Ujian resmi berhasil diterbitkan ke siswa.",
       type: "success",
     });
-    await loadExamAssignments();
+    await refreshExamAdminData();
   } catch (error) {
     isError.value = true;
     message.value = error.message;
@@ -459,7 +621,7 @@ const handleDeleteExam = async (assignment) => {
       cancelEditing();
     }
 
-    await loadExamAssignments();
+    await refreshExamAdminData();
   } catch (error) {
     pendingDeleteId.value = null;
     isError.value = true;
@@ -475,7 +637,7 @@ const handleDeleteExam = async (assignment) => {
 onMounted(async () => {
   try {
     await loadSubjects();
-    await loadExamAssignments();
+    await refreshExamAdminData();
   } catch (error) {
     isError.value = true;
     message.value = error.message;

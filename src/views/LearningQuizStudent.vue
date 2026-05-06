@@ -1,10 +1,91 @@
 <template>
   <div>
+    <div v-if="examCodeModalOpen"
+      class="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm">
+      <div
+        class="w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl font-black tracking-tight text-slate-900 dark:text-white">Masukkan Kode Ujian</h3>
+            <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+              {{ pendingExamAssignmentForCode?.title || "Ujian Resmi" }} membutuhkan kode ujian sebelum sesi dimulai.
+            </p>
+          </div>
+          <button type="button" @click="cancelExamCodeModal"
+            class="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form class="mt-6 space-y-5" @submit.prevent="confirmExamCodeModal">
+          <div class="space-y-2">
+            <label class="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Kode Ujian</label>
+            <input v-model="examCodeForm.code" type="text" autocomplete="off" placeholder="Contoh: MTK-002"
+              class="block w-full rounded-2xl border-0 bg-slate-50 px-4 py-3 text-sm font-semibold uppercase text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-rose-500 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+          </div>
+
+          <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button type="button" @click="cancelExamCodeModal"
+              class="inline-flex items-center justify-center rounded-2xl bg-slate-100 px-5 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+              Batal
+            </button>
+            <button type="submit"
+              class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-600 dark:bg-white dark:text-slate-900 dark:hover:bg-rose-200">
+              Mulai Ujian
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div v-if="confirmSubmitModalOpen"
+      class="fixed inset-0 z-[125] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+      <div
+        class="w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-xl font-black tracking-tight text-slate-900 dark:text-white">Konfirmasi Pengiriman</h3>
+            <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+              {{ submissionTarget?.is_exam ? "Ujian" : "Quiz" }} akan dikirim dan jawaban tidak bisa diubah lagi.
+            </p>
+          </div>
+          <button type="button" @click="closeConfirmSubmitModal"
+            class="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="mt-5 rounded-2xl bg-slate-50 px-4 py-4 ring-1 ring-inset ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700">
+          <p class="text-sm font-semibold text-slate-900 dark:text-white">
+            {{ answeredQuestionCount }} dari {{ totalQuestions }} soal sudah terjawab.
+          </p>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Pastikan Anda sudah memeriksa semua jawaban sebelum mengirim.
+          </p>
+        </div>
+
+        <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button type="button" @click="closeConfirmSubmitModal"
+            class="inline-flex items-center justify-center rounded-2xl bg-slate-100 px-5 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+            Batal
+          </button>
+          <button type="button" @click="confirmSubmitAssignment" :disabled="isSubmitting"
+            class="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-500 disabled:opacity-60">
+            {{ isSubmitting ? "Memproses..." : "Ya, Kirim Sekarang" }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div v-if="!submissionTarget"
       class="min-h-screen bg-slate-50/50 p-4 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
 
 
-      <main class="mx-auto mt-8 max-w-[1440px]">
+      <main class="mx-auto mt-8 ">
 
         <section class="mb-8">
           <div class="mb-4 flex items-center justify-between">
@@ -39,10 +120,6 @@
 
         <div>
           <div v-if="selectedSubject" class="space-y-6">
-
-
-
-
             <section
               class="overflow-hidden rounded-[32px] bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
               <div class="border-b border-slate-100 px-6 py-5 dark:border-slate-800 md:px-8">
@@ -68,11 +145,13 @@
                 <div class="grid gap-5 xl:grid-cols-2">
                   <article v-for="item in assignments" :key="item.id"
                     class="group relative overflow-hidden rounded-[28px] border p-5 shadow-sm transition-all dark:bg-slate-900"
-                    :class="item.submission_id
+                    :class="item.is_submitted
                       ? 'border-emerald-100 bg-emerald-50/50 hover:border-emerald-200 dark:border-emerald-500/20 dark:bg-emerald-500/5'
-                      : isExamUnavailable(item)
-                        ? 'border-slate-200 bg-slate-50/60 dark:border-slate-700 dark:bg-slate-800/50'
-                        : 'border-rose-100 bg-white hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md dark:border-rose-500/20 dark:bg-slate-950 dark:hover:border-rose-500/40'">
+                      : item.access_blocked
+                        ? 'border-amber-200 bg-amber-50/70 dark:border-amber-500/20 dark:bg-amber-500/10'
+                        : isExamUnavailable(item)
+                          ? 'border-slate-200 bg-slate-50/60 dark:border-slate-700 dark:bg-slate-800/50'
+                          : 'border-rose-100 bg-white hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md dark:border-rose-500/20 dark:bg-slate-950 dark:hover:border-rose-500/40'">
                     <div
                       class="absolute right-0 top-0 h-24 w-24 rounded-full bg-rose-100/70 blur-2xl transition dark:bg-rose-500/10"
                       :class="item.submission_id ? 'bg-emerald-100/70 dark:bg-emerald-500/10' : ''"></div>
@@ -94,13 +173,16 @@
                           class="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ring-1 ring-inset"
                           :class="item.score !== null
                             ? 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20'
-                            : item.submission_id
-                              ? 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20'
-                              : isExamUnavailable(item)
-                                ? 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700'
-                                : 'bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20'">
-                          {{ item.score !== null ? "Sudah Dinilai" : item.submission_id ? "Selesai" :
-                            isExamUnavailable(item) ? "Belum Tersedia" : "Siap Dikerjakan" }}
+                            : item.access_blocked
+                              ? 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20'
+                              : item.is_submitted
+                                ? 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20'
+                                : isExamUnavailable(item)
+                                  ? 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700'
+                                  : 'bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20'">
+                          {{ item.score !== null ? "Sudah Dinilai" : item.access_blocked ? "Butuh Kode Baru" :
+                            item.is_submitted ? "Selesai" :
+                              isExamUnavailable(item) ? "Belum Tersedia" : "Siap Dikerjakan" }}
                         </span>
                       </div>
 
@@ -146,19 +228,23 @@
 
                       <div class="mt-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div class="text-sm text-slate-500 dark:text-slate-400">
-                          {{ item.attempt_started_at && !item.submission_id
-                            ? `${item.is_exam ? "Sesi ujian" : "Sesi quiz"} masih aktif di perangkat ini.`
-                            : item.submission_id
-                              ? `${item.is_exam ? "Ujian" : "Quiz"} sudah dikirim.`
-                              : isExamUnavailable(item)
-                                ? "Belum bisa dibuka sesuai jadwal."
-                                : `${item.is_exam ? "Ujian" : "Quiz"} siap dikerjakan sekarang.` }}
+                          {{
+                            item.access_blocked ? `Sesi dihentikan karena batas pelanggaran tercapai. Minta admin membuat
+                          kode ujian baru untuk melanjutkan.`
+                              :
+                              item.attempt_started_at && !item.is_submitted ? `${item.is_exam ? "Sesi ujian" : "Sesi quiz"}
+                          masih aktif di perangkat ini.`
+                                :
+                                item.is_submitted ? `${item.is_exam ? "Ujian" : "Quiz"} sudah dikirim.`
+                                  : isExamUnavailable(item)
+                                    ? `Belum bisa dibuka sesuai jadwal.`
+                                    : `${item.is_exam ? "Ujian" : "Quiz"} siap dikerjakan sekarang.` }}
                         </div>
 
                         <button @click="startSubmission(item)"
-                          :disabled="Boolean(item.submission_id) || isExamUnavailable(item)"
+                          :disabled="Boolean(item.is_submitted) || isExamUnavailable(item)"
                           class="inline-flex w-full items-center justify-center rounded-2xl px-6 py-3 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-                          :class="item.submission_id
+                          :class="item.is_submitted
                             ? 'bg-slate-100 text-slate-400 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-500 dark:ring-slate-700'
                             : 'bg-slate-900 text-white shadow-lg shadow-slate-900/10 hover:bg-rose-600 dark:bg-white dark:text-slate-900 dark:hover:bg-rose-200'">
                           {{ startButtonLabel(item) }}
@@ -192,11 +278,10 @@
       </main>
     </div>
 
-    <div v-else
-      class="bg-slate-50/50 p-4 pb-32 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100"
+    <div v-else class="bg-slate-50/50 p-4 pb-32 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100"
       :class="activeSessionContainerClass" :style="activeSessionContainerStyle">
 
-      <main class="mx-auto max-w-[1440px]" :class="pseudoFullscreenActive ? 'mt-0' : 'mt-8'">
+      <main class="mx-auto " :class="pseudoFullscreenActive ? 'mt-0' : 'mt-8'">
         <section
           class="relative overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
           <div v-if="fullscreenRecoveryRequired"
@@ -245,95 +330,262 @@
 
           <div class="p-6">
 
-            <form @submit.prevent="submitAssignment" class="space-y-8">
-
-              <div v-if="submissionTarget.assignment_type === 'MCQ' && currentQuestion" class="space-y-6">
-                <article
-                  class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-700 dark:bg-slate-900">
-                  <h3 class="text-base font-bold leading-relaxed text-slate-900 dark:text-white">
-                    <span
-                      class="mr-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm text-slate-500 dark:bg-slate-800">{{
-                        activeQuestionIndex + 1 }}</span>
-                    {{ currentQuestionText }}
-                  </h3>
-                  <img v-if="currentQuestionImageUrl" :src="currentQuestionImageUrl" alt="Gambar pertanyaan"
-                    class="mt-4 max-h-64 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
-
-                  <div class="mt-6 space-y-3 pl-0 sm:pl-11">
-                    <label v-for="(option, optionIndex) in currentQuestion.options || []"
-                      :key="`option-${activeQuestionIndex}-${optionIndex}`"
-                      class="flex cursor-pointer items-start gap-4 rounded-xl border-2 px-5 py-4 text-sm transition-all hover:border-rose-300 hover:bg-slate-50 dark:hover:border-rose-500/40 dark:hover:bg-slate-800/50"
-                      :class="currentAnswer.selected_option === optionIndex
-                        ? 'border-rose-500 bg-rose-50 text-rose-900 shadow-sm dark:border-rose-500 dark:bg-rose-500/10 dark:text-rose-100'
-                        : 'border-slate-100 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
-                        ">
-                      <div class="flex h-5 items-center">
-                        <input v-model="currentAnswer.selected_option" type="radio"
-                          :name="`answer-${activeQuestionIndex}`" :value="optionIndex"
-                          class="h-5 w-5 cursor-pointer border-slate-300 text-rose-600 focus:ring-rose-600 dark:border-slate-600 dark:bg-slate-700 dark:focus:ring-rose-500" />
-                      </div>
-                      <div class="space-y-2">
-                        <span class="font-medium leading-relaxed">{{ optionText(option) }}</span>
-                        <img v-if="optionImageUrl(option)" :src="optionImageUrl(option)"
-                          :alt="`Opsi ${String.fromCharCode(65 + optionIndex)}`"
-                          class="max-h-40 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
-                      </div>
-                    </label>
+            <form @submit.prevent="requestSubmitAssignment" class="space-y-8">
+              <div v-if="submissionTarget?.is_exam" class="grid gap-6 xl:grid-cols-[minmax(0,1fr),320px]">
+                <section class="space-y-6">
+                  <div class="grid gap-4 md:grid-cols-3">
+                    <div
+                      class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
+                      <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Jenis Ujian</p>
+                      <p class="mt-2 text-lg font-black text-slate-900 dark:text-white">
+                        {{ examCategoryLabel(submissionTarget.exam_category) }}
+                      </p>
+                    </div>
+                    <div
+                      class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
+                      <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Soal Terjawab</p>
+                      <p class="mt-2 text-lg font-black text-emerald-700 dark:text-emerald-300">
+                        {{ answeredQuestionCount }} / {{ totalQuestions }}
+                      </p>
+                    </div>
+                    <div
+                      class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
+                      <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Posisi Saat Ini</p>
+                      <p class="mt-2 text-lg font-black text-slate-900 dark:text-white">
+                        Soal {{ activeQuestionIndex + 1 }}
+                      </p>
+                    </div>
                   </div>
-                </article>
-              </div>
 
-              <div v-if="submissionTarget.assignment_type === 'ESSAY' && currentQuestion" class="space-y-6">
-                <article
-                  class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-700 dark:bg-slate-900">
-                  <h3 class="text-base font-bold leading-relaxed text-slate-900 dark:text-white">
-                    <span
-                      class="mr-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm text-slate-500 dark:bg-slate-800">{{
-                        activeQuestionIndex + 1 }}</span>
-                    {{ currentQuestionText }}
-                  </h3>
-                  <img v-if="currentQuestionImageUrl" :src="currentQuestionImageUrl" alt="Gambar pertanyaan"
-                    class="mt-4 max-h-64 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+                  <div v-if="submissionTarget.assignment_type === 'MCQ' && currentQuestion" class="space-y-6">
+                    <article
+                      class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-700 dark:bg-slate-900">
+                      <div class="flex items-start justify-between gap-4">
+                        <h3 class="text-base font-bold leading-relaxed text-slate-900 dark:text-white">
+                          <span
+                            class="mr-3 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sm font-black text-sky-700 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">{{
+                              activeQuestionIndex + 1 }}</span>
+                          {{ currentQuestionText }}
+                        </h3>
+                        <span
+                          class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                          {{ questionAnswerStateLabel(activeQuestionIndex) }}
+                        </span>
+                      </div>
+                      <img v-if="currentQuestionImageUrl" :src="currentQuestionImageUrl" alt="Gambar pertanyaan"
+                        class="mt-4 max-h-64 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
 
-                  <div class="mt-6 pl-0 sm:pl-11">
-                    <textarea v-model="currentAnswer.answer_text" rows="6" placeholder="Ketik jawaban Anda di sini..."
-                      class="block w-full rounded-xl border-0 bg-slate-50 px-5 py-4 text-base text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 transition focus:bg-white focus:ring-2 focus:ring-inset focus:ring-rose-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700 dark:focus:bg-slate-900" />
+                      <div class="mt-6 space-y-3 pl-0 sm:pl-11">
+                        <label v-for="(option, optionIndex) in currentQuestion.options || []"
+                          :key="`option-${activeQuestionIndex}-${optionIndex}`"
+                          class="flex cursor-pointer items-start gap-4 rounded-2xl border-2 px-5 py-4 text-sm transition-all hover:border-sky-300 hover:bg-slate-50 dark:hover:border-sky-500/40 dark:hover:bg-slate-800/50"
+                          :class="currentAnswer.selected_option === optionIndex
+                            ? 'border-sky-500 bg-sky-50 text-sky-900 shadow-sm dark:border-sky-500 dark:bg-sky-500/10 dark:text-sky-100'
+                            : 'border-slate-100 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
+                            ">
+                          <div class="flex h-5 items-center">
+                            <input v-model="currentAnswer.selected_option" type="radio"
+                              :name="`answer-${activeQuestionIndex}`" :value="optionIndex"
+                              class="h-5 w-5 cursor-pointer border-slate-300 text-sky-600 focus:ring-sky-600 dark:border-slate-600 dark:bg-slate-700 dark:focus:ring-sky-500" />
+                          </div>
+                          <div class="space-y-2">
+                            <span class="font-medium leading-relaxed">{{ optionText(option) }}</span>
+                            <img v-if="optionImageUrl(option)" :src="optionImageUrl(option)"
+                              :alt="`Opsi ${String.fromCharCode(65 + optionIndex)}`"
+                              class="max-h-40 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+                          </div>
+                        </label>
+                      </div>
+                    </article>
                   </div>
-                </article>
-              </div>
 
-              <div v-if="isLastQuestion" class="pb-24">
-                <button type="submit" :disabled="isSubmitting"
-                  class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-rose-600 px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-rose-600/30 transition hover:bg-rose-500 hover:shadow-rose-600/50 disabled:opacity-60 disabled:shadow-none sm:w-auto sm:min-w-[220px]">
-                  <svg v-if="isSubmitting" class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"
-                    stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                  </svg>
-                  <svg v-else class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                  </svg>
-                  {{ isSubmitting ? "Memproses..." : primarySubmitLabel }}
-                </button>
-              </div>
+                  <div v-if="submissionTarget.assignment_type === 'ESSAY' && currentQuestion" class="space-y-6">
+                    <article
+                      class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-700 dark:bg-slate-900">
+                      <div class="flex items-start justify-between gap-4">
+                        <h3 class="text-base font-bold leading-relaxed text-slate-900 dark:text-white">
+                          <span
+                            class="mr-3 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sm font-black text-sky-700 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">{{
+                              activeQuestionIndex + 1 }}</span>
+                          {{ currentQuestionText }}
+                        </h3>
+                        <span
+                          class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                          {{ questionAnswerStateLabel(activeQuestionIndex) }}
+                        </span>
+                      </div>
+                      <img v-if="currentQuestionImageUrl" :src="currentQuestionImageUrl" alt="Gambar pertanyaan"
+                        class="mt-4 max-h-64 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
 
-              <div
-                class="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
-                <div class="mx-auto flex max-w-[1400px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+                      <div class="mt-6 pl-0 sm:pl-11">
+                        <textarea v-model="currentAnswer.answer_text" rows="7"
+                          placeholder="Ketik jawaban Anda di sini..."
+                          class="block w-full rounded-2xl border-0 bg-slate-50 px-5 py-4 text-base text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 transition focus:bg-white focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700 dark:focus:bg-slate-900" />
+                      </div>
+                    </article>
+                  </div>
+
+                  <div class="flex flex-col gap-3 pb-6 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex flex-wrap gap-3">
+                      <button type="button" @click="goToPreviousQuestion" :disabled="!hasPreviousQuestion"
+                        class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                        Sebelumnya
+                      </button>
+                      <button type="button" @click="goToNextQuestion" :disabled="isLastQuestion"
+                        class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-sky-600 dark:hover:bg-sky-500">
+                        Berikutnya
+                      </button>
+                    </div>
+                    <button type="submit" :disabled="isSubmitting"
+                      class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-500 disabled:opacity-60">
+                      <svg v-if="isSubmitting" class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                      </svg>
+                      <span>{{ isSubmitting ? "Memproses..." : primarySubmitLabel }}</span>
+                    </button>
+                  </div>
+                </section>
+
+                <aside class="space-y-4">
+                  <div
+                    class="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/40 xl:sticky xl:top-6">
+                    <div class="flex items-center justify-between gap-3">
+                      <div>
+                        <h4 class="text-sm font-black uppercase tracking-[0.18em] text-slate-500 dark:text-slate-300">
+                          Navigator Soal</h4>
+                        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                          Hijau = sudah diisi, biru = soal aktif.
+                        </p>
+                      </div>
+                      <div
+                        class="rounded-2xl bg-white px-3 py-2 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700">
+                        {{ answeredQuestionCount }}/{{ totalQuestions }}
+                      </div>
+                    </div>
+
+                    <div class="mt-5 grid grid-cols-5 gap-2">
+                      <button v-for="(_, index) in submissionTarget.quiz_payload || []" :key="`exam-nav-${index}`"
+                        type="button" @click="jumpToQuestion(index)"
+                        class="flex h-11 w-full items-center justify-center rounded-xl text-sm font-black transition"
+                        :class="questionPaletteClass(index)">
+                        {{ index + 1 }}
+                      </button>
+                    </div>
+
+                    <div class="mt-5 space-y-2 text-xs text-slate-500 dark:text-slate-400">
+                      <div class="flex items-center gap-2">
+                        <span class="h-3 w-3 rounded bg-sky-500"></span>
+                        <span>Soal aktif</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="h-3 w-3 rounded bg-emerald-500"></span>
+                        <span>Sudah diisi</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="h-3 w-3 rounded bg-slate-300 dark:bg-slate-600"></span>
+                        <span>Belum diisi</span>
+                      </div>
+                    </div>
+
                     <button v-if="isError && !isSubmitting" type="button" @click="leaveFailedSession"
-                      class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 sm:w-auto">
+                      class="mt-5 inline-flex w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                       Keluar Sementara
                     </button>
-                    <button type="button" @click="goToNextQuestion"
-                      class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:w-auto">
-                      {{ quickAdvanceLabel }}
-                    </button>
+                  </div>
+                </aside>
+              </div>
+
+              <template v-else>
+                <div v-if="submissionTarget.assignment_type === 'MCQ' && currentQuestion" class="space-y-6">
+                  <article
+                    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-700 dark:bg-slate-900">
+                    <h3 class="text-base font-bold leading-relaxed text-slate-900 dark:text-white">
+                      <span
+                        class="mr-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm text-slate-500 dark:bg-slate-800">{{
+                          activeQuestionIndex + 1 }}</span>
+                      {{ currentQuestionText }}
+                    </h3>
+                    <img v-if="currentQuestionImageUrl" :src="currentQuestionImageUrl" alt="Gambar pertanyaan"
+                      class="mt-4 max-h-64 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+
+                    <div class="mt-6 space-y-3 pl-0 sm:pl-11">
+                      <label v-for="(option, optionIndex) in currentQuestion.options || []"
+                        :key="`option-${activeQuestionIndex}-${optionIndex}`"
+                        class="flex cursor-pointer items-start gap-4 rounded-xl border-2 px-5 py-4 text-sm transition-all hover:border-rose-300 hover:bg-slate-50 dark:hover:border-rose-500/40 dark:hover:bg-slate-800/50"
+                        :class="currentAnswer.selected_option === optionIndex
+                          ? 'border-rose-500 bg-rose-50 text-rose-900 shadow-sm dark:border-rose-500 dark:bg-rose-500/10 dark:text-rose-100'
+                          : 'border-slate-100 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
+                          ">
+                        <div class="flex h-5 items-center">
+                          <input v-model="currentAnswer.selected_option" type="radio"
+                            :name="`answer-${activeQuestionIndex}`" :value="optionIndex"
+                            class="h-5 w-5 cursor-pointer border-slate-300 text-rose-600 focus:ring-rose-600 dark:border-slate-600 dark:bg-slate-700 dark:focus:ring-rose-500" />
+                        </div>
+                        <div class="space-y-2">
+                          <span class="font-medium leading-relaxed">{{ optionText(option) }}</span>
+                          <img v-if="optionImageUrl(option)" :src="optionImageUrl(option)"
+                            :alt="`Opsi ${String.fromCharCode(65 + optionIndex)}`"
+                            class="max-h-40 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+                        </div>
+                      </label>
+                    </div>
+                  </article>
+                </div>
+
+                <div v-if="submissionTarget.assignment_type === 'ESSAY' && currentQuestion" class="space-y-6">
+                  <article
+                    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-700 dark:bg-slate-900">
+                    <h3 class="text-base font-bold leading-relaxed text-slate-900 dark:text-white">
+                      <span
+                        class="mr-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm text-slate-500 dark:bg-slate-800">{{
+                          activeQuestionIndex + 1 }}</span>
+                      {{ currentQuestionText }}
+                    </h3>
+                    <img v-if="currentQuestionImageUrl" :src="currentQuestionImageUrl" alt="Gambar pertanyaan"
+                      class="mt-4 max-h-64 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+
+                    <div class="mt-6 pl-0 sm:pl-11">
+                      <textarea v-model="currentAnswer.answer_text" rows="6" placeholder="Ketik jawaban Anda di sini..."
+                        class="block w-full rounded-xl border-0 bg-slate-50 px-5 py-4 text-base text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 transition focus:bg-white focus:ring-2 focus:ring-inset focus:ring-rose-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700 dark:focus:bg-slate-900" />
+                    </div>
+                  </article>
+                </div>
+
+                <div v-if="isLastQuestion" class="pb-24">
+                  <button type="submit" :disabled="isSubmitting"
+                    class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-rose-600 px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-rose-600/30 transition hover:bg-rose-500 hover:shadow-rose-600/50 disabled:opacity-60 disabled:shadow-none sm:w-auto sm:min-w-[220px]">
+                    <svg v-if="isSubmitting" class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"
+                      stroke-width="2" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                    <svg v-else class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                    </svg>
+                    {{ isSubmitting ? "Memproses..." : primarySubmitLabel }}
+                  </button>
+                </div>
+
+                <div
+                  class="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
+                  <div
+                    class="mx-auto flex max-w-[1400px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+                      <button v-if="isError && !isSubmitting" type="button" @click="leaveFailedSession"
+                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 sm:w-auto">
+                        Keluar Sementara
+                      </button>
+                      <button type="button" @click="goToNextQuestion"
+                        class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:w-auto">
+                        {{ quickAdvanceLabel }}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </template>
 
             </form>
           </div>
@@ -375,6 +627,9 @@ const antiCheatMessage = ref("");
 const fullscreenRecoveryRequired = ref(false);
 const pseudoFullscreenActive = ref(false);
 const pseudoViewportHeight = ref(null);
+const examCodeModalOpen = ref(false);
+const confirmSubmitModalOpen = ref(false);
+const pendingExamAssignmentForCode = ref(null);
 const maxViolations = 3;
 let questionTimerInterval = null;
 let antiCheatListenersBound = false;
@@ -385,6 +640,7 @@ let lastViolationSignature = "";
 let hiddenTransitionAt = 0;
 let blurTransitionAt = 0;
 let submitLockAssignmentId = null;
+let examCodeModalResolver = null;
 
 const resolveViolationType = (reason) => {
   const normalizedReason = String(reason || "").toLowerCase();
@@ -396,6 +652,10 @@ const resolveViolationType = (reason) => {
 
 const submissionForm = reactive({
   answers: [],
+});
+
+const examCodeForm = reactive({
+  code: "",
 });
 
 const isExamPage = computed(() => props.mode === "exam");
@@ -413,6 +673,7 @@ const sessionLabel = computed(() => (submissionTarget.value?.is_exam ? "Sesi Uji
 const progressLabel = computed(() => (submissionTarget.value?.is_exam ? "Progres Ujian" : "Progres Quiz"));
 const primarySubmitLabel = computed(() => (submissionTarget.value?.is_exam ? "Selesai & Kirim Ujian" : "Selesai & Kirim Quiz"));
 const quickAdvanceLabel = computed(() => (isLastQuestion.value ? "Tetap di Soal Terakhir" : "Kunci & Lanjut"));
+const hasPreviousQuestion = computed(() => activeQuestionIndex.value > 0);
 
 const gradedAssignments = computed(() => assignments.value.filter((item) => item.score !== null && item.score !== undefined).length);
 const completedAssignments = computed(() => assignments.value.filter((item) => Boolean(item.submission_id)).length);
@@ -452,6 +713,60 @@ const questionProgressPercent = computed(() => {
   return Math.max(0, Math.min(100, percent));
 });
 const formattedQuestionTimeLeft = computed(() => formatDuration(Math.ceil(questionTimeLeftMs.value / 1000)));
+
+const isAnswerFilled = (answer, assignmentType) => {
+  if (!answer) {
+    return false;
+  }
+  if (assignmentType === "MCQ") {
+    return Number.isInteger(answer.selected_option);
+  }
+  if (assignmentType === "ESSAY") {
+    return Boolean(String(answer.answer_text || "").trim());
+  }
+  return false;
+};
+
+const answeredQuestionCount = computed(() =>
+  submissionForm.answers.filter((answer) => isAnswerFilled(answer, submissionTarget.value?.assignment_type)).length,
+);
+
+const closeConfirmSubmitModal = () => {
+  if (isSubmitting.value) {
+    return;
+  }
+  confirmSubmitModalOpen.value = false;
+};
+
+const requestSubmitAssignment = () => {
+  if (!submissionTarget.value || isSubmitting.value) {
+    return;
+  }
+  confirmSubmitModalOpen.value = true;
+};
+
+const confirmSubmitAssignment = async () => {
+  if (!submissionTarget.value || isSubmitting.value) {
+    return;
+  }
+  confirmSubmitModalOpen.value = false;
+  await submitAssignment(false);
+};
+
+const questionAnswerStateLabel = (index) =>
+  isAnswerFilled(submissionForm.answers[index], submissionTarget.value?.assignment_type)
+    ? "Terisi"
+    : "Belum Terisi";
+
+const questionPaletteClass = (index) => {
+  if (index === activeQuestionIndex.value) {
+    return "bg-sky-600 text-white shadow-sm shadow-sky-600/30";
+  }
+  if (isAnswerFilled(submissionForm.answers[index], submissionTarget.value?.assignment_type)) {
+    return "bg-emerald-500 text-white shadow-sm shadow-emerald-600/20";
+  }
+  return "bg-white text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-800";
+};
 
 const assignmentTypeLabel = (type) => {
   if (type === "MCQ") return "Pilihan Ganda";
@@ -499,6 +814,8 @@ const safeParseJSONArray = (value) => {
 const normalizeAssignment = (item) => ({
   ...item,
   assignment_type: String(item?.assignment_type || "").toUpperCase(),
+  access_blocked: Boolean(item?.access_blocked),
+  is_submitted: Boolean(item?.is_submitted),
   quiz_payload: safeParseJSONArray(item?.quiz_payload).map((question) => {
     const normalized = { ...(question || {}) };
     normalized.options = safeParseJSONArray(normalized.options);
@@ -514,10 +831,11 @@ const isExamClosed = (assignment) =>
   Boolean(assignment?.due_date && new Date(assignment.due_date).getTime() < Date.now());
 
 const isExamUnavailable = (assignment) =>
-  isExamNotStarted(assignment) || (!assignment?.submission_id && isExamClosed(assignment));
+  isExamNotStarted(assignment) || (!assignment?.attempt_started_at && !assignment?.is_submitted && isExamClosed(assignment));
 
 const startButtonLabel = (assignment) => {
-  if (assignment?.submission_id) return "Selesai Dikerjakan";
+  if (assignment?.is_submitted) return "Selesai Dikerjakan";
+  if (assignment?.access_blocked) return "Masuk dengan Kode Baru";
   if (isExamNotStarted(assignment)) return "Menunggu Jadwal";
   if (isExamClosed(assignment)) return "Ujian Ditutup";
   if (assignment?.attempt_started_at) return assignment?.is_exam ? "Lanjutkan Ujian" : "Lanjutkan Quiz";
@@ -568,6 +886,7 @@ const persistAttemptSession = () => {
   if (!submissionTarget.value) return;
   const payload = {
     attempt_started_at: submissionTarget.value.attempt_started_at,
+    session_started_at: submissionTarget.value.session_started_at,
     active_question_index: activeQuestionIndex.value,
     question_started_at: submissionTarget.value.current_question_started_at,
     answers: submissionForm.answers,
@@ -765,15 +1084,27 @@ const recordViolation = async (reason, signature = reason) => {
   antiCheatMessage.value = reason;
 
   try {
-    await api.post(`/learning/assignments/${submissionTarget.value.id}/violations`, {
+    const response = await api.post(`/learning/assignments/${submissionTarget.value.id}/violations`, {
       violation_type: resolveViolationType(reason),
       violation_message: reason,
+      answers: JSON.stringify(submissionForm.answers),
     });
+
+    if (response?.data?.access_blocked && submissionTarget.value?.is_exam) {
+      antiCheatMessage.value = "Akses ujian dihentikan sementara. Kode baru dari admin diperlukan untuk melanjutkan.";
+      stopQuestionTimer();
+      await pauseBlockedExamSession();
+      return;
+    }
   } catch (error) {
     // Keep the quiz flow running even when the violation log cannot be sent.
   }
 
   if (violationCount.value >= maxViolations) {
+    if (submissionTarget.value?.is_exam) {
+      antiCheatMessage.value = "Batas pelanggaran ujian resmi tercapai. Menunggu kode baru dari admin untuk melanjutkan.";
+      return;
+    }
     antiCheatMessage.value = `Batas pelanggaran tercapai. ${submissionTarget.value?.is_exam ? "Ujian" : "Quiz"} akan dikirim otomatis.`;
     stopQuestionTimer();
     await submitAssignment(true);
@@ -925,7 +1256,7 @@ const refreshQuestionTimer = () => {
   }
 
   const referenceTime = isSessionTimedExam.value
-    ? submissionTarget.value.attempt_started_at
+    ? submissionTarget.value.session_started_at
     : submissionTarget.value.current_question_started_at;
 
   if (!referenceTime) {
@@ -964,9 +1295,11 @@ const startQuestionTimer = () => {
 const initializeAttemptSession = (assignment, startPayload) => {
   resetAntiCheatState();
   setLayoutChromeHidden(true);
+  const localSessionStartedAt = new Date().toISOString();
   submissionTarget.value = {
     ...assignment,
     attempt_started_at: startPayload?.started_at || assignment.attempt_started_at || new Date().toISOString(),
+    session_started_at: localSessionStartedAt,
     current_question_started_at: new Date().toISOString(),
   };
 
@@ -979,6 +1312,7 @@ const initializeAttemptSession = (assignment, startPayload) => {
     ? storedSession.active_question_index
     : 0;
 
+  submissionTarget.value.session_started_at = storedSession?.session_started_at || localSessionStartedAt;
   submissionTarget.value.current_question_started_at = storedSession?.question_started_at || new Date().toISOString();
 
   const isFinished = syncAttemptProgressWithClock();
@@ -1033,8 +1367,44 @@ const selectSubject = async (subject) => {
   await loadSubjectData();
 };
 
+const closeExamCodeModal = (value = null) => {
+  examCodeModalOpen.value = false;
+  pendingExamAssignmentForCode.value = null;
+  examCodeForm.code = "";
+  if (typeof examCodeModalResolver === "function") {
+    examCodeModalResolver(value);
+    examCodeModalResolver = null;
+  }
+};
+
+const requestExamCode = (assignment) =>
+  new Promise((resolve) => {
+    pendingExamAssignmentForCode.value = assignment;
+    examCodeForm.code = "";
+    examCodeModalResolver = resolve;
+    examCodeModalOpen.value = true;
+  });
+
+const confirmExamCodeModal = () => {
+  const code = String(examCodeForm.code || "").trim();
+  if (!code) {
+    pushToast({
+      title: "Kode Ujian Wajib Diisi",
+      message: "Masukkan kode ujian terlebih dahulu untuk memulai sesi.",
+      type: "error",
+      duration: 2800,
+    });
+    return;
+  }
+  closeExamCodeModal(code);
+};
+
+const cancelExamCodeModal = () => {
+  closeExamCodeModal(null);
+};
+
 const startSubmission = async (assignment) => {
-  if (assignment.submission_id) {
+  if (assignment.is_submitted) {
     return;
   }
 
@@ -1054,7 +1424,7 @@ const startSubmission = async (assignment) => {
 
     let payload = {};
     if (assignment.is_exam) {
-      const examCode = window.prompt(`Masukkan kode ujian untuk ${assignment.title}`);
+      const examCode = await requestExamCode(assignment);
       if (examCode === null) {
         await exitQuizFullscreen();
         return;
@@ -1101,6 +1471,37 @@ const goToNextQuestion = async (triggeredByTimer = false) => {
   refreshQuestionTimer();
 };
 
+const goToPreviousQuestion = () => {
+  if (!submissionTarget.value || activeQuestionIndex.value <= 0) {
+    return;
+  }
+
+  activeQuestionIndex.value -= 1;
+  if (!isSessionTimedExam.value) {
+    submissionTarget.value.current_question_started_at = new Date().toISOString();
+  }
+  persistAttemptSession();
+  refreshQuestionTimer();
+};
+
+const jumpToQuestion = (index) => {
+  if (!submissionTarget.value) {
+    return;
+  }
+
+  const safeIndex = Number(index);
+  if (!Number.isInteger(safeIndex) || safeIndex < 0 || safeIndex >= totalQuestions.value) {
+    return;
+  }
+
+  activeQuestionIndex.value = safeIndex;
+  if (!isSessionTimedExam.value) {
+    submissionTarget.value.current_question_started_at = new Date().toISOString();
+  }
+  persistAttemptSession();
+  refreshQuestionTimer();
+};
+
 const teardownActiveSessionGuards = () => {
   stopQuestionTimer();
   unbindLockedNavigation();
@@ -1127,9 +1528,32 @@ const leaveFailedSession = async () => {
   });
 };
 
+const pauseBlockedExamSession = async () => {
+  if (!submissionTarget.value) {
+    return;
+  }
+
+  const target = submissionTarget.value;
+  persistAttemptSession();
+  teardownActiveSessionGuards();
+  await exitQuizFullscreen();
+  setLayoutChromeHidden(false);
+  submissionTarget.value = null;
+  resetAntiCheatState();
+  await loadSubjectData();
+  pushToast({
+    title: "Kode Baru Diperlukan",
+    message: `Batas pelanggaran ${target.is_exam ? "ujian" : "quiz"} resmi tercapai. Minta admin membuat kode baru untuk melanjutkan sesi.`,
+    type: "error",
+    duration: 5200,
+  });
+  window.scrollTo(0, 0);
+};
+
 const completeSubmittedSession = async (target, triggeredAutomatically, toastType = triggeredAutomatically ? "info" : "success") => {
   teardownActiveSessionGuards();
   await exitQuizFullscreen();
+  confirmSubmitModalOpen.value = false;
   clearAttemptSession(target.id);
   pushToast({
     title: triggeredAutomatically
@@ -1156,6 +1580,10 @@ const submitAssignment = async (triggeredAutomatically = false) => {
   const target = submissionTarget.value;
   if (isSubmitting.value || submitLockAssignmentId === target.id) {
     return;
+  }
+
+  if (triggeredAutomatically) {
+    confirmSubmitModalOpen.value = false;
   }
 
   submitLockAssignmentId = target.id;
@@ -1236,6 +1664,14 @@ watch(message, (value) => {
     type: isError.value ? "error" : "success",
   });
 });
+
+watch(
+  () => submissionForm.answers,
+  () => {
+    persistAttemptSession();
+  },
+  { deep: true },
+);
 
 onMounted(loadSubjects);
 </script>

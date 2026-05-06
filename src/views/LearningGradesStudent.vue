@@ -66,7 +66,7 @@
                 <td class="px-4 py-3">{{ formatDateTime(row.due_date) }}</td>
                 <td class="px-4 py-3">
                   <span v-if="row.score !== null && row.score !== undefined" class="text-emerald-600 font-semibold">Sudah Dinilai</span>
-                  <span v-else-if="row.submission_id" class="text-sky-600 font-semibold">Sudah Kumpul</span>
+                  <span v-else-if="isSubmittedRow(row)" class="text-sky-600 font-semibold">Sudah Kumpul</span>
                   <span v-else class="text-rose-600 font-semibold">Belum Kumpul</span>
                 </td>
                 <td class="px-4 py-3 font-semibold">{{ row.score ?? "-" }}</td>
@@ -140,9 +140,9 @@ const filteredRows = computed(() => {
     if (statusFilter.value === "graded") {
       matchStatus = item.score !== null && item.score !== undefined;
     } else if (statusFilter.value === "submitted") {
-      matchStatus = Boolean(item.submission_id) && (item.score === null || item.score === undefined);
+      matchStatus = isSubmittedRow(item) && (item.score === null || item.score === undefined);
     } else if (statusFilter.value === "pending") {
-      matchStatus = !item.submission_id;
+      matchStatus = !isSubmittedRow(item);
     }
 
     return matchKeyword && matchSubject && matchStatus;
@@ -162,6 +162,9 @@ const loadGrades = async () => {
     });
   }
 };
+
+const isSubmittedRow = (row) =>
+  Boolean(row?.is_submitted || row?.submitted_at || row?.submission_id);
 
 onMounted(loadGrades);
 </script>

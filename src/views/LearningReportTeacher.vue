@@ -6,7 +6,7 @@
           <div class="grid flex-1 grid-cols-1 gap-4 md:grid-cols-3">
             <div class="space-y-1.5">
               <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Mata Pelajaran</label>
-              <select v-model="filters.subjectId" @change="loadReport"
+              <select v-model="filters.subjectId" @change="resetAndLoadReport"
                 class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-4 pr-10 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
                 <option value="">Pilih mapel</option>
                 <option v-for="item in subjects" :key="item.id" :value="String(item.id)">
@@ -17,7 +17,7 @@
 
             <div class="space-y-1.5">
               <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Semester</label>
-              <select v-model="filters.semesterId" @change="loadReport"
+              <select v-model="filters.semesterId" @change="resetAndLoadReport"
                 class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-4 pr-10 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
                 <option value="">Semester Aktif</option>
                 <option v-for="item in semesterOptions" :key="item.semester_id" :value="String(item.semester_id)">
@@ -38,7 +38,7 @@
               class="rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
               Refresh
             </button>
-            <button @click="downloadExcel" :disabled="filteredRows.length === 0"
+            <button @click="downloadExcel" :disabled="reportStudents.length === 0"
               class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50">
               Export Excel
             </button>
@@ -63,7 +63,7 @@
         </div>
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
           <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jumlah Siswa</p>
-          <h2 class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{{ filteredRows.length }}</h2>
+          <h2 class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{{ totalRows }}</h2>
           <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Rekap per siswa untuk mapel aktif.</p>
         </div>
       </section>
@@ -89,7 +89,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-              <tr v-for="row in filteredRows" :key="row.student_id" class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+              <tr v-for="row in reportStudents" :key="row.student_id" class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                 <td class="px-6 py-4">
                   <div class="font-medium text-slate-900 dark:text-white">{{ row.student_name }}</div>
                 </td>
@@ -109,7 +109,7 @@
                   </span>
                 </td>
               </tr>
-              <tr v-if="filteredRows.length === 0">
+              <tr v-if="reportStudents.length === 0">
                 <td :colspan="Math.max(assignments.length + 5, 6)" class="px-6 py-14 text-center text-slate-500">
                   Belum ada data rapor mapel untuk filter ini.
                 </td>
@@ -117,13 +117,38 @@
             </tbody>
           </table>
         </div>
+        <div class="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/70 px-6 py-4 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-800/30 dark:text-slate-400 md:flex-row md:items-center md:justify-between">
+          <div>
+            Menampilkan {{ paginationStartRow }}-{{ paginationEndRow }} dari {{ totalRows }} data
+          </div>
+          <div class="flex items-center gap-3">
+            <select v-model="pageSize" @change="handlePageSizeChange"
+              class="rounded-lg bg-white px-3 py-1.5 text-sm text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700">
+              <option :value="10">10 / halaman</option>
+              <option :value="20">20 / halaman</option>
+              <option :value="50">50 / halaman</option>
+              <option :value="100">100 / halaman</option>
+            </select>
+            <button @click="goToPreviousPage" :disabled="currentPage <= 1"
+              class="rounded-lg bg-white px-3 py-1.5 font-medium text-slate-700 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">
+              Sebelumnya
+            </button>
+            <span class="min-w-[90px] text-center font-medium text-slate-600 dark:text-slate-300">
+              Halaman {{ currentPage }} / {{ totalPages }}
+            </span>
+            <button @click="goToNextPage" :disabled="currentPage >= totalPages"
+              class="rounded-lg bg-white px-3 py-1.5 font-medium text-slate-700 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">
+              Berikutnya
+            </button>
+          </div>
+        </div>
       </section>
     </main>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { downloadExcelWorksheet } from "@/utils/excelExport";
@@ -134,6 +159,10 @@ const subjects = ref([]);
 const periods = ref([]);
 const report = ref(null);
 const masterDataStore = useMasterDataStore();
+const currentPage = ref(1);
+const pageSize = ref(20);
+const totalRows = ref(0);
+let keywordSearchTimer = null;
 
 const filters = reactive({
   subjectId: "",
@@ -143,6 +172,15 @@ const filters = reactive({
 
 const assignments = computed(() => report.value?.assignments || []);
 const reportStudents = computed(() => report.value?.students || []);
+const totalPages = computed(() => Math.max(1, Number(report.value?.total_pages || Math.ceil(totalRows.value / Number(pageSize.value || 20)) || 1)));
+const paginationStartRow = computed(() => {
+  if (totalRows.value === 0) return 0;
+  return (currentPage.value - 1) * Number(pageSize.value || 20) + 1;
+});
+const paginationEndRow = computed(() => {
+  if (totalRows.value === 0) return 0;
+  return Math.min(currentPage.value * Number(pageSize.value || 20), totalRows.value);
+});
 const semesterOptions = computed(() =>
   periods.value.flatMap((year) =>
     (year.semesters || []).map((semester) => ({
@@ -155,15 +193,6 @@ const semesterOptions = computed(() =>
     })),
   ),
 );
-
-const filteredRows = computed(() => {
-  if (!filters.keyword) {
-    return reportStudents.value;
-  }
-
-  const keyword = filters.keyword.toLowerCase();
-  return reportStudents.value.filter((item) => item.student_name?.toLowerCase().includes(keyword));
-});
 
 const selectedPeriodLabel = computed(() => {
   const selected = report.value?.selected_period;
@@ -234,6 +263,7 @@ const loadReport = async () => {
   report.value = null;
 
   if (!filters.subjectId) {
+    totalRows.value = 0;
     return;
   }
 
@@ -241,10 +271,15 @@ const loadReport = async () => {
     const response = await api.get(`/learning/subjects/${filters.subjectId}/final-report`, {
       params: {
         semester_id: filters.semesterId || undefined,
+        keyword: filters.keyword || undefined,
+        page: currentPage.value,
+        limit: Number(pageSize.value || 20),
       },
     });
     report.value = response?.data || null;
+    totalRows.value = Number(response?.data?.total || 0);
   } catch (error) {
+    totalRows.value = 0;
     pushToast({
       title: "Gagal Memuat Laporan Nilai",
       message: error.message,
@@ -256,6 +291,28 @@ const loadReport = async () => {
 const loadBootstrap = async () => {
   await loadSubjects();
   await loadPeriods();
+  await loadReport();
+};
+
+const resetAndLoadReport = async () => {
+  currentPage.value = 1;
+  await loadReport();
+};
+
+const goToPreviousPage = async () => {
+  if (currentPage.value <= 1) return;
+  currentPage.value -= 1;
+  await loadReport();
+};
+
+const goToNextPage = async () => {
+  if (currentPage.value >= totalPages.value) return;
+  currentPage.value += 1;
+  await loadReport();
+};
+
+const handlePageSizeChange = async () => {
+  currentPage.value = 1;
   await loadReport();
 };
 
@@ -294,7 +351,7 @@ const downloadExcel = () => {
       { label: "Semester", value: selected?.semester_name || report.value?.active_period?.semester_name || "Semester aktif" },
       { label: "Rentang Tahun Ajaran", value: report.value?.active_period?.academic_year_start_date ? `${formatDate(report.value.active_period.academic_year_start_date)} - ${formatDate(report.value.active_period.academic_year_end_date)}` : "-" },
       { label: "Total Penilaian", value: String(assignments.value.length) },
-      { label: "Total Siswa", value: String(filteredRows.value.length) },
+      { label: "Total Siswa", value: String(totalRows.value) },
     ],
     columns: [
       { key: "student_name", label: "Siswa" },
@@ -304,9 +361,21 @@ const downloadExcel = () => {
       { key: "avg_exam_score", label: "Rata Ujian", value: (row) => formatScore(row.avg_exam_score) },
       { key: "final_score", label: "Nilai Akhir", value: (row) => formatScore(row.final_score) },
     ],
-    rows: filteredRows.value,
+    rows: reportStudents.value,
   });
 };
+
+watch(
+  () => filters.keyword,
+  () => {
+    if (keywordSearchTimer) {
+      clearTimeout(keywordSearchTimer);
+    }
+    keywordSearchTimer = setTimeout(() => {
+      resetAndLoadReport();
+    }, 350);
+  },
+);
 
 onMounted(loadBootstrap);
 </script>
