@@ -1,5 +1,7 @@
 import { normalizePublicUrl } from "@/utils/url";
 
+const FORCED_LOGOUT_NOTICE_KEY = "forced-logout-notice";
+
 export const getStoredUser = () => {
   try {
     const rawUser = localStorage.getItem("user");
@@ -43,6 +45,44 @@ export const clearSession = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("role");
   localStorage.removeItem("user");
+};
+
+export const persistForcedLogoutNotice = (payload = {}) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const data = payload?.data || payload || {};
+  const notice = {
+    reason: data.reason || "SESSION_REPLACED",
+    active_device: data.active_device || "Perangkat tidak dikenal",
+    active_ip: data.active_ip || null,
+    active_login_at: data.active_login_at || null,
+    message: payload?.message || data.message || "Akun Anda keluar karena ada login dari perangkat lain.",
+  };
+
+  sessionStorage.setItem(FORCED_LOGOUT_NOTICE_KEY, JSON.stringify(notice));
+};
+
+export const getForcedLogoutNotice = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = sessionStorage.getItem(FORCED_LOGOUT_NOTICE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    return null;
+  }
+};
+
+export const clearForcedLogoutNotice = () => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  sessionStorage.removeItem(FORCED_LOGOUT_NOTICE_KEY);
 };
 
 export const redirectToLogin = () => {

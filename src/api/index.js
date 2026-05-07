@@ -1,4 +1,4 @@
-import { clearSessionAndRedirectToLogin } from "@/utils/auth";
+import { clearSessionAndRedirectToLogin, persistForcedLogoutNotice } from "@/utils/auth";
 
 const API_BASE_URL = (process.env.VUE_APP_API_BASE_URL || "https://alentest.my.id/school/api").replace(/\/$/, "");
 const pendingRequestControllers = new Set();
@@ -124,6 +124,12 @@ const isAuthFailure = (error) => {
   return /(token expired|token invalid|invalid token|jwt expired|jwt malformed|unauthorized)/i.test(message);
 };
 
+const isSessionReplacedFailure = (error) => {
+  const payload = error?.payload || {};
+  const data = payload?.data || {};
+  return payload?.code === "SESSION_REPLACED" || data?.reason === "SESSION_REPLACED";
+};
+
 export const apiRequest = async (path, options = {}) => {
   const requestToken = localStorage.getItem("token");
   const hasToken = Boolean(requestToken);
@@ -164,6 +170,12 @@ export const apiRequest = async (path, options = {}) => {
     const isSameSessionToken = requestToken && activeToken && requestToken === activeToken;
 
     if (!suppressAuthRedirect && hasToken && isSameSessionToken && isAuthFailure(error)) {
+      if (isSessionReplacedFailure(error)) {
+        persistForcedLogoutNotice({
+          message: error?.message,
+          data: error?.payload?.data,
+        });
+      }
       cancelPendingApiRequests();
       clearSessionAndRedirectToLogin();
     }

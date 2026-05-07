@@ -36,6 +36,11 @@
     @close="closePwaInstallModal"
     @install="installPwa"
   />
+  <ForcedLogoutModal
+    :open="isForcedLogoutModalOpen"
+    :notice="forcedLogoutNotice"
+    @close="closeForcedLogoutModal"
+  />
   <!-- End app -->
 </template>
 
@@ -45,9 +50,11 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PwaInstallModal from "@/components/PwaInstallModal.vue";
+import ForcedLogoutModal from "@/components/ForcedLogoutModal.vue";
 import ToastHost from "@/components/ToastHost.vue";
 import { pushToast } from "@/composables/useToast";
 import { useLayoutChrome } from "@/composables/useLayoutChrome";
+import { clearForcedLogoutNotice, getForcedLogoutNotice } from "@/utils/auth";
 
 const layoutChromeState = useLayoutChrome();
 const SHOW_PWA_INSTALL_AFTER_LOGIN_KEY = "show-pwa-install-after-login";
@@ -65,6 +72,8 @@ export default {
       deferredPwaPrompt: null,
       isPwaInstallModalOpen: false,
       isPwaInstalled: false,
+      isForcedLogoutModalOpen: false,
+      forcedLogoutNotice: null,
     };
   },
 
@@ -103,6 +112,7 @@ export default {
     Header,
     Footer,
     PwaInstallModal,
+    ForcedLogoutModal,
     Sidebar,
     ToastHost,
   },
@@ -157,6 +167,22 @@ export default {
       const suppressUntil = Date.now() + (PWA_PROMPT_SUPPRESS_DAYS * 24 * 60 * 60 * 1000);
       localStorage.setItem(PWA_PROMPT_SUPPRESSED_UNTIL_KEY, String(suppressUntil));
       sessionStorage.removeItem(SHOW_PWA_INSTALL_AFTER_LOGIN_KEY);
+    },
+    checkForcedLogoutNotice() {
+      const notice = getForcedLogoutNotice();
+      if (!notice) {
+        this.isForcedLogoutModalOpen = false;
+        this.forcedLogoutNotice = null;
+        return;
+      }
+
+      this.forcedLogoutNotice = notice;
+      this.isForcedLogoutModalOpen = true;
+    },
+    closeForcedLogoutModal() {
+      this.isForcedLogoutModalOpen = false;
+      this.forcedLogoutNotice = null;
+      clearForcedLogoutNotice();
     },
     handleBeforeInstallPrompt(event) {
       event.preventDefault();
@@ -215,6 +241,7 @@ export default {
   },
   mounted() {
     this.refreshPwaInstalledState();
+    this.checkForcedLogoutNotice();
     window.addEventListener("beforeinstallprompt", this.handleBeforeInstallPrompt);
     window.addEventListener("appinstalled", this.handleAppInstalled);
     this.maybeOpenPwaInstallModal();
