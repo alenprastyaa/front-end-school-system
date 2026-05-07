@@ -68,6 +68,25 @@
                 class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
               />
             </div>
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Avatar Sekolah</label>
+              <div class="flex items-center gap-4">
+                <div class="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+                  <img v-if="schoolLogoPreview" :src="schoolLogoPreview" alt="Preview logo sekolah" class="h-full w-full object-cover" />
+                  <span v-else class="text-xs font-semibold uppercase tracking-wide text-slate-400">No Logo</span>
+                </div>
+                <div class="flex-1">
+                  <input
+                    ref="schoolLogoInput"
+                    type="file"
+                    accept="image/*"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 file:mr-3 file:rounded-lg file:border-0 file:bg-sky-600 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white dark:bg-slate-800 dark:text-white dark:ring-slate-700 dark:file:bg-sky-500"
+                    @change="handleSchoolLogoChange"
+                  />
+                  <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Upload logo/avatar sekolah untuk tampil di sidebar dan identitas sekolah.</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="mt-6 flex flex-wrap gap-3">
@@ -344,6 +363,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
+import { normalizePublicUrl } from "@/utils/url";
 
 const schools = ref([]);
 const adminUsers = ref([]);
@@ -361,6 +381,9 @@ const isError = ref(false);
 const form = reactive({
   name: "",
 });
+const schoolLogoFile = ref(null);
+const schoolLogoPreview = ref("");
+const schoolLogoInput = ref(null);
 
 const adminForm = reactive({
   school_id: "",
@@ -393,6 +416,11 @@ const summaryCards = computed(() => {
 const resetForm = () => {
   editingId.value = null;
   form.name = "";
+  schoolLogoFile.value = null;
+  schoolLogoPreview.value = "";
+  if (schoolLogoInput.value) {
+    schoolLogoInput.value.value = "";
+  }
 };
 
 const resetAdminForm = () => {
@@ -430,7 +458,11 @@ const submitSchool = async () => {
   message.value = "";
 
   try {
-    const payload = { name: form.name };
+    const payload = new FormData();
+    payload.append("name", form.name);
+    if (schoolLogoFile.value) {
+      payload.append("logo", schoolLogoFile.value);
+    }
     const response = editingId.value
       ? await api.put(`/school/${editingId.value}`, payload)
       : await api.post("/school", payload);
@@ -449,8 +481,25 @@ const submitSchool = async () => {
 const editSchool = (item) => {
   editingId.value = item.id;
   form.name = item.name || "";
+  schoolLogoFile.value = null;
+  schoolLogoPreview.value = normalizePublicUrl(item.logo_url) || "";
+  if (schoolLogoInput.value) {
+    schoolLogoInput.value.value = "";
+  }
   message.value = "";
   isError.value = false;
+};
+
+const handleSchoolLogoChange = (event) => {
+  const file = event?.target?.files?.[0] || null;
+  schoolLogoFile.value = file;
+  if (!file) {
+    schoolLogoPreview.value = editingId.value
+      ? normalizePublicUrl(schools.value.find((item) => item.id === editingId.value)?.logo_url) || ""
+      : "";
+    return;
+  }
+  schoolLogoPreview.value = URL.createObjectURL(file);
 };
 
 const deleteSchool = async (item) => {
