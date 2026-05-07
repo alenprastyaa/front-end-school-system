@@ -26,6 +26,7 @@ export const persistSession = (payload) => {
       role: data.role,
       school_id: data.school_id,
       school_name: data.school_name,
+      school_logo: normalizePublicUrl(data.school_logo) || null,
       profile_image: normalizePublicUrl(data.profile_image) || null,
       face_reference_image: normalizePublicUrl(data.face_reference_image) || null,
       face_reference_descriptor: data.face_reference_descriptor || null,

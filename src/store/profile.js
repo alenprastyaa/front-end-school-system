@@ -19,6 +19,7 @@ export const useProfileStore = defineStore("profile", {
       role: "Guest",
       school_name: "",
       school_id: "",
+      school_logo: "",
       parent_email: "",
       phone_number: "",
       profile_image: "",
@@ -46,6 +47,7 @@ export const useProfileStore = defineStore("profile", {
       const nextProfile = {
         ...this.profile,
         ...profile,
+        school_logo: normalizePublicUrl(profile.school_logo) || null,
         profile_image: normalizePublicUrl(profile.profile_image) || null,
         face_reference_image: normalizePublicUrl(profile.face_reference_image) || null,
         face_reference_descriptor: profile.face_reference_descriptor || null,
@@ -57,6 +59,7 @@ export const useProfileStore = defineStore("profile", {
         role: nextProfile.role,
         school_id: nextProfile.school_id,
         school_name: nextProfile.school_name,
+        school_logo: nextProfile.school_logo,
         profile_image: nextProfile.profile_image,
         face_reference_image: nextProfile.face_reference_image,
         face_reference_descriptor: nextProfile.face_reference_descriptor,

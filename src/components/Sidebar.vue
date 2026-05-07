@@ -2,13 +2,30 @@
   <div>
     <nav class="sidebar bg-white dark:bg-gray-800 h-full">
       <div class="sidebar-head p-4 border-b dark:border-gray-700">
-        <router-link to="/dashboard" class="flex items-center gap-3">
-          <img class="w-8" src="@/assets/logo/logo.svg" alt="School System" />
-          <div>
-            <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">School System</h2>
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            class="group relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 transition hover:bg-slate-200 dark:bg-slate-700 dark:ring-slate-600 dark:hover:bg-slate-600"
+            :class="isAdminRole ? 'cursor-pointer' : 'cursor-default'"
+            :disabled="!isAdminRole || isUploadingSchoolLogo"
+            @click="triggerSchoolLogoPicker"
+          >
+            <img v-if="schoolLogoSrc" :src="schoolLogoSrc" :alt="schoolNameLabel" class="h-full w-full object-cover" />
+            <img v-else class="w-8" src="@/assets/logo/logo.svg" alt="School System" />
+            <span
+              v-if="isAdminRole"
+              class="absolute inset-0 flex items-center justify-center bg-slate-900/45 text-[10px] font-semibold text-white opacity-0 transition group-hover:opacity-100"
+            >
+              {{ isUploadingSchoolLogo ? "Upload..." : "Ubah" }}
+            </span>
+          </button>
+          <input ref="schoolLogoInputRef" type="file" accept="image/*" class="hidden" @change="handleSchoolLogoChange" />
+          <router-link to="/dashboard" class="min-w-0 flex-1">
+            <h2 class="truncate text-xl font-semibold text-gray-800 dark:text-gray-200">{{ schoolNameLabel }}</h2>
             <p class="text-xs text-gray-400">{{ role || "Guest" }}</p>
-          </div>
-        </router-link>
+          </router-link>
+        </div>
+        <p v-if="isAdminRole" class="mt-2 text-[11px] text-slate-400">Klik logo untuk ganti logo sekolah</p>
 
         <button class="lg:hidden block dark:text-gray-400 float-right -mt-10" @click="$emit('sidebarToggle')">
           <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 32 32" fill="currentColor">
@@ -128,22 +145,34 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
+import { api } from "@/api";
 import { getStoredRole } from "@/utils/auth";
+import { pushToast } from "@/composables/useToast";
+import { useProfileStore } from "@/store/profile";
 import { useSidebar } from "@/store/sidebar";
 import { useRealtimeStore } from "@/store/realtime";
+import { normalizePublicUrl } from "@/utils/url";
 
 defineEmits(["sidebarToggle"]);
 
 const route = useRoute();
 const router = useRouter();
 const role = getStoredRole();
+const profileStore = useProfileStore();
 const sidebarStore = useSidebar();
 const realtimeStore = useRealtimeStore();
 const { liveChatUnreadCount, liveChatSubjects } = storeToRefs(sidebarStore);
+const { profile: storedProfile } = storeToRefs(profileStore);
 const chatToasts = ref([]);
 const learningToasts = ref([]);
 const realtimeUnsubscribers = ref([]);
+const schoolLogoInputRef = ref(null);
+const isUploadingSchoolLogo = ref(false);
 let toastIdCounter = 0;
+
+const isAdminRole = role === "ADMIN";
+const schoolNameLabel = computed(() => storedProfile.value?.school_name || "School System");
+const schoolLogoSrc = computed(() => normalizePublicUrl(storedProfile.value?.school_logo) || "");
 
 const getCurrentUserId = () => {
   try {
@@ -160,6 +189,44 @@ const getCurrentUserId = () => {
 };
 
 const currentUserId = getCurrentUserId();
+
+const triggerSchoolLogoPicker = () => {
+  if (!isAdminRole || isUploadingSchoolLogo.value) {
+    return;
+  }
+  schoolLogoInputRef.value?.click();
+};
+
+const handleSchoolLogoChange = async (event) => {
+  const file = event.target.files?.[0] || null;
+  if (!file || !isAdminRole) {
+    return;
+  }
+
+  isUploadingSchoolLogo.value = true;
+  try {
+    const formData = new FormData();
+    formData.append("logo", file);
+    await api.put("/school/current/branding", formData);
+    await profileStore.loadProfile({ force: true });
+    pushToast({
+      title: "Logo Sekolah Diperbarui",
+      message: "Logo sekolah berhasil diubah.",
+      type: "success",
+    });
+  } catch (error) {
+    pushToast({
+      title: "Gagal Mengubah Logo",
+      message: error.message || "Logo sekolah tidak berhasil diperbarui.",
+      type: "error",
+    });
+  } finally {
+    if (schoolLogoInputRef.value) {
+      schoolLogoInputRef.value.value = "";
+    }
+    isUploadingSchoolLogo.value = false;
+  }
+};
 
 const menuByRole = {
   SUPER_ADMIN: [
@@ -482,6 +549,7 @@ watch(
 );
 
 onMounted(async () => {
+  profileStore.loadProfile().catch(() => {});
   await refreshLiveChatSummary(false);
   await sidebarStore.refreshLiveChatSubjects(role);
   if (typeof window !== "undefined" && typeof Notification !== "undefined" && Notification.permission === "default") {
