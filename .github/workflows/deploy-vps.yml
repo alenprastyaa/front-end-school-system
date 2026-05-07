@@ -53,7 +53,7 @@ jobs:
             set -eu
             TARGET_DIR="${{ secrets.VPS_TARGET_DIR }}"
             if [ -z "$TARGET_DIR" ]; then
-              TARGET_DIR="/var/www/school-system-fe"
+              TARGET_DIR="/var/www/front-end-school-system"
             fi
 
             sudo mkdir -p "$TARGET_DIR"
