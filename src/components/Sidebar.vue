@@ -25,7 +25,16 @@
             <p class="text-xs text-gray-400">{{ role || "Guest" }}</p>
           </router-link>
         </div>
-        <p v-if="isAdminRole" class="mt-2 text-[11px] text-slate-400">Klik logo untuk ganti logo sekolah</p>
+        <div v-if="isAdminRole" class="mt-2 flex items-center justify-between gap-3">
+          <p class="text-[11px] text-slate-400">Klik logo untuk ganti logo sekolah</p>
+          <button
+            type="button"
+            class="rounded-lg border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            @click="openSchoolEditModal"
+          >
+            Edit Sekolah
+          </button>
+        </div>
 
         <button class="lg:hidden block dark:text-gray-400 float-right -mt-10" @click="$emit('sidebarToggle')">
           <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 32 32" fill="currentColor">
@@ -137,11 +146,83 @@
         </button>
       </div>
     </teleport>
+
+    <teleport to="body">
+      <div
+        v-if="isSchoolEditModalOpen"
+        class="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm"
+        @click.self="closeSchoolEditModal"
+      >
+        <div class="w-full max-w-lg rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
+          <div class="border-b border-slate-100 px-6 py-5 dark:border-slate-800">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-600 dark:text-sky-300">Admin Sekolah</p>
+            <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Edit Data Sekolah</h2>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Perbarui nama sekolah dan logo yang tampil untuk seluruh admin sekolah ini.</p>
+          </div>
+
+          <form class="space-y-5 px-6 py-5" @submit.prevent="submitSchoolEdit">
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Nama Sekolah</label>
+              <input
+                v-model="schoolEditForm.name"
+                type="text"
+                required
+                class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
+              />
+            </div>
+
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Logo Sekolah</label>
+              <div class="flex items-center gap-4">
+                <div class="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+                  <img v-if="schoolEditLogoPreview" :src="schoolEditLogoPreview" :alt="schoolEditForm.name || schoolNameLabel" class="h-full w-full object-cover" />
+                  <img v-else class="w-8" src="@/assets/logo/logo.svg" alt="School System" />
+                </div>
+                <div class="min-w-0 flex-1">
+                  <input
+                    ref="schoolEditLogoInputRef"
+                    type="file"
+                    accept="image/*"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 file:mr-3 file:rounded-lg file:border-0 file:bg-sky-600 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white dark:bg-slate-800 dark:text-white dark:ring-slate-700 dark:file:bg-sky-500"
+                    @change="handleSchoolEditLogoChange"
+                  />
+                  <label class="mt-3 inline-flex items-center gap-2 text-xs font-medium text-rose-600 dark:text-rose-300">
+                    <input
+                      v-model="removeSchoolEditLogo"
+                      type="checkbox"
+                      class="rounded border-slate-300 text-rose-600 focus:ring-rose-500 dark:border-slate-600 dark:bg-slate-900"
+                    />
+                    Hapus logo sekolah saat disimpan
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-end gap-3 border-t border-slate-100 pt-5 dark:border-slate-800">
+              <button
+                type="button"
+                class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200"
+                @click="closeSchoolEditModal"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                :disabled="isSavingSchoolEdit"
+                class="rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-50"
+              >
+                {{ isSavingSchoolEdit ? "Menyimpan..." : "Simpan Perubahan" }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </teleport>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
@@ -168,6 +249,15 @@ const learningToasts = ref([]);
 const realtimeUnsubscribers = ref([]);
 const schoolLogoInputRef = ref(null);
 const isUploadingSchoolLogo = ref(false);
+const isSchoolEditModalOpen = ref(false);
+const isSavingSchoolEdit = ref(false);
+const schoolEditLogoInputRef = ref(null);
+const schoolEditLogoFile = ref(null);
+const schoolEditLogoPreview = ref("");
+const removeSchoolEditLogo = ref(false);
+const schoolEditForm = reactive({
+  name: "",
+});
 let toastIdCounter = 0;
 
 const isAdminRole = role === "ADMIN";
@@ -230,6 +320,79 @@ const handleSchoolLogoChange = async (event) => {
       schoolLogoInputRef.value.value = "";
     }
     isUploadingSchoolLogo.value = false;
+  }
+};
+
+const openSchoolEditModal = () => {
+  if (!isAdminRole) {
+    return;
+  }
+
+  schoolEditForm.name = storedProfile.value?.school_name || "";
+  schoolEditLogoFile.value = null;
+  schoolEditLogoPreview.value = normalizePublicUrl(storedProfile.value?.school_logo) || "";
+  removeSchoolEditLogo.value = false;
+  if (schoolEditLogoInputRef.value) {
+    schoolEditLogoInputRef.value.value = "";
+  }
+  isSchoolEditModalOpen.value = true;
+};
+
+const closeSchoolEditModal = () => {
+  if (isSavingSchoolEdit.value) {
+    return;
+  }
+
+  isSchoolEditModalOpen.value = false;
+};
+
+const handleSchoolEditLogoChange = (event) => {
+  const file = event.target.files?.[0] || null;
+  schoolEditLogoFile.value = file;
+  removeSchoolEditLogo.value = false;
+
+  if (!file) {
+    schoolEditLogoPreview.value = normalizePublicUrl(storedProfile.value?.school_logo) || "";
+    return;
+  }
+
+  schoolEditLogoPreview.value = URL.createObjectURL(file);
+};
+
+const submitSchoolEdit = async () => {
+  isSavingSchoolEdit.value = true;
+
+  try {
+    const formData = new FormData();
+    formData.append("name", schoolEditForm.name || schoolNameLabel.value);
+    if (schoolEditLogoFile.value) {
+      formData.append("logo", schoolEditLogoFile.value);
+    }
+    if (removeSchoolEditLogo.value && !schoolEditLogoFile.value) {
+      formData.append("remove_logo", "true");
+    }
+
+    const response = await api.put("/school/current", formData);
+    const updatedSchool = response?.data || {};
+    profileStore.applyProfile({
+      school_id: updatedSchool.id || storedProfile.value?.school_id || null,
+      school_name: updatedSchool.name || schoolEditForm.name || "School System",
+      school_logo: updatedSchool.logo_url || null,
+    });
+    isSchoolEditModalOpen.value = false;
+    pushToast({
+      title: "Data Sekolah Diperbarui",
+      message: response?.message || "Perubahan data sekolah berhasil disimpan.",
+      type: "success",
+    });
+  } catch (error) {
+    pushToast({
+      title: "Gagal Memperbarui Sekolah",
+      message: error.message || "Data sekolah tidak berhasil diperbarui.",
+      type: "error",
+    });
+  } finally {
+    isSavingSchoolEdit.value = false;
   }
 };
 
