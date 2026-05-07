@@ -189,73 +189,87 @@
         class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 class="text-base font-semibold text-slate-900 dark:text-white">Kirim Laporan Email Wali Kelas</h2>
-            <p class="mt-1 text-sm text-slate-500">Kirim rekap kehadiran harian ke email wali kelas dengan lampiran PDF.
+            <h2 class="text-base font-semibold text-slate-900 dark:text-white">Kirim Rekap WhatsApp Wali Kelas</h2>
+            <p class="mt-1 text-sm text-slate-500">Admin memilih kelas terlebih dahulu, lalu kirim WhatsApp hanya ke wali kelas tersebut.
             </p>
           </div>
 
           <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div>
-              <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Tanggal Laporan</label>
-              <input v-model="attendanceEmailReportDate" type="date"
+              <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Tanggal Rekap</label>
+              <input v-model="attendanceWhatsappReportDate" type="date"
                 class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-sky-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200" />
             </div>
-            <button @click="sendAttendanceEmailReport" :disabled="isSendingAttendanceEmailReport"
-              class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
-              <svg v-if="isSendingAttendanceEmailReport" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"
-                stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-              </svg>
-              {{ isSendingAttendanceEmailReport ? "Mengirim..." : "Kirim Email Sekarang" }}
-            </button>
           </div>
         </div>
 
-        <div v-if="attendanceEmailReportSummary" class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div class="rounded-xl bg-slate-50 p-4 dark:bg-slate-800/70">
-            <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Total Kelas</p>
-            <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{{
-              attendanceEmailReportSummary.total_classes || 0 }}</p>
-          </div>
-          <div class="rounded-xl bg-emerald-50 p-4 dark:bg-emerald-500/10">
-            <p class="text-xs font-medium uppercase tracking-wide text-emerald-600 dark:text-emerald-300">Berhasil</p>
-            <p class="mt-2 text-2xl font-bold text-emerald-700 dark:text-emerald-200">{{
-              attendanceEmailReportSummary.success_count || 0 }}</p>
-          </div>
-          <div class="rounded-xl bg-rose-50 p-4 dark:bg-rose-500/10">
-            <p class="text-xs font-medium uppercase tracking-wide text-rose-600 dark:text-rose-300">Gagal</p>
-            <p class="mt-2 text-2xl font-bold text-rose-700 dark:text-rose-200">{{
-              attendanceEmailReportSummary.failed_count || 0 }}</p>
-          </div>
-        </div>
-
-        <div v-if="attendanceEmailReportSummary?.results?.length" class="mt-5 overflow-x-auto">
+        <div class="mt-5 overflow-x-auto">
           <table class="min-w-full text-left text-sm">
             <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
               <tr>
                 <th class="px-4 py-3 font-medium">Kelas</th>
                 <th class="px-4 py-3 font-medium">Wali Kelas</th>
-                <th class="px-4 py-3 font-medium">Email</th>
-                <th class="px-4 py-3 font-medium">Status</th>
-                <th class="px-4 py-3 font-medium">Catatan</th>
+                <th class="px-4 py-3 font-medium">WhatsApp</th>
+                <th class="px-4 py-3 font-medium text-right">Aksi</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-              <tr v-for="item in attendanceEmailReportSummary.results" :key="`${item.class_id}-${item.target}`">
+              <tr v-for="item in (dashboardData?.classes || [])" :key="`${item.id}-${item.class_name}`">
                 <td class="px-4 py-3 font-medium text-slate-900 dark:text-white">{{ item.class_name || "-" }}</td>
                 <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.wali_guru_name || "-" }}</td>
-                <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.target || "-" }}</td>
-                <td class="px-4 py-3">
-                  <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold"
-                    :class="item.success ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300'">
-                    {{ item.success ? "Berhasil" : "Gagal" }}
-                  </span>
+                <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.wali_guru_phone_number || "-" }}</td>
+                <td class="px-4 py-3 text-right">
+                  <button
+                    @click="sendAttendanceWhatsappReport(item)"
+                    :disabled="sendingWhatsappClassId === item.id"
+                    class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <svg v-if="sendingWhatsappClassId === item.id" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"
+                      stroke-width="2" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                    {{ sendingWhatsappClassId === item.id ? "Mengirim..." : "Kirim WhatsApp" }}
+                  </button>
                 </td>
-                <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.error || "-" }}</td>
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <div v-if="attendanceWhatsappReportSummary" class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/50">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Hasil Pengiriman Terakhir</p>
+              <h3 class="mt-2 text-lg font-bold text-slate-900 dark:text-white">
+                {{ attendanceWhatsappReportSummary.class_name || "-" }} • {{ attendanceWhatsappReportSummary.wali_guru_name || "-" }}
+              </h3>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                WhatsApp tujuan: {{ attendanceWhatsappReportSummary.target || "-" }} • Tanggal rekap: {{ attendanceWhatsappReportSummary.attendance_date || "-" }}
+              </p>
+            </div>
+            <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold"
+              :class="attendanceWhatsappReportSummary.success ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300'">
+              {{ attendanceWhatsappReportSummary.success ? "Berhasil" : "Gagal" }}
+            </span>
+          </div>
+
+          <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <div class="rounded-xl bg-white p-4 dark:bg-slate-900">
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Sudah Hadir</p>
+              <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{{ attendanceWhatsappReportSummary.present_count || 0 }}</p>
+              <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                {{ attendanceWhatsappReportSummary.present_names?.length ? attendanceWhatsappReportSummary.present_names.join(", ") : "Belum ada siswa hadir." }}
+              </p>
+            </div>
+            <div class="rounded-xl bg-white p-4 dark:bg-slate-900">
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Belum Hadir</p>
+              <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{{ attendanceWhatsappReportSummary.absent_count || 0 }}</p>
+              <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                {{ attendanceWhatsappReportSummary.absent_names?.length ? attendanceWhatsappReportSummary.absent_names.join(", ") : "Semua siswa sudah hadir." }}
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -383,9 +397,9 @@ const isLoading = ref(false);
 const dashboardData = ref({});
 const selectedTeacherDayOrder = ref(0);
 const primaryTableSort = createSortState("");
-const attendanceEmailReportDate = ref(new Date().toISOString().slice(0, 10));
-const isSendingAttendanceEmailReport = ref(false);
-const attendanceEmailReportSummary = ref(null);
+const attendanceWhatsappReportDate = ref(new Date().toISOString().slice(0, 10));
+const sendingWhatsappClassId = ref(null);
+const attendanceWhatsappReportSummary = ref(null);
 const currentTime = ref(new Date());
 let dashboardClockTimer = null;
 
@@ -973,31 +987,36 @@ const loadDashboard = async () => {
   }
 };
 
-const sendAttendanceEmailReport = async () => {
-  isSendingAttendanceEmailReport.value = true;
-  attendanceEmailReportSummary.value = null;
+const sendAttendanceWhatsappReport = async (classItem) => {
+  if (!classItem?.id) {
+    return;
+  }
+
+  sendingWhatsappClassId.value = classItem.id;
 
   try {
-    const payload = {};
-    if (attendanceEmailReportDate.value) {
-      payload.date = attendanceEmailReportDate.value;
+    const payload = {
+      class_id: classItem.id,
+    };
+    if (attendanceWhatsappReportDate.value) {
+      payload.date = attendanceWhatsappReportDate.value;
     }
 
-    const response = await api.post("/attendance/report/homeroom-email", payload);
-    attendanceEmailReportSummary.value = response?.data || null;
+    const response = await api.post("/attendance/report/homeroom-whatsapp", payload);
+    attendanceWhatsappReportSummary.value = response?.data || null;
     pushToast({
-      title: "Laporan Email Diproses",
-      message: response?.message || "Laporan email berhasil diproses.",
+      title: "WhatsApp Berhasil Dikirim",
+      message: response?.message || `WhatsApp berhasil dikirim ke wali kelas ${classItem.class_name}.`,
       type: "success",
     });
   } catch (error) {
     pushToast({
-      title: "Gagal Mengirim Laporan Email",
-      message: error.message || "Gagal mengirim laporan email.",
+      title: "Gagal Mengirim Laporan WhatsApp",
+      message: error.message || "Gagal mengirim laporan WhatsApp.",
       type: "error",
     });
   } finally {
-    isSendingAttendanceEmailReport.value = false;
+    sendingWhatsappClassId.value = null;
   }
 };
 
