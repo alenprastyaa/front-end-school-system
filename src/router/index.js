@@ -76,6 +76,16 @@ const routes = [
     },
   },
   {
+    path: "/face-enrollment",
+    name: "FaceEnrollment",
+    component: () => import("../views/FaceEnrollment.vue"),
+    meta: {
+      title: "Enrol Wajah" + appName,
+      requiresAuth: true,
+      roles: ["SISWA"],
+    },
+  },
+  {
     path: "/homeroom-students",
     name: "TeacherStudents",
     component: () => import("../views/TeacherStudents.vue"),

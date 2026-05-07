@@ -89,7 +89,7 @@
         </div>
       </section> -->
 
-      <!-- <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+      <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
         <div class="flex flex-col gap-3">
           <div>
             <h2 class="text-lg font-bold text-slate-900 dark:text-white">Load Test Login</h2>
@@ -172,7 +172,7 @@
               item }}</li>
           </ul>
         </div>
-      </section> -->
+      </section>
 
       <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 -translate-y-2"
         enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-200"
@@ -220,7 +220,8 @@
                 <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ group.description }}</p>
               </div>
 
-              <div class="overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div
+                class="overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <table class="min-w-full text-left text-sm">
                   <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
                     <tr>
@@ -232,12 +233,14 @@
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                    <tr v-for="item in group.items" :key="item.key" class="align-top hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+                    <tr v-for="item in group.items" :key="item.key"
+                      class="align-top hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
                       <td class="px-4 py-4 sm:px-6">
                         <div class="font-semibold text-slate-900 dark:text-white">{{ item.label }}</div>
                       </td>
                       <td class="px-4 py-4 sm:px-6">
-                        <span class="inline-flex min-w-[44px] items-center justify-center rounded-xl bg-slate-100 px-3 py-2 text-base font-black text-slate-900 dark:bg-slate-800 dark:text-white">
+                        <span
+                          class="inline-flex min-w-[44px] items-center justify-center rounded-xl bg-slate-100 px-3 py-2 text-base font-black text-slate-900 dark:bg-slate-800 dark:text-white">
                           {{ item.count }}
                         </span>
                       </td>

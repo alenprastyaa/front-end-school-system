@@ -1,7 +1,7 @@
 <template>
   <div
     class="min-h-screen bg-slate-50/50 px-3 pb-10 pt-3 font-sans text-slate-900 sm:px-4 sm:pt-4 md:px-8 md:pb-12 md:pt-8 dark:bg-slate-950 dark:text-slate-100">
-    <div class="mx-auto  space-y-5 sm:space-y-6">
+    <div class="mx-auto max-w-[1440px] space-y-5 sm:space-y-6">
 
       <header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <div>
@@ -17,18 +17,9 @@
           <div class="hidden flex-col items-end sm:flex">
             <span class="text-xs font-medium text-slate-500">Terakhir diperbarui</span>
             <span class="text-sm font-semibold text-slate-900 dark:text-white">{{
-              formatDateTime(dashboardData.generatedAt) }}</span>
+              liveDashboardClock }}</span>
           </div>
           <div class="h-8 w-px bg-slate-200 hidden sm:block dark:bg-slate-800"></div>
-          <button @click="loadDashboard" :disabled="isLoading"
-            class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 disabled:opacity-50 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-800">
-            <svg :class="{ 'animate-spin': isLoading }" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-            </svg>
-            {{ isLoading ? 'Memuat...' : 'Refresh' }}
-          </button>
         </div>
       </header>
 
@@ -53,20 +44,145 @@
         </div>
       </div>
 
-      <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div v-for="item in summaryCards" :key="item.label" class="relative overflow-hidden rounded-2xl p-5"
+      <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div v-for="item in summaryCards" :key="item.label" class="relative overflow-hidden rounded-2xl p-4"
           :class="item.cardClass">
           <div class="flex items-start justify-between gap-4">
             <div>
-              <dt class="text-sm font-medium" :class="item.labelClass">{{ item.label }}</dt>
-              <dd class="mt-2 text-3xl font-bold tracking-tight" :class="item.valueClass">{{ item.value }}</dd>
-              <dd class="mt-3 text-xs" :class="item.captionClass">{{ item.caption }}</dd>
+              <dt class="text-xs font-semibold uppercase tracking-[0.14em]" :class="item.labelClass">{{ item.label }}
+              </dt>
+              <dd class="mt-2 text-2xl font-bold tracking-tight sm:text-[2rem]" :class="item.valueClass">{{ item.value
+                }}</dd>
+              <dd class="mt-2 text-[11px]" :class="item.captionClass">{{ item.caption }}</dd>
             </div>
-            <div class="flex h-16 w-16 shrink-0 items-center justify-center">
-              <Icon :icon="item.icon" class="h-10 w-10 opacity-75" :class="item.iconClass" />
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center sm:h-14 sm:w-14">
+              <Icon :icon="item.icon" class="h-8 w-8 opacity-75 sm:h-9 sm:w-9" :class="item.iconClass" />
             </div>
           </div>
         </div>
+      </section>
+
+      <section v-if="role === 'GURU'" class="space-y-4">
+        <div v-if="teacherTeachingAlert"
+          class="rounded-2xl border border-emerald-200 bg-white px-4 py-4 shadow-sm sm:px-5 dark:border-emerald-500/20 dark:bg-slate-900">
+          <div class="flex items-start gap-3">
+            <div
+              class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white">
+              <Icon icon="mdi:teach" class="h-5 w-5" />
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+                {{ teacherTeachingAlert.title }}
+              </p>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                {{ teacherTeachingAlert.message }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <section
+          class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div class="border-b border-slate-200 bg-white px-4 py-4 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
+            <h2 class="text-base font-semibold text-slate-900 dark:text-white">Jadwal Mengajar</h2>
+            <p class="mt-1 text-sm text-slate-500">Ringkasan jadwal mingguan guru yang ditampilkan sederhana per hari.
+            </p>
+          </div>
+
+          <div v-if="teacherScheduleDays.length" class="p-4 sm:p-5">
+            <div class="space-y-3">
+              <div v-for="day in teacherScheduleDays" :key="day.day_order"
+                class="rounded-xl border border-slate-200 dark:border-slate-800">
+                <div
+                  class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/60">
+                  <div class="flex items-center gap-3">
+                    <span class="inline-flex rounded-lg bg-sky-500 px-2.5 py-1 text-xs font-semibold text-white">
+                      {{ day.day_name }}
+                    </span>
+                    <span class="text-xs text-slate-500 dark:text-slate-400">{{ day.groupedEntries.length }} blok
+                      jadwal</span>
+                  </div>
+                  <span v-if="day.day_order === teacherScheduleTodayOrder"
+                    class="rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+                    Hari Ini
+                  </span>
+                </div>
+
+                <div class="divide-y divide-slate-100 dark:divide-slate-800">
+                  <div v-for="entry in day.groupedEntries" :key="entry.group_key"
+                    class="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold text-slate-900 dark:text-white">
+                        {{ entry.subject_name }} <span class="font-normal text-slate-500 dark:text-slate-400">di {{
+                          entry.class_name }}</span>
+                      </p>
+                      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        {{ entry.total_sessions }} jam • {{ formatScheduleRange(entry.start_time, entry.end_time) }}
+                      </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span v-if="entry.subject_code"
+                        class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                        {{ entry.subject_code }}
+                      </span>
+                      <span v-if="entry.is_active"
+                        class="rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+                        Aktif
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="teacherTeachingAssignments.length"
+                class="rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+                <p class="text-sm font-semibold text-slate-900 dark:text-white">Mapel Diampu</p>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <span v-for="item in teacherTeachingAssignments"
+                    :key="`${item.class_name}-${item.subject_name}-${item.id}`"
+                    class="inline-flex rounded-full bg-white px-3 py-1.5 text-xs text-slate-700 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700">
+                    {{ item.subject_name }} • {{ item.class_name }}{{ item.weekly_hours ? ` • ${item.weekly_hours} jam`
+                    : "" }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-else-if="teacherTeachingAssignments.length" class="p-4 sm:p-6">
+            <div
+              class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
+              Slot hari dan jam belum tergenerate, tetapi guru sudah terdistribusi mengajar pada kelas berikut.
+            </div>
+
+            <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <article v-for="item in teacherTeachingAssignments"
+                :key="`${item.class_name}-${item.subject_name}-${item.id}`"
+                class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950/40">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                      Kelas Diampu
+                    </p>
+                    <h3 class="mt-1 text-base font-bold text-slate-900 dark:text-white">{{ item.class_name }}</h3>
+                  </div>
+                  <span
+                    class="rounded-full bg-sky-100 px-2.5 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+                    {{ item.weekly_hours ? `${item.weekly_hours} jam` : "Mapel aktif" }}
+                  </span>
+                </div>
+                <p class="mt-3 text-sm font-semibold text-slate-800 dark:text-slate-100">{{ item.subject_name }}</p>
+                <p v-if="item.subject_code" class="mt-1 text-xs text-slate-500 dark:text-slate-400">Kode: {{
+                  item.subject_code }}</p>
+                <p v-if="item.notes" class="mt-3 text-sm text-slate-600 dark:text-slate-300">{{ item.notes }}</p>
+              </article>
+            </div>
+          </div>
+
+          <div v-else class="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+            Guru belum memiliki data distribusi kelas atau jadwal mengajar.
+          </div>
+        </section>
       </section>
 
       <section v-if="role === 'ADMIN'"
@@ -253,7 +369,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { Icon } from "@iconify/vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
@@ -265,10 +381,13 @@ const role = getStoredRole();
 const user = getStoredUser();
 const isLoading = ref(false);
 const dashboardData = ref({});
+const selectedTeacherDayOrder = ref(0);
 const primaryTableSort = createSortState("");
 const attendanceEmailReportDate = ref(new Date().toISOString().slice(0, 10));
 const isSendingAttendanceEmailReport = ref(false);
 const attendanceEmailReportSummary = ref(null);
+const currentTime = ref(new Date());
+let dashboardClockTimer = null;
 
 const endpointByRole = {
   SUPER_ADMIN: "/dashboard/superadmin",
@@ -279,8 +398,58 @@ const endpointByRole = {
 
 // Palet warna yang lebih modern, bersih, dan enterprise-look
 const chartPalette = ["#3b82f6", "#10b981", "#f59e0b", "#6366f1", "#ef4444", "#64748b"];
+const scheduleTonePalette = [
+  "border-sky-200 bg-white dark:border-sky-500/20 dark:bg-slate-900",
+  "border-emerald-200 bg-white dark:border-emerald-500/20 dark:bg-slate-900",
+  "border-amber-200 bg-white dark:border-amber-500/20 dark:bg-slate-900",
+  "border-violet-200 bg-white dark:border-violet-500/20 dark:bg-slate-900",
+  "border-rose-200 bg-white dark:border-rose-500/20 dark:bg-slate-900",
+  "border-cyan-200 bg-white dark:border-cyan-500/20 dark:bg-slate-900",
+];
+const scheduleAccentPalette = [
+  "bg-sky-500",
+  "bg-emerald-500",
+  "bg-amber-500",
+  "bg-violet-500",
+  "bg-rose-500",
+  "bg-cyan-500",
+];
+
+const defaultScheduleDays = [
+  { day_order: 1, day_name: "Senin" },
+  { day_order: 2, day_name: "Selasa" },
+  { day_order: 3, day_name: "Rabu" },
+  { day_order: 4, day_name: "Kamis" },
+  { day_order: 5, day_name: "Jumat" },
+  { day_order: 6, day_name: "Sabtu" },
+  { day_order: 7, day_name: "Minggu" },
+];
 
 const numberValue = (value) => Number(value || 0);
+const formatScheduleClock = (value) => String(value || "").trim().slice(0, 5) || "-";
+const formatScheduleRange = (start, end) => `${formatScheduleClock(start)} - ${formatScheduleClock(end)}`;
+const scheduleEntryTone = (sessionOrder) => scheduleTonePalette[(Number(sessionOrder || 0) - 1 + scheduleTonePalette.length) % scheduleTonePalette.length];
+const scheduleAccentTone = (sessionOrder) => scheduleAccentPalette[(Number(sessionOrder || 0) - 1 + scheduleAccentPalette.length) % scheduleAccentPalette.length];
+const entryCardClass = (entry) =>
+  entry?.is_active
+    ? "border-emerald-300 bg-white shadow-sm dark:border-emerald-500/30 dark:bg-slate-900"
+    : scheduleEntryTone(entry?.first_session_order || entry?.last_session_order || 0);
+const entryAccentClass = (entry) =>
+  entry?.is_active ? "bg-emerald-500" : scheduleAccentTone(entry?.first_session_order || entry?.last_session_order || 0);
+const dayBadgeClass = (dayOrder) => {
+  if (dayOrder === teacherScheduleTodayOrder.value) {
+    return "bg-rose-600 text-white";
+  }
+  const tones = [
+    "bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300",
+    "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+    "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+    "bg-violet-100 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300",
+    "bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
+    "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-300",
+  ];
+  return tones[(Number(dayOrder || 0) - 1 + tones.length) % tones.length];
+};
 
 const createSummaryCard = ({
   label,
@@ -315,10 +484,12 @@ const heroTitle = computed(() => {
 const heroDescription = computed(() => {
   if (role === "SUPER_ADMIN") return "Pantau kesiapan setiap sekolah, admin sekolah, struktur kelas, dan aktivitas operasional dari satu panel pusat.";
   if (role === "ADMIN") return "Metrik operasional sekolah, status absensi, dan data kelas secara real-time.";
-  if (role === "GURU") return "Ringkasan data absensi siswa dan administrasi untuk kelas perwalian Anda.";
+  if (role === "GURU") return "Pantau kelas wali, jadwal mengajar mingguan, dan status sesi mengajar hari ini dari satu dashboard.";
   if (role === "SISWA") return "Pantau riwayat absensi, status administrasi, dan tugas akademik Anda.";
   return "Ringkasan sistem berdasarkan akses pengguna.";
 });
+
+const liveDashboardClock = computed(() => formatDateTime(currentTime.value));
 
 const summaryCards = computed(() => {
   const overview = dashboardData.value?.overview || {};
@@ -340,9 +511,9 @@ const summaryCards = computed(() => {
       : role === "GURU"
         ? [
           createSummaryCard({ label: "Siswa Kelas Wali", value: numberValue(overview.students), caption: "Total siswa dibimbing", icon: "mdi:account-school-outline", cardClass: "bg-indigo-600" }),
+          createSummaryCard({ label: "Jam Mengajar Hari Ini", value: numberValue(overview.teaching_today), caption: "Sesi mengajar terjadwal", icon: "mdi:calendar-clock", cardClass: "bg-sky-600" }),
           createSummaryCard({ label: "Hadir Hari Ini", value: numberValue(overview.attendance_today), caption: "Siswa sudah absen", icon: "mdi:calendar-check-outline", cardClass: "bg-emerald-600" }),
-          createSummaryCard({ label: "Belum Hadir", value: numberValue(overview.absent_today), caption: "Perlu konfirmasi", icon: "ph:warning-circle", cardClass: "bg-amber-500" }),
-          createSummaryCard({ label: "Receipt Terkumpul", value: numberValue(overview.receipts_this_month), caption: "Bulan berjalan", icon: "ph:receipt", cardClass: "bg-sky-600" }),
+          createSummaryCard({ label: "Sedang Mengajar", value: numberValue(overview.active_teaching_now) ? "Ya" : "Tidak", caption: numberValue(overview.weekly_teaching_sessions) ? `${numberValue(overview.weekly_teaching_sessions)} sesi per minggu` : "Belum ada jadwal mingguan", icon: "ph:chalkboard-teacher", cardClass: "bg-amber-500" }),
         ]
         : [
           createSummaryCard({ label: "Total Kehadiran", value: numberValue(overview.attendance_total), caption: "Riwayat absen", icon: "mdi:calendar-check-outline", cardClass: "bg-blue-600" }),
@@ -367,6 +538,111 @@ const studentAssignmentAlert = computed(() => {
     items: items.slice(0, 4),
   };
 });
+
+const teacherSchedulePayload = computed(() => (role === "GURU" ? dashboardData.value?.teachingSchedule || {} : {}));
+const teacherScheduleEntries = computed(() =>
+  Array.isArray(teacherSchedulePayload.value?.entries) ? teacherSchedulePayload.value.entries : [],
+);
+const activeTeachingEntryId = computed(() => Number(teacherSchedulePayload.value?.active_now?.id || 0));
+const teacherTeachingAssignments = computed(() =>
+  Array.isArray(teacherSchedulePayload.value?.teaching_assignments) ? teacherSchedulePayload.value.teaching_assignments : [],
+);
+const teacherScheduleTodayOrder = computed(() => Number(teacherSchedulePayload.value?.today_day_order || 0));
+const teacherScheduleDays = computed(() => {
+  if (role !== "GURU") return [];
+
+  const dayMap = new Map(
+    defaultScheduleDays.map((item) => [item.day_order, { ...item, entries: [] }]),
+  );
+
+  for (const entry of teacherScheduleEntries.value) {
+    const dayOrder = Number(entry?.day_order || 0);
+    if (!dayMap.has(dayOrder)) {
+      dayMap.set(dayOrder, {
+        day_order: dayOrder,
+        day_name: entry?.day_name || `Hari ${dayOrder}`,
+        entries: [],
+      });
+    }
+    dayMap.get(dayOrder).entries.push(entry);
+  }
+
+  return Array.from(dayMap.values())
+    .sort((a, b) => a.day_order - b.day_order)
+    .map((day) => ({
+      ...day,
+      entries: [...day.entries].sort((a, b) => Number(a.session_order || 0) - Number(b.session_order || 0)),
+      groupedEntries: groupScheduleEntries(day.entries),
+    }))
+    .filter((day) => day.entries.length > 0);
+});
+const selectedTeacherScheduleDay = computed(() => {
+  if (role !== "GURU") return null;
+  const days = teacherScheduleDays.value;
+  if (!days.length) return null;
+  return (
+    days.find((day) => day.day_order === selectedTeacherDayOrder.value) ||
+    days.find((day) => day.day_order === teacherScheduleTodayOrder.value) ||
+    days[0]
+  );
+});
+
+const teacherTeachingAlert = computed(() => {
+  if (role !== "GURU") return null;
+
+  const active = teacherSchedulePayload.value?.active_now;
+  if (active && Object.keys(active).length) {
+    return {
+      title: "Guru sedang ada jam mengajar",
+      message: `${active.subject_name || "-"} • ${active.class_name || "-"} • ${formatScheduleRange(active.start_time, active.end_time)}`,
+    };
+  }
+
+  return null;
+});
+
+const isActiveScheduleEntry = (entry) => Number(entry?.id || 0) === activeTeachingEntryId.value;
+
+const groupScheduleEntries = (entries) => {
+  const sorted = [...entries].sort((a, b) => Number(a.session_order || 0) - Number(b.session_order || 0));
+  const groups = [];
+
+  for (const entry of sorted) {
+    const last = groups[groups.length - 1];
+    const currentSession = Number(entry?.session_order || 0);
+
+    if (
+      last &&
+      last.class_name === entry?.class_name &&
+      last.subject_name === entry?.subject_name &&
+      last.subject_code === entry?.subject_code &&
+      currentSession === last.last_session_order + 1
+    ) {
+      last.end_time = entry?.end_time;
+      last.last_session_order = currentSession;
+      last.total_sessions += 1;
+      last.ids.push(Number(entry?.id || 0));
+      last.is_active = last.is_active || isActiveScheduleEntry(entry);
+      continue;
+    }
+
+    groups.push({
+      group_key: `${entry?.day_order || 0}-${entry?.class_name || ""}-${entry?.subject_name || ""}-${currentSession}`,
+      class_name: entry?.class_name || "-",
+      subject_name: entry?.subject_name || "-",
+      subject_code: entry?.subject_code || "",
+      start_time: entry?.start_time || "",
+      end_time: entry?.end_time || "",
+      total_sessions: 1,
+      first_session_order: currentSession,
+      last_session_order: currentSession,
+      ids: [Number(entry?.id || 0)],
+      is_active: isActiveScheduleEntry(entry),
+    });
+  }
+
+  return groups;
+};
 
 const primarySortAccessors = computed(() => ({
   full_name: (item) => item.full_name || item.username || "",
@@ -726,4 +1002,16 @@ const sendAttendanceEmailReport = async () => {
 };
 
 onMounted(loadDashboard);
+onMounted(() => {
+  dashboardClockTimer = window.setInterval(() => {
+    currentTime.value = new Date();
+  }, 1000);
+});
+
+onBeforeUnmount(() => {
+  if (dashboardClockTimer) {
+    window.clearInterval(dashboardClockTimer);
+    dashboardClockTimer = null;
+  }
+});
 </script>

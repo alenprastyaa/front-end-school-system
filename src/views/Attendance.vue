@@ -1,183 +1,114 @@
 <template>
   <div
     class="min-h-screen bg-slate-50/50 px-3 pb-12 pt-4 font-sans text-slate-900 md:px-8 md:pt-8 dark:bg-slate-950 dark:text-slate-100">
-    <div class="mx-auto  space-y-6">
+    <div class="mx-auto space-y-5">
 
-      <section class="rounded-lg border border-slate-200 bg-white p-4 md:p-6 dark:border-slate-800 dark:bg-slate-900">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+
+      <section
+        class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 md:p-5">
+        <div class="flex items-center justify-between gap-4 border-b border-slate-200 pb-4 dark:border-slate-800">
           <div>
-            <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">Absensi</h1>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Absensi Hari Ini</h2>
             <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Lakukan check-in dan check-out harian, lalu pantau riwayat kehadiran Anda.
+              {{ !hasCheckedInToday ? "Aktifkan kamera, ambil foto, lalu kirim check-in."
+                : "Check-in sudah tercatat. Lanjutkan check-out saat selesai." }}
+            </p>
+            <p v-if="!hasProfileReference" class="mt-2 text-xs font-medium text-rose-600 dark:text-rose-300">
+              Foto referensi wajah belum tersedia. Silakan enrol wajah terlebih dahulu.
             </p>
           </div>
-          <div class="text-left lg:text-right">
-            <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Waktu Sekarang</p>
-            <p class="mt-1 font-mono text-2xl font-bold text-slate-900 dark:text-white">{{ currentTime }}</p>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ currentDate }}</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div class="rounded-2xl bg-sky-600 p-5 text-white">
-          <p class="text-sm font-medium text-white/80">Status Hari Ini</p>
-          <p class="mt-2 text-2xl font-bold">
-            {{ hasCheckedOutToday ? "Sudah Check-out" : hasCheckedInToday ? "Sudah Check-in" : "Belum Check-in" }}
-          </p>
-          <p class="mt-2 text-xs text-white/70">
-            {{ hasCheckedOutToday ? "Aktivitas hari ini sudah lengkap."
-              : hasCheckedInToday ? "Tinggal lakukan check-out saat selesai." : "Silakan lakukan absensi masuk." }}
-          </p>
-          <span class="mt-4 inline-flex rounded-full px-3 py-1 text-xs font-semibold"
-            :class="hasCheckedOutToday ? 'bg-white/20 text-white' : hasCheckedInToday ? 'bg-emerald-400/20 text-emerald-100' : 'bg-amber-300/20 text-amber-50'">
-            {{ hasCheckedOutToday ? "Selesai" : hasCheckedInToday ? "Aktif" : "Siap Absen" }}
+          <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold"
+            :class="hasCheckedOutToday ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : hasCheckedInToday ? 'bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300'">
+            {{ hasCheckedOutToday ? "Selesai" : hasCheckedInToday ? "Aktif" : "Menunggu Check-in" }}
           </span>
         </div>
-        <div class="rounded-2xl bg-emerald-600 p-5 text-white">
-          <p class="text-sm font-medium text-white/80">Check-in Hari Ini</p>
-          <p class="mt-2 text-2xl font-bold">{{ todayRecord?.clock_in ? formatTime(todayRecord.clock_in) : "-" }}</p>
-          <p class="mt-2 text-xs text-white/70">Tercatat otomatis setelah check-in berhasil.</p>
+
+        <div v-if="!hasCheckedInToday" class="mt-5 space-y-4">
+          <div class="flex flex-wrap gap-2">
+            <button type="button" @click="startCamera"
+              :disabled="isVerifyingFace || isCheckingIn || isCameraLoading || cameraActive || !hasProfileReference"
+              class="inline-flex h-10 items-center justify-center rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
+              {{ isCameraLoading ? "Membuka..." : cameraActive ? "Kamera Aktif" : "Aktifkan Kamera" }}
+            </button>
+            <button v-if="cameraActive" type="button" @click="stopCamera" :disabled="isVerifyingFace || isCheckingIn"
+              class="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+              Tutup Kamera
+            </button>
+            <button type="button" @click="captureCheckInPhoto"
+              :disabled="isVerifyingFace || isCheckingIn || !cameraActive || isCameraLoading || !hasProfileReference"
+              class="inline-flex h-10 items-center justify-center rounded-lg bg-emerald-600 px-4 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60">
+              Ambil Foto
+            </button>
+            <button v-if="selectedFile" type="button" @click="retakeCheckInPhoto"
+              :disabled="isVerifyingFace || isCheckingIn"
+              class="inline-flex h-10 items-center justify-center rounded-lg border border-amber-300 bg-amber-50 px-4 text-sm font-medium text-amber-700 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
+              Ambil Ulang
+            </button>
+          </div>
+
+          <div
+            class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-800/60">
+            <div class="flex min-h-[260px] items-center justify-center p-4"
+              :class="selectedFile ? 'bg-emerald-50 dark:bg-emerald-500/5' : ''">
+              <video ref="cameraVideoRef" class="h-full w-full max-h-[360px] rounded-2xl object-cover"
+                :class="cameraActive && !selectedFile ? 'block' : 'hidden'" autoplay playsinline muted></video>
+
+              <div v-if="!cameraActive && !selectedFile" class="text-center">
+                <p class="text-base font-semibold text-slate-900 dark:text-white">Aktifkan kamera untuk mulai absensi
+                </p>
+                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Setelah kamera aktif, ambil selfie lalu kirim
+                  check-in.</p>
+              </div>
+
+              <div v-if="selectedFile" class="flex w-full flex-col items-center">
+                <div
+                  class="h-44 w-44 overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm dark:border-emerald-500/20 dark:bg-slate-900">
+                  <img v-if="selectedPreviewUrl" :src="selectedPreviewUrl" alt="Preview selfie"
+                    class="h-full w-full object-cover" />
+                </div>
+                <p class="mt-3 text-sm font-medium text-slate-900 dark:text-white">Foto siap diverifikasi</p>
+              </div>
+            </div>
+          </div>
+
+          <canvas ref="captureCanvasRef" class="hidden"></canvas>
+
+          <div class="rounded-xl border px-4 py-3 text-sm" :class="faceVerificationAlertClass">
+            <p class="font-semibold">{{ faceVerificationTitle }}</p>
+            <p class="mt-1">{{ faceVerificationMessage }}</p>
+          </div>
+
+          <button @click="submitCheckIn" :disabled="isCheckingIn || !selectedFile || !canSubmitCheckIn"
+            class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
+            <svg v-if="isCheckingIn || isVerifyingFace" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"
+              stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+            {{ isCheckingIn ? "Mengirim Check-in..." : isVerifyingFace ? "Memverifikasi Wajah..." : "Kirim Check-in" }}
+          </button>
         </div>
-        <div class="rounded-2xl bg-slate-700 p-5 text-white">
-          <p class="text-sm font-medium text-white/80">Check-out Hari Ini</p>
-          <p class="mt-2 text-2xl font-bold">{{ todayRecord?.clock_out ? formatTime(todayRecord.clock_out) : "-" }}</p>
-          <p class="mt-2 text-xs text-white/70">Masih kosong jika sesi belum diakhiri.</p>
-        </div>
-        <div class="rounded-2xl bg-violet-600 p-5 text-white">
-          <p class="text-sm font-medium text-white/80">Total Riwayat</p>
-          <p class="mt-2 text-2xl font-bold">{{ attendances.length }}</p>
-          <p class="mt-2 text-xs text-white/70">Jumlah data kehadiran yang sudah tercatat.</p>
+
+        <div v-else class="mt-5 space-y-4">
+          <div class="rounded-2xl bg-slate-50 p-5 text-center dark:bg-slate-800/60">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Check-in Sudah Tercatat</h3>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              {{ hasCheckedOutToday ? "Absensi hari ini sudah selesai."
+                : "Silakan lakukan check-out ketika kegiatan selesai." }}
+            </p>
+          </div>
+
+          <button @click="submitCheckOut" :disabled="isCheckingOut || hasCheckedOutToday"
+            class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
+            <svg v-if="isCheckingOut" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+            {{ hasCheckedOutToday ? "Sesi Telah Berakhir" : isCheckingOut ? "Mengirim Check-out..." : "Check-out" }}
+          </button>
         </div>
       </section>
-
-      <div class="grid grid-cols-1 gap-6 xl:grid-cols-[340px,1fr]">
-        <section
-          class="rounded-xl border border-slate-200 bg-white p-4 md:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div
-            class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-            </svg>
-          </div>
-
-          <h2 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white">Panduan Absensi</h2>
-          <p class="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-            Gunakan foto selfie langsung dari kamera perangkat saat melakukan check-in agar data kehadiran tetap valid.
-          </p>
-
-          <div class="mt-5 space-y-3 text-sm text-slate-600 dark:text-slate-400">
-            <div class="rounded-xl bg-slate-50 p-4 dark:bg-slate-800/60">
-              <p class="font-medium text-slate-900 dark:text-white">1. Check-in</p>
-              <p class="mt-1">Ambil foto lalu kirim absensi masuk.</p>
-            </div>
-            <div class="rounded-xl bg-slate-50 p-4 dark:bg-slate-800/60">
-              <p class="font-medium text-slate-900 dark:text-white">2. Check-out</p>
-              <p class="mt-1">Akhiri sesi belajar setelah aktivitas selesai.</p>
-            </div>
-          </div>
-
-        </section>
-
-        <section
-          class="rounded-xl border border-slate-200 bg-white p-4 md:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div class="flex items-center justify-between gap-4 border-b border-slate-200 pb-4 dark:border-slate-800">
-            <div>
-              <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Aksi Kehadiran</h2>
-              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                {{ !hasCheckedInToday ? "Ambil foto lalu kirim check-in."
-                  : "Check-in sudah tercatat. Lanjutkan dengan check - out saat selesai." }}
-              </p>
-            </div>
-            <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold"
-              :class="hasCheckedOutToday ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : hasCheckedInToday ? 'bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300'">
-              {{ hasCheckedOutToday ? "Selesai" : hasCheckedInToday ? "Aktif" : "Menunggu Check-in" }}
-            </span>
-          </div>
-
-          <div v-if="!hasCheckedInToday" class="mt-6 space-y-5">
-            <label class="group block cursor-pointer">
-              <div
-                class="flex min-h-[260px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center transition hover:border-sky-500 hover:bg-sky-50 dark:border-slate-700 dark:bg-slate-800/60 dark:hover:border-sky-500 dark:hover:bg-sky-500/5"
-                :class="selectedFile ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-500/5' : ''">
-                <input type="file" accept="image/*" capture="user" @change="handleFileChange" class="sr-only" />
-
-                <div v-if="!selectedFile" class="flex flex-col items-center">
-                  <div
-                    class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
-                    <svg class="h-8 w-8 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24"
-                      stroke-width="1.75" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
-                    </svg>
-                  </div>
-                  <p class="text-base font-semibold text-slate-900 dark:text-white">Ambil Foto Check-in</p>
-                  <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Ketuk area ini untuk membuka kamera selfie.
-                  </p>
-                </div>
-
-                <div v-else class="flex w-full flex-col items-center">
-                  <div
-                    class="mb-4 h-40 w-40 overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm dark:border-emerald-500/20 dark:bg-slate-900">
-                    <img v-if="selectedPreviewUrl" :src="selectedPreviewUrl" alt="Preview selfie"
-                      class="h-full w-full object-cover" />
-                    <div v-else
-                      class="flex h-full w-full items-center justify-center bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300">
-                      <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                      </svg>
-                    </div>
-                  </div>
-                  <p class="text-base font-semibold text-slate-900 dark:text-white">Foto Siap Dikirim</p>
-                  <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Ketuk lagi jika ingin mengganti foto.</p>
-                </div>
-              </div>
-            </label>
-
-            <button @click="submitCheckIn" :disabled="isCheckingIn || !selectedFile"
-              class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
-              <svg v-if="isCheckingIn" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-              </svg>
-              {{ isCheckingIn ? "Mengirim Check-in..." : "Kirim Check-in" }}
-            </button>
-          </div>
-
-          <div v-else class="mt-6">
-            <div class="rounded-2xl bg-slate-50 p-6 text-center dark:bg-slate-800/60">
-              <div
-                class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300">
-                <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                </svg>
-              </div>
-              <h3 class="mt-4 text-xl font-semibold text-slate-900 dark:text-white">Check-in Sudah Tercatat</h3>
-              <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                {{ hasCheckedOutToday ? "Anda sudah menyelesaikan absensi hari ini."
-                  : "Silakan lakukan check-out ketika sesi belajar berakhir." }}
-              </p>
-            </div>
-
-            <button @click="submitCheckOut" :disabled="isCheckingOut || hasCheckedOutToday"
-              class="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
-              <svg v-if="isCheckingOut" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-              </svg>
-              {{ hasCheckedOutToday ? "Sesi Telah Berakhir" : isCheckingOut ? "Mengirim Check-out..."
-                : "Akhiri Sesi (Check - out)" }}
-            </button>
-          </div>
-        </section>
-      </div>
 
       <section
         class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -282,12 +213,19 @@ import { computed, onMounted, onUnmounted, ref } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatDate, formatTime } from "@/utils/date";
+import { useProfileStore } from "@/store/profile";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 
 // --- Live Clock Logic ---
 const currentTime = ref("");
 const currentDate = ref("");
 let timer;
+let faceApiLoadPromise = null;
+let cameraStream = null;
+
+const FACE_API_SCRIPT_URL = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
+const FACE_API_MODEL_URL = "https://justadudewhohacks.github.io/face-api.js/models";
+const FACE_MATCH_THRESHOLD = 0.5;
 
 const updateClock = () => {
   const now = new Date();
@@ -301,7 +239,18 @@ const selectedPreviewUrl = ref("");
 const attendances = ref([]);
 const isCheckingIn = ref(false);
 const isCheckingOut = ref(false);
+const isVerifyingFace = ref(false);
+const isCameraLoading = ref(false);
+const cameraActive = ref(false);
+const cameraVideoRef = ref(null);
+const captureCanvasRef = ref(null);
+const faceVerification = ref({
+  status: "idle",
+  distance: null,
+  message: "Aktifkan kamera lalu ambil selfie untuk mulai verifikasi wajah.",
+});
 const tableSort = createSortState("attendance_date", "desc");
+const profileStore = useProfileStore();
 
 // Computed properti untuk mendeteksi status kehadiran hari ini
 const formatLocalDate = (value) => {
@@ -323,8 +272,30 @@ const todayRecord = computed(() => {
 
 const hasCheckedInToday = computed(() => !!todayRecord.value);
 const hasCheckedOutToday = computed(() => hasCheckedInToday.value && !!todayRecord.value.clock_out);
+const storedReferenceDescriptor = computed(() => profileStore.profile?.face_reference_descriptor || "");
+const hasProfileReference = computed(() => Boolean(String(storedReferenceDescriptor.value || "").trim()));
+const canSubmitCheckIn = computed(() => hasProfileReference.value && faceVerification.value.status === "matched");
 
 const sortedAttendances = computed(() => sortItems(attendances.value, tableSort));
+const faceVerificationTitle = computed(() => {
+  if (!hasProfileReference.value) return "Enrol wajah diperlukan";
+  if (faceVerification.value.status === "matched") return "Wajah terverifikasi";
+  if (faceVerification.value.status === "mismatch") return "Wajah tidak cocok";
+  if (faceVerification.value.status === "error") return "Verifikasi gagal";
+  if (faceVerification.value.status === "loading") return "Memeriksa wajah";
+  return "Verifikasi wajah";
+});
+const faceVerificationMessage = computed(() => {
+  if (!hasProfileReference.value) return "Simpan foto referensi dari menu Enrol Wajah sebelum check-in.";
+  return faceVerification.value.message;
+});
+const faceVerificationAlertClass = computed(() => {
+  if (!hasProfileReference.value) return "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300";
+  if (faceVerification.value.status === "matched") return "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300";
+  if (faceVerification.value.status === "mismatch" || faceVerification.value.status === "error") return "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300";
+  if (faceVerification.value.status === "loading") return "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300";
+  return "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300";
+});
 
 const handleSort = (key) => toggleSort(tableSort, key);
 const sortIndicator = (key) => tableSort.key !== key ? "↕" : tableSort.direction === "asc" ? "▲" : "▼";
@@ -336,11 +307,185 @@ const resetSelectedPreview = () => {
   }
 };
 
-const handleFileChange = (event) => {
+const resetFaceVerification = (status = "idle", message = "Aktifkan kamera lalu ambil selfie untuk mulai verifikasi wajah.") => {
+  faceVerification.value = {
+    status,
+    distance: null,
+    message,
+  };
+};
+
+const stopCamera = () => {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach((track) => track.stop());
+    cameraStream = null;
+  }
+  cameraActive.value = false;
+  if (cameraVideoRef.value) {
+    cameraVideoRef.value.srcObject = null;
+  }
+};
+
+const startCamera = async () => {
+  if (cameraActive.value || isCameraLoading.value || !hasProfileReference.value) {
+    return;
+  }
+
+  isCameraLoading.value = true;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: "user",
+        width: { ideal: 960 },
+        height: { ideal: 960 },
+      },
+      audio: false,
+    });
+    cameraStream = stream;
+    if (cameraVideoRef.value) {
+      cameraVideoRef.value.srcObject = stream;
+      await cameraVideoRef.value.play();
+    }
+    cameraActive.value = true;
+  } catch (error) {
+    stopCamera();
+    resetFaceVerification("error", "Kamera tidak bisa diakses. Izinkan webcam lalu coba lagi.");
+  } finally {
+    isCameraLoading.value = false;
+  }
+};
+
+const loadFaceApi = async () => {
+  if (window.faceapi) {
+    return window.faceapi;
+  }
+
+  if (!faceApiLoadPromise) {
+    faceApiLoadPromise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = FACE_API_SCRIPT_URL;
+      script.async = true;
+      script.onload = () => resolve(window.faceapi);
+      script.onerror = () => reject(new Error("Gagal memuat library face recognition."));
+      document.head.appendChild(script);
+    });
+  }
+
+  const faceapi = await faceApiLoadPromise;
+  await Promise.all([
+    faceapi.nets.tinyFaceDetector.loadFromUri(FACE_API_MODEL_URL),
+    faceapi.nets.faceLandmark68Net.loadFromUri(FACE_API_MODEL_URL),
+    faceapi.nets.faceRecognitionNet.loadFromUri(FACE_API_MODEL_URL),
+  ]);
+  return faceapi;
+};
+
+const loadImageForFaceApi = (src) =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Gagal memuat gambar untuk verifikasi wajah."));
+    image.src = src;
+  });
+
+const detectFaceDescriptor = async (faceapi, source) => {
+  const result = await faceapi
+    .detectSingleFace(source, new faceapi.TinyFaceDetectorOptions())
+    .withFaceLandmarks()
+    .withFaceDescriptor();
+
+  if (!result?.descriptor) {
+    throw new Error("Wajah tidak terdeteksi dengan jelas. Gunakan foto yang terang dan menghadap kamera.");
+  }
+
+  return result.descriptor;
+};
+
+const verifySelectedFace = async () => {
+  if (!selectedFile.value || !selectedPreviewUrl.value) {
+    resetFaceVerification();
+    return;
+  }
+
+  if (!hasProfileReference.value) {
+    resetFaceVerification("error", "Foto referensi wajah belum tersedia.");
+    return;
+  }
+
+  isVerifyingFace.value = true;
+  faceVerification.value = {
+    status: "loading",
+    distance: null,
+    message: "Sistem sedang mencocokkan wajah dengan foto referensi Anda.",
+  };
+
+  try {
+    const faceapi = await loadFaceApi();
+    const selfieImage = await loadImageForFaceApi(selectedPreviewUrl.value);
+    const referenceDescriptor = Float32Array.from(JSON.parse(storedReferenceDescriptor.value));
+    const selfieDescriptor = await detectFaceDescriptor(faceapi, selfieImage);
+
+    const distance = faceapi.euclideanDistance(referenceDescriptor, selfieDescriptor);
+    const matched = distance <= FACE_MATCH_THRESHOLD;
+
+    faceVerification.value = {
+      status: matched ? "matched" : "mismatch",
+      distance,
+      message: matched
+        ? `Wajah cocok dengan foto referensi. Skor kecocokan ${(1 - distance).toFixed(2)}.`
+        : `Wajah tidak cocok dengan foto referensi. Skor jarak ${distance.toFixed(2)} melewati batas aman.`,
+    };
+  } catch (error) {
+    faceVerification.value = {
+      status: "error",
+      distance: null,
+      message: error.message || "Verifikasi wajah gagal diproses.",
+    };
+  } finally {
+    isVerifyingFace.value = false;
+  }
+};
+
+const captureCheckInPhoto = async () => {
+  const video = cameraVideoRef.value;
+  const canvas = captureCanvasRef.value;
+
+  if (!video || !canvas || !cameraActive.value) {
+    return;
+  }
+
   resetSelectedPreview();
-  selectedFile.value = event.target.files?.[0] || null;
-  if (selectedFile.value) {
-    selectedPreviewUrl.value = URL.createObjectURL(selectedFile.value);
+  selectedFile.value = null;
+  resetFaceVerification("idle", "Selfie sedang disiapkan untuk verifikasi wajah.");
+
+  canvas.width = video.videoWidth || 720;
+  canvas.height = video.videoHeight || 720;
+  const context = canvas.getContext("2d");
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  const blob = await new Promise((resolve) => {
+    canvas.toBlob(resolve, "image/jpeg", 0.92);
+  });
+
+  if (!blob) {
+    resetFaceVerification("error", "Foto dari kamera tidak berhasil diproses.");
+    return;
+  }
+
+  selectedFile.value = new File([blob], `attendance-${Date.now()}.jpg`, {
+    type: "image/jpeg",
+  });
+  selectedPreviewUrl.value = URL.createObjectURL(selectedFile.value);
+  await verifySelectedFace();
+};
+
+const retakeCheckInPhoto = async () => {
+  selectedFile.value = null;
+  resetSelectedPreview();
+  resetFaceVerification();
+  if (!cameraActive.value) {
+    await startCamera();
   }
 };
 
@@ -358,13 +503,15 @@ const loadAttendance = async () => {
 };
 
 const submitCheckIn = async () => {
-  if (!selectedFile.value) return;
+  if (!selectedFile.value || !canSubmitCheckIn.value) return;
 
   isCheckingIn.value = true;
 
   try {
     const formData = new FormData();
     formData.append("image", selectedFile.value);
+    formData.append("face_verification_status", faceVerification.value.status || "");
+    formData.append("face_verification_distance", String(faceVerification.value.distance ?? ""));
     const response = await api.post("/attendance", formData);
     pushToast({
       title: "Check-in Berhasil",
@@ -373,11 +520,7 @@ const submitCheckIn = async () => {
     });
     selectedFile.value = null;
     resetSelectedPreview();
-
-    // Reset file input UI hidden element
-    const fileInput = document.querySelector('input[type="file"]');
-    if (fileInput) fileInput.value = "";
-
+    resetFaceVerification();
     await loadAttendance();
   } catch (error) {
     pushToast({
@@ -415,11 +558,13 @@ const submitCheckOut = async () => {
 onMounted(() => {
   updateClock();
   timer = setInterval(updateClock, 1000);
+  profileStore.loadProfile().catch(() => { });
   loadAttendance();
 });
 
 onUnmounted(() => {
   clearInterval(timer);
+  stopCamera();
   resetSelectedPreview();
 });
 </script>

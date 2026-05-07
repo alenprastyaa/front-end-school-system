@@ -220,6 +220,7 @@ const menuByRole = {
       ],
     },
     { key: "attendance", to: "/attendance", label: "Absensi", icon: "mdi:calendar-check-outline" },
+    { key: "face-enrollment", to: "/face-enrollment", label: "Enrol Wajah", icon: "mdi:face-recognition" },
     { key: "receipts", to: "/receipts", label: "Bukti Pembayaran", icon: "ph:receipt" },
   ],
 };

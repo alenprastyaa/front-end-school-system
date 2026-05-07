@@ -22,6 +22,8 @@ export const useProfileStore = defineStore("profile", {
       parent_email: "",
       phone_number: "",
       profile_image: "",
+      face_reference_image: "",
+      face_reference_descriptor: "",
     },
     loadedAt: 0,
     loading: false,
@@ -45,6 +47,8 @@ export const useProfileStore = defineStore("profile", {
         ...this.profile,
         ...profile,
         profile_image: normalizePublicUrl(profile.profile_image) || null,
+        face_reference_image: normalizePublicUrl(profile.face_reference_image) || null,
+        face_reference_descriptor: profile.face_reference_descriptor || null,
       };
 
       this.profile = nextProfile;
@@ -54,6 +58,8 @@ export const useProfileStore = defineStore("profile", {
         school_id: nextProfile.school_id,
         school_name: nextProfile.school_name,
         profile_image: nextProfile.profile_image,
+        face_reference_image: nextProfile.face_reference_image,
+        face_reference_descriptor: nextProfile.face_reference_descriptor,
       });
       this.loadedAt = Date.now();
       return nextProfile;

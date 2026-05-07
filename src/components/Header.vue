@@ -1,7 +1,6 @@
 <template>
   <header
-    class="app-header sticky top-0 z-40 shrink-0 border-b-2 bg-white/95 p-4 backdrop-blur dark:border-gray-700 dark:bg-gray-800/95"
-  >
+    class="app-header sticky top-0 z-40 shrink-0 border-b-2 bg-white/95 p-4 backdrop-blur dark:border-gray-700 dark:bg-gray-800/95">
     <div class="flex items-center justify-between gap-4 flex-wrap">
       <div class="flex items-center gap-4">
         <button class="text-gray-500 block" @click="$emit('sidebarToggle')">
@@ -15,10 +14,12 @@
           <h1 class="text-lg font-semibold text-gray-900 dark:text-white">
             {{ userProfile.school_name || userProfile.school_id || "Belum terhubung ke sekolah" }}
           </h1>
-          <div class="mt-1 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20">
+          <div
+            class="mt-1 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20">
             <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
             <span>Pengguna LMS online</span>
-            <span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[11px] font-bold text-white dark:bg-emerald-400 dark:text-emerald-950">
+            <span
+              class="rounded-full bg-emerald-600 px-2 py-0.5 text-[11px] font-bold text-white dark:bg-emerald-400 dark:text-emerald-950">
               {{ onlineLmsCount }}
             </span>
           </div>
@@ -35,7 +36,8 @@
             <img :src="avatarSrc" class="rounded-full w-10 h-10 p-1 ring-1 ring-gray-300 dark:ring-gray-500"
               alt="avatar" />
             <div class="text-left hidden md:block">
-              <h2 class="text-gray-800 dark:text-white">{{ userProfile.full_name || userProfile.username || "User" }}</h2>
+              <h2 class="text-gray-800 dark:text-white">{{ userProfile.full_name || userProfile.username || "User" }}
+              </h2>
               <p class="text-xs text-gray-400 capitalize">{{ userProfile.role || "Guest" }}</p>
             </div>
           </button>
@@ -73,7 +75,9 @@
             <h2 class="text-xl font-semibold text-slate-900 dark:text-white">Profil Saya</h2>
             <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Username tidak dapat diubah.</p>
           </div>
-          <button class="text-slate-500 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:text-slate-200" :disabled="isSavingProfile" @click="closeProfileModal">
+          <button
+            class="text-slate-500 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:text-slate-200"
+            :disabled="isSavingProfile" @click="closeProfileModal">
             <Icon icon="mdi:close" class="text-2xl" />
           </button>
         </div>
@@ -83,14 +87,14 @@
           {{ profileMessage }}
         </div>
 
-        <form class="mt-5 space-y-5" :class="{ 'pointer-events-none opacity-80': isSavingProfile }" @submit.prevent="saveProfile">
+        <form class="mt-5 space-y-5" :class="{ 'pointer-events-none opacity-80': isSavingProfile }"
+          @submit.prevent="saveProfile">
           <div class="flex items-center gap-4">
             <img :src="profilePreview || avatarSrc" alt="Foto profil"
               class="h-20 w-20 rounded-full object-cover ring-2 ring-slate-200 dark:ring-slate-700" />
             <div class="flex-1">
               <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Foto profil</label>
-              <input type="file" accept="image/*"
-                :disabled="isSavingProfile"
+              <input type="file" accept="image/*" :disabled="isSavingProfile"
                 class="mt-2 block w-full text-sm text-slate-500 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:font-medium file:text-slate-700 hover:file:bg-slate-200 dark:file:bg-slate-800 dark:file:text-slate-200"
                 @change="handleProfileImageChange" />
             </div>
@@ -105,8 +109,7 @@
 
           <div>
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Nama Lengkap</label>
-            <input v-model="profileForm.full_name" type="text"
-              :disabled="isSavingProfile"
+            <input v-model="profileForm.full_name" type="text" :disabled="isSavingProfile"
               class="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
               placeholder="Nama lengkap pengguna" />
           </div>
@@ -114,23 +117,20 @@
           <div class="grid gap-4 md:grid-cols-2">
             <div>
               <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Email</label>
-              <input v-model="profileForm.parent_email" type="email"
-                :disabled="isSavingProfile"
+              <input v-model="profileForm.parent_email" type="email" :disabled="isSavingProfile"
                 class="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                 placeholder="email@contoh.com" />
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">No. HP</label>
-              <input v-model="profileForm.phone_number" type="text"
-                :disabled="isSavingProfile"
+              <input v-model="profileForm.phone_number" type="text" :disabled="isSavingProfile"
                 class="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                 placeholder="08xxxxxxxxxx" />
             </div>
           </div>
 
           <div>
-            <button type="button"
-              :disabled="isSavingProfile"
+            <button type="button" :disabled="isSavingProfile"
               class="inline-flex items-center rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               @click="showPasswordFields = !showPasswordFields">
               {{ showPasswordFields ? "Tutup Ubah Password" : "Ubah Password" }}
@@ -162,8 +162,7 @@
           </div>
 
           <div class="flex justify-end gap-3">
-            <button type="button"
-              :disabled="isSavingProfile"
+            <button type="button" :disabled="isSavingProfile"
               class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-200"
               @click="closeProfileModal">
               Batal
@@ -477,7 +476,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-  .app-header {
-    padding-top: calc(1rem + env(safe-area-inset-top, 0px));
-  }
+.app-header {
+  padding-top: calc(1rem + env(safe-area-inset-top, 0px));
+}
 </style>

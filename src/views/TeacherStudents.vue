@@ -338,7 +338,7 @@
             <div>
               <h2 class="text-lg font-bold text-slate-900 dark:text-white">Receipt: {{ selectedStudent?.full_name ||
                 selectedStudent?.username || ""
-              }}</h2>
+                }}</h2>
               <p class="text-sm text-slate-500 dark:text-slate-400">Riwayat bukti pembayaran/administrasi.</p>
             </div>
             <div class="flex items-center gap-2">

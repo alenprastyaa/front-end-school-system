@@ -3,6 +3,20 @@ const HTTPS_HOSTS = new Set([
   "alentest.my.id",
 ]);
 
+const getApiOrigin = () => {
+  const configuredBaseUrl = (process.env.VUE_APP_API_BASE_URL || "").trim();
+  const fallbackOrigin =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : "http://localhost";
+
+  try {
+    return new URL(configuredBaseUrl || fallbackOrigin, fallbackOrigin).origin;
+  } catch (error) {
+    return fallbackOrigin;
+  }
+};
+
 export const normalizePublicUrl = (value) => {
   if (!value) {
     return "";
@@ -31,7 +45,7 @@ export const normalizePublicUrl = (value) => {
   }
 
   if (rawValue.startsWith("/")) {
-    return rawValue;
+    return `${getApiOrigin()}${rawValue}`;
   }
 
   return rawValue;
