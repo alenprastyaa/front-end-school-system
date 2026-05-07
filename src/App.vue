@@ -2,6 +2,14 @@
   <!-- App -->
   <div class="flex h-screen overflow-hidden bg-gray-50 font-lexend dark:bg-gray-900">
     <div v-if="!shouldHideChrome" :class="{ hidden: !sidebar, block: sidebar }">
+      <button
+        v-if="sidebar && !isDesktopViewport"
+        type="button"
+        class="fixed inset-0 z-50 backdrop-blur-[2px]"
+        style="background-color: rgba(0, 0, 0, 0.45);"
+        aria-label="Tutup sidebar"
+        @click="close"
+      ></button>
       <div
         class="mobile-sidebar-offset lg:flex-auto w-sidebar bg-white dark:bg-gray-800 border-r-2 dark:border-gray-700 lg:z-0 z-[60] overflow-auto lg:relative fixed">
         <div class="h-full overflow-y-auto overscroll-contain">
