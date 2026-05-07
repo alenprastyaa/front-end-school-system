@@ -3,8 +3,7 @@
   <div class="flex h-screen overflow-hidden bg-gray-50 font-lexend dark:bg-gray-900">
     <div v-if="!shouldHideChrome" :class="{ hidden: !sidebar, block: sidebar }">
       <div
-        class="mobile-sidebar-offset lg:flex-auto w-sidebar bg-white dark:bg-gray-800 border-r-2 dark:border-gray-700 lg:z-0 z-20 overflow-auto lg:relative fixed"
-        :style="mobileSidebarStyle">
+        class="mobile-sidebar-offset lg:flex-auto w-sidebar bg-white dark:bg-gray-800 border-r-2 dark:border-gray-700 lg:z-0 z-[60] overflow-auto lg:relative fixed">
         <div class="h-full overflow-y-auto overscroll-contain">
           <Sidebar v-if="!shouldHideChrome" @sidebarToggle="close" />
           <!-- <sidebarlist
@@ -71,8 +70,6 @@ export default {
     return {
       sidebarDark: false,
       sidebar: true,
-      headerHeight: 0,
-      headerResizeObserver: null,
       viewportWidth: typeof window !== "undefined" ? window.innerWidth : 1440,
       deferredPwaPrompt: null,
       isPwaInstallModalOpen: false,
@@ -91,16 +88,6 @@ export default {
     },
     isDesktopViewport() {
       return this.viewportWidth >= 1024;
-    },
-    mobileSidebarStyle() {
-      if (this.isDesktopViewport || this.shouldHideChrome) {
-        return {};
-      }
-
-      return {
-        top: `${this.headerHeight}px`,
-        height: `calc(100vh - ${this.headerHeight}px)`,
-      };
     },
     pwaInstructionTitle() {
       if (typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent)) {
@@ -150,32 +137,6 @@ export default {
       }
 
       this.viewportWidth = window.innerWidth;
-      this.updateHeaderOffset();
-    },
-    updateHeaderOffset() {
-      if (typeof window === "undefined" || this.shouldHideChrome) {
-        this.headerHeight = 0;
-        return;
-      }
-
-      const headerElement = document.querySelector(".app-header");
-      this.headerHeight = headerElement ? Math.ceil(headerElement.getBoundingClientRect().height) : 0;
-    },
-    bindHeaderObserver() {
-      if (typeof window === "undefined" || this.shouldHideChrome) {
-        return;
-      }
-
-      const headerElement = document.querySelector(".app-header");
-      if (!headerElement || !("ResizeObserver" in window)) {
-        return;
-      }
-
-      this.headerResizeObserver?.disconnect?.();
-      this.headerResizeObserver = new window.ResizeObserver(() => {
-        this.updateHeaderOffset();
-      });
-      this.headerResizeObserver.observe(headerElement);
     },
     isStandaloneDisplay() {
       if (typeof window === "undefined") {
@@ -287,10 +248,6 @@ export default {
       if (!this.isDesktopViewport) {
         this.sidebar = false;
       }
-      this.$nextTick(() => {
-        this.updateHeaderOffset();
-        this.bindHeaderObserver();
-      });
       this.maybeOpenPwaInstallModal();
     },
   },
@@ -303,15 +260,12 @@ export default {
     this.maybeOpenPwaInstallModal();
     this.$nextTick(() => {
       this.handleViewportResize();
-      this.updateHeaderOffset();
-      this.bindHeaderObserver();
     });
   },
   beforeUnmount() {
     window.removeEventListener("beforeinstallprompt", this.handleBeforeInstallPrompt);
     window.removeEventListener("appinstalled", this.handleAppInstalled);
     window.removeEventListener("resize", this.handleViewportResize);
-    this.headerResizeObserver?.disconnect?.();
   },
 };
 </script>
