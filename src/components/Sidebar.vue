@@ -207,8 +207,13 @@ const handleSchoolLogoChange = async (event) => {
   try {
     const formData = new FormData();
     formData.append("logo", file);
-    await api.put("/school/current/branding", formData);
-    await profileStore.loadProfile({ force: true });
+    const response = await api.put("/school/current/branding", formData);
+    const updatedSchool = response?.data || {};
+    profileStore.applyProfile({
+      school_id: updatedSchool.id || storedProfile.value?.school_id || null,
+      school_name: updatedSchool.name || storedProfile.value?.school_name || "School System",
+      school_logo: updatedSchool.logo_url || null,
+    });
     pushToast({
       title: "Logo Sekolah Diperbarui",
       message: "Logo sekolah berhasil diubah.",
