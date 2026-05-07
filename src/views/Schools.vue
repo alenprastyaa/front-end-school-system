@@ -84,6 +84,16 @@
                     @change="handleSchoolLogoChange"
                   />
                   <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Upload logo/avatar sekolah untuk tampil di sidebar dan identitas sekolah.</p>
+                  <div v-if="editingId && schoolLogoPreview" class="mt-3">
+                    <label class="inline-flex items-center gap-2 text-xs font-medium text-rose-600 dark:text-rose-300">
+                      <input
+                        v-model="removeSchoolLogo"
+                        type="checkbox"
+                        class="rounded border-slate-300 text-rose-600 focus:ring-rose-500 dark:border-slate-600 dark:bg-slate-900"
+                      />
+                      Hapus avatar sekolah saat disimpan
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
@@ -384,6 +394,7 @@ const form = reactive({
 const schoolLogoFile = ref(null);
 const schoolLogoPreview = ref("");
 const schoolLogoInput = ref(null);
+const removeSchoolLogo = ref(false);
 
 const adminForm = reactive({
   school_id: "",
@@ -418,6 +429,7 @@ const resetForm = () => {
   form.name = "";
   schoolLogoFile.value = null;
   schoolLogoPreview.value = "";
+  removeSchoolLogo.value = false;
   if (schoolLogoInput.value) {
     schoolLogoInput.value.value = "";
   }
@@ -463,6 +475,9 @@ const submitSchool = async () => {
     if (schoolLogoFile.value) {
       payload.append("logo", schoolLogoFile.value);
     }
+    if (editingId.value && removeSchoolLogo.value && !schoolLogoFile.value) {
+      payload.append("remove_logo", "true");
+    }
     const response = editingId.value
       ? await api.put(`/school/${editingId.value}`, payload)
       : await api.post("/school", payload);
@@ -483,6 +498,7 @@ const editSchool = (item) => {
   form.name = item.name || "";
   schoolLogoFile.value = null;
   schoolLogoPreview.value = normalizePublicUrl(item.logo_url) || "";
+  removeSchoolLogo.value = false;
   if (schoolLogoInput.value) {
     schoolLogoInput.value.value = "";
   }
@@ -493,6 +509,7 @@ const editSchool = (item) => {
 const handleSchoolLogoChange = (event) => {
   const file = event?.target?.files?.[0] || null;
   schoolLogoFile.value = file;
+  removeSchoolLogo.value = false;
   if (!file) {
     schoolLogoPreview.value = editingId.value
       ? normalizePublicUrl(schools.value.find((item) => item.id === editingId.value)?.logo_url) || ""
