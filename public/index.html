@@ -93,12 +93,21 @@
     />
     <!-- PushAlert -->
     <script type="text/javascript">
-      (function(d, t) {
-        var g = d.createElement(t),
-          s = d.getElementsByTagName(t)[0];
-        g.src = "https://cdn.pushalert.co/integrate_edd0210271a2e1db931f73144cc846da.js";
-        s.parentNode.insertBefore(g, s);
-      }(document, "script"));
+      window.addEventListener("load", function () {
+        var loadPushAlert = function () {
+          var script = document.createElement("script");
+          script.src = "https://cdn.pushalert.co/integrate_edd0210271a2e1db931f73144cc846da.js";
+          script.async = true;
+          document.body.appendChild(script);
+        };
+
+        if ("requestIdleCallback" in window) {
+          window.requestIdleCallback(loadPushAlert, { timeout: 3000 });
+          return;
+        }
+
+        window.setTimeout(loadPushAlert, 1500);
+      });
     </script>
     <!-- End PushAlert -->
   </head>

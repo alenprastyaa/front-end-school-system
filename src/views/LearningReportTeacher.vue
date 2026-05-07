@@ -330,7 +330,7 @@ const buildExportFilename = () => {
   return `rapor-mapel-${subjectPart}-${periodPart}-${date}.xls`;
 };
 
-const downloadExcel = () => {
+const downloadExcel = async () => {
   const subject = subjects.value.find((item) => String(item.id) === filters.subjectId);
   const selected = report.value?.selected_period;
   const dynamicColumns = assignments.value.map((item) => ({
@@ -339,7 +339,7 @@ const downloadExcel = () => {
     value: (row) => formatScore(row.scores[item.id]),
   }));
 
-  downloadExcelWorksheet({
+  await downloadExcelWorksheet({
     filename: buildExportFilename(),
     sheetName: "Rapor Mapel",
     title: "Rekap Nilai Akhir / Rapor Mapel",

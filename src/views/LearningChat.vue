@@ -204,7 +204,7 @@
                 </div>
               </div>
 
-              <form @submit.prevent="sendMessage"
+              <form ref="composerBarRef" @submit.prevent="sendMessage"
                 class="fixed inset-x-0 z-20 shrink-0 border-t border-slate-200 bg-white px-2 pt-2 dark:border-slate-800 dark:bg-slate-900 md:sticky md:inset-auto md:px-6 md:py-4"
                 :style="composerBarStyle">
                 <div v-if="replyTarget"
@@ -259,41 +259,39 @@
                     </button>
                   </div>
                 </div>
-                <div class="flex items-end gap-2 md:gap-3">
-                  <div class="flex shrink-0 items-center gap-2">
-                    <input ref="attachmentInputRef" type="file"
-                      accept="image/*,application/pdf,audio/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" class="hidden"
-                      @change="handleAttachmentChange" />
+                <div
+                  class="flex items-end gap-2 rounded-2xl border border-slate-200 bg-white px-2.5 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                  <!-- ACTION -->
+                  <div class="flex shrink-0 items-center gap-1.5">
+                    <!-- ATTACH -->
                     <button type="button"
-                      class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 md:h-12 md:w-12"
+                      class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                       :disabled="isSendingMessage || isRecordingVoice" @click="openAttachmentPicker">
-                      <Icon icon="ph:paperclip" class="h-5 w-5" />
+                      <Icon icon="ph:paperclip" class="h-4.5 w-4.5" />
                     </button>
+
+                    <!-- MIC -->
                     <button type="button"
-                      class="inline-flex h-10 w-10 items-center justify-center rounded-full text-white transition disabled:cursor-not-allowed disabled:opacity-60 md:h-12 md:w-12"
-                      :class="isRecordingVoice ? 'bg-rose-500 hover:bg-rose-400' : roleAccentClass"
-                      :disabled="isSendingMessage || Boolean(attachmentFile)" @click="toggleVoiceRecording">
-                      <Icon :icon="isRecordingVoice ? 'ph:stop-fill' : 'ph:microphone-fill'" class="h-5 w-5" />
+                      class="inline-flex h-9 w-9 items-center justify-center rounded-xl text-white transition disabled:opacity-60"
+                      :class="isRecordingVoice
+                        ? 'bg-rose-500 hover:bg-rose-400'
+                        : roleAccentClass
+                        " :disabled="isSendingMessage || Boolean(attachmentFile)" @click="toggleVoiceRecording">
+                      <Icon :icon="isRecordingVoice ? 'ph:stop-fill' : 'ph:microphone-fill'" class="h-4.5 w-4.5" />
                     </button>
                   </div>
-                  <div
-                    class="flex-1 rounded-[20px] bg-slate-100 px-3 py-1 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:ring-slate-700 md:rounded-[24px] md:px-4 md:py-1.5">
+
+                  <!-- INPUT -->
+                  <div class="flex flex-1 items-center rounded-xl bg-slate-100 px-3 py-2 dark:bg-slate-800">
                     <textarea v-model="composer" rows="1" placeholder="Tulis pesan..." @input="handleComposerInput"
                       @keydown="handleComposerKeydown" @focus="ensureComposerVisible"
-                      class="block w-full resize-none border-0 bg-transparent p-0 text-sm text-slate-900 focus:outline-none focus:ring-0 dark:text-white leading-6 min-h-[40px] max-h-[110px]" />
+                      class="block max-h-[120px] min-h-[22px] w-full resize-none overflow-y-auto border-0 bg-transparent p-0 text-sm leading-6 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-0 dark:text-white" />
                   </div>
+
+                  <!-- SEND -->
                   <button :disabled="isSendingMessage || !composer.trim()"
-                    class="inline-flex h-11 w-11 items-center justify-center rounded-full text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60 md:h-14 md:w-14"
-                    :class="roleAccentClass">
-                    <svg v-if="isSendingMessage" class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"
-                      stroke-width="2" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                    </svg>
-                    <svg v-else class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                    </svg>
+                    class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white transition hover:opacity-90 disabled:opacity-40 dark:bg-white dark:text-slate-900">
+                    <Icon icon="ph:arrow-up-bold" class="h-4 w-4" />
                   </button>
                 </div>
               </form>
@@ -449,6 +447,7 @@ const waveformTimer = ref(null);
 const recordingWavePoints = ref("0,20 300,20");
 const attachmentInputRef = ref(null);
 const messageListRef = ref(null);
+const composerBarRef = ref(null);
 const replyTarget = ref(null);
 const replyHighlightMessageId = ref(null);
 const showImagePreview = ref(false);
@@ -468,6 +467,8 @@ const onlineUsersBySubject = ref({});
 const onlineRefreshTimer = ref(null);
 const viewportBottomInset = ref(0);
 const isMobileViewport = ref(false);
+const composerBarHeight = ref(0);
+const composerResizeObserver = ref(null);
 const isConnected = computed(() => realtimeConnected.value);
 const localClientId = ref(`chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
 
@@ -583,7 +584,7 @@ const composerBarStyle = computed(() => ({
 
 const messageListStyle = computed(() => ({
   paddingBottom: isMobileViewport.value
-    ? `calc(${viewportBottomInset.value}px + env(safe-area-inset-bottom, 0px) + 104px)`
+    ? `calc(${viewportBottomInset.value}px + env(safe-area-inset-bottom, 0px) + ${Math.max(composerBarHeight.value, 104) + 20}px)`
     : "",
 }));
 
@@ -843,9 +844,19 @@ const updateViewportInset = () => {
   viewportBottomInset.value = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
 };
 
+const updateComposerBarMetrics = () => {
+  if (!composerBarRef.value) {
+    composerBarHeight.value = 0;
+    return;
+  }
+
+  composerBarHeight.value = Math.ceil(composerBarRef.value.getBoundingClientRect().height);
+};
+
 const ensureComposerVisible = async () => {
   await nextTick();
   updateViewportInset();
+  updateComposerBarMetrics();
   window.setTimeout(() => {
     scrollToBottom();
   }, 80);
@@ -993,6 +1004,7 @@ const scheduleTypingStop = () => {
 };
 
 const handleComposerInput = () => {
+  updateComposerBarMetrics();
   if (!selectedSubject.value) return;
   if (!composer.value.trim()) {
     if (typingDebounceTimer.value) {
@@ -1533,6 +1545,15 @@ onMounted(async () => {
     updateViewportInset();
   }
 
+  await nextTick();
+  updateComposerBarMetrics();
+  if (typeof window !== "undefined" && "ResizeObserver" in window && composerBarRef.value) {
+    composerResizeObserver.value = new window.ResizeObserver(() => {
+      updateComposerBarMetrics();
+    });
+    composerResizeObserver.value.observe(composerBarRef.value);
+  }
+
   const token = localStorage.getItem("token");
   realtimeStore.connect(token);
 
@@ -1641,6 +1662,10 @@ onUnmounted(() => {
   if (typeof window !== "undefined" && window.visualViewport) {
     window.visualViewport.removeEventListener("resize", updateViewportInset);
     window.visualViewport.removeEventListener("scroll", updateViewportInset);
+  }
+  if (composerResizeObserver.value) {
+    composerResizeObserver.value.disconnect();
+    composerResizeObserver.value = null;
   }
 });
 

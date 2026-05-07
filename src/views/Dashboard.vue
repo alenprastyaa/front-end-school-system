@@ -1,7 +1,7 @@
 <template>
   <div
     class="min-h-screen bg-slate-50/50 px-3 pb-10 pt-3 font-sans text-slate-900 sm:px-4 sm:pt-4 md:px-8 md:pb-12 md:pt-8 dark:bg-slate-950 dark:text-slate-100">
-    <div class="mx-auto max-w-[1440px] space-y-5 sm:space-y-6">
+    <div class="mx-auto space-y-5 sm:space-y-6">
 
       <header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <div>
@@ -52,7 +52,7 @@
               <dt class="text-xs font-semibold uppercase tracking-[0.14em]" :class="item.labelClass">{{ item.label }}
               </dt>
               <dd class="mt-2 text-2xl font-bold tracking-tight sm:text-[2rem]" :class="item.valueClass">{{ item.value
-                }}</dd>
+              }}</dd>
               <dd class="mt-2 text-[11px]" :class="item.captionClass">{{ item.caption }}</dd>
             </div>
             <div class="flex h-12 w-12 shrink-0 items-center justify-center sm:h-14 sm:w-14">
@@ -142,7 +142,7 @@
                     :key="`${item.class_name}-${item.subject_name}-${item.id}`"
                     class="inline-flex rounded-full bg-white px-3 py-1.5 text-xs text-slate-700 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700">
                     {{ item.subject_name }} • {{ item.class_name }}{{ item.weekly_hours ? ` • ${item.weekly_hours} jam`
-                    : "" }}
+                      : "" }}
                   </span>
                 </div>
               </div>
@@ -190,7 +190,8 @@
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 class="text-base font-semibold text-slate-900 dark:text-white">Kirim Rekap WhatsApp Wali Kelas</h2>
-            <p class="mt-1 text-sm text-slate-500">Admin memilih kelas terlebih dahulu, lalu kirim WhatsApp hanya ke wali kelas tersebut.
+            <p class="mt-1 text-sm text-slate-500">Admin memilih kelas terlebih dahulu, lalu kirim WhatsApp hanya ke
+              wali kelas tersebut.
             </p>
           </div>
 
@@ -219,13 +220,10 @@
                 <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.wali_guru_name || "-" }}</td>
                 <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.wali_guru_phone_number || "-" }}</td>
                 <td class="px-4 py-3 text-right">
-                  <button
-                    @click="sendAttendanceWhatsappReport(item)"
-                    :disabled="sendingWhatsappClassId === item.id"
-                    class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <svg v-if="sendingWhatsappClassId === item.id" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"
-                      stroke-width="2" stroke="currentColor">
+                  <button @click="sendAttendanceWhatsappReport(item)" :disabled="sendingWhatsappClassId === item.id"
+                    class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
+                    <svg v-if="sendingWhatsappClassId === item.id" class="h-4 w-4 animate-spin" fill="none"
+                      viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round"
                         d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                     </svg>
@@ -237,15 +235,18 @@
           </table>
         </div>
 
-        <div v-if="attendanceWhatsappReportSummary" class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/50">
+        <div v-if="attendanceWhatsappReportSummary"
+          class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/50">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Hasil Pengiriman Terakhir</p>
               <h3 class="mt-2 text-lg font-bold text-slate-900 dark:text-white">
-                {{ attendanceWhatsappReportSummary.class_name || "-" }} • {{ attendanceWhatsappReportSummary.wali_guru_name || "-" }}
+                {{ attendanceWhatsappReportSummary.class_name || "-" }} • {{
+                  attendanceWhatsappReportSummary.wali_guru_name || "-" }}
               </h3>
               <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                WhatsApp tujuan: {{ attendanceWhatsappReportSummary.target || "-" }} • Tanggal rekap: {{ attendanceWhatsappReportSummary.attendance_date || "-" }}
+                WhatsApp tujuan: {{ attendanceWhatsappReportSummary.target || "-" }} • Tanggal rekap: {{
+                  attendanceWhatsappReportSummary.attendance_date || "-" }}
               </p>
             </div>
             <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold"
@@ -257,16 +258,20 @@
           <div class="mt-4 grid gap-4 sm:grid-cols-2">
             <div class="rounded-xl bg-white p-4 dark:bg-slate-900">
               <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Sudah Hadir</p>
-              <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{{ attendanceWhatsappReportSummary.present_count || 0 }}</p>
+              <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{{
+                attendanceWhatsappReportSummary.present_count || 0 }}</p>
               <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                {{ attendanceWhatsappReportSummary.present_names?.length ? attendanceWhatsappReportSummary.present_names.join(", ") : "Belum ada siswa hadir." }}
+                {{ attendanceWhatsappReportSummary.present_names?.length ?
+                  attendanceWhatsappReportSummary.present_names.join(", ") : "Belum ada siswa hadir." }}
               </p>
             </div>
             <div class="rounded-xl bg-white p-4 dark:bg-slate-900">
               <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Belum Hadir</p>
-              <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{{ attendanceWhatsappReportSummary.absent_count || 0 }}</p>
+              <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{{
+                attendanceWhatsappReportSummary.absent_count || 0 }}</p>
               <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                {{ attendanceWhatsappReportSummary.absent_names?.length ? attendanceWhatsappReportSummary.absent_names.join(", ") : "Semua siswa sudah hadir." }}
+                {{ attendanceWhatsappReportSummary.absent_names?.length ?
+                  attendanceWhatsappReportSummary.absent_names.join(", ") : "Semua siswa sudah hadir." }}
               </p>
             </div>
           </div>
@@ -286,7 +291,7 @@
               </div>
             </div>
             <div class="mt-5 w-full sm:mt-6">
-              <apexchart :type="visualPanel.chartType" height="320" :options="visualChartOptions"
+              <ApexChart :type="visualPanel.chartType" height="320" :options="visualChartOptions"
                 :series="visualChartSeries" />
             </div>
           </section>
@@ -336,7 +341,7 @@
             class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
             <h2 class="text-base font-semibold text-slate-900 dark:text-white">Ringkasan Distribusi</h2>
             <div class="mt-5 flex items-center justify-center sm:mt-6">
-              <apexchart type="donut" height="280" :options="compositionChartOptions"
+              <ApexChart type="donut" height="280" :options="compositionChartOptions"
                 :series="compositionChartSeries" />
             </div>
           </section>
@@ -383,13 +388,15 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from "vue";
 import { Icon } from "@iconify/vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatDate, formatDateTime, formatTime } from "@/utils/date";
 import { getStoredRole, getStoredUser } from "@/utils/auth";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
+
+const ApexChart = defineAsyncComponent(() => import("vue3-apexcharts"));
 
 const role = getStoredRole();
 const user = getStoredUser();
@@ -490,7 +497,7 @@ const createSummaryCard = ({
 const heroTitle = computed(() => {
   if (role === "SUPER_ADMIN") return "Dashboard Super Admin Sekolah";
   if (role === "ADMIN") return `Dashboard Admin ${dashboardData.value?.school?.name || user?.school_name || ""}`.trim();
-  if (role === "GURU") return `Kelas Wali: ${dashboardData.value?.homeroom?.class_name || ""}`.trim();
+  if (role === "GURU") return `Wali Kelas ${dashboardData.value?.homeroom?.class_name || ""}`.trim();
   if (role === "SISWA") return `Halo, ${dashboardData.value?.student?.full_name || user?.full_name || user?.username || "Siswa"}`;
   return "Dashboard Overview";
 });
@@ -498,7 +505,7 @@ const heroTitle = computed(() => {
 const heroDescription = computed(() => {
   if (role === "SUPER_ADMIN") return "Pantau kesiapan setiap sekolah, admin sekolah, struktur kelas, dan aktivitas operasional dari satu panel pusat.";
   if (role === "ADMIN") return "Metrik operasional sekolah, status absensi, dan data kelas secara real-time.";
-  if (role === "GURU") return "Pantau kelas wali, jadwal mengajar mingguan, dan status sesi mengajar hari ini dari satu dashboard.";
+  if (role === "GURU") return "Pantau wali kelas, jadwal mengajar mingguan, dan status sesi mengajar hari ini dari satu dashboard.";
   if (role === "SISWA") return "Pantau riwayat absensi, status administrasi, dan tugas akademik Anda.";
   return "Ringkasan sistem berdasarkan akses pengguna.";
 });
@@ -524,7 +531,7 @@ const summaryCards = computed(() => {
       ]
       : role === "GURU"
         ? [
-          createSummaryCard({ label: "Siswa Kelas Wali", value: numberValue(overview.students), caption: "Total siswa dibimbing", icon: "mdi:account-school-outline", cardClass: "bg-indigo-600" }),
+          createSummaryCard({ label: "Siswa Wali Kelas", value: numberValue(overview.students), caption: "Total siswa dibimbing", icon: "mdi:account-school-outline", cardClass: "bg-indigo-600" }),
           createSummaryCard({ label: "Jam Mengajar Hari Ini", value: numberValue(overview.teaching_today), caption: "Sesi mengajar terjadwal", icon: "mdi:calendar-clock", cardClass: "bg-sky-600" }),
           createSummaryCard({ label: "Hadir Hari Ini", value: numberValue(overview.attendance_today), caption: "Siswa sudah absen", icon: "mdi:calendar-check-outline", cardClass: "bg-emerald-600" }),
           createSummaryCard({ label: "Sedang Mengajar", value: numberValue(overview.active_teaching_now) ? "Ya" : "Tidak", caption: numberValue(overview.weekly_teaching_sessions) ? `${numberValue(overview.weekly_teaching_sessions)} sesi per minggu` : "Belum ada jadwal mingguan", icon: "ph:chalkboard-teacher", cardClass: "bg-amber-500" }),
@@ -698,7 +705,7 @@ const primaryPanel = computed(() => {
 
   if (role === "GURU") {
     return {
-      title: "Monitoring Kehadiran Kelas Wali",
+      title: "Monitoring Kehadiran Wali Kelas",
       description: "Status check-in harian siswa.",
       columns: [
         { key: "full_name", label: "Nama Siswa" },

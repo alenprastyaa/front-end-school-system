@@ -590,12 +590,12 @@ const buildExportFilename = () => {
   return `penilaian-${subjectPart || "guru"}-${date}.xls`;
 };
 
-const downloadExcel = () => {
+const downloadExcel = async () => {
   const subject = subjects.value.find((item) => String(item.id) === filters.subjectId);
   const assignment = assignments.value.find((item) => String(item.id) === filters.assignmentId);
   const now = new Date();
 
-  downloadExcelWorksheet({
+  await downloadExcelWorksheet({
     filename: buildExportFilename(),
     sheetName: "Penilaian Guru",
     title: "Rekap Penilaian Pembelajaran",

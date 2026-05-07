@@ -1,5 +1,3 @@
-import * as XLSX from "xlsx";
-
 const normalizeFilename = (filename) => {
   const trimmed = String(filename || "export.xlsx").trim();
   if (trimmed.toLowerCase().endsWith(".xlsx")) {
@@ -43,7 +41,8 @@ const buildSheetRows = ({ title, subtitle, columns, rows, summary }) => {
   return sheetRows;
 };
 
-export const downloadExcelWorksheet = ({ filename, sheetName, title, subtitle, columns, rows, summary = [] }) => {
+export const downloadExcelWorksheet = async ({ filename, sheetName, title, subtitle, columns, rows, summary = [] }) => {
+  const XLSX = await import("xlsx");
   const workbook = XLSX.utils.book_new();
   const sheetRows = buildSheetRows({ title, subtitle, columns, rows, summary });
   const worksheet = XLSX.utils.aoa_to_sheet(sheetRows);

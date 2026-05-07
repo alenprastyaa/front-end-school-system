@@ -15,13 +15,13 @@
             {{ userProfile.school_name || userProfile.school_id || "Belum terhubung ke sekolah" }}
           </h1>
           <div
-            class="mt-1 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20">
-            <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-            <span>Pengguna LMS online</span>
+            class="mt-1 inline-flex items-center gap-2 rounded-full   py-1 text-xs font-semibold text-emerald-700  dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20">
             <span
               class="rounded-full bg-emerald-600 px-2 py-0.5 text-[11px] font-bold text-white dark:bg-emerald-400 dark:text-emerald-950">
               {{ onlineLmsCount }}
             </span>
+            <span>online</span>
+
           </div>
         </div>
       </div>

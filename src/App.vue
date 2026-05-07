@@ -3,14 +3,15 @@
   <div class="flex h-screen overflow-hidden bg-gray-50 font-lexend dark:bg-gray-900">
     <div v-if="!shouldHideChrome" :class="{ hidden: !sidebar, block: sidebar }">
       <div
-        class="mobile-sidebar-offset lg:flex-auto w-sidebar bg-white dark:bg-gray-800 border-r-2 dark:border-gray-700 lg:z-0 z-20 overflow-auto lg:relative fixed">
-        <perfect-scrollbar class="h-screen">
+        class="mobile-sidebar-offset lg:flex-auto w-sidebar bg-white dark:bg-gray-800 border-r-2 dark:border-gray-700 lg:z-0 z-20 overflow-auto lg:relative fixed"
+        :style="mobileSidebarStyle">
+        <div class="h-full overflow-y-auto overscroll-contain">
           <Sidebar v-if="!shouldHideChrome" @sidebarToggle="close" />
           <!-- <sidebarlist
             v-if="!shouldHideChrome"
             @sidebarToggle="close"
           /> -->
-        </perfect-scrollbar>
+        </div>
       </div>
     </div>
 
@@ -46,11 +47,10 @@
 
 <script>
 // Vue components
+import { defineAsyncComponent } from "vue";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import PwaInstallModal from "@/components/PwaInstallModal.vue";
-import ForcedLogoutModal from "@/components/ForcedLogoutModal.vue";
 import ToastHost from "@/components/ToastHost.vue";
 import { pushToast } from "@/composables/useToast";
 import { useLayoutChrome } from "@/composables/useLayoutChrome";
@@ -61,6 +61,8 @@ const SHOW_PWA_INSTALL_AFTER_LOGIN_KEY = "show-pwa-install-after-login";
 const PWA_INSTALLED_KEY = "school-system-pwa-installed";
 const PWA_PROMPT_SUPPRESSED_UNTIL_KEY = "school-system-pwa-prompt-suppressed-until";
 const PWA_PROMPT_SUPPRESS_DAYS = 180;
+const PwaInstallModal = defineAsyncComponent(() => import("@/components/PwaInstallModal.vue"));
+const ForcedLogoutModal = defineAsyncComponent(() => import("@/components/ForcedLogoutModal.vue"));
 
 export default {
   name: "App",
@@ -69,6 +71,9 @@ export default {
     return {
       sidebarDark: false,
       sidebar: true,
+      headerHeight: 0,
+      headerResizeObserver: null,
+      viewportWidth: typeof window !== "undefined" ? window.innerWidth : 1440,
       deferredPwaPrompt: null,
       isPwaInstallModalOpen: false,
       isPwaInstalled: false,
@@ -83,6 +88,19 @@ export default {
     },
     isChatLayoutRoute() {
       return ["LearningChatTeacher", "LearningChatStudent"].includes(this.$route.name);
+    },
+    isDesktopViewport() {
+      return this.viewportWidth >= 1024;
+    },
+    mobileSidebarStyle() {
+      if (this.isDesktopViewport || this.shouldHideChrome) {
+        return {};
+      }
+
+      return {
+        top: `${this.headerHeight}px`,
+        height: `calc(100vh - ${this.headerHeight}px)`,
+      };
     },
     pwaInstructionTitle() {
       if (typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent)) {
@@ -125,6 +143,39 @@ export default {
     },
     close() {
       this.sidebar = false;
+    },
+    handleViewportResize() {
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      this.viewportWidth = window.innerWidth;
+      this.updateHeaderOffset();
+    },
+    updateHeaderOffset() {
+      if (typeof window === "undefined" || this.shouldHideChrome) {
+        this.headerHeight = 0;
+        return;
+      }
+
+      const headerElement = document.querySelector(".app-header");
+      this.headerHeight = headerElement ? Math.ceil(headerElement.getBoundingClientRect().height) : 0;
+    },
+    bindHeaderObserver() {
+      if (typeof window === "undefined" || this.shouldHideChrome) {
+        return;
+      }
+
+      const headerElement = document.querySelector(".app-header");
+      if (!headerElement || !("ResizeObserver" in window)) {
+        return;
+      }
+
+      this.headerResizeObserver?.disconnect?.();
+      this.headerResizeObserver = new window.ResizeObserver(() => {
+        this.updateHeaderOffset();
+      });
+      this.headerResizeObserver.observe(headerElement);
     },
     isStandaloneDisplay() {
       if (typeof window === "undefined") {
@@ -233,9 +284,13 @@ export default {
   },
   watch: {
     $route() {
-      if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      if (!this.isDesktopViewport) {
         this.sidebar = false;
       }
+      this.$nextTick(() => {
+        this.updateHeaderOffset();
+        this.bindHeaderObserver();
+      });
       this.maybeOpenPwaInstallModal();
     },
   },
@@ -244,11 +299,19 @@ export default {
     this.checkForcedLogoutNotice();
     window.addEventListener("beforeinstallprompt", this.handleBeforeInstallPrompt);
     window.addEventListener("appinstalled", this.handleAppInstalled);
+    window.addEventListener("resize", this.handleViewportResize);
     this.maybeOpenPwaInstallModal();
+    this.$nextTick(() => {
+      this.handleViewportResize();
+      this.updateHeaderOffset();
+      this.bindHeaderObserver();
+    });
   },
   beforeUnmount() {
     window.removeEventListener("beforeinstallprompt", this.handleBeforeInstallPrompt);
     window.removeEventListener("appinstalled", this.handleAppInstalled);
+    window.removeEventListener("resize", this.handleViewportResize);
+    this.headerResizeObserver?.disconnect?.();
   },
 };
 </script>

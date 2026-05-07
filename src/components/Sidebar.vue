@@ -2,7 +2,7 @@
   <div>
     <nav class="sidebar bg-white dark:bg-gray-800 h-full">
       <div class="sidebar-head p-4 border-b dark:border-gray-700">
-        <div class="flex items-center gap-3">
+        <div class="flex items-start gap-3">
           <button
             type="button"
             class="group relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 transition hover:bg-slate-200 dark:bg-slate-700 dark:ring-slate-600 dark:hover:bg-slate-600"
@@ -20,10 +20,19 @@
             </span>
           </button>
           <input ref="schoolLogoInputRef" type="file" accept="image/*" class="hidden" @change="handleSchoolLogoChange" />
-          <router-link to="/dashboard" class="min-w-0 flex-1">
+          <router-link to="/dashboard" class="min-w-0 flex-1 pr-2">
             <h2 class="truncate text-xl font-semibold text-gray-800 dark:text-gray-200">{{ schoolNameLabel }}</h2>
             <p class="text-xs text-gray-400">{{ role || "Guest" }}</p>
           </router-link>
+          <button
+            class="lg:hidden inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-500 transition hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-slate-700"
+            @click="$emit('sidebarToggle')"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 32 32" fill="currentColor">
+              <path
+                d="M7.219 5.781L5.78 7.22L14.563 16L5.78 24.781l1.44 1.439L16 17.437l8.781 8.782l1.438-1.438L17.437 16l8.782-8.781L24.78 5.78L16 14.563z" />
+            </svg>
+          </button>
         </div>
         <div v-if="isAdminRole" class="mt-2 flex items-center justify-between gap-3">
           <p class="text-[11px] text-slate-400">Klik logo untuk ganti logo sekolah</p>
@@ -36,12 +45,6 @@
           </button>
         </div>
 
-        <button class="lg:hidden block dark:text-gray-400 float-right -mt-10" @click="$emit('sidebarToggle')">
-          <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 32 32" fill="currentColor">
-            <path
-              d="M7.219 5.781L5.78 7.22L14.563 16L5.78 24.781l1.44 1.439L16 17.437l8.781 8.782l1.438-1.438L17.437 16l8.782-8.781L24.78 5.78L16 14.563z" />
-          </svg>
-        </button>
       </div>
 
       <div class="p-4">
