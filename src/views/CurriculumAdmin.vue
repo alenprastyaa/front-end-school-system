@@ -471,65 +471,63 @@
               · {{ filteredGeneratedEntries.length }} jadwal</p>
           </div>
 
-          <div v-if="generatedScheduleCards.length > 0" class="grid gap-4 lg:grid-cols-2">
-            <article v-for="group in generatedScheduleCards" :key="group.key"
-              @click="openDetailModal('generated', group.teacher_name, group)"
-              class="group cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-sky-500/40">
-              <div class="flex items-start justify-between gap-4">
-                <div class="flex min-w-0 items-start gap-3">
-                  <div
-                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sky-600 text-sm font-bold text-white">
-                    {{ getInitials(group.teacher_name) }}
-                  </div>
-                  <div class="min-w-0">
-                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Guru</p>
-                    <h3 class="mt-1 truncate text-base font-semibold text-slate-900 dark:text-white">{{
-                      group.teacher_name }}</h3>
-                  </div>
-                </div>
-                <span
-                  class="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">{{
-                    group.item_count }} jadwal</span>
-              </div>
-              <div class="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-                <div class="rounded-xl bg-slate-50 p-3 text-center dark:bg-slate-800/50">
-                  <p class="text-lg font-semibold text-slate-900 dark:text-white">{{ group.class_count }}</p>
-                  <p class="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">Kelas</p>
-                </div>
-                <div class="rounded-xl bg-slate-50 p-3 text-center dark:bg-slate-800/50">
-                  <p class="text-lg font-semibold text-slate-900 dark:text-white">{{ group.subject_count }}</p>
-                  <p class="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">Mapel</p>
-                </div>
-                <div class="rounded-xl bg-slate-50 p-3 text-center dark:bg-slate-800/50">
-                  <p class="text-lg font-semibold text-slate-900 dark:text-white">{{ group.day_count }}</p>
-                  <p class="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">Hari</p>
-                </div>
-                <div class="rounded-xl bg-slate-50 p-3 text-center dark:bg-slate-800/50">
-                  <p class="text-lg font-semibold text-slate-900 dark:text-white">{{ group.lms_count }}</p>
-                  <p class="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">LMS</p>
-                </div>
-              </div>
-              <div class="mt-4 rounded-xl border border-slate-100 dark:border-slate-800">
-                <div class="divide-y divide-slate-100 dark:divide-slate-800">
-                  <div v-for="item in group.items.slice(0, 2)" :key="item.id" class="px-3 py-2.5 text-sm">
-                    <div class="flex items-center justify-between gap-3">
-                      <span class="truncate font-bold text-slate-800 dark:text-slate-100">{{ item.class_name }}</span>
-                      <span
-                        class="shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">{{
-                          item.day_name }}</span>
+          <div v-if="generatedScheduleCards.length > 0"
+            class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+            <table class="min-w-full text-left text-sm">
+              <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
+                <tr>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Guru</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Jadwal</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Kelas</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Mapel</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Hari</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">LMS</th>
+                  <th class="border-b border-slate-200 px-4 py-3 text-right font-medium dark:border-slate-800">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                <tr v-for="group in generatedScheduleCards" :key="group.key"
+                  class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50">
+                  <td class="px-4 py-4">
+                    <div class="flex min-w-0 items-center gap-3">
+                      <div
+                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-600 text-xs font-bold text-white">
+                        {{ getInitials(group.teacher_name) }}
+                      </div>
+                      <div class="min-w-0">
+                        <p class="truncate font-semibold text-slate-900 dark:text-white">{{ group.teacher_name }}</p>
+                        <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Guru pengampu</p>
+                      </div>
                     </div>
-                    <p class="mt-0.5 truncate text-xs font-semibold text-slate-600 dark:text-slate-300">{{
-                      item.subject_name }} · {{ item.slot_label || `Sesi ${item.session_order}` }}</p>
-                  </div>
-                </div>
-                <p v-if="group.items.length > 2"
-                  class="border-t border-slate-100 px-3 py-2 text-xs font-semibold text-slate-500 dark:border-slate-800 dark:text-slate-400">
-                  +{{ group.items.length - 2 }} jadwal lainnya</p>
-              </div>
-              <button @click.stop="openDetailModal('generated', group.teacher_name, group)"
-                class="mt-4 w-full rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-sky-500">Detail
-                Jadwal</button>
-            </article>
+                  </td>
+                  <td class="whitespace-nowrap px-4 py-4">
+                    <span
+                      class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                      {{ group.item_count }} jadwal
+                    </span>
+                  </td>
+                  <td class="whitespace-nowrap px-4 py-4 font-semibold text-slate-700 dark:text-slate-200">
+                    {{ group.class_count }}
+                  </td>
+                  <td class="whitespace-nowrap px-4 py-4 font-semibold text-slate-700 dark:text-slate-200">
+                    {{ group.subject_count }}
+                  </td>
+                  <td class="whitespace-nowrap px-4 py-4 text-slate-600 dark:text-slate-300">
+                    {{ group.day_count }}
+                  </td>
+                  <td class="whitespace-nowrap px-4 py-4 text-slate-600 dark:text-slate-300">
+                    {{ group.lms_count }}
+                  </td>
+                  <td class="px-4 py-4">
+                    <div class="flex justify-end">
+                      <button @click="openDetailModal('generated', group.teacher_name, group)"
+                        class="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-sky-500">Detail
+                        Jadwal</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
           <div v-else
             class="rounded-2xl border border-slate-200 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
@@ -546,22 +544,35 @@
 
       <teleport to="body">
         <div v-if="formModal.open" class="fixed inset-0 z-[130] flex items-center justify-center p-4"
-          style="background-color: rgba(15, 23, 42, 0.22); backdrop-filter: blur(10px);">
+          style="background-color: rgba(15, 23, 42, 0.5); backdrop-filter: blur(14px);">
           <div
-            class="w-full max-w-2xl max-h-[88vh] overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900">
-            <div class="flex items-start justify-between gap-4">
-              <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Input Data</p>
-                <h3 class="mt-2 text-xl font-bold text-slate-900 dark:text-white">{{ formModal.title }}</h3>
-              </div>
+            class="w-full max-w-2xl max-h-[88vh] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.22)] dark:border-slate-800 dark:bg-slate-900">
+            <div class="relative border-b border-slate-200 px-6 py-5 dark:border-slate-800">
+              <div class="flex items-start justify-between gap-4 pr-12">
+                <div class="min-w-0">
+                  <div class="inline-flex items-center gap-2 rounded-full bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+                    <span class="h-1.5 w-1.5 rounded-full bg-sky-500"></span>
+                    Input Data
+                  </div>
+                  <h3 class="mt-3 truncate text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                    {{ formModal.title }}
+                  </h3>
+                </div>
               <button @click="closeFormModal"
-                class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200">
-                x
+                class="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-rose-200 bg-rose-50 text-rose-600 transition hover:border-rose-300 hover:bg-rose-100 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 dark:border-rose-900/50 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20 dark:focus:ring-offset-slate-900">
+                <span class="text-xl font-black leading-none">×</span>
               </button>
             </div>
+            </div>
 
-            <div class="mt-6 space-y-4" v-if="formModal.type === 'subject'">
-              <div class="grid gap-4 md:grid-cols-2">
+            <div class="max-h-[calc(88vh-140px)] overflow-y-auto px-6 py-6">
+              <div v-if="formModal.type === 'subject'"
+                class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/30">
+                <div class="mb-4 flex items-center gap-2">
+                  <div class="h-2 w-2 rounded-full bg-sky-600"></div>
+                  <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Data mata pelajaran</p>
+                </div>
+                <div class="grid gap-4 md:grid-cols-2">
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Kode Mapel</label>
                   <input v-model="subjectForm.code" type="text" placeholder="Contoh: MTK"
@@ -579,10 +590,15 @@
                     class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
               </div>
-            </div>
+              </div>
 
-            <div class="mt-6 space-y-4" v-else-if="formModal.type === 'teacher-load'">
-              <div class="grid gap-4 md:grid-cols-2">
+              <div v-else-if="formModal.type === 'teacher-load'"
+                class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/30">
+                <div class="mb-4 flex items-center gap-2">
+                  <div class="h-2 w-2 rounded-full bg-rose-600"></div>
+                  <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Beban guru</p>
+                </div>
+                <div class="grid gap-4 md:grid-cols-2">
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Guru</label>
                   <select v-model="teacherLoadForm.teacher_id"
@@ -610,10 +626,15 @@
                     class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
               </div>
-            </div>
+              </div>
 
-            <div class="mt-6 space-y-4" v-else-if="formModal.type === 'distribution'">
-              <div class="grid gap-4 md:grid-cols-2">
+              <div v-else-if="formModal.type === 'distribution'"
+                class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/30">
+                <div class="mb-4 flex items-center gap-2">
+                  <div class="h-2 w-2 rounded-full bg-indigo-600"></div>
+                  <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Distribusi kelas</p>
+                </div>
+                <div class="grid gap-4 md:grid-cols-2">
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Beban Guru</label>
                   <select v-model="distributionForm.curriculum_teacher_load_id"
@@ -642,10 +663,15 @@
                     class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
               </div>
-            </div>
+              </div>
 
-            <div class="mt-6 space-y-4" v-else-if="formModal.type === 'slot'">
-              <div class="grid gap-4 md:grid-cols-2">
+              <div v-else-if="formModal.type === 'slot'"
+                class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-950/30">
+                <div class="mb-4 flex items-center gap-2">
+                  <div class="h-2 w-2 rounded-full bg-emerald-600"></div>
+                  <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Slot jadwal</p>
+                </div>
+                <div class="grid gap-4 md:grid-cols-2">
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Hari</label>
                   <select v-model="slotForm.day_name"
@@ -679,20 +705,20 @@
                     class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
               </div>
-            </div>
+              </div>
 
-            <div class="mt-6 space-y-4" v-else-if="formModal.type === 'slot-bulk'">
+              <div v-else-if="formModal.type === 'slot-bulk'" class="space-y-4">
               <div
-                class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200">
+                  class="rounded-2xl border border-slate-200 bg-sky-50/60 p-4 text-sm leading-6 text-slate-700 dark:border-slate-700 dark:bg-sky-500/10 dark:text-slate-200">
                 Pilih hari, jumlah sesi, dan jam mulai. Sistem akan membuat slot otomatis per hari berdasarkan durasi
                 dan jeda.
               </div>
 
               <div>
-                <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Hari</p>
+                  <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Hari</p>
                 <div class="mt-3 grid grid-cols-2 gap-2">
                   <label v-for="day in dayOptions" :key="day.name"
-                    class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800/70">
+                      class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800/70">
                     <input v-model="bulkSlotForm.days" type="checkbox"
                       class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                       :value="day.name" />
@@ -740,7 +766,7 @@
                 </div>
                 <div>
                   <div
-                    class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                      class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
                     Istirahat dihitung setelah sesi yang dipilih selesai.
                   </div>
                 </div>
@@ -799,15 +825,15 @@
               </div>
 
               <div
-                class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                  class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
                 Perkiraan slot dibuat: <strong class="text-slate-900 dark:text-white">{{ bulkSlotPreviewCount
                 }}</strong>
               </div>
-            </div>
+              </div>
 
-            <div class="mt-6 space-y-4" v-else-if="formModal.type === 'slot-day-detail'">
+              <div v-else-if="formModal.type === 'slot-day-detail'" class="space-y-4">
               <div
-                class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200">
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     Menampilkan slot untuk <strong class="text-slate-900 dark:text-white">{{ selectedScheduleDayName
@@ -856,59 +882,69 @@
                   </tbody>
                 </table>
               </div>
+              </div>
             </div>
 
-            <div class="mt-6 flex justify-end gap-3">
-              <button @click="closeFormModal"
-                class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">
-                Batal
-              </button>
-              <button v-if="formModal.type === 'subject'" @click="saveSubject"
-                class="rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500">
-                {{ subjectEditingId ? "Perbarui" : "Simpan" }}
-              </button>
-              <button v-else-if="formModal.type === 'teacher-load'" @click="saveTeacherLoad"
-                class="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700">
-                {{ teacherLoadEditingId ? "Perbarui" : "Simpan" }}
-              </button>
-              <button v-else-if="formModal.type === 'distribution'" @click="saveDistribution"
-                class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
-                {{ distributionEditingId ? "Perbarui" : "Simpan" }}
-              </button>
-              <button v-else-if="formModal.type === 'slot'" @click="saveSlot"
-                class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700">
-                {{ slotEditingId ? "Perbarui" : "Simpan" }}
-              </button>
-              <button v-else-if="formModal.type === 'slot-bulk'" @click="saveBulkSlots" :disabled="bulkSlotSaving"
-                class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60">
-                {{ bulkSlotSaving ? "Memproses..." : "Buat Slot" }}
-              </button>
-              <button v-else-if="formModal.type === 'slot-day-detail'" @click="closeFormModal"
-                class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white">
-                Tutup
-              </button>
+            <div class="border-t border-slate-200 bg-slate-50/80 px-6 py-4 dark:border-slate-800 dark:bg-slate-950/40">
+              <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button @click="closeFormModal"
+                  class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-white dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                  Batal
+                </button>
+                <button v-if="formModal.type === 'subject'" @click="saveSubject"
+                  class="inline-flex items-center justify-center rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500">
+                  {{ subjectEditingId ? "Perbarui" : "Simpan" }}
+                </button>
+                <button v-else-if="formModal.type === 'teacher-load'" @click="saveTeacherLoad"
+                  class="inline-flex items-center justify-center rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700">
+                  {{ teacherLoadEditingId ? "Perbarui" : "Simpan" }}
+                </button>
+                <button v-else-if="formModal.type === 'distribution'" @click="saveDistribution"
+                  class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700">
+                  {{ distributionEditingId ? "Perbarui" : "Simpan" }}
+                </button>
+                <button v-else-if="formModal.type === 'slot'" @click="saveSlot"
+                  class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700">
+                  {{ slotEditingId ? "Perbarui" : "Simpan" }}
+                </button>
+                <button v-else-if="formModal.type === 'slot-bulk'" @click="saveBulkSlots" :disabled="bulkSlotSaving"
+                  class="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60">
+                  {{ bulkSlotSaving ? "Memproses..." : "Buat Slot" }}
+                </button>
+                <button v-else-if="formModal.type === 'slot-day-detail'" @click="closeFormModal"
+                  class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white">
+                  Tutup
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         <div v-if="detailModal.open" class="fixed inset-0 z-[140] flex items-center justify-center p-4"
-          style="background-color: rgba(15, 23, 42, 0.22); backdrop-filter: blur(10px);">
+          style="background-color: rgba(15, 23, 42, 0.5); backdrop-filter: blur(14px);">
           <div
-            class="w-full max-w-5xl max-h-[88vh] overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900">
-            <div class="flex items-start justify-between gap-4">
-              <div class="min-w-0">
-                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Detail Data</p>
-                <h3 class="mt-2 truncate text-xl font-bold text-slate-900 dark:text-white">{{ detailModal.title }}</h3>
-                <p v-if="detailModal.subtitle" class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{
-                  detailModal.subtitle }}</p>
-              </div>
+            class="w-full max-w-5xl max-h-[88vh] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.22)] dark:border-slate-800 dark:bg-slate-900">
+            <div class="relative border-b border-slate-200 px-6 py-5 dark:border-slate-800">
+              <div class="flex items-start justify-between gap-4 pr-12">
+                <div class="min-w-0">
+                  <div class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    Detail Data
+                  </div>
+                  <h3 class="mt-3 truncate text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                    {{ detailModal.title }}
+                  </h3>
+                  <p v-if="detailModal.subtitle" class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{
+                    detailModal.subtitle }}</p>
+                </div>
               <button @click="closeDetailModal"
-                class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200">
-                x
+                class="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-rose-200 bg-rose-50 text-rose-600 transition hover:border-rose-300 hover:bg-rose-100 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 dark:border-rose-900/50 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20 dark:focus:ring-offset-slate-900">
+                <span class="text-xl font-black leading-none">×</span>
               </button>
             </div>
+            </div>
 
-            <div v-if="detailModal.type === 'subject'" class="mt-6 space-y-4">
+            <div class="max-h-[calc(88vh-96px)] overflow-y-auto px-6 py-6">
+            <div v-if="detailModal.type === 'subject'" class="space-y-4">
               <div class="grid gap-3 sm:grid-cols-3">
                 <div
                   class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
@@ -937,7 +973,7 @@
               </div>
             </div>
 
-            <div v-else-if="detailModal.type === 'teacher-load'" class="mt-6 space-y-4">
+            <div v-else-if="detailModal.type === 'teacher-load'" class="space-y-4">
               <div class="grid gap-3 sm:grid-cols-4">
                 <div
                   class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
@@ -1004,7 +1040,7 @@
               </div>
             </div>
 
-            <div v-else-if="detailModal.type === 'distribution'" class="mt-6 space-y-4">
+            <div v-else-if="detailModal.type === 'distribution'" class="space-y-4">
               <div class="grid gap-3 sm:grid-cols-4">
                 <div
                   class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
@@ -1069,7 +1105,7 @@
               </div>
             </div>
 
-            <div v-else-if="detailModal.type === 'schedule-day'" class="mt-6 space-y-4">
+            <div v-else-if="detailModal.type === 'schedule-day'" class="space-y-4">
               <div
                 class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200">
                 <div class="flex flex-wrap items-center justify-between gap-3">
@@ -1122,7 +1158,7 @@
               </div>
             </div>
 
-            <div v-else-if="detailModal.type === 'generated'" class="mt-6 space-y-4">
+            <div v-else-if="detailModal.type === 'generated'" class="space-y-4">
               <div class="grid gap-3 sm:grid-cols-4">
                 <div
                   class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
@@ -1181,23 +1217,28 @@
                 </table>
               </div>
             </div>
+            </div>
           </div>
         </div>
 
         <div v-if="confirmModal.open" class="fixed inset-0 z-[150] flex items-center justify-center p-4"
-          style="background-color: rgba(15, 23, 42, 0.22); backdrop-filter: blur(10px);">
-          <div class="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900">
-            <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ confirmModal.title }}</h3>
-            <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{{ confirmModal.message }}</p>
-            <div class="mt-6 flex justify-end gap-3">
-              <button @click="closeConfirmModal"
-                class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">
-                Batal
-              </button>
-              <button @click="runConfirmAction"
-                class="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700">
-                {{ confirmModal.actionLabel }}
-              </button>
+          style="background-color: rgba(15, 23, 42, 0.5); backdrop-filter: blur(14px);">
+          <div class="w-full max-w-md overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.22)] dark:border-slate-800 dark:bg-slate-900">
+            <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
+              <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ confirmModal.title }}</h3>
+            </div>
+            <div class="px-6 py-5">
+              <p class="text-sm leading-6 text-slate-600 dark:text-slate-300">{{ confirmModal.message }}</p>
+              <div class="mt-6 flex justify-end gap-3">
+                <button @click="closeConfirmModal"
+                  class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20">
+                  Batal
+                </button>
+                <button @click="runConfirmAction"
+                  class="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700">
+                  {{ confirmModal.actionLabel }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
