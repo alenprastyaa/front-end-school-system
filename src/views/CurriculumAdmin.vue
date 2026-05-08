@@ -1,248 +1,460 @@
 <template>
-  <div class="min-h-screen bg-slate-50/60 pb-12 pt-4 font-sans text-slate-900 md:px-8 md:pt-8 dark:bg-slate-950 dark:text-slate-100">
-    <div class="mx-auto space-y-6">
-      <section v-if="currentSection === 'generate'" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <button
-          @click="generateSchedule"
-          :disabled="generating"
-          class="inline-flex items-center justify-center rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
-        >
+  <div
+    class="min-h-screen bg-slate-50/50 px-3 pb-10 pt-3 font-sans text-slate-900 sm:px-4 sm:pt-4 md:px-8 md:pb-12 md:pt-8 dark:bg-slate-950 dark:text-slate-100">
+    <div class="mx-auto space-y-5 sm:space-y-6">
+      <section v-if="currentSection === 'generate'"
+        class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+        <button @click="generateSchedule" :disabled="generating"
+          class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
           {{ generating ? "Sedang Generate..." : "Generate Jadwal" }}
         </button>
       </section>
 
-      <section class="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-        <article
-          v-for="card in summaryCards"
-          :key="card.label"
-          class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
-        >
-          <div class="flex items-center justify-between gap-3">
-            <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">{{ card.label }}</p>
-            <p class="text-2xl font-black text-slate-900 dark:text-white">{{ card.value }}</p>
+      <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <article v-for="card in summaryCards" :key="card.label"
+          class="relative overflow-hidden rounded-2xl p-4 text-white" :class="card.cardClass">
+          <div class="flex items-start justify-between gap-4">
+            <div class="min-w-0">
+              <p class="text-xs font-semibold uppercase tracking-[0.14em] text-white/80">{{ card.label }}</p>
+              <p class="mt-2 text-2xl font-bold tracking-tight text-white">{{ card.value }}</p>
+              <p class="mt-1 truncate text-[11px] text-white/70">{{ card.caption }}</p>
+            </div>
+            <Icon :icon="card.icon" class="h-8 w-8 shrink-0 text-white opacity-75" />
           </div>
         </article>
       </section>
 
-      <section class="rounded-2xl border border-sky-200 bg-sky-50/80 px-4 py-3 text-sm text-sky-800 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-100">
+      <section
+        class="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
         Alur: `Mapel -> Beban Guru -> Distribusi Kelas -> Slot Jadwal -> Generate`
       </section>
 
-      <article v-if="currentSection === 'subjects'" class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
+      <article v-if="currentSection === 'subjects'"
+        class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div class="border-b border-slate-200 px-4 py-4 sm:px-6 sm:py-5 dark:border-slate-800">
           <div class="flex items-center justify-between gap-4">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Sub Menu 1</p>
-              <h2 class="mt-2 text-lg font-bold text-slate-900 dark:text-white">Mata Pelajaran</h2>
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Sub Menu 1</p>
+              <h2 class="mt-1.5 text-base font-semibold text-slate-900 dark:text-white">Mata Pelajaran</h2>
             </div>
-            <button @click="openSubjectModal()" class="rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500">
+            <button @click="openSubjectModal()"
+              class="rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500">
               Tambah Mapel
             </button>
           </div>
         </div>
-        <div class="p-6">
-          <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
-            <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
-              <thead class="bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">
+        <div class="space-y-4 p-4 sm:p-6">
+          <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <input v-model="searchTerms.subjects" type="text" placeholder="Cari nama atau kode mapel..."
+              class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-sky-500 lg:max-w-xl dark:border-slate-700 dark:bg-slate-950 dark:text-white" />
+            <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">{{ filteredSubjects.length }} mapel</p>
+          </div>
+
+          <div v-if="filteredSubjects.length > 0"
+            class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+            <table class="min-w-full text-left text-sm">
+              <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
                 <tr>
-                  <th class="px-4 py-3 font-semibold">Mapel</th>
-                  <th class="px-4 py-3 font-semibold">Kode</th>
-                  <th class="px-4 py-3 font-semibold">JP</th>
-                  <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Kode</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Mata Pelajaran</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">JP / Minggu</th>
+                  <th class="border-b border-slate-200 px-4 py-3 text-right font-medium dark:border-slate-800">Aksi</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr v-for="item in overview.subjects" :key="item.id">
-                  <td class="px-4 py-3">
-                    <div class="font-semibold text-slate-900 dark:text-white">{{ item.name }}</div>
+                <tr v-for="item in filteredSubjects" :key="item.id"
+                  class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50">
+                  <td class="whitespace-nowrap px-4 py-4">
+                    <span
+                      class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                      {{ item.code || "-" }}
+                    </span>
                   </td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.code || "-" }}</td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.weekly_hours }} JP</td>
-                  <td class="px-4 py-3">
-                    <div class="flex justify-end gap-2">
-                      <button @click="openSubjectModal(item)" class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
-                      <button @click="removeSubject(item)" class="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-700 dark:border-rose-500/30 dark:text-rose-300">Hapus</button>
+                  <td class="px-4 py-4">
+                    <div class="flex min-w-0 items-center gap-3">
+                      <div
+                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-600 text-xs font-bold text-white">
+                        {{ getInitials(item.name) }}
+                      </div>
+                      <div class="min-w-0">
+                        <p class="truncate font-semibold text-slate-900 dark:text-white">{{ item.name }}</p>
+                        <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Mata pelajaran kurikulum</p>
+                      </div>
                     </div>
                   </td>
-                </tr>
-                <tr v-if="overview.subjects.length === 0">
-                  <td colspan="4" class="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">Belum ada mapel kurikulum.</td>
+                  <td class="whitespace-nowrap px-4 py-4 font-semibold text-slate-700 dark:text-slate-200">
+                    {{ formatHours(item.weekly_hours) }}
+                  </td>
+                  <td class="px-4 py-4">
+                    <div class="flex justify-end gap-2">
+                      <button @click="openDetailModal('subject', item.name, item)"
+                        class="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-sky-500">Detail</button>
+                      <button @click="openSubjectModal(item)"
+                        class="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">Edit</button>
+                      <button @click="removeSubject(item)"
+                        class="rounded-lg px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/10">Hapus</button>
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          <div v-else
+            class="rounded-2xl border border-slate-200 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
+            Belum ada mapel kurikulum yang sesuai.
+          </div>
         </div>
       </article>
 
-      <article v-if="currentSection === 'teacher-loads'" class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
+      <article v-if="currentSection === 'teacher-loads'"
+        class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div class="border-b border-slate-200 px-4 py-4 sm:px-6 sm:py-5 dark:border-slate-800">
           <div class="flex items-center justify-between gap-4">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Sub Menu 2</p>
-              <h2 class="mt-2 text-lg font-bold text-slate-900 dark:text-white">Beban Guru</h2>
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Sub Menu 2</p>
+              <h2 class="mt-1.5 text-base font-semibold text-slate-900 dark:text-white">Beban Guru</h2>
             </div>
-            <button @click="openTeacherLoadModal()" class="rounded-xl bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-400">
+            <button @click="openTeacherLoadModal()"
+              class="rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500">
               Tambah Beban Guru
             </button>
           </div>
         </div>
-        <div class="p-6">
-          <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
-            <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
-              <thead class="bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">
+        <div class="space-y-4 p-4 sm:p-6">
+          <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <input v-model="searchTerms.teacher_loads" type="text" placeholder="Cari guru atau mapel..."
+              class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-sky-500 lg:max-w-xl dark:border-slate-700 dark:bg-slate-950 dark:text-white" />
+            <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">{{ teacherLoadCards.length }} guru · {{
+              filteredTeacherLoads.length }} beban</p>
+          </div>
+
+          <div v-if="teacherLoadCards.length > 0"
+            class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+            <table class="min-w-full text-left text-sm">
+              <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
                 <tr>
-                  <th class="px-4 py-3 font-semibold">Guru</th>
-                  <th class="px-4 py-3 font-semibold">Mapel</th>
-                  <th class="px-4 py-3 font-semibold">Kapasitas</th>
-                  <th class="px-4 py-3 font-semibold">Terdistribusi</th>
-                  <th class="px-4 py-3 font-semibold">Sisa</th>
-                  <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Guru</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Beban</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Mapel</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Kapasitas</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Terpakai</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Sisa</th>
+                  <th class="border-b border-slate-200 px-4 py-3 text-right font-medium dark:border-slate-800">Aksi</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr v-for="item in overview.teacher_loads" :key="item.id">
-                  <td class="px-4 py-3">
-                    <div class="font-semibold text-slate-900 dark:text-white">{{ item.teacher_name }}</div>
-                  </td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.subject_name }}{{ item.subject_code ? ` (${item.subject_code})` : "" }}</td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.max_weekly_hours }} JP</td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.distributed_hours }} JP</td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.remaining_hours }} JP</td>
-                  <td class="px-4 py-3">
-                    <div class="flex justify-end gap-2">
-                      <button @click="openTeacherLoadModal(item)" class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
-                      <button @click="removeTeacherLoad(item)" class="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-700 dark:border-rose-500/30 dark:text-rose-300">Hapus</button>
+                <tr v-for="group in teacherLoadCards" :key="group.key"
+                  class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50">
+                  <td class="px-4 py-4">
+                    <div class="flex min-w-0 items-center gap-3">
+                      <div
+                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-600 text-xs font-bold text-white">
+                        {{ getInitials(group.teacher_name) }}
+                      </div>
+                      <div class="min-w-0">
+                        <p class="truncate font-semibold text-slate-900 dark:text-white">{{ group.teacher_name }}</p>
+                        <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Guru pengampu</p>
+                      </div>
                     </div>
                   </td>
-                </tr>
-                <tr v-if="overview.teacher_loads.length === 0">
-                  <td colspan="6" class="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">Belum ada data beban guru.</td>
+                  <td class="whitespace-nowrap px-4 py-4">
+                    <span
+                      class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                      {{ group.item_count }} beban
+                    </span>
+                  </td>
+                  <td class="whitespace-nowrap px-4 py-4 font-semibold text-slate-700 dark:text-slate-200">
+                    {{ group.subject_count }}
+                  </td>
+                  <td class="whitespace-nowrap px-4 py-4 text-slate-600 dark:text-slate-300">
+                    {{ formatHours(group.max_weekly_hours) }}
+                  </td>
+                  <td class="whitespace-nowrap px-4 py-4 text-slate-600 dark:text-slate-300">
+                    {{ formatHours(group.distributed_hours) }}
+                  </td>
+                  <td class="whitespace-nowrap px-4 py-4 font-semibold"
+                    :class="remainingHoursClass(group.remaining_hours)">
+                    {{ formatHours(group.remaining_hours) }}
+                  </td>
+                  <td class="px-4 py-4">
+                    <div class="flex justify-end">
+                      <button @click="openDetailModal('teacher-load', group.teacher_name, group)"
+                        class="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-sky-500">Detail
+                        Beban</button>
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          <div v-else
+            class="rounded-2xl border border-slate-200 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
+            Belum ada data beban guru yang sesuai.
+          </div>
         </div>
       </article>
 
-      <article v-if="currentSection === 'class-distributions'" class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
+      <article v-if="currentSection === 'class-distributions'"
+        class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+
+        <article v-if="currentSection === 'learning'"
+          class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div class="border-b border-slate-200 px-4 py-4 sm:px-6 sm:py-5 dark:border-slate-800">
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Sub Menu</p>
+                <h2 class="mt-1.5 text-base font-semibold text-slate-900 dark:text-white">Data Pembelajaran</h2>
+              </div>
+              <button @click="openLearningModal()"
+                class="rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500">
+                Tambah Pembelajaran
+              </button>
+            </div>
+          </div>
+          <div class="space-y-4 p-4 sm:p-6">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <input v-model="searchTerms.learning" type="text" placeholder="Cari guru, mapel, atau kelas..."
+                class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-sky-500 lg:max-w-xl dark:border-slate-700 dark:bg-slate-950 dark:text-white" />
+              <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">{ filteredLearning.length } data</p>
+            </div>
+
+            <div v-if="filteredLearning.length > 0"
+              class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+              <table class="min-w-full text-left text-sm">
+                <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
+                  <tr>
+                    <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Guru</th>
+                    <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Mata Pelajaran
+                    </th>
+                    <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Kelas</th>
+                    <th class="border-b border-slate-200 px-4 py-3 text-right font-medium dark:border-slate-800">Aksi
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tr v-for="item in filteredLearning" :key="item.id"
+                    class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50">
+                    <td class="px-4 py-4">
+                      <div class="flex items-center gap-3">
+                        <div
+                          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                          { getInitials(item.teacher_name) }
+                        </div>
+                        <span class="font-medium text-slate-900 dark:text-white">{ item.teacher_name }</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-4 text-slate-600 dark:text-slate-300">{ item.subject_name }</td>
+                    <td class="px-4 py-4">
+                      <span
+                        class="inline-flex rounded-full bg-sky-50 px-2 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
+                        { item.class_name }
+                      </span>
+                    </td>
+                    <td class="px-4 py-4 text-right">
+                      <div class="flex justify-end gap-2">
+                        <button @click="editLearning(item)" class="text-slate-400 hover:text-sky-600 transition">
+                          <Icon name="ph:pencil-simple" class="h-4 w-4" />
+                        </button>
+                        <button @click="removeLearning(item)" class="text-slate-400 hover:text-red-600 transition">
+                          <Icon name="ph:trash" class="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+
+        <div class="border-b border-slate-200 px-4 py-4 sm:px-6 sm:py-5 dark:border-slate-800">
           <div class="flex items-center justify-between gap-4">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Sub Menu 3</p>
-              <h2 class="mt-2 text-lg font-bold text-slate-900 dark:text-white">Distribusi Guru ke Kelas</h2>
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Sub Menu 3</p>
+              <h2 class="mt-1.5 text-base font-semibold text-slate-900 dark:text-white">Distribusi Guru ke Kelas</h2>
             </div>
-            <button @click="openDistributionModal()" class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500">
+            <button @click="openDistributionModal()"
+              class="rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500">
               Tambah Distribusi
             </button>
           </div>
         </div>
-        <div class="space-y-5 p-6">
-          <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
-            Total distribusi per beban guru tidak boleh melebihi kapasitas JP yang sudah ditentukan pada submenu <strong>Beban Guru</strong>.
+        <div class="space-y-5 p-4 sm:p-6">
+          <div
+            class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
+            Total distribusi per beban guru tidak boleh melebihi kapasitas JP yang sudah ditentukan pada submenu
+            <strong>Beban Guru</strong>.
           </div>
 
-          <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
-            <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
-              <thead class="bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">
+          <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <input v-model="searchTerms.class_distributions" type="text" placeholder="Cari guru, mapel, atau kelas..."
+              class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-sky-500 lg:max-w-xl dark:border-slate-700 dark:bg-slate-950 dark:text-white" />
+            <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">{{ distributionCards.length }} guru · {{
+              filteredClassDistributions.length }} distribusi</p>
+          </div>
+
+          <div v-if="distributionCards.length > 0"
+            class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+            <table class="min-w-full text-left text-sm">
+              <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
                 <tr>
-                  <th class="px-4 py-3 font-semibold">Guru</th>
-                  <th class="px-4 py-3 font-semibold">Mapel</th>
-                  <th class="px-4 py-3 font-semibold">Kelas</th>
-                  <th class="px-4 py-3 font-semibold">JP</th>
-                  <th class="px-4 py-3 font-semibold">Kapasitas Beban</th>
-                  <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Guru</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Distribusi</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Mapel</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Kelas</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Total JP</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Kapasitas</th>
+                  <th class="border-b border-slate-200 px-4 py-3 text-right font-medium dark:border-slate-800">Aksi</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr v-for="item in overview.class_distributions" :key="item.id">
-                  <td class="px-4 py-3">
-                    <div class="font-semibold text-slate-900 dark:text-white">{{ item.teacher_name }}</div>
-                  </td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.subject_name }}{{ item.subject_code ? ` (${item.subject_code})` : "" }}</td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.class_name }}</td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.weekly_hours }} JP</td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.load_capacity }} JP</td>
-                  <td class="px-4 py-3">
-                    <div class="flex justify-end gap-2">
-                      <button @click="openDistributionModal(item)" class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
-                      <button @click="removeDistribution(item)" class="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-700 dark:border-rose-500/30 dark:text-rose-300">Hapus</button>
+                <tr v-for="group in distributionCards" :key="group.key"
+                  class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50">
+                  <td class="px-4 py-4">
+                    <div class="flex min-w-0 items-center gap-3">
+                      <div
+                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-xs font-bold text-white">
+                        {{ getInitials(group.teacher_name) }}
+                      </div>
+                      <div class="min-w-0">
+                        <p class="truncate font-semibold text-slate-900 dark:text-white">{{ group.teacher_name }}</p>
+                        <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Guru pengampu</p>
+                      </div>
                     </div>
                   </td>
-                </tr>
-                <tr v-if="overview.class_distributions.length === 0">
-                  <td colspan="6" class="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">Belum ada distribusi guru ke kelas.</td>
+                  <td class="whitespace-nowrap px-4 py-4">
+                    <span
+                      class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                      {{ group.item_count }} list
+                    </span>
+                  </td>
+                  <td class="whitespace-nowrap px-4 py-4 font-semibold text-slate-700 dark:text-slate-200">
+                    {{ group.subject_count }}
+                  </td>
+                  <td class="whitespace-nowrap px-4 py-4 font-semibold text-slate-700 dark:text-slate-200">
+                    {{ group.class_count }}
+                  </td>
+                  <td class="whitespace-nowrap px-4 py-4 text-slate-600 dark:text-slate-300">
+                    {{ formatHours(group.total_weekly_hours) }}
+                  </td>
+                  <td class="whitespace-nowrap px-4 py-4 text-slate-600 dark:text-slate-300">
+                    {{ formatHours(group.load_capacity) }}
+                  </td>
+                  <td class="px-4 py-4">
+                    <div class="flex justify-end">
+                      <button @click="openDetailModal('distribution', group.teacher_name, group)"
+                        class="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-500">Detail
+                        Distribusi</button>
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          <div v-else
+            class="rounded-2xl border border-slate-200 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
+            Belum ada distribusi guru ke kelas yang sesuai.
+          </div>
         </div>
       </article>
 
-      <article v-if="currentSection === 'schedule'" class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
+      <article v-if="currentSection === 'schedule'"
+        class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div class="border-b border-slate-200 px-4 py-4 sm:px-6 sm:py-5 dark:border-slate-800">
           <div class="flex items-center justify-between gap-4">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Sub Menu 4</p>
-              <h2 class="mt-2 text-lg font-bold text-slate-900 dark:text-white">Jadwal Pembelajaran</h2>
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Sub Menu 4</p>
+              <h2 class="mt-1.5 text-base font-semibold text-slate-900 dark:text-white">Jadwal Pembelajaran</h2>
             </div>
             <div class="flex flex-wrap items-center justify-end gap-2">
-              <button @click="openBulkSlotModal()" class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:bg-emerald-500/20">
+              <button @click="openBulkSlotModal()"
+                class="rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">
                 Buat Slot Cepat
               </button>
-              <button @click="openSlotModal()" class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500">
+              <button @click="openSlotModal()"
+                class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500">
                 Tambah Slot
               </button>
             </div>
           </div>
         </div>
-        <div class="p-6">
-          <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
-            <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
-              <thead class="bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">
+        <div class="space-y-4 p-4 sm:p-6">
+          <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <input v-model="searchTerms.schedule" type="text" placeholder="Cari hari..."
+              class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-sky-500 lg:max-w-xl dark:border-slate-700 dark:bg-slate-950 dark:text-white" />
+            <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">{{ filteredScheduleDayRows.length }}
+              hari</p>
+          </div>
+
+          <div v-if="filteredScheduleDayRows.length > 0"
+            class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+            <table class="min-w-full text-left text-sm">
+              <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
                 <tr>
-                  <th class="px-4 py-3 font-semibold">Hari</th>
-                  <th class="px-4 py-3 font-semibold">Ringkasan</th>
-                  <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Hari</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Jumlah Sesi</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Rentang Jam</th>
+                  <th class="border-b border-slate-200 px-4 py-3 font-medium dark:border-slate-800">Urutan</th>
+                  <th class="border-b border-slate-200 px-4 py-3 text-right font-medium dark:border-slate-800">Aksi</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr v-for="item in scheduleDayRows" :key="item.day_name">
-                  <td class="px-4 py-3">
-                    <div class="font-semibold text-slate-900 dark:text-white">{{ item.day_name }}</div>
-                    <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">Urutan {{ item.day_order }}</div>
-                  </td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
-                    <div class="font-semibold text-slate-700 dark:text-slate-200">{{ item.session_count }} sesi</div>
-                    <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.start_time }} - {{ item.end_time }}</div>
-                  </td>
-                  <td class="px-4 py-3">
-                    <div class="flex justify-end gap-2">
-                      <button @click="openScheduleDayDetail(item.day_name)" class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">
-                        Detail
-                      </button>
-                      <button @click="openSlotModal()" class="rounded-lg border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:border-emerald-500/30 dark:text-emerald-200">
-                        Tambah
-                      </button>
+                <tr v-for="item in filteredScheduleDayRows" :key="item.day_name"
+                  class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50">
+                  <td class="px-4 py-4">
+                    <div class="flex min-w-0 items-center gap-3">
+                      <div
+                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-xs font-bold text-white">
+                        {{ getInitials(item.day_name) }}
+                      </div>
+                      <div class="min-w-0">
+                        <p class="truncate font-semibold text-slate-900 dark:text-white">{{ item.day_name }}</p>
+                        <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Slot pembelajaran</p>
+                      </div>
                     </div>
                   </td>
-                </tr>
-                <tr v-if="scheduleDayRows.length === 0">
-                  <td colspan="3" class="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">Belum ada slot jadwal.</td>
+                  <td class="whitespace-nowrap px-4 py-4">
+                    <span
+                      class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                      {{ item.session_count }} sesi
+                    </span>
+                  </td>
+                  <td class="whitespace-nowrap px-4 py-4 font-semibold text-slate-700 dark:text-slate-200">
+                    {{ item.start_time }} - {{ item.end_time }}
+                  </td>
+                  <td class="whitespace-nowrap px-4 py-4 text-slate-600 dark:text-slate-300">
+                    {{ item.day_order }}
+                  </td>
+                  <td class="px-4 py-4">
+                    <div class="flex justify-end gap-2">
+                      <button @click="openScheduleDayDetail(item.day_name)"
+                        class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-500">Detail</button>
+                      <button @click="openSlotModal()"
+                        class="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">Tambah</button>
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          <div v-else
+            class="rounded-2xl border border-slate-200 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
+            Belum ada slot jadwal yang sesuai.
+          </div>
         </div>
       </article>
 
-      <article v-if="currentSection === 'generate'" class="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
-          <p class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Sub Menu 5</p>
-          <h2 class="mt-2 text-lg font-bold text-slate-900 dark:text-white">Generate Pembagian</h2>
-          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Generator menyusun jadwal dari distribusi rombel yang sudah ditetapkan admin.</p>
+      <article v-if="currentSection === 'generate'"
+        class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div class="border-b border-slate-200 px-4 py-4 sm:px-6 sm:py-5 dark:border-slate-800">
+          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Sub Menu 5</p>
+          <h2 class="mt-1.5 text-base font-semibold text-slate-900 dark:text-white">Generate Pembagian</h2>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Generator menyusun jadwal dari distribusi rombel
+            yang sudah ditetapkan admin.</p>
         </div>
-        <div class="space-y-5 p-6">
-          <div v-if="generationIssues.length > 0" class="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/30 dark:bg-amber-500/10">
+        <div class="space-y-5 p-4 sm:p-6">
+          <div v-if="generationIssues.length > 0"
+            class="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/30 dark:bg-amber-500/10">
             <p class="text-sm font-semibold text-amber-800 dark:text-amber-200">Catatan generator</p>
             <ul class="mt-3 space-y-2 text-sm text-amber-700 dark:text-amber-100">
               <li v-for="issue in generationIssues" :key="issue" class="flex gap-2">
@@ -252,53 +464,98 @@
             </ul>
           </div>
 
-          <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
-            <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
-              <thead class="bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">
-                <tr>
-                  <th class="px-4 py-3 font-semibold">Kelas</th>
-                  <th class="px-4 py-3 font-semibold">Hari / Jam</th>
-                  <th class="px-4 py-3 font-semibold">Mapel</th>
-                  <th class="px-4 py-3 font-semibold">Guru</th>
-                  <th class="px-4 py-3 font-semibold">LMS</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr v-for="item in overview.generated_entries" :key="item.id">
-                  <td class="px-4 py-3 font-semibold text-slate-900 dark:text-white">{{ item.class_name }}</td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
-                    <div>{{ item.day_name }} · {{ item.slot_label || `Sesi ${item.session_order}` }}</div>
-                    <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.start_time }} - {{ item.end_time }}</div>
-                  </td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
-                    <div>{{ item.subject_name }}</div>
-                    <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.subject_code || "-" }}</div>
-                  </td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.teacher_name }}</td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-300">Subject ID: {{ item.learning_subject_id || "-" }}</td>
-                </tr>
-                <tr v-if="overview.generated_entries.length === 0">
-                  <td colspan="5" class="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">Belum ada hasil generate jadwal.</td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <input v-model="searchTerms.generate" type="text" placeholder="Cari kelas, guru, atau mapel..."
+              class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-sky-500 lg:max-w-xl dark:border-slate-700 dark:bg-slate-950 dark:text-white" />
+            <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">{{ generatedScheduleCards.length }} guru
+              · {{ filteredGeneratedEntries.length }} jadwal</p>
           </div>
 
-          <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
-            Subject LMS otomatis dibuat per kombinasi <strong class="text-slate-900 dark:text-white">kelas + mapel</strong>. Guru pengampu mengikuti hasil distribusi rombel yang sudah ditetapkan admin sebelumnya.
+          <div v-if="generatedScheduleCards.length > 0" class="grid gap-4 lg:grid-cols-2">
+            <article v-for="group in generatedScheduleCards" :key="group.key"
+              @click="openDetailModal('generated', group.teacher_name, group)"
+              class="group cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-sky-500/40">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex min-w-0 items-start gap-3">
+                  <div
+                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sky-600 text-sm font-bold text-white">
+                    {{ getInitials(group.teacher_name) }}
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Guru</p>
+                    <h3 class="mt-1 truncate text-base font-semibold text-slate-900 dark:text-white">{{
+                      group.teacher_name }}</h3>
+                  </div>
+                </div>
+                <span
+                  class="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">{{
+                    group.item_count }} jadwal</span>
+              </div>
+              <div class="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+                <div class="rounded-xl bg-slate-50 p-3 text-center dark:bg-slate-800/50">
+                  <p class="text-lg font-semibold text-slate-900 dark:text-white">{{ group.class_count }}</p>
+                  <p class="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">Kelas</p>
+                </div>
+                <div class="rounded-xl bg-slate-50 p-3 text-center dark:bg-slate-800/50">
+                  <p class="text-lg font-semibold text-slate-900 dark:text-white">{{ group.subject_count }}</p>
+                  <p class="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">Mapel</p>
+                </div>
+                <div class="rounded-xl bg-slate-50 p-3 text-center dark:bg-slate-800/50">
+                  <p class="text-lg font-semibold text-slate-900 dark:text-white">{{ group.day_count }}</p>
+                  <p class="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">Hari</p>
+                </div>
+                <div class="rounded-xl bg-slate-50 p-3 text-center dark:bg-slate-800/50">
+                  <p class="text-lg font-semibold text-slate-900 dark:text-white">{{ group.lms_count }}</p>
+                  <p class="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">LMS</p>
+                </div>
+              </div>
+              <div class="mt-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                <div class="divide-y divide-slate-100 dark:divide-slate-800">
+                  <div v-for="item in group.items.slice(0, 2)" :key="item.id" class="px-3 py-2.5 text-sm">
+                    <div class="flex items-center justify-between gap-3">
+                      <span class="truncate font-bold text-slate-800 dark:text-slate-100">{{ item.class_name }}</span>
+                      <span
+                        class="shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">{{
+                          item.day_name }}</span>
+                    </div>
+                    <p class="mt-0.5 truncate text-xs font-semibold text-slate-600 dark:text-slate-300">{{
+                      item.subject_name }} · {{ item.slot_label || `Sesi ${item.session_order}` }}</p>
+                  </div>
+                </div>
+                <p v-if="group.items.length > 2"
+                  class="border-t border-slate-100 px-3 py-2 text-xs font-semibold text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                  +{{ group.items.length - 2 }} jadwal lainnya</p>
+              </div>
+              <button @click.stop="openDetailModal('generated', group.teacher_name, group)"
+                class="mt-4 w-full rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-sky-500">Detail
+                Jadwal</button>
+            </article>
+          </div>
+          <div v-else
+            class="rounded-2xl border border-slate-200 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
+            Belum ada hasil generate jadwal yang sesuai.
+          </div>
+
+          <div
+            class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
+            Subject LMS otomatis dibuat per kombinasi <strong class="text-slate-900 dark:text-white">kelas +
+              mapel</strong>. Guru pengampu mengikuti hasil distribusi rombel yang sudah ditetapkan admin sebelumnya.
           </div>
         </div>
       </article>
 
       <teleport to="body">
-        <div v-if="formModal.open" class="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/55 p-4">
-          <div class="w-full max-w-2xl max-h-[88vh] overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900">
+        <div v-if="formModal.open" class="fixed inset-0 z-[130] flex items-center justify-center p-4"
+          style="background-color: rgba(15, 23, 42, 0.22); backdrop-filter: blur(10px);">
+          <div
+            class="w-full max-w-2xl max-h-[88vh] overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900">
             <div class="flex items-start justify-between gap-4">
               <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Input Data</p>
                 <h3 class="mt-2 text-xl font-bold text-slate-900 dark:text-white">{{ formModal.title }}</h3>
               </div>
-              <button @click="closeFormModal" class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+              <button @click="closeFormModal"
+                class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200">
                 x
               </button>
             </div>
@@ -307,15 +564,19 @@
               <div class="grid gap-4 md:grid-cols-2">
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Kode Mapel</label>
-                  <input v-model="subjectForm.code" type="text" placeholder="Contoh: MTK" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <input v-model="subjectForm.code" type="text" placeholder="Contoh: MTK"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
                 <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">JP / Minggu per Rombel</label>
-                  <input v-model="subjectForm.weekly_hours" type="number" min="1" max="20" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">JP / Minggu per
+                    Rombel</label>
+                  <input v-model="subjectForm.weekly_hours" type="number" min="1" max="20"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
                 <div class="md:col-span-2">
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Nama Mapel</label>
-                  <input v-model="subjectForm.name" type="text" placeholder="Contoh: Matematika" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <input v-model="subjectForm.name" type="text" placeholder="Contoh: Matematika"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
               </div>
             </div>
@@ -324,7 +585,8 @@
               <div class="grid gap-4 md:grid-cols-2">
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Guru</label>
-                  <select v-model="teacherLoadForm.teacher_id" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                  <select v-model="teacherLoadForm.teacher_id"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
                     <option value="">-- Pilih Guru --</option>
                     <option v-for="item in teachers" :key="item.id" :value="String(item.id)">
                       {{ item.full_name || item.username }}
@@ -333,7 +595,8 @@
                 </div>
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Mapel</label>
-                  <select v-model="teacherLoadForm.curriculum_subject_id" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                  <select v-model="teacherLoadForm.curriculum_subject_id"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
                     <option value="">-- Pilih Mapel --</option>
                     <option v-for="item in overview.subjects" :key="item.id" :value="String(item.id)">
                       {{ item.name }}{{ item.code ? ` (${item.code})` : "" }}
@@ -341,8 +604,10 @@
                   </select>
                 </div>
                 <div class="md:col-span-2">
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Total Kapasitas JP / Minggu</label>
-                  <input v-model="teacherLoadForm.max_weekly_hours" type="number" min="1" max="60" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Total Kapasitas JP
+                    / Minggu</label>
+                  <input v-model="teacherLoadForm.max_weekly_hours" type="number" min="1" max="60"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
               </div>
             </div>
@@ -351,7 +616,8 @@
               <div class="grid gap-4 md:grid-cols-2">
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Beban Guru</label>
-                  <select v-model="distributionForm.curriculum_teacher_load_id" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                  <select v-model="distributionForm.curriculum_teacher_load_id"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
                     <option value="">-- Pilih Beban Guru --</option>
                     <option v-for="item in overview.teacher_loads" :key="item.id" :value="String(item.id)">
                       {{ item.teacher_name }} • {{ item.subject_name }} • kapasitas {{ item.max_weekly_hours }} JP
@@ -359,8 +625,10 @@
                   </select>
                 </div>
                 <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Kelas / Rombel</label>
-                  <select v-model="distributionForm.class_id" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Kelas /
+                    Rombel</label>
+                  <select v-model="distributionForm.class_id"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
                     <option value="">-- Pilih Kelas --</option>
                     <option v-for="item in classes" :key="item.id" :value="String(item.id)">
                       {{ item.class_name }}
@@ -368,8 +636,10 @@
                   </select>
                 </div>
                 <div class="md:col-span-2">
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">JP untuk Kelas Ini</label>
-                  <input v-model="distributionForm.weekly_hours" type="number" min="1" max="20" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">JP untuk Kelas
+                    Ini</label>
+                  <input v-model="distributionForm.weekly_hours" type="number" min="1" max="20"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
               </div>
             </div>
@@ -378,43 +648,54 @@
               <div class="grid gap-4 md:grid-cols-2">
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Hari</label>
-                  <select v-model="slotForm.day_name" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                  <select v-model="slotForm.day_name"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
                     <option v-for="day in dayOptions" :key="day.name" :value="day.name">{{ day.name }}</option>
                   </select>
                 </div>
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Urutan Hari</label>
-                  <input v-model="slotForm.day_order" type="number" min="1" max="7" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <input v-model="slotForm.day_order" type="number" min="1" max="7"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Sesi Ke</label>
-                  <input v-model="slotForm.session_order" type="number" min="1" max="20" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <input v-model="slotForm.session_order" type="number" min="1" max="20"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Label Slot</label>
-                  <input v-model="slotForm.label" type="text" placeholder="Contoh: Jam 1" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <input v-model="slotForm.label" type="text" placeholder="Contoh: Jam 1"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Mulai</label>
-                  <input v-model="slotForm.start_time" type="time" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <input v-model="slotForm.start_time" type="time"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Selesai</label>
-                  <input v-model="slotForm.end_time" type="time" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <input v-model="slotForm.end_time" type="time"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
               </div>
             </div>
 
             <div class="mt-6 space-y-4" v-else-if="formModal.type === 'slot-bulk'">
-              <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200">
-                Pilih hari, jumlah sesi, dan jam mulai. Sistem akan membuat slot otomatis per hari berdasarkan durasi dan jeda.
+              <div
+                class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200">
+                Pilih hari, jumlah sesi, dan jam mulai. Sistem akan membuat slot otomatis per hari berdasarkan durasi
+                dan jeda.
               </div>
 
               <div>
                 <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Hari</p>
-                <div class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                  <label v-for="day in dayOptions" :key="day.name" class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800/70">
-                    <input v-model="bulkSlotForm.days" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" :value="day.name" />
+                <div class="mt-3 grid grid-cols-2 gap-2">
+                  <label v-for="day in dayOptions" :key="day.name"
+                    class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800/70">
+                    <input v-model="bulkSlotForm.days" type="checkbox"
+                      class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                      :value="day.name" />
                     <span>{{ day.name }}</span>
                   </label>
                 </div>
@@ -422,34 +703,44 @@
 
               <div class="grid gap-4 md:grid-cols-3">
                 <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Sesi per Hari</label>
-                  <input v-model="bulkSlotForm.sessions_per_day" type="number" min="1" max="20" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Sesi per
+                    Hari</label>
+                  <input v-model="bulkSlotForm.sessions_per_day" type="number" min="1" max="20"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Mulai</label>
-                  <input v-model="bulkSlotForm.start_time" type="time" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <input v-model="bulkSlotForm.start_time" type="time"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
                 <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Durasi (menit)</label>
-                  <input v-model="bulkSlotForm.duration_minutes" type="number" min="10" max="180" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Durasi
+                    (menit)</label>
+                  <input v-model="bulkSlotForm.duration_minutes" type="number" min="10" max="180"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
               </div>
 
               <div class="grid gap-4 md:grid-cols-3">
                 <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jeda antar sesi (menit)</label>
-                  <input v-model="bulkSlotForm.gap_minutes" type="number" min="0" max="60" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jeda antar sesi
+                    (menit)</label>
+                  <input v-model="bulkSlotForm.gap_minutes" type="number" min="0" max="60"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
                 <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jumlah Istirahat</label>
-                  <select v-model="bulkSlotForm.break_count" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jumlah
+                    Istirahat</label>
+                  <select v-model="bulkSlotForm.break_count"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
                     <option :value="0">Tanpa istirahat</option>
                     <option :value="1">1 kali istirahat</option>
                     <option :value="2">2 kali istirahat</option>
                   </select>
                 </div>
                 <div>
-                  <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                  <div
+                    class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
                     Istirahat dihitung setelah sesi yang dipilih selesai.
                   </div>
                 </div>
@@ -457,59 +748,74 @@
 
               <div v-if="bulkSlotForm.break_count >= 1" class="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Istirahat 1 setelah sesi ke</label>
-                  <input v-model="bulkSlotForm.break1_after_session" type="number" min="1" :max="Math.max(1, Number(bulkSlotForm.sessions_per_day || 1) - 1)" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Istirahat 1 setelah
+                    sesi ke</label>
+                  <input v-model="bulkSlotForm.break1_after_session" type="number" min="1"
+                    :max="Math.max(1, Number(bulkSlotForm.sessions_per_day || 1) - 1)"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
                 <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Durasi istirahat 1 (menit)</label>
-                  <input v-model="bulkSlotForm.break1_minutes" type="number" min="0" max="120" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Durasi istirahat 1
+                    (menit)</label>
+                  <input v-model="bulkSlotForm.break1_minutes" type="number" min="0" max="120"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
               </div>
 
               <div v-if="bulkSlotForm.break_count >= 2" class="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Istirahat 2 setelah sesi ke</label>
-                  <input v-model="bulkSlotForm.break2_after_session" type="number" min="1" :max="Math.max(1, Number(bulkSlotForm.sessions_per_day || 1) - 1)" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Istirahat 2 setelah
+                    sesi ke</label>
+                  <input v-model="bulkSlotForm.break2_after_session" type="number" min="1"
+                    :max="Math.max(1, Number(bulkSlotForm.sessions_per_day || 1) - 1)"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
                 <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Durasi istirahat 2 (menit)</label>
-                  <input v-model="bulkSlotForm.break2_minutes" type="number" min="0" max="120" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Durasi istirahat 2
+                    (menit)</label>
+                  <input v-model="bulkSlotForm.break2_minutes" type="number" min="0" max="120"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
               </div>
 
               <div class="grid gap-4 md:grid-cols-2">
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Label</label>
-                  <select v-model="bulkSlotForm.label_mode" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                  <select v-model="bulkSlotForm.label_mode"
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
                     <option value="jam">Jam 1, Jam 2, ...</option>
                     <option value="sesi">Sesi 1, Sesi 2, ...</option>
                     <option value="none">Tanpa label</option>
                   </select>
                 </div>
                 <div class="flex items-end">
-                  <label class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800/70">
-                    <input v-model="bulkSlotForm.overwrite_existing" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                  <label
+                    class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800/70">
+                    <input v-model="bulkSlotForm.overwrite_existing" type="checkbox"
+                      class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
                     <span>Timpa slot yang sudah ada</span>
                   </label>
                 </div>
               </div>
 
-              <div class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                Perkiraan slot dibuat: <strong class="text-slate-900 dark:text-white">{{ bulkSlotPreviewCount }}</strong>
+              <div
+                class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                Perkiraan slot dibuat: <strong class="text-slate-900 dark:text-white">{{ bulkSlotPreviewCount
+                }}</strong>
               </div>
             </div>
 
             <div class="mt-6 space-y-4" v-else-if="formModal.type === 'slot-day-detail'">
-              <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200">
+              <div
+                class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    Menampilkan slot untuk <strong class="text-slate-900 dark:text-white">{{ selectedScheduleDayName }}</strong>.
+                    Menampilkan slot untuk <strong class="text-slate-900 dark:text-white">{{ selectedScheduleDayName
+                    }}</strong>.
                   </div>
-                  <button
-                    @click="removeScheduleDaySlots([selectedScheduleDayName])"
+                  <button @click="removeScheduleDaySlots([selectedScheduleDayName])"
                     :disabled="selectedScheduleDaySlots.length === 0"
-                    class="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200 dark:hover:bg-rose-500/20"
-                  >
+                    class="rounded-xl bg-red-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
                     Hapus Semua Hari Ini
                   </button>
                 </div>
@@ -517,7 +823,8 @@
 
               <div class="max-h-[55vh] overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-800">
                 <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
-                  <thead class="bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">
+                  <thead
+                    class="bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">
                     <tr>
                       <th class="px-4 py-3 font-semibold">Sesi</th>
                       <th class="px-4 py-3 font-semibold">Jam</th>
@@ -528,18 +835,23 @@
                     <tr v-for="slot in selectedScheduleDaySlots" :key="slot.id">
                       <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
                         <div class="font-semibold">{{ slot.label || `Sesi ${slot.session_order}` }}</div>
-                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">Urutan hari {{ slot.day_order }} · sesi {{ slot.session_order }}</div>
+                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">Urutan hari {{ slot.day_order }} ·
+                          sesi {{ slot.session_order }}</div>
                       </td>
-                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ slot.start_time }} - {{ slot.end_time }}</td>
+                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ slot.start_time }} - {{ slot.end_time
+                      }}</td>
                       <td class="px-4 py-3">
                         <div class="flex justify-end gap-2">
-                          <button @click="openSlotModal(slot)" class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
-                          <button @click="removeSlot(slot)" class="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-700 dark:border-rose-500/30 dark:text-rose-300">Hapus</button>
+                          <button @click="openSlotModal(slot)"
+                            class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
+                          <button @click="removeSlot(slot)"
+                            class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700">Hapus</button>
                         </div>
                       </td>
                     </tr>
                     <tr v-if="selectedScheduleDaySlots.length === 0">
-                      <td colspan="3" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">Belum ada slot pada hari ini.</td>
+                      <td colspan="3" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">Belum ada
+                        slot pada hari ini.</td>
                     </tr>
                   </tbody>
                 </table>
@@ -547,40 +859,343 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-              <button @click="closeFormModal" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">
+              <button @click="closeFormModal"
+                class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">
                 Batal
               </button>
-              <button v-if="formModal.type === 'subject'" @click="saveSubject" class="rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500">
+              <button v-if="formModal.type === 'subject'" @click="saveSubject"
+                class="rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500">
                 {{ subjectEditingId ? "Perbarui" : "Simpan" }}
               </button>
-              <button v-else-if="formModal.type === 'teacher-load'" @click="saveTeacherLoad" class="rounded-xl bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-400">
+              <button v-else-if="formModal.type === 'teacher-load'" @click="saveTeacherLoad"
+                class="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700">
                 {{ teacherLoadEditingId ? "Perbarui" : "Simpan" }}
               </button>
-              <button v-else-if="formModal.type === 'distribution'" @click="saveDistribution" class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500">
+              <button v-else-if="formModal.type === 'distribution'" @click="saveDistribution"
+                class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
                 {{ distributionEditingId ? "Perbarui" : "Simpan" }}
               </button>
-              <button v-else-if="formModal.type === 'slot'" @click="saveSlot" class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500">
+              <button v-else-if="formModal.type === 'slot'" @click="saveSlot"
+                class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700">
                 {{ slotEditingId ? "Perbarui" : "Simpan" }}
               </button>
-              <button v-else-if="formModal.type === 'slot-bulk'" @click="saveBulkSlots" :disabled="bulkSlotSaving" class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60">
+              <button v-else-if="formModal.type === 'slot-bulk'" @click="saveBulkSlots" :disabled="bulkSlotSaving"
+                class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60">
                 {{ bulkSlotSaving ? "Memproses..." : "Buat Slot" }}
               </button>
-              <button v-else-if="formModal.type === 'slot-day-detail'" @click="closeFormModal" class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white">
+              <button v-else-if="formModal.type === 'slot-day-detail'" @click="closeFormModal"
+                class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white">
                 Tutup
               </button>
             </div>
           </div>
         </div>
 
-        <div v-if="confirmModal.open" class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/55 p-4">
+        <div v-if="detailModal.open" class="fixed inset-0 z-[140] flex items-center justify-center p-4"
+          style="background-color: rgba(15, 23, 42, 0.22); backdrop-filter: blur(10px);">
+          <div
+            class="w-full max-w-5xl max-h-[88vh] overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900">
+            <div class="flex items-start justify-between gap-4">
+              <div class="min-w-0">
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Detail Data</p>
+                <h3 class="mt-2 truncate text-xl font-bold text-slate-900 dark:text-white">{{ detailModal.title }}</h3>
+                <p v-if="detailModal.subtitle" class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{
+                  detailModal.subtitle }}</p>
+              </div>
+              <button @click="closeDetailModal"
+                class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+                x
+              </button>
+            </div>
+
+            <div v-if="detailModal.type === 'subject'" class="mt-6 space-y-4">
+              <div class="grid gap-3 sm:grid-cols-3">
+                <div
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                  <p class="text-xs font-semibold uppercase text-slate-400">Nama Mapel</p>
+                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.name || "-" }}
+                  </p>
+                </div>
+                <div
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                  <p class="text-xs font-semibold uppercase text-slate-400">Kode</p>
+                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.code || "-" }}
+                  </p>
+                </div>
+                <div
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                  <p class="text-xs font-semibold uppercase text-slate-400">JP / Minggu</p>
+                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{
+                    formatHours(detailModal.data?.weekly_hours) }}</p>
+                </div>
+              </div>
+              <div class="flex flex-wrap justify-end gap-2">
+                <button @click="openSubjectModal(detailModal.data); closeDetailModal()"
+                  class="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
+                <button @click="removeSubject(detailModal.data)"
+                  class="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-700">Hapus</button>
+              </div>
+            </div>
+
+            <div v-else-if="detailModal.type === 'teacher-load'" class="mt-6 space-y-4">
+              <div class="grid gap-3 sm:grid-cols-4">
+                <div
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                  <p class="text-xs font-semibold uppercase text-slate-400">Beban</p>
+                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.item_count || 0
+                  }}</p>
+                </div>
+                <div
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                  <p class="text-xs font-semibold uppercase text-slate-400">Kapasitas</p>
+                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{
+                    formatHours(detailModal.data?.max_weekly_hours) }}</p>
+                </div>
+                <div
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                  <p class="text-xs font-semibold uppercase text-slate-400">Terdistribusi</p>
+                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{
+                    formatHours(detailModal.data?.distributed_hours) }}</p>
+                </div>
+                <div
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                  <p class="text-xs font-semibold uppercase text-slate-400">Sisa</p>
+                  <p class="mt-2 text-sm font-bold" :class="remainingHoursClass(detailModal.data?.remaining_hours)">{{
+                    formatHours(detailModal.data?.remaining_hours) }}</p>
+                </div>
+              </div>
+
+              <div class="max-h-[55vh] overflow-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+                <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
+                  <thead
+                    class="sticky top-0 z-10 bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                    <tr>
+                      <th class="px-4 py-3 font-semibold">Mapel</th>
+                      <th class="px-4 py-3 font-semibold">Kapasitas</th>
+                      <th class="px-4 py-3 font-semibold">Terdistribusi</th>
+                      <th class="px-4 py-3 font-semibold">Sisa</th>
+                      <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tr v-for="item in detailItems" :key="item.id">
+                      <td class="px-4 py-3">
+                        <div class="font-semibold text-slate-900 dark:text-white">{{ item.subject_name }}</div>
+                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.subject_code || "-" }}
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ formatHours(item.max_weekly_hours) }}
+                      </td>
+                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ formatHours(item.distributed_hours) }}
+                      </td>
+                      <td class="px-4 py-3 font-semibold" :class="remainingHoursClass(item.remaining_hours)">{{
+                        formatHours(item.remaining_hours) }}</td>
+                      <td class="px-4 py-3">
+                        <div class="flex justify-end gap-2">
+                          <button @click="openTeacherLoadModal(item); closeDetailModal()"
+                            class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
+                          <button @click="removeTeacherLoad(item)"
+                            class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700">Hapus</button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div v-else-if="detailModal.type === 'distribution'" class="mt-6 space-y-4">
+              <div class="grid gap-3 sm:grid-cols-4">
+                <div
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                  <p class="text-xs font-semibold uppercase text-slate-400">Distribusi</p>
+                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.item_count || 0
+                  }}</p>
+                </div>
+                <div
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                  <p class="text-xs font-semibold uppercase text-slate-400">Mapel</p>
+                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.subject_count ||
+                    0 }}</p>
+                </div>
+                <div
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                  <p class="text-xs font-semibold uppercase text-slate-400">Kelas</p>
+                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.class_count || 0
+                  }}</p>
+                </div>
+                <div
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                  <p class="text-xs font-semibold uppercase text-slate-400">Total JP</p>
+                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{
+                    formatHours(detailModal.data?.total_weekly_hours) }}</p>
+                </div>
+              </div>
+
+              <div class="max-h-[55vh] overflow-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+                <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
+                  <thead
+                    class="sticky top-0 z-10 bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                    <tr>
+                      <th class="px-4 py-3 font-semibold">Mapel</th>
+                      <th class="px-4 py-3 font-semibold">Kelas</th>
+                      <th class="px-4 py-3 font-semibold">JP</th>
+                      <th class="px-4 py-3 font-semibold">Kapasitas Beban</th>
+                      <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tr v-for="item in detailItems" :key="item.id">
+                      <td class="px-4 py-3">
+                        <div class="font-semibold text-slate-900 dark:text-white">{{ item.subject_name }}</div>
+                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.subject_code || "-" }}
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.class_name }}</td>
+                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ formatHours(item.weekly_hours) }}</td>
+                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ formatHours(item.load_capacity) }}
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex justify-end gap-2">
+                          <button @click="openDistributionModal(item); closeDetailModal()"
+                            class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
+                          <button @click="removeDistribution(item)"
+                            class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700">Hapus</button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div v-else-if="detailModal.type === 'schedule-day'" class="mt-6 space-y-4">
+              <div
+                class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    Menampilkan slot untuk <strong class="text-slate-900 dark:text-white">{{ detailModal.data?.day_name
+                    }}</strong>.
+                  </div>
+                  <button @click="removeScheduleDaySlots([detailModal.data?.day_name])"
+                    :disabled="detailItems.length === 0"
+                    class="rounded-xl bg-red-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
+                    Hapus Semua Hari Ini
+                  </button>
+                </div>
+              </div>
+
+              <div class="max-h-[55vh] overflow-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+                <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
+                  <thead
+                    class="sticky top-0 z-10 bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                    <tr>
+                      <th class="px-4 py-3 font-semibold">Sesi</th>
+                      <th class="px-4 py-3 font-semibold">Jam</th>
+                      <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tr v-for="slot in detailItems" :key="slot.id">
+                      <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
+                        <div class="font-semibold">{{ slot.label || `Sesi ${slot.session_order}` }}</div>
+                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">Urutan hari {{ slot.day_order }} ·
+                          sesi {{ slot.session_order }}</div>
+                      </td>
+                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ slot.start_time }} - {{ slot.end_time
+                      }}</td>
+                      <td class="px-4 py-3">
+                        <div class="flex justify-end gap-2">
+                          <button @click="openSlotModal(slot); closeDetailModal()"
+                            class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
+                          <button @click="removeSlot(slot)"
+                            class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700">Hapus</button>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr v-if="detailItems.length === 0">
+                      <td colspan="3" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">Belum ada
+                        slot pada hari ini.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div v-else-if="detailModal.type === 'generated'" class="mt-6 space-y-4">
+              <div class="grid gap-3 sm:grid-cols-4">
+                <div
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                  <p class="text-xs font-semibold uppercase text-slate-400">Jadwal</p>
+                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.item_count || 0
+                  }}</p>
+                </div>
+                <div
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                  <p class="text-xs font-semibold uppercase text-slate-400">Kelas</p>
+                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.class_count || 0
+                  }}</p>
+                </div>
+                <div
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                  <p class="text-xs font-semibold uppercase text-slate-400">Mapel</p>
+                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.subject_count ||
+                    0 }}</p>
+                </div>
+                <div
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                  <p class="text-xs font-semibold uppercase text-slate-400">Hari</p>
+                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.day_count || 0
+                  }}</p>
+                </div>
+              </div>
+
+              <div class="max-h-[55vh] overflow-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+                <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
+                  <thead
+                    class="sticky top-0 z-10 bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                    <tr>
+                      <th class="px-4 py-3 font-semibold">Kelas</th>
+                      <th class="px-4 py-3 font-semibold">Hari / Jam</th>
+                      <th class="px-4 py-3 font-semibold">Mapel</th>
+                      <th class="px-4 py-3 font-semibold">LMS</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tr v-for="item in detailItems" :key="item.id">
+                      <td class="px-4 py-3 font-semibold text-slate-900 dark:text-white">{{ item.class_name }}</td>
+                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
+                        <div>{{ item.day_name }} · {{ item.slot_label || `Sesi ${item.session_order}` }}</div>
+                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.start_time }} - {{
+                          item.end_time }}</div>
+                      </td>
+                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
+                        <div>{{ item.subject_name }}</div>
+                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.subject_code || "-" }}
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">Subject ID: {{ item.learning_subject_id
+                        || "-" }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="confirmModal.open" class="fixed inset-0 z-[150] flex items-center justify-center p-4"
+          style="background-color: rgba(15, 23, 42, 0.22); backdrop-filter: blur(10px);">
           <div class="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900">
             <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ confirmModal.title }}</h3>
             <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{{ confirmModal.message }}</p>
             <div class="mt-6 flex justify-end gap-3">
-              <button @click="closeConfirmModal" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">
+              <button @click="closeConfirmModal"
+                class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">
                 Batal
               </button>
-              <button @click="runConfirmAction" class="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500">
+              <button @click="runConfirmAction"
+                class="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-700">
                 {{ confirmModal.actionLabel }}
               </button>
             </div>
@@ -593,6 +1208,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
+import { Icon } from "@iconify/vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { useMasterDataStore } from "@/store/masterData";
@@ -621,6 +1237,14 @@ const overview = reactive({
   },
 });
 
+const searchTerms = reactive({
+  subjects: "",
+  teacher_loads: "",
+  class_distributions: "",
+  schedule: "",
+  generate: "",
+});
+
 const teachers = ref([]);
 const classes = ref([]);
 const generating = ref(false);
@@ -629,6 +1253,13 @@ const formModal = reactive({
   open: false,
   type: "",
   title: "",
+});
+const detailModal = reactive({
+  open: false,
+  type: "",
+  title: "",
+  subtitle: "",
+  data: null,
 });
 const confirmModal = reactive({
   open: false,
@@ -696,15 +1327,219 @@ const dayOptions = [
   { name: "Sabtu", order: 6 },
 ];
 
-const currentSection = computed(() => (["subjects", "teacher-loads", "class-distributions", "schedule", "generate"].includes(props.section) ? props.section : "subjects"));
+const currentSection = computed(() => (["subjects", "teacher-loads", "class-distributions", "learning", "schedule", "generate"].includes(props.section) ? props.section : "subjects"));
+
+const normalizeSearch = (value) => String(value || "").trim().toLowerCase();
+const toNumber = (value) => Number(value || 0) || 0;
+const formatHours = (value) => `${toNumber(value).toLocaleString("id-ID")} JP`;
+const groupKeyPart = (value) => normalizeSearch(value).replace(/\s+/g, "-") || "tanpa-data";
+const groupTeacherKey = (item) => `teacher-${groupKeyPart(item?.teacher_id || item?.teacher_name)}`;
+const getInitials = (value) => {
+  const initials = String(value || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0))
+    .join("")
+    .toUpperCase();
+  return initials || "-";
+};
+const calculatePercent = (value, total) => {
+  const current = toNumber(value);
+  const target = toNumber(total);
+  if (target <= 0) return current > 0 ? 100 : 0;
+  return Math.min(100, Math.max(0, Math.round((current / target) * 100)));
+};
+
+const sortByText = (a, b, field) => normalizeSearch(a?.[field]).localeCompare(normalizeSearch(b?.[field]));
+
+const remainingHoursClass = (value) => {
+  const remaining = toNumber(value);
+  if (remaining < 0) return "text-rose-600 dark:text-rose-300";
+  if (remaining === 0) return "text-amber-600 dark:text-amber-300";
+  return "text-emerald-600 dark:text-emerald-300";
+};
+
+const getDayOrder = (dayName) => {
+  const day = dayOptions.find((item) => item.name === dayName);
+  return day?.order || 99;
+};
+
+const sortScheduleItems = (items) => {
+  return items.slice().sort((a, b) => {
+    const dayOrder = toNumber(a?.day_order || getDayOrder(a?.day_name)) - toNumber(b?.day_order || getDayOrder(b?.day_name));
+    if (dayOrder !== 0) return dayOrder;
+    const sessionOrder = toNumber(a?.session_order) - toNumber(b?.session_order);
+    if (sessionOrder !== 0) return sessionOrder;
+    return normalizeSearch(a?.class_name).localeCompare(normalizeSearch(b?.class_name));
+  });
+};
 
 const summaryCards = computed(() => [
-  { label: "Mapel", value: overview.summary.subjects || 0 },
-  { label: "Beban Guru", value: overview.summary.teacher_loads || 0 },
-  { label: "Distribusi Rombel", value: overview.summary.class_distributions || 0 },
-  { label: "Slot Jadwal", value: overview.summary.schedule_slots || 0 },
-  { label: "Hasil Generate", value: overview.summary.generated_entries || 0 },
+  { label: "Mapel", value: overview.summary.subjects || 0, caption: "Mata pelajaran aktif", icon: "ph:books", cardClass: "bg-sky-600" },
+  { label: "Beban Guru", value: overview.summary.teacher_loads || 0, caption: "Kapasitas mengajar", icon: "ph:chalkboard-teacher", cardClass: "bg-indigo-600" },
+  { label: "Distribusi Rombel", value: overview.summary.class_distributions || 0, caption: "Mapping guru kelas", icon: "mdi:google-classroom", cardClass: "bg-emerald-600" },
+  { label: "Slot Jadwal", value: overview.summary.schedule_slots || 0, caption: "Hari dan jam aktif", icon: "mdi:calendar-clock", cardClass: "bg-rose-600" },
+  { label: "Hasil Generate", value: overview.summary.generated_entries || 0, caption: "Jadwal terbentuk", icon: "ph:calendar-check", cardClass: "bg-cyan-600" },
 ]);
+
+const filteredSubjects = computed(() => {
+  const query = normalizeSearch(searchTerms.subjects);
+  return overview.subjects
+    .filter((item) => normalizeSearch(item?.name).includes(query) || normalizeSearch(item?.code).includes(query))
+    .slice()
+    .sort((a, b) => sortByText(a, b, "name"));
+});
+
+const filteredTeacherLoads = computed(() => {
+  const query = normalizeSearch(searchTerms.teacher_loads);
+  return overview.teacher_loads.filter((item) =>
+    normalizeSearch(item?.teacher_name).includes(query) ||
+    normalizeSearch(item?.subject_name).includes(query) ||
+    normalizeSearch(item?.subject_code).includes(query)
+  );
+});
+
+const filteredClassDistributions = computed(() => {
+  const query = normalizeSearch(searchTerms.class_distributions);
+  return overview.class_distributions.filter((item) =>
+    normalizeSearch(item?.teacher_name).includes(query) ||
+    normalizeSearch(item?.subject_name).includes(query) ||
+    normalizeSearch(item?.subject_code).includes(query) ||
+    normalizeSearch(item?.class_name).includes(query)
+  );
+});
+
+const filteredGeneratedEntries = computed(() => {
+  const query = normalizeSearch(searchTerms.generate);
+  return overview.generated_entries.filter((item) =>
+    normalizeSearch(item?.class_name).includes(query) ||
+    normalizeSearch(item?.teacher_name).includes(query) ||
+    normalizeSearch(item?.subject_name).includes(query) ||
+    normalizeSearch(item?.subject_code).includes(query)
+  );
+});
+
+const teacherLoadCards = computed(() => {
+  const groupMap = new Map();
+
+  for (const item of filteredTeacherLoads.value) {
+    const key = groupTeacherKey(item);
+    const current = groupMap.get(key) || {
+      key,
+      teacher_name: item?.teacher_name || "Tanpa nama guru",
+      items: [],
+      subjectKeys: new Set(),
+      max_weekly_hours: 0,
+      distributed_hours: 0,
+      remaining_hours: 0,
+    };
+
+    current.items.push(item);
+    current.subjectKeys.add(String(item?.curriculum_subject_id || item?.subject_name || ""));
+    current.max_weekly_hours += toNumber(item?.max_weekly_hours);
+    current.distributed_hours += toNumber(item?.distributed_hours);
+    current.remaining_hours += toNumber(item?.remaining_hours);
+    groupMap.set(key, current);
+  }
+
+  return Array.from(groupMap.values())
+    .map((group) => ({
+      key: group.key,
+      teacher_name: group.teacher_name,
+      items: group.items.slice().sort((a, b) => sortByText(a, b, "subject_name")),
+      item_count: group.items.length,
+      subject_count: group.subjectKeys.size,
+      max_weekly_hours: group.max_weekly_hours,
+      distributed_hours: group.distributed_hours,
+      remaining_hours: group.remaining_hours,
+    }))
+    .sort((a, b) => normalizeSearch(a.teacher_name).localeCompare(normalizeSearch(b.teacher_name)));
+});
+
+const distributionCards = computed(() => {
+  const groupMap = new Map();
+
+  for (const item of filteredClassDistributions.value) {
+    const key = groupTeacherKey(item);
+    const current = groupMap.get(key) || {
+      key,
+      teacher_name: item?.teacher_name || "Tanpa nama guru",
+      items: [],
+      subjectKeys: new Set(),
+      classKeys: new Set(),
+      loadCapacityByKey: new Map(),
+      total_weekly_hours: 0,
+    };
+    const subjectKey = item?.curriculum_subject_id || `${item?.subject_name || ""}-${item?.subject_code || ""}`;
+    const classKey = item?.class_id || item?.class_name || "";
+    const loadKey = item?.curriculum_teacher_load_id || `${subjectKey}-${item?.load_capacity || 0}`;
+
+    current.items.push(item);
+    current.subjectKeys.add(String(subjectKey));
+    current.classKeys.add(String(classKey));
+    current.total_weekly_hours += toNumber(item?.weekly_hours);
+    if (!current.loadCapacityByKey.has(loadKey)) {
+      current.loadCapacityByKey.set(loadKey, toNumber(item?.load_capacity));
+    }
+    groupMap.set(key, current);
+  }
+
+  return Array.from(groupMap.values())
+    .map((group) => ({
+      key: group.key,
+      teacher_name: group.teacher_name,
+      items: group.items.slice().sort((a, b) => {
+        const subjectOrder = normalizeSearch(a?.subject_name).localeCompare(normalizeSearch(b?.subject_name));
+        if (subjectOrder !== 0) return subjectOrder;
+        return normalizeSearch(a?.class_name).localeCompare(normalizeSearch(b?.class_name));
+      }),
+      item_count: group.items.length,
+      subject_count: group.subjectKeys.size,
+      class_count: group.classKeys.size,
+      total_weekly_hours: group.total_weekly_hours,
+      load_capacity: Array.from(group.loadCapacityByKey.values()).reduce((sum, value) => sum + value, 0),
+    }))
+    .sort((a, b) => normalizeSearch(a.teacher_name).localeCompare(normalizeSearch(b.teacher_name)));
+});
+
+const generatedScheduleCards = computed(() => {
+  const groupMap = new Map();
+
+  for (const item of filteredGeneratedEntries.value) {
+    const key = groupTeacherKey(item);
+    const current = groupMap.get(key) || {
+      key,
+      teacher_name: item?.teacher_name || "Tanpa nama guru",
+      items: [],
+      subjectKeys: new Set(),
+      classKeys: new Set(),
+      dayKeys: new Set(),
+      lmsKeys: new Set(),
+    };
+
+    current.items.push(item);
+    current.subjectKeys.add(String(item?.curriculum_subject_id || item?.subject_name || ""));
+    current.classKeys.add(String(item?.class_id || item?.class_name || ""));
+    current.dayKeys.add(String(item?.day_name || ""));
+    if (item?.learning_subject_id) current.lmsKeys.add(String(item.learning_subject_id));
+    groupMap.set(key, current);
+  }
+
+  return Array.from(groupMap.values())
+    .map((group) => ({
+      key: group.key,
+      teacher_name: group.teacher_name,
+      items: sortScheduleItems(group.items),
+      item_count: group.items.length,
+      subject_count: group.subjectKeys.size,
+      class_count: group.classKeys.size,
+      day_count: group.dayKeys.size,
+      lms_count: group.lmsKeys.size,
+    }))
+    .sort((a, b) => normalizeSearch(a.teacher_name).localeCompare(normalizeSearch(b.teacher_name)));
+});
 
 const bulkSlotPreviewCount = computed(() => {
   const dayCount = Array.isArray(bulkSlotForm.days) ? bulkSlotForm.days.length : 0;
@@ -749,6 +1584,11 @@ const scheduleDayRows = computed(() => {
   });
 });
 
+const filteredScheduleDayRows = computed(() => {
+  const query = normalizeSearch(searchTerms.schedule);
+  return scheduleDayRows.value.filter((item) => normalizeSearch(item?.day_name).includes(query));
+});
+
 const selectedScheduleDaySlots = computed(() => {
   const target = String(selectedScheduleDayName.value || "").trim();
   if (!target) return [];
@@ -762,6 +1602,10 @@ const selectedScheduleDaySlots = computed(() => {
       if (ao !== bo) return ao - bo;
       return Number(a?.id || 0) - Number(b?.id || 0);
     });
+});
+
+const detailItems = computed(() => {
+  return Array.isArray(detailModal.data?.items) ? detailModal.data.items : [];
 });
 
 const openConfirmModal = (title, message, actionLabel, action) => {
@@ -787,6 +1631,22 @@ const runConfirmAction = async () => {
 
 const closeFormModal = () => {
   formModal.open = false;
+};
+
+const openDetailModal = (type, title, data = null, subtitle = "") => {
+  detailModal.open = true;
+  detailModal.type = type;
+  detailModal.title = title || "Detail Data";
+  detailModal.subtitle = subtitle;
+  detailModal.data = data;
+};
+
+const closeDetailModal = () => {
+  detailModal.open = false;
+  detailModal.type = "";
+  detailModal.title = "";
+  detailModal.subtitle = "";
+  detailModal.data = null;
 };
 
 const openSubjectModal = (item = null) => {
@@ -840,10 +1700,19 @@ const openBulkSlotModal = () => {
 };
 
 const openScheduleDayDetail = (dayName) => {
-  selectedScheduleDayName.value = String(dayName || "").trim();
-  formModal.open = true;
-  formModal.type = "slot-day-detail";
-  formModal.title = `Detail Slot - ${selectedScheduleDayName.value || "-"}`;
+  const target = String(dayName || "").trim();
+  selectedScheduleDayName.value = target;
+  const dayRow = scheduleDayRows.value.find((item) => item.day_name === target) || {
+    day_name: target || "-",
+    day_order: 0,
+    session_count: 0,
+    start_time: "-",
+    end_time: "-",
+  };
+  const items = sortScheduleItems(
+    overview.schedule_slots.filter((slot) => String(slot?.day_name || "").trim() === target)
+  );
+  openDetailModal("schedule-day", `Detail Slot - ${target || "-"}`, { ...dayRow, items });
 };
 
 const resetSubjectForm = () => {
@@ -1264,6 +2133,52 @@ const generateSchedule = async () => {
   });
 };
 
+
+const learningData = ref([]);
+const learningEditingId = ref(null);
+const learningForm = reactive({
+  teacher_id: '',
+  subject_id: '',
+  class_id: '',
+});
+
+const filteredLearning = computed(() => {
+  const term = searchTerms.value?.learning?.toLowerCase() || searchTerms.learning?.toLowerCase();
+  if (!term) return learningData.value;
+  return learningData.value.filter(item =>
+    (item.teacher_name || '').toLowerCase().includes(term) ||
+    (item.subject_name || '').toLowerCase().includes(term) ||
+    (item.class_name || '').toLowerCase().includes(term)
+  );
+});
+
+const openLearningModal = () => {
+  learningEditingId.value = null;
+  learningForm.teacher_id = '';
+  learningForm.subject_id = '';
+  learningForm.class_id = '';
+  openModal('learning');
+};
+
+const editLearning = (item) => {
+  learningEditingId.value = item.id;
+  learningForm.teacher_id = String(item.teacher_id);
+  learningForm.subject_id = String(item.subject_id);
+  learningForm.class_id = String(item.class_id);
+  openModal('learning');
+};
+
+const removeLearning = async (item) => {
+  openConfirmModal("Hapus Pembelajaran", "Hapus", async () => {
+    try {
+      await api.delete();
+      await loadData();
+      pushToast({ title: "Berhasil", message: "Data berhasil dihapus.", type: "success" });
+    } catch (error) {
+      pushToast({ title: "Gagal", message: error.message, type: "error" });
+    }
+  });
+};
 onMounted(() => {
   loadData();
 });
