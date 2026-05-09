@@ -318,6 +318,27 @@
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
+      <div v-if="paymentLoadingModalOpen" class="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
+        <div class="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
+          <div class="flex flex-col items-center gap-4 text-center">
+            <div class="h-14 w-14 animate-spin rounded-full border-4 border-slate-200 border-t-sky-600 dark:border-slate-700 dark:border-t-sky-400"></div>
+            <div>
+              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Memproses Pembayaran</h2>
+              <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ paymentLoadingMessage }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
       <div v-if="deleteInvoiceModalOpen" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm" @click.self="closeDeleteInvoiceModal">
         <div class="w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
           <div class="border-b border-slate-100 px-6 py-4 dark:border-slate-800">
@@ -377,6 +398,8 @@ const paymentQrModalOpen = ref(false);
 const paymentQrString = ref("");
 const paymentQrReference = ref("");
 const paymentQrDataUrl = ref("");
+const paymentLoadingModalOpen = ref(false);
+const paymentLoadingMessage = ref("Memproses pembayaran QRIS...");
 const deleteInvoiceModalOpen = ref(false);
 const pendingDeleteInvoice = ref(null);
 const isDeletingInvoice = ref(false);
@@ -624,20 +647,27 @@ const loadInvoices = async () => {
 };
 
 const payInvoice = async (item) => {
+  paymentLoadingModalOpen.value = true;
+  paymentLoadingMessage.value = "Memproses pembayaran QRIS...";
   try {
     const response = await api.post(`/billing/current/invoices/${item.id}/pay`);
     const redirectUrl = response?.data?.redirect_url || response?.data?.invoice?.snap_redirect_url;
     const qrString = response?.data?.qr_string || "";
     if (qrString) {
+      paymentLoadingModalOpen.value = false;
       openPaymentQrModal(response, item);
       return;
     }
     if (redirectUrl) {
+      paymentLoadingMessage.value = "Membuka halaman pembayaran...";
       window.open(redirectUrl, "_blank", "noopener,noreferrer");
+      paymentLoadingModalOpen.value = false;
       return;
     }
+    paymentLoadingModalOpen.value = false;
     pushToast({ title: "Pembayaran", message: "Link pembayaran belum tersedia.", type: "error" });
   } catch (error) {
+    paymentLoadingModalOpen.value = false;
     pushToast({ title: "Gagal Membuat Pembayaran", message: error.message, type: "error" });
   }
 };
