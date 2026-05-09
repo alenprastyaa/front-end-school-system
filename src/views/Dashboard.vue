@@ -187,6 +187,43 @@
 
       <section v-if="role === 'ADMIN'"
         class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+        <div v-if="lockedSchools.length"
+          class="mb-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/20 dark:bg-amber-500/10">
+          <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">Peringatan
+                Akun</p>
+              <h2 class="mt-2 text-base font-semibold text-amber-900 dark:text-amber-100">
+                {{ lockedSchools.length }} sekolah memiliki akun yang terkunci
+              </h2>
+              <p class="mt-1 text-sm leading-6 text-amber-800 dark:text-amber-200">
+                Ada akun yang belum bisa digunakan sementara. Silakan buka akses dari panel admin setelah status
+                sekolah dibenahi.
+              </p>
+            </div>
+          </div>
+          <div class="mt-4 overflow-x-auto">
+            <table class="min-w-full text-left text-sm">
+              <thead class="text-amber-800/80 dark:text-amber-200/80">
+                <tr>
+                  <th class="px-4 py-2 font-semibold">Sekolah</th>
+                  <th class="px-4 py-2 font-semibold">Invoice Tertua</th>
+                  <th class="px-4 py-2 font-semibold text-right">Jumlah Tertunda</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-amber-200/60 dark:divide-amber-500/20">
+                <tr v-for="item in lockedSchools" :key="item.id">
+                  <td class="px-4 py-2 font-medium text-amber-950 dark:text-amber-50">{{ item.name || "-" }}</td>
+                  <td class="px-4 py-2 text-amber-900 dark:text-amber-100">{{ formatDate(item.oldest_due_date) }}</td>
+                  <td class="px-4 py-2 text-right font-semibold text-amber-900 dark:text-amber-100">
+                    {{ item.overdue_invoice_count || 0 }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 class="text-base font-semibold text-slate-900 dark:text-white">Kirim Rekap WhatsApp Wali Kelas</h2>
@@ -416,6 +453,7 @@ const endpointByRole = {
   GURU: "/dashboard/guru",
   SISWA: "/dashboard/siswa",
 };
+const lockedSchools = computed(() => dashboardData.value?.lockedSchools || []);
 
 // Palet warna yang lebih modern, bersih, dan enterprise-look
 const chartPalette = ["#3b82f6", "#10b981", "#f59e0b", "#6366f1", "#ef4444", "#64748b"];
