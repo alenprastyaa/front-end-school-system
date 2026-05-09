@@ -171,6 +171,16 @@ const routes = [
     },
   },
   {
+    path: "/billing",
+    name: "Billing",
+    component: () => import("../views/Billing.vue"),
+    meta: {
+      title: "Billing" + appName,
+      requiresAuth: true,
+      roles: ["SUPER_ADMIN", "ADMIN"],
+    },
+  },
+  {
     path: "/academic-periods",
     name: "AcademicPeriods",
     component: () => import("../views/AcademicPeriods.vue"),

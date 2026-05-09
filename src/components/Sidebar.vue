@@ -403,6 +403,7 @@ const menuByRole = {
   SUPER_ADMIN: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     { key: "schools", to: "/schools", label: "Sekolah", icon: "ph:buildings" },
+    { key: "billing", to: "/billing", label: "Billing", icon: "ph:credit-card" },
   ],
   ADMIN: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
@@ -423,6 +424,7 @@ const menuByRole = {
       ],
     },
     { key: "learning-exams-admin", to: "/learning-exams-admin", label: "Ujian Resmi", icon: "ph:exam" },
+    { key: "billing", to: "/billing", label: "Billing", icon: "ph:credit-card" },
     { key: "admin-settings", to: "/admin-settings", label: "Setting", icon: "ph:gear-six" },
   ],
   GURU: [
