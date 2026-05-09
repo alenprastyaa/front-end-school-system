@@ -9,7 +9,7 @@
             </p>
             <h1 class="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Billing Sekolah</h1>
             <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">
-              {{ isSuperAdmin ? "Atur nominal, tanggal jatuh tempo, dan status billing untuk setiap sekolah." : "Lihat tagihan aktif sekolah Anda dan selesaikan pembayaran melalui QRIS Xendit." }}
+              {{ isSuperAdmin ? "Atur nominal, tanggal jatuh tempo, dan status billing untuk setiap sekolah." : "Lihat tagihan aktif sekolah Anda dan selesaikan pembayaran melalui checkout Xendit." }}
             </p>
           </div>
           <div class="flex flex-wrap gap-3">
@@ -161,7 +161,7 @@
             <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <h2 class="text-lg font-bold text-slate-900 dark:text-white">Invoice Sekolah</h2>
-                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Klik bayar untuk membuka QRIS Xendit.</p>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Klik bayar untuk membuka checkout Xendit dan pilih metode pembayaran yang tersedia.</p>
               </div>
               <button @click="loadInvoices" :disabled="isLoadingInvoices" class="rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
                 {{ isLoadingInvoices ? "Memuat..." : "Refresh Invoice" }}
@@ -184,7 +184,7 @@
                 <tr v-for="item in invoices" :key="item.id" class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
                   <td class="px-4 py-4 sm:px-6">
                     <div class="font-semibold text-slate-900 dark:text-white">{{ item.invoice_number }}</div>
-                    <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.payment_method || "QRIS Xendit" }}</div>
+                    <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.payment_method || "Xendit checkout" }}</div>
                   </td>
                   <td class="px-4 py-4 sm:px-6 font-semibold">{{ formatCurrency(item.amount) }}</td>
                   <td class="px-4 py-4 sm:px-6">{{ formatDate(item.due_date) }}</td>
@@ -195,7 +195,7 @@
                   </td>
                   <td class="px-4 py-4 sm:px-6">
                     <div class="flex justify-end gap-2">
-                      <button v-if="item.status === 'PENDING'" @click="payInvoice(item)" class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-500">Bayar QRIS</button>
+                      <button v-if="item.status === 'PENDING'" @click="payInvoice(item)" class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-500">Bayar</button>
                       <a v-if="item.snap_redirect_url" :href="item.snap_redirect_url" target="_blank" rel="noreferrer" class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Buka</a>
                     </div>
                   </td>
@@ -648,16 +648,10 @@ const loadInvoices = async () => {
 
 const payInvoice = async (item) => {
   paymentLoadingModalOpen.value = true;
-  paymentLoadingMessage.value = "Memproses pembayaran QRIS...";
+  paymentLoadingMessage.value = "Memproses pembayaran...";
   try {
     const response = await api.post(`/billing/current/invoices/${item.id}/pay`);
     const redirectUrl = response?.data?.redirect_url || response?.data?.invoice?.snap_redirect_url;
-    const qrString = response?.data?.qr_string || "";
-    if (qrString) {
-      paymentLoadingModalOpen.value = false;
-      openPaymentQrModal(response, item);
-      return;
-    }
     if (redirectUrl) {
       paymentLoadingMessage.value = "Membuka halaman pembayaran...";
       window.open(redirectUrl, "_blank", "noopener,noreferrer");
@@ -718,9 +712,9 @@ const copyPaymentQrString = async () => {
   if (!paymentQrString.value) return;
   try {
     await navigator.clipboard.writeText(paymentQrString.value);
-    pushToast({ title: "QRIS Disalin", message: "String QR berhasil disalin.", type: "success" });
+    pushToast({ title: "QR Disalin", message: "String QR berhasil disalin.", type: "success" });
   } catch (error) {
-    pushToast({ title: "Gagal Menyalin QRIS", message: error.message, type: "error" });
+    pushToast({ title: "Gagal Menyalin QR", message: error.message, type: "error" });
   }
 };
 
