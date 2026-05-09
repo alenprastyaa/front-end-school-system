@@ -67,8 +67,8 @@
             </div>
             <div class="grid gap-4 md:grid-cols-2">
               <div>
-                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jatuh Tempo Hari</label>
-                <input v-model="billingForm.due_day_of_month" type="number" min="1" max="28" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Tanggal Jatuh Tempo</label>
+                <input v-model="billingForm.due_date" type="date" class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
               </div>
               <label class="flex items-end gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200">
                 <input v-model="billingForm.is_active" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
@@ -108,7 +108,7 @@
                   <th class="px-4 py-3 font-medium sm:px-6">Sekolah</th>
                   <th class="px-4 py-3 font-medium sm:px-6">Nama Billing</th>
                   <th class="px-4 py-3 font-medium sm:px-6">Nominal</th>
-                  <th class="px-4 py-3 font-medium sm:px-6">Jatuh Tempo</th>
+                  <th class="px-4 py-3 font-medium sm:px-6">Tanggal Jatuh Tempo</th>
                   <th class="px-4 py-3 font-medium sm:px-6">Status</th>
                   <th class="px-4 py-3 font-medium text-right sm:px-6">Aksi</th>
                 </tr>
@@ -121,7 +121,7 @@
                     <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.notes || "-" }}</div>
                   </td>
                   <td class="px-4 py-4 sm:px-6 font-semibold">{{ formatCurrency(item.amount) }}</td>
-                  <td class="px-4 py-4 sm:px-6">Tanggal {{ item.due_day_of_month || "-" }}</td>
+                  <td class="px-4 py-4 sm:px-6">{{ formatDate(item.due_date) }}</td>
                   <td class="px-4 py-4 sm:px-6">
                     <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="item.is_active ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'">
                       {{ item.is_active ? "Aktif" : "Nonaktif" }}
@@ -151,7 +151,7 @@
           <h2 class="mt-2 text-xl font-bold text-slate-900 dark:text-white">{{ activeBilling?.billing_name || "Belum ada billing" }}</h2>
           <div class="mt-5 space-y-3 text-sm text-slate-600 dark:text-slate-300">
             <div class="flex justify-between gap-3"><span>Nominal</span><strong class="text-slate-900 dark:text-white">{{ formatCurrency(activeBilling?.amount) }}</strong></div>
-            <div class="flex justify-between gap-3"><span>Jatuh Tempo</span><strong class="text-slate-900 dark:text-white">Tanggal {{ activeBilling?.due_day_of_month || "-" }}</strong></div>
+            <div class="flex justify-between gap-3"><span>Tanggal Jatuh Tempo</span><strong class="text-slate-900 dark:text-white">{{ formatDate(activeBilling?.due_date) }}</strong></div>
             <div class="flex justify-between gap-3"><span>Status</span><strong :class="activeBilling?.is_active ? 'text-emerald-600 dark:text-emerald-300' : 'text-slate-500 dark:text-slate-400'">{{ activeBilling?.is_active ? "Aktif" : "Nonaktif" }}</strong></div>
           </div>
         </section>
@@ -175,7 +175,7 @@
                 <tr>
                   <th class="px-4 py-3 font-medium sm:px-6">Invoice</th>
                   <th class="px-4 py-3 font-medium sm:px-6">Nominal</th>
-                  <th class="px-4 py-3 font-medium sm:px-6">Jatuh Tempo</th>
+                  <th class="px-4 py-3 font-medium sm:px-6">Tanggal Jatuh Tempo</th>
                   <th class="px-4 py-3 font-medium sm:px-6">Status</th>
                   <th class="px-4 py-3 font-medium text-right sm:px-6">Aksi</th>
                 </tr>
@@ -240,7 +240,7 @@
                   <tr>
                     <th class="px-4 py-3 font-medium sm:px-6">Invoice</th>
                     <th class="px-4 py-3 font-medium sm:px-6">Nominal</th>
-                    <th class="px-4 py-3 font-medium sm:px-6">Jatuh Tempo</th>
+                    <th class="px-4 py-3 font-medium sm:px-6">Tanggal Jatuh Tempo</th>
                     <th class="px-4 py-3 font-medium sm:px-6">Status</th>
                     <th class="px-4 py-3 font-medium text-right sm:px-6">Aksi</th>
                   </tr>
@@ -409,7 +409,7 @@ const billingForm = reactive({
   billing_name: "",
   amount: 0,
   currency: "IDR",
-  due_day_of_month: 10,
+  due_date: "",
   is_active: true,
   notes: "",
 });
@@ -430,6 +430,16 @@ const formatDate = (value) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "-";
   return new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(date);
+};
+
+const formatDateInput = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 };
 
 const statusClass = (status) => {
@@ -469,7 +479,7 @@ const resetBillingForm = () => {
   billingForm.billing_name = "";
   billingForm.amount = 0;
   billingForm.currency = "IDR";
-  billingForm.due_day_of_month = 10;
+  billingForm.due_date = "";
   billingForm.is_active = true;
   billingForm.notes = "";
 };
@@ -535,7 +545,7 @@ const editBilling = (item) => {
   billingForm.billing_name = item.billing_name || "";
   billingForm.amount = item.amount || 0;
   billingForm.currency = item.currency || "IDR";
-  billingForm.due_day_of_month = item.due_day_of_month || 10;
+  billingForm.due_date = item.due_date ? formatDateInput(item.due_date) : "";
   billingForm.is_active = Boolean(item.is_active);
   billingForm.notes = item.notes || "";
 };
@@ -547,7 +557,7 @@ const saveBilling = async () => {
       billing_name: billingForm.billing_name,
       amount: Number(billingForm.amount) || 0,
       currency: billingForm.currency,
-      due_day_of_month: Number(billingForm.due_day_of_month) || 10,
+      due_date: billingForm.due_date || null,
       is_active: Boolean(billingForm.is_active),
       notes: billingForm.notes || null,
     });
