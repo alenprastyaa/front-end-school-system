@@ -341,6 +341,25 @@ const routes = [
     meta: { title: "Registrasi Siswa" + appName, hideNav: true },
   },
   {
+    path: "/payment/success",
+    name: "PaymentSuccess",
+    component: () => import("../views/PaymentResult.vue"),
+    props: { status: "success" },
+    meta: { title: "Payment Success" + appName, hideNav: true },
+  },
+  {
+    path: "/payment/failed",
+    name: "PaymentFailed",
+    component: () => import("../views/PaymentResult.vue"),
+    props: { status: "failed" },
+    meta: { title: "Payment Failed" + appName, hideNav: true },
+  },
+  {
+    path: "/failed",
+    redirect: { name: "PaymentFailed" },
+    meta: { hideNav: true },
+  },
+  {
     path: "/registrasi-siswa",
     redirect: { name: "PublicStudentRegistration" },
     meta: { hideNav: true },
