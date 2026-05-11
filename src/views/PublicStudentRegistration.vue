@@ -21,9 +21,50 @@
           <div class="reg-grid">
             <div class="reg-field full">
               <label class="reg-label">Username Siswa <span class="required">*</span></label>
-              <input v-model.trim="form.username" type="text" required minlength="3" placeholder="Contoh: siswa7a01"
-                class="reg-input" />
-              <span class="reg-hint">Minimal 3 karakter. Gunakan username yang unik.</span>
+              <div class="username-input-wrapper">
+                <input v-model.trim="form.username" type="text" required minlength="3" placeholder="Contoh: siswa7a01"
+                  class="reg-input" :class="{
+                    'input-checking': isCheckingUsername,
+                    'input-available': usernameAvailable === true,
+                    'input-taken': usernameAvailable === false
+                  }" />
+                <span v-if="isCheckingUsername" class="username-status checking">
+                  <svg class="spinner" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                  </svg>
+                </span>
+                <span v-else-if="usernameAvailable === true" class="username-status available">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                </span>
+                <span v-else-if="usernameAvailable === false" class="username-status taken">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="15" y1="9" x2="9" y2="15" />
+                    <line x1="9" y1="9" x2="15" y2="15" />
+                  </svg>
+                </span>
+              </div>
+              <span v-if="usernameMessage" :class="['username-message', usernameAvailable ? 'available' : 'taken']">
+                {{ usernameMessage }}
+              </span>
+              <div v-if="usernameSuggestions.length > 0" class="username-suggestions">
+                <span class="suggestions-label">Saran username:</span>
+                <div class="suggestions-list">
+                  <button
+                    v-for="suggestion in usernameSuggestions"
+                    :key="suggestion"
+                    type="button"
+                    @click="selectSuggestion(suggestion)"
+                    class="suggestion-btn"
+                  >
+                    {{ suggestion }}
+                  </button>
+                </div>
+              </div>
+              <span v-else class="reg-hint">Minimal 3 karakter. Gunakan username yang unik.</span>
             </div>
 
             <div class="reg-field">
@@ -104,7 +145,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { api } from "@/api";
 
@@ -115,6 +156,13 @@ const isSubmitting = ref(false);
 const isLoadingOptions = ref(false);
 const message = ref("");
 const isError = ref(false);
+
+// Username validation states
+const isCheckingUsername = ref(false);
+const usernameAvailable = ref(null); // null = not checked, true = available, false = taken
+const usernameMessage = ref("");
+const usernameSuggestions = ref([]);
+let usernameCheckTimeout = null;
 
 const baseForm = () => ({
   username: "",
@@ -142,10 +190,67 @@ const loadOptions = async () => {
   }
 };
 
+const checkUsernameAvailability = async (username) => {
+  if (!username || username.length < 3) {
+    usernameAvailable.value = null;
+    usernameMessage.value = "";
+    usernameSuggestions.value = [];
+    return;
+  }
+
+  isCheckingUsername.value = true;
+  try {
+    const response = await api.get("/public/check-username", {
+      params: { username },
+    });
+
+    usernameAvailable.value = response?.available || false;
+    usernameMessage.value = response?.message || "";
+    usernameSuggestions.value = response?.suggestions || [];
+  } catch (error) {
+    usernameAvailable.value = null;
+    usernameMessage.value = "";
+    usernameSuggestions.value = [];
+  } finally {
+    isCheckingUsername.value = false;
+  }
+};
+
+// Watch username changes with debounce
+watch(
+  () => form.username,
+  (newUsername) => {
+    if (usernameCheckTimeout) {
+      clearTimeout(usernameCheckTimeout);
+    }
+
+    if (!newUsername || newUsername.length < 3) {
+      usernameAvailable.value = null;
+      usernameMessage.value = "";
+      usernameSuggestions.value = [];
+      return;
+    }
+
+    usernameCheckTimeout = setTimeout(() => {
+      checkUsernameAvailability(newUsername);
+    }, 500);
+  }
+);
+
+const selectSuggestion = (suggestion) => {
+  form.username = suggestion;
+};
+
 const handleSubmit = async () => {
   if (form.password !== form.confirm_password) {
     isError.value = true;
     message.value = "Konfirmasi password tidak sama.";
+    return;
+  }
+
+  if (usernameAvailable.value === false) {
+    isError.value = true;
+    message.value = "Username sudah digunakan, pilih username lain.";
     return;
   }
 
@@ -163,10 +268,18 @@ const handleSubmit = async () => {
       phone_number: form.phone_number || null,
     });
 
+    isError.value = false;
     message.value = response?.message || "Registrasi siswa berhasil";
+    
+    // Reset form setelah berhasil, tapi pertahankan class_id
     const selectedClass = form.class_id;
     Object.assign(form, baseForm());
     form.class_id = selectedClass;
+    
+    // Reset username validation states
+    usernameAvailable.value = null;
+    usernameMessage.value = "";
+    usernameSuggestions.value = [];
   } catch (error) {
     isError.value = true;
     message.value = error.message;
@@ -176,6 +289,14 @@ const handleSubmit = async () => {
 };
 
 onMounted(async () => {
+  // Reset form saat halaman dibuka
+  Object.assign(form, baseForm());
+  usernameAvailable.value = null;
+  usernameMessage.value = "";
+  usernameSuggestions.value = [];
+  message.value = "";
+  isError.value = false;
+
   if (!registrationToken) {
     isError.value = true;
     message.value = "Link pendaftaran tidak valid. Gunakan link dari admin sekolah.";
@@ -186,6 +307,13 @@ onMounted(async () => {
   } catch (error) {
     isError.value = true;
     message.value = error.message;
+  }
+});
+
+onUnmounted(() => {
+  // Clear timeout untuk mencegah memory leak
+  if (usernameCheckTimeout) {
+    clearTimeout(usernameCheckTimeout);
   }
 });
 </script>
@@ -373,6 +501,119 @@ onMounted(async () => {
 .reg-hint {
   font-size: 11px;
   color: #546a90;
+}
+
+.username-input-wrapper {
+  position: relative;
+}
+
+.username-status {
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.username-status.checking {
+  color: #5f6368;
+}
+
+.username-status.available {
+  color: #0f9d58;
+}
+
+.username-status.taken {
+  color: #d93025;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.reg-input.input-checking {
+  border-color: #5f6368;
+  padding-right: 40px;
+}
+
+.reg-input.input-available {
+  border-color: #0f9d58;
+  padding-right: 40px;
+}
+
+.reg-input.input-taken {
+  border-color: #d93025;
+  padding-right: 40px;
+}
+
+.username-message {
+  display: block;
+  font-size: 11px;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.username-message.available {
+  color: #0f9d58;
+}
+
+.username-message.taken {
+  color: #d93025;
+}
+
+.username-suggestions {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border: 1px solid #e8eaed;
+  border-radius: 8px;
+}
+
+.suggestions-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #5f6368;
+  margin-bottom: 6px;
+}
+
+.suggestions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.suggestion-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #dadce0;
+  background: #fff;
+  color: #1a73e8;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.suggestion-btn:hover {
+  background: #e8f0fe;
+  border-color: #1a73e8;
+}
+
+.suggestion-btn:active {
+  transform: scale(0.97);
 }
 
 .reg-msg {

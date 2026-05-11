@@ -1,6 +1,6 @@
 <template>
   <div>
-    <nav class="sidebar bg-white dark:bg-gray-800 h-full">
+    <nav class="sidebar bg-white dark:bg-gray-800 h-full" data-tour="sidebar">
       <div class="sidebar-head p-4 border-b dark:border-gray-700">
         <div class="flex items-start gap-3">
           <button
@@ -51,7 +51,7 @@
         <p class="font-medium text-gray-400">Menu</p>
         <div class="mt-4 space-y-2">
           <template v-for="item in visibleMenu" :key="item.key">
-            <router-link v-if="!item.children" :to="item.to"
+            <router-link v-if="!item.children" :to="item.to" :data-tour="item.dataTour"
               class="w-full flex items-center gap-3 text-left rounded-md box-border p-3 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
               :class="{ 'bg-gray-200 dark:bg-gray-700 font-medium': isRouteActive(item.to) }">
               <span class="text-xl">
@@ -83,7 +83,7 @@
 
               <div v-if="isGroupOpen(item) || hasActiveChild(item)"
                 class="ml-4 space-y-2 border-l border-gray-200 pl-3 dark:border-gray-700">
-                <router-link v-for="child in item.children" :key="child.to" :to="child.to"
+                <router-link v-for="child in item.children" :key="child.to" :to="child.to" :data-tour="child.dataTour"
                   class="w-full flex items-center gap-3 text-left rounded-md box-border p-3 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
                   :class="{ 'bg-gray-200 dark:bg-gray-700 font-medium': isRouteActive(child.to) }">
                   <span class="text-xl">
@@ -401,22 +401,22 @@ const submitSchoolEdit = async () => {
 
 const menuByRole = {
   SUPER_ADMIN: [
-    { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
+    { key: "dashboard", to: "/dashboard", dataTour: "dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     { key: "schools", to: "/schools", label: "Sekolah", icon: "ph:buildings" },
     { key: "billing", to: "/billing", label: "Billing", icon: "ph:credit-card" },
   ],
   ADMIN: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
-    { key: "school-users", to: "/school-users", label: "User Sekolah", icon: "clarity:users-line" },
-    { key: "classes", to: "/classes", label: "Kelas", icon: "mdi:google-classroom" },
-    { key: "students", to: "/students", label: "Siswa", icon: "mdi:account-school-outline" },
+    { key: "school-users", to: "/school-users", dataTour: "teachers", label: "User Sekolah", icon: "clarity:users-line" },
+    { key: "classes", to: "/classes", dataTour: "classes", label: "Kelas", icon: "mdi:google-classroom" },
+    { key: "students", to: "/students", dataTour: "students-admin", label: "Siswa", icon: "mdi:account-school-outline" },
     { key: "academic-periods", to: "/academic-periods", label: "Tahun Ajaran", icon: "ph:calendar-blank" },
     {
       key: "curriculum-module",
       label: "Kurikulum",
       icon: "ph:books",
       children: [
-        { to: "/learning-admin", label: "Mata Pelajaran", icon: "ph:book-open-text" },
+        { to: "/learning-admin", dataTour: "curriculum", label: "Mata Pelajaran", icon: "ph:book-open-text" },
         { to: "/learning-admin/teacher-loads", label: "Beban Guru", icon: "ph:chalkboard-teacher" },
         { to: "/learning-admin/class-distributions", label: "Distribusi Guru ke Kelas", icon: "ph:git-branch" },
         { to: "/learning-admin/schedule", label: "Jadwal Pembelajaran", icon: "ph:calendar-blank" },
@@ -425,22 +425,22 @@ const menuByRole = {
     },
     { key: "learning-exams-admin", to: "/learning-exams-admin", label: "Ujian Resmi", icon: "ph:exam" },
     { key: "billing", to: "/billing", label: "Billing", icon: "ph:credit-card" },
-    { key: "admin-settings", to: "/admin-settings", label: "Setting", icon: "ph:gear-six" },
+    { key: "admin-settings", to: "/admin-settings", dataTour: "settings", label: "Setting", icon: "ph:gear-six" },
   ],
   GURU: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
-    { key: "homeroom-students", to: "/homeroom-students", label: "Siswa Wali Kelas", icon: "mdi:account-school-outline" },
+    { key: "homeroom-students", to: "/homeroom-students", dataTour: "students", label: "Siswa Wali Kelas", icon: "mdi:account-school-outline" },
     {
       key: "learning-module",
       label: "Modul Pembelajaran",
       icon: "ph:books",
       children: [
-        { to: "/learning-teacher", label: "Pembelajaran", icon: "ph:book-open-text" },
+        { to: "/learning-teacher", dataTour: "learning-teacher", label: "Pembelajaran", icon: "ph:book-open-text" },
         { to: "/learning-chat-teacher", label: "Live Chat", icon: "ph:chats-circle" },
-        { to: "/learning-question-bank-teacher", label: "Bank Soal", icon: "ph:stack" },
+        { to: "/learning-question-bank-teacher", dataTour: "question-bank", label: "Bank Soal", icon: "ph:stack" },
         { to: "/learning-quiz-teacher", label: "Quiz", icon: "ph:brain" },
         { to: "/learning-exams-teacher", label: "Ujian Resmi", icon: "ph:exam" },
-        { to: "/learning-grades-teacher", label: "Penilaian", icon: "ph:exam" },
+        { to: "/learning-grades-teacher", dataTour: "grades-teacher", label: "Penilaian", icon: "ph:exam" },
         { to: "/learning-report-teacher", label: "Rapor Mapel", icon: "ph:table" },
       ],
     },
@@ -452,14 +452,14 @@ const menuByRole = {
       label: "Modul Pembelajaran",
       icon: "ph:books",
       children: [
-        { to: "/learning-student", label: "Pembelajaran", icon: "ph:book-open-text" },
+        { to: "/learning-student", dataTour: "learning", label: "Pembelajaran", icon: "ph:book-open-text" },
         { to: "/learning-chat-student", label: "Live Chat", icon: "ph:chats-circle" },
         { to: "/learning-quiz-student", label: "Quiz", icon: "ph:brain" },
         { to: "/learning-exams-student", label: "Ujian Resmi", icon: "ph:exam" },
-        { to: "/learning-grades-student", label: "Nilai Saya", icon: "ph:chart-line-up" },
+        { to: "/learning-grades-student", dataTour: "grades", label: "Nilai Saya", icon: "ph:chart-line-up" },
       ],
     },
-    { key: "attendance", to: "/attendance", label: "Absensi", icon: "mdi:calendar-check-outline" },
+    { key: "attendance", to: "/attendance", dataTour: "attendance", label: "Absensi", icon: "mdi:calendar-check-outline" },
     { key: "face-enrollment", to: "/face-enrollment", label: "Enrol Wajah", icon: "mdi:face-recognition" },
     { key: "receipts", to: "/receipts", label: "Bukti Pembayaran", icon: "ph:receipt" },
   ],

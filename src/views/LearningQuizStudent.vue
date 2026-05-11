@@ -908,6 +908,17 @@ const resetAntiCheatState = () => {
   blurTransitionAt = 0;
 };
 
+const syncAntiCheatStateFromSession = (startPayload = {}) => {
+  const storedViolationCount = Number(startPayload?.violation_count);
+  violationCount.value = Number.isFinite(storedViolationCount) && storedViolationCount >= 0
+    ? storedViolationCount
+    : 0;
+
+  if (startPayload?.access_blocked) {
+    fullscreenRecoveryRequired.value = true;
+  }
+};
+
 const handleLockedNavigationAttempt = () => {
   if (!submissionTarget.value) {
     return;
@@ -1314,6 +1325,7 @@ const initializeAttemptSession = (assignment, startPayload) => {
 
   submissionTarget.value.session_started_at = storedSession?.session_started_at || localSessionStartedAt;
   submissionTarget.value.current_question_started_at = storedSession?.question_started_at || new Date().toISOString();
+  syncAntiCheatStateFromSession(startPayload);
 
   const isFinished = syncAttemptProgressWithClock();
   refreshQuestionTimer();

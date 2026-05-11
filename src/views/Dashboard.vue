@@ -433,8 +433,6 @@ import { formatDate, formatDateTime, formatTime } from "@/utils/date";
 import { getStoredRole, getStoredUser } from "@/utils/auth";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 
-const ApexChart = defineAsyncComponent(() => import("vue3-apexcharts"));
-
 const role = getStoredRole();
 const user = getStoredUser();
 const isLoading = ref(false);

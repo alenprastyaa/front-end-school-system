@@ -32,7 +32,7 @@
         </button>
 
         <div class="relative">
-          <button @click="menu = !menu" class="flex items-center gap-3 rounded-md p-1">
+          <button @click="menu = !menu" data-tour="profile" class="flex items-center gap-3 rounded-md p-1">
             <img :src="avatarSrc" class="rounded-full w-10 h-10 p-1 ring-1 ring-gray-300 dark:ring-gray-500"
               alt="avatar" />
             <div class="text-left hidden md:block">
