@@ -96,6 +96,16 @@ const routes = [
     },
   },
   {
+    path: "/private-chat",
+    name: "PrivateChat",
+    component: () => import("../views/PrivateChat.vue"),
+    meta: {
+      title: "Chat Pribadi" + appName,
+      requiresAuth: true,
+      roles: ["ADMIN", "GURU", "SISWA"],
+    },
+  },
+  {
     path: "/learning-admin",
     name: "LearningAdmin",
     component: () => import("../views/CurriculumAdmin.vue"),
@@ -218,6 +228,16 @@ const routes = [
       title: "Rapor Mapel Guru" + appName,
       requiresAuth: true,
       roles: ["GURU"],
+    },
+  },
+  {
+    path: "/system-chatbot",
+    name: "SystemChatbot",
+    component: () => import("../views/SystemChatbot.vue"),
+    meta: {
+      title: "Asisten Sistem" + appName,
+      requiresAuth: true,
+      roles: ["ADMIN", "GURU"],
     },
   },
   {

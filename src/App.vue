@@ -1,7 +1,11 @@
 <template>
   <!-- App -->
-  <div class="flex h-screen overflow-hidden bg-gray-50 font-lexend dark:bg-gray-900">
-    <div v-if="!shouldHideChrome" :class="{ hidden: !sidebar, block: sidebar }">
+  <div class="flex h-screen overflow-hidden bg-slate-100 font-lexend dark:bg-slate-950">
+    <div
+      v-if="!shouldHideChrome"
+      class="pointer-events-none fixed inset-y-0 left-0 z-[60] w-sidebar max-w-[86vw] transition-transform duration-300 ease-out lg:pointer-events-auto lg:static lg:max-w-none"
+      :class="sidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+    >
       <button
         v-if="sidebar && !isDesktopViewport"
         type="button"
@@ -11,7 +15,7 @@
         @click="close"
       ></button>
       <div
-        class="mobile-sidebar-offset lg:flex-auto w-sidebar bg-white dark:bg-gray-800 border-r-2 dark:border-gray-700 lg:z-0 z-[60] overflow-auto lg:relative fixed">
+        class="mobile-sidebar-offset pointer-events-auto relative z-[60] h-full w-sidebar overflow-hidden border-r border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900 lg:shadow-none">
         <div class="h-full overflow-y-auto overscroll-contain">
           <Sidebar v-if="!shouldHideChrome" @sidebarToggle="close" />
           <!-- <sidebarlist
@@ -49,6 +53,7 @@
     :notice="forcedLogoutNotice"
     @close="closeForcedLogoutModal"
   />
+  <FloatingSystemAssistant />
   <!-- End app -->
 </template>
 
@@ -70,6 +75,7 @@ const PWA_PROMPT_SUPPRESSED_UNTIL_KEY = "school-system-pwa-prompt-suppressed-unt
 const PWA_PROMPT_SUPPRESS_DAYS = 180;
 const PwaInstallModal = defineAsyncComponent(() => import("@/components/PwaInstallModal.vue"));
 const ForcedLogoutModal = defineAsyncComponent(() => import("@/components/ForcedLogoutModal.vue"));
+const FloatingSystemAssistant = defineAsyncComponent(() => import("@/components/FloatingSystemAssistant.vue"));
 
 export default {
   name: "App",
@@ -126,6 +132,7 @@ export default {
     Footer,
     PwaInstallModal,
     ForcedLogoutModal,
+    FloatingSystemAssistant,
     Sidebar,
     ToastHost,
   },

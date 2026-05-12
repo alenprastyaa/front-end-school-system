@@ -1,7 +1,7 @@
 <template>
-  <div>
-    <nav class="sidebar bg-white dark:bg-gray-800 h-full" data-tour="sidebar">
-      <div class="sidebar-head p-4 border-b dark:border-gray-700">
+  <div class="h-full">
+    <nav class="sidebar flex h-full flex-col bg-white dark:bg-gray-800" data-tour="sidebar">
+      <div class="sidebar-head shrink-0 border-b border-slate-200 p-4 dark:border-gray-700">
         <div class="flex items-start gap-3">
           <button
             type="button"
@@ -47,13 +47,13 @@
 
       </div>
 
-      <div class="p-4">
-        <p class="font-medium text-gray-400">Menu</p>
-        <div class="mt-4 space-y-2">
+      <div class="min-h-0 flex-1 overflow-y-auto p-4">
+        <p class="px-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Menu</p>
+        <div class="mt-4 space-y-2 pb-5">
           <template v-for="item in visibleMenu" :key="item.key">
             <router-link v-if="!item.children" :to="item.to" :data-tour="item.dataTour"
-              class="w-full flex items-center gap-3 text-left rounded-md box-border p-3 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
-              :class="{ 'bg-gray-200 dark:bg-gray-700 font-medium': isRouteActive(item.to) }">
+              class="flex w-full items-center gap-3 rounded-2xl border border-transparent px-3 py-3 text-left text-gray-700 transition hover:border-slate-200 hover:bg-slate-100 dark:text-gray-200 dark:hover:border-slate-700 dark:hover:bg-gray-700/80"
+              :class="{ 'border-sky-100 bg-sky-50 font-medium text-sky-700 shadow-sm dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-100': isRouteActive(item.to) }">
               <span class="text-xl">
                 <Icon :icon="item.icon" />
               </span>
@@ -66,8 +66,8 @@
 
             <div v-else class="space-y-2">
               <button type="button"
-                class="w-full flex items-center gap-3 text-left rounded-md box-border p-3 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
-                :class="{ 'bg-gray-200 dark:bg-gray-700 font-medium': isGroupOpen(item) || hasActiveChild(item) }"
+                class="flex w-full items-center gap-3 rounded-2xl border border-transparent px-3 py-3 text-left text-gray-700 transition hover:border-slate-200 hover:bg-slate-100 dark:text-gray-200 dark:hover:border-slate-700 dark:hover:bg-gray-700/80"
+                :class="{ 'border-sky-100 bg-sky-50 font-medium text-sky-700 shadow-sm dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-100': isGroupOpen(item) || hasActiveChild(item) }"
                 @click="toggleGroup(item.key)">
                 <span class="text-xl">
                   <Icon :icon="item.icon" />
@@ -82,10 +82,10 @@
               </button>
 
               <div v-if="isGroupOpen(item) || hasActiveChild(item)"
-                class="ml-4 space-y-2 border-l border-gray-200 pl-3 dark:border-gray-700">
+                class="ml-4 space-y-2 border-l border-slate-200 pl-3 dark:border-gray-700">
                 <router-link v-for="child in item.children" :key="child.to" :to="child.to" :data-tour="child.dataTour"
-                  class="w-full flex items-center gap-3 text-left rounded-md box-border p-3 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
-                  :class="{ 'bg-gray-200 dark:bg-gray-700 font-medium': isRouteActive(child.to) }">
+                  class="flex w-full items-center gap-3 rounded-2xl border border-transparent px-3 py-3 text-left text-gray-700 transition hover:border-slate-200 hover:bg-slate-100 dark:text-gray-200 dark:hover:border-slate-700 dark:hover:bg-gray-700/80"
+                  :class="{ 'border-sky-100 bg-sky-50 font-medium text-sky-700 shadow-sm dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-100': isRouteActive(child.to) }">
                   <span class="text-xl">
                     <Icon :icon="child.icon" />
                   </span>
@@ -245,7 +245,7 @@ const role = getStoredRole();
 const profileStore = useProfileStore();
 const sidebarStore = useSidebar();
 const realtimeStore = useRealtimeStore();
-const { liveChatUnreadCount, liveChatSubjects } = storeToRefs(sidebarStore);
+const { liveChatUnreadCount, liveChatSubjects, privateChatUnreadCount } = storeToRefs(sidebarStore);
 const { profile: storedProfile } = storeToRefs(profileStore);
 const chatToasts = ref([]);
 const learningToasts = ref([]);
@@ -408,6 +408,7 @@ const menuByRole = {
   ADMIN: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     { key: "school-users", to: "/school-users", dataTour: "teachers", label: "User Sekolah", icon: "clarity:users-line" },
+    { key: "private-chat", to: "/private-chat", label: "Chat Pribadi", icon: "ph:chat-circle-dots" },
     { key: "classes", to: "/classes", dataTour: "classes", label: "Kelas", icon: "mdi:google-classroom" },
     { key: "students", to: "/students", dataTour: "students-admin", label: "Siswa", icon: "mdi:account-school-outline" },
     { key: "academic-periods", to: "/academic-periods", label: "Tahun Ajaran", icon: "ph:calendar-blank" },
@@ -430,6 +431,7 @@ const menuByRole = {
   GURU: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     { key: "homeroom-students", to: "/homeroom-students", dataTour: "students", label: "Siswa Wali Kelas", icon: "mdi:account-school-outline" },
+    { key: "private-chat", to: "/private-chat", label: "Chat Pribadi", icon: "ph:chat-circle-dots" },
     {
       key: "learning-module",
       label: "Modul Pembelajaran",
@@ -447,6 +449,7 @@ const menuByRole = {
   ],
   SISWA: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
+    { key: "private-chat", to: "/private-chat", label: "Chat Pribadi", icon: "ph:chat-circle-dots" },
     {
       key: "learning-module",
       label: "Modul Pembelajaran",
@@ -467,6 +470,7 @@ const menuByRole = {
 
 const visibleMenu = computed(() => menuByRole[role] || []);
 const shouldTrackLiveChat = ["GURU", "SISWA"].includes(role);
+const shouldTrackPrivateChat = ["ADMIN", "GURU", "SISWA"].includes(role);
 
 const isRouteActive = (path) => route.path === path;
 
@@ -487,6 +491,10 @@ const getChildBadge = (child) => {
 };
 
 const getGroupBadge = (item) => {
+  if (item.to === "/private-chat" || item.key === "private-chat") {
+    return privateChatUnreadCount.value;
+  }
+
   if (item.key === "learning-module") {
     return liveChatUnreadCount.value;
   }
@@ -620,6 +628,18 @@ const openChatFromToast = (toast) => {
   });
 };
 
+const openPrivateChat = (peerUserId) => {
+  const normalizedPeerUserId = Number(peerUserId || 0);
+  if (!normalizedPeerUserId) {
+    return;
+  }
+
+  router.push({
+    path: "/private-chat",
+    query: { user: String(normalizedPeerUserId) },
+  });
+};
+
 const maybeShowBrowserNotification = (chatMessage) => {
   if (!isAllowedSubjectNotification(chatMessage?.subject_id)) {
     return;
@@ -680,8 +700,29 @@ const maybeShowLearningBrowserNotification = (payload) => {
   };
 };
 
+const maybeShowPrivateChatBrowserNotification = (payload) => {
+  if (typeof window === "undefined" || typeof Notification === "undefined") {
+    return;
+  }
+
+  if (Notification.permission !== "granted") {
+    return;
+  }
+
+  const senderName = payload?.sender_full_name || payload?.sender_name || "Pengguna";
+  const notification = new Notification("Chat Pribadi", {
+    body: `${senderName}: ${payload?.message || "Pesan baru"}`,
+  });
+
+  notification.onclick = () => {
+    window.focus();
+    openPrivateChat(payload?.sender_id);
+    notification.close();
+  };
+};
+
 const bindRealtimeStream = () => {
-  if (!shouldTrackLiveChat) {
+  if (!shouldTrackLiveChat && !shouldTrackPrivateChat) {
     return;
   }
 
@@ -711,6 +752,25 @@ const bindRealtimeStream = () => {
       pushLearningToast(payload);
       maybeShowLearningBrowserNotification(payload);
     }),
+    realtimeStore.on("private-chat:new-message", async (payload) => {
+      if (Number(payload?.sender_id || 0) === Number(currentUserId)) {
+        return;
+      }
+
+      sidebarStore.bumpPrivateChatUnread(payload?.sender_id);
+      playChatNotificationSound();
+      pushToast({
+        title: payload?.sender_full_name || payload?.sender_name || "Chat Pribadi",
+        message: payload?.message || "Pesan baru masuk",
+        type: "info",
+        duration: 4500,
+      });
+      maybeShowPrivateChatBrowserNotification(payload);
+      await sidebarStore.refreshPrivateChatSummary({ force: true });
+    }),
+    realtimeStore.on("private-chat:read-updated", async () => {
+      await sidebarStore.refreshPrivateChatSummary({ force: true });
+    }),
   ];
 };
 
@@ -725,6 +785,9 @@ onMounted(async () => {
   profileStore.loadProfile().catch(() => {});
   await refreshLiveChatSummary(false);
   await sidebarStore.refreshLiveChatSubjects(role);
+  if (shouldTrackPrivateChat) {
+    await sidebarStore.refreshPrivateChatSummary({ force: false });
+  }
   if (typeof window !== "undefined" && typeof Notification !== "undefined" && Notification.permission === "default") {
     Notification.requestPermission().catch(() => { });
   }

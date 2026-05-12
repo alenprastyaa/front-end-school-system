@@ -60,6 +60,8 @@ const ensureEventSource = (url) => {
     "learning-chat:new-message",
     "learning-chat:read-updated",
     "learning-chat:typing",
+    "private-chat:new-message",
+    "private-chat:read-updated",
     "learning-notification:new",
   ];
 

@@ -3,6 +3,7 @@ import { api } from "@/api";
 
 const SUMMARY_TTL = 15000;
 const SUBJECT_TTL = 60000;
+const PRIVATE_CHAT_TTL = 15000;
 
 const normalizeSubjectList = (response) => {
   const items = response?.data || [];
@@ -10,6 +11,11 @@ const normalizeSubjectList = (response) => {
 };
 
 const normalizeSummaryList = (response) => {
+  const items = response?.data || [];
+  return Array.isArray(items) ? items : [];
+};
+
+const normalizePrivateChatList = (response) => {
   const items = response?.data || [];
   return Array.isArray(items) ? items : [];
 };
@@ -53,6 +59,12 @@ export const useSidebar = defineStore("sidebar", {
     liveChatSubjectsLoadedAt: 0,
     liveChatSummaryInFlight: null,
     liveChatSubjectsInFlight: null,
+    privateChatSummaryItems: [],
+    privateChatUnreadByUser: {},
+    privateChatPendingUnreadByUser: {},
+    privateChatUnreadCount: 0,
+    privateChatSummaryLoadedAt: 0,
+    privateChatSummaryInFlight: null,
   }),
 
   actions: {
@@ -100,6 +112,19 @@ export const useSidebar = defineStore("sidebar", {
       }, 0);
     },
 
+    recomputePrivateChatUnreadCount() {
+      const userIds = new Set([
+        ...Object.keys(this.privateChatUnreadByUser || {}),
+        ...Object.keys(this.privateChatPendingUnreadByUser || {}),
+      ]);
+
+      this.privateChatUnreadCount = [...userIds].reduce((total, userId) => {
+        const baseCount = Number(this.privateChatUnreadByUser?.[userId] || 0);
+        const pendingCount = Number(this.privateChatPendingUnreadByUser?.[userId] || 0);
+        return total + Math.max(baseCount, pendingCount);
+      }, 0);
+    },
+
     applyLiveChatSummary(summaryItems = []) {
       const nextMap = {};
       const normalizedItems = Array.isArray(summaryItems) ? summaryItems : [];
@@ -119,6 +144,25 @@ export const useSidebar = defineStore("sidebar", {
       this.recomputeLiveChatUnreadCount();
     },
 
+    applyPrivateChatSummary(summaryItems = []) {
+      const nextMap = {};
+      const normalizedItems = Array.isArray(summaryItems) ? summaryItems : [];
+
+      normalizedItems.forEach((item) => {
+        const userId = Number(item?.user_id || 0);
+        if (!userId) {
+          return;
+        }
+
+        nextMap[userId] = Number(item?.unread_count || 0);
+      });
+
+      this.privateChatSummaryItems = normalizedItems;
+      this.privateChatUnreadByUser = nextMap;
+      this.privateChatSummaryLoadedAt = Date.now();
+      this.recomputePrivateChatUnreadCount();
+    },
+
     bumpLiveChatUnread(subjectId) {
       const normalizedSubjectId = Number(subjectId || 0);
       if (!normalizedSubjectId) {
@@ -130,6 +174,19 @@ export const useSidebar = defineStore("sidebar", {
         [normalizedSubjectId]: Number(this.liveChatPendingUnreadBySubject?.[normalizedSubjectId] || 0) + 1,
       };
       this.recomputeLiveChatUnreadCount();
+    },
+
+    bumpPrivateChatUnread(userId) {
+      const normalizedUserId = Number(userId || 0);
+      if (!normalizedUserId) {
+        return;
+      }
+
+      this.privateChatPendingUnreadByUser = {
+        ...this.privateChatPendingUnreadByUser,
+        [normalizedUserId]: Number(this.privateChatPendingUnreadByUser?.[normalizedUserId] || 0) + 1,
+      };
+      this.recomputePrivateChatUnreadCount();
     },
 
     clearPendingLiveChatUnread() {
@@ -157,6 +214,31 @@ export const useSidebar = defineStore("sidebar", {
       this.recomputeLiveChatUnreadCount();
     },
 
+    clearPendingPrivateChatUnread() {
+      if (Object.keys(this.privateChatPendingUnreadByUser).length === 0) {
+        return;
+      }
+
+      this.privateChatPendingUnreadByUser = {};
+      this.recomputePrivateChatUnreadCount();
+    },
+
+    clearPendingPrivateChatUnreadByUser(userId) {
+      const normalizedUserId = Number(userId || 0);
+      if (!normalizedUserId) {
+        return;
+      }
+
+      if (!(normalizedUserId in this.privateChatPendingUnreadByUser)) {
+        return;
+      }
+
+      const nextPending = { ...this.privateChatPendingUnreadByUser };
+      delete nextPending[normalizedUserId];
+      this.privateChatPendingUnreadByUser = nextPending;
+      this.recomputePrivateChatUnreadCount();
+    },
+
     async refreshLiveChatSummary({ force = false } = {}) {
       if (!force && this.liveChatSummaryLoadedAt && Date.now() - this.liveChatSummaryLoadedAt < SUMMARY_TTL) {
         return this.liveChatSummaryItems;
@@ -180,6 +262,31 @@ export const useSidebar = defineStore("sidebar", {
       })();
 
       return this.liveChatSummaryInFlight;
+    },
+
+    async refreshPrivateChatSummary({ force = false } = {}) {
+      if (!force && this.privateChatSummaryLoadedAt && Date.now() - this.privateChatSummaryLoadedAt < PRIVATE_CHAT_TTL) {
+        return this.privateChatSummaryItems;
+      }
+
+      if (this.privateChatSummaryInFlight) {
+        return this.privateChatSummaryInFlight;
+      }
+
+      this.privateChatSummaryInFlight = (async () => {
+        try {
+          const summaryItems = normalizePrivateChatList(await api.get("/private-chat/summary"));
+          this.applyPrivateChatSummary(summaryItems);
+        } catch (error) {
+          // Keep previous summary if the request fails.
+        } finally {
+          this.privateChatSummaryInFlight = null;
+        }
+
+        return this.privateChatSummaryItems;
+      })();
+
+      return this.privateChatSummaryInFlight;
     },
 
     async refreshLiveChatSubjects(role, { force = false } = {}) {
@@ -221,6 +328,7 @@ export const useSidebar = defineStore("sidebar", {
     invalidateLiveChatCache() {
       this.liveChatSummaryLoadedAt = 0;
       this.liveChatSubjectsLoadedAt = 0;
+      this.privateChatSummaryLoadedAt = 0;
     },
   },
 });

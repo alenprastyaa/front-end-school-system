@@ -1,257 +1,249 @@
 <template>
   <div
-    class="h-full min-h-0 overflow-hidden bg-slate-100 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-    <main class="mx-auto flex h-full min-h-0 w-full  flex-col p-0 md:p-8">
+    class="h-full min-h-0 overflow-hidden bg-[#d9dbd5] font-sans text-[#111b21] dark:bg-[#0b141a] dark:text-[#e9edef]">
+    <main class="mx-auto flex h-full min-h-0 w-full flex-col p-0 lg:p-5">
       <div
-        class="flex-1 min-h-0 overflow-hidden rounded-none bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10 md:rounded-[28px]">
-        <div class="grid h-full min-h-0 lg:grid-cols-[340px_minmax(0,1fr)]">
+        class="flex-1 min-h-0 overflow-hidden bg-white shadow-sm dark:bg-[#111b21] lg:rounded-md">
+        <div class="grid h-full min-h-0 lg:grid-cols-[390px_minmax(0,1fr)]">
           <aside
-            class="flex min-h-0 flex-col border-b border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-950/40 lg:border-b-0 lg:border-r"
-            :class="{ hidden: mobileChatOpen, 'lg:block': true }">
-            <div class="shrink-0 border-b border-slate-200 px-5 py-5 dark:border-slate-800">
-              <div class="flex items-center gap-3">
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-sm"
-                  :class="roleAccentClass">
-                  <Icon icon="ph:chats-circle-duotone" class="h-7 w-7 opacity-90" />
+            class="flex min-h-0 flex-col border-r border-[#e9edef] bg-white dark:border-[#222e35] dark:bg-[#111b21]"
+            :class="{ hidden: mobileChatOpen, 'lg:flex': true }">
+            <header class="flex h-[59px] shrink-0 items-center justify-between bg-[#f0f2f5] px-4 dark:bg-[#202c33]">
+              <div class="flex min-w-0 items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[#00a884] text-white shadow-sm">
+                  <Icon icon="ph:chats-circle-duotone" class="h-5 w-5 opacity-90" />
                 </div>
-                <div>
-                  <h2 class="text-lg font-bold text-slate-900 dark:text-white">Grup Mata Pelajaran</h2>
-                  <p class="text-sm text-slate-500 dark:text-slate-400">Pilih mapel untuk mulai berdiskusi.</p>
+                <div class="min-w-0">
+                  <h2 class="truncate text-base font-semibold text-[#111b21] dark:text-[#e9edef]">Grup Mapel</h2>
+                  <p class="truncate text-xs text-[#667781] dark:text-[#8696a0]">{{ isConnected ? "Tersambung" : "Menghubungkan..." }}</p>
                 </div>
               </div>
+              <button type="button"
+                class="flex h-10 w-10 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
+                @click="loadSubjects">
+                <Icon icon="mdi:refresh" class="h-5 w-5" />
+              </button>
+            </header>
 
-            </div>
-
-            <div class="min-h-0 flex-1 overflow-y-auto p-3">
+            <div class="min-h-0 flex-1 overflow-y-auto bg-white dark:bg-[#111b21]">
               <button v-for="subject in orderedSubjects" :key="subject.id" @click="selectSubject(subject)"
-                class="mb-2 flex w-full items-start gap-3 rounded-2xl px-4 py-4 text-left transition ring-1 ring-transparent"
+                class="group flex min-h-[72px] w-full items-center gap-3 px-3 text-left transition"
                 :class="selectedSubject?.id === subject.id
-                  ? selectedGroupClass
+                  ? 'bg-[#f0f2f5] dark:bg-[#2a3942]'
                   : subjectUnreadCount(subject.id) > 0
-                    ? unreadGroupClass
-                    : 'bg-transparent hover:bg-white dark:hover:bg-slate-900/80'">
+                    ? 'bg-[#f5fbf8] dark:bg-[#15251f]'
+                    : 'hover:bg-[#f5f6f6] dark:hover:bg-[#202c33]'">
                 <div
-                  class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-white shadow-sm"
+                  class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full text-white shadow-sm"
                   :class="subject.chat_icon_url ? 'bg-slate-100 dark:bg-slate-800' : getSubjectIconClass(subject)">
                   <img v-if="subject.chat_icon_url" :src="subject.chat_icon_url" alt="Ikon grup mapel"
                     class="h-full w-full object-cover" />
                   <Icon v-else :icon="getSubjectIcon(subject)" class="h-6 w-6 opacity-95" />
                 </div>
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-start justify-between gap-3">
-                    <h3 class="truncate font-bold"
-                      :class="selectedSubject?.id === subject.id ? 'text-white' : 'text-slate-900 dark:text-white'">
+                <div class="min-w-0 flex-1 border-b border-[#e9edef] py-3 dark:border-[#222e35]">
+                  <div class="flex min-w-0 items-center gap-3">
+                    <h3 class="min-w-0 flex-1 truncate text-[15px] font-medium text-[#111b21] dark:text-[#e9edef]">
                       {{ subject.name }}
                     </h3>
-                    <div class="flex shrink-0 items-center gap-2">
-                      <span v-if="subjectUnreadCount(subject.id) > 0"
-                        class="inline-flex min-w-[22px] items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-bold"
-                        :class="selectedSubject?.id === subject.id ? 'bg-white text-slate-900' : unreadBadgeClass">
-                        {{ formatUnreadCount(subjectUnreadCount(subject.id)) }}
-                      </span>
-                      <span v-if="subjectMessageCount(subject.id) > 0" class="text-[11px] font-semibold"
-                        :class="selectedSubject?.id === subject.id ? 'text-white/80' : 'text-slate-400'">
-                        {{ subjectMessageCount(subject.id) }}
-                      </span>
-                    </div>
+                    <time class="shrink-0 text-xs"
+                      :class="subjectUnreadCount(subject.id) > 0 ? 'font-semibold text-[#00a884]' : 'text-[#667781] dark:text-[#8696a0]'">
+                      {{ formatSubjectTime(subject.id) }}
+                    </time>
                   </div>
-                  <p class="mt-1 truncate text-sm"
-                    :class="selectedSubject?.id === subject.id ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'">
+                  <p class="mt-1 truncate text-xs text-[#667781] dark:text-[#8696a0]">
                     {{ subject.class_name || `Guru: ${subject.teacher_name || '-'}` }}
                   </p>
-                  <div class="mt-1 flex items-center gap-2">
-                    <span v-if="subjectUnreadCount(subject.id) > 0"
-                      class="inline-flex shrink-0 items-center rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-rose-600 dark:bg-rose-500/20 dark:text-rose-300"
-                      :class="selectedSubject?.id === subject.id ? 'bg-white/20 text-white' : ''">
-                      Pesan baru
-                    </span>
-                    <p class="truncate text-xs"
-                      :class="selectedSubject?.id === subject.id ? 'text-white/70' : subjectUnreadCount(subject.id) > 0 ? 'font-semibold text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'">
+                  <div class="mt-1 flex min-w-0 items-center gap-2">
+                    <p class="min-w-0 flex-1 truncate text-sm"
+                      :class="subjectUnreadCount(subject.id) > 0 ? 'font-semibold text-[#111b21] dark:text-[#e9edef]' : 'text-[#667781] dark:text-[#8696a0]'">
                       {{ latestMessagePreview(subject.id) }}
                     </p>
+                    <span v-if="subjectUnreadCount(subject.id) > 0"
+                      class="inline-flex min-w-[20px] shrink-0 items-center justify-center rounded-full bg-[#25d366] px-1.5 py-0.5 text-[11px] font-bold leading-none text-[#111b21]">
+                      {{ formatUnreadCount(subjectUnreadCount(subject.id)) }}
+                    </span>
                   </div>
                 </div>
               </button>
 
               <div v-if="subjects.length === 0"
-                class="p-6 text-center text-sm font-medium text-slate-500 dark:text-slate-400">
+                class="px-7 py-10 text-center text-sm text-[#667781] dark:text-[#8696a0]">
                 Belum ada grup mata pelajaran yang tersedia.
               </div>
             </div>
           </aside>
 
-          <section class="flex min-h-0 h-full flex-col overflow-hidden bg-[#efeae2] dark:bg-slate-950/20"
+          <section class="flex min-h-0 h-full flex-col overflow-hidden bg-[#efeae2] learning-chat-wallpaper dark:bg-[#0b141a]"
             :class="{ hidden: !mobileChatOpen, 'lg:flex': true }">
             <template v-if="selectedSubject">
-              <div
-                class="sticky top-0 z-10 shrink-0 border-b border-slate-200 bg-white/95 px-3 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 md:px-5 md:py-4">
+              <header
+                class="z-10 flex h-[59px] shrink-0 items-center gap-3 bg-[#f0f2f5] px-3 dark:bg-[#202c33]">
                 <div class="flex items-center gap-3">
                   <button type="button"
-                    class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 lg:hidden"
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10 lg:hidden"
                     @click="backToGroupList">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                    </svg>
+                    <Icon icon="mdi:arrow-left" class="h-6 w-6" />
                   </button>
                   <button type="button"
-                    class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl text-white shadow-sm md:h-12 md:w-12 md:rounded-2xl"
+                    class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full text-white shadow-sm"
                     :class="[
                       selectedSubject.chat_icon_url ? 'bg-slate-100 dark:bg-slate-800' : getSubjectIconClass(selectedSubject),
-                      role === 'GURU' ? 'ring-2 ring-transparent transition hover:ring-sky-400/50' : '',
+                      role === 'GURU' ? 'ring-2 ring-transparent transition hover:ring-[#00a884]/40' : '',
                     ]" :disabled="role !== 'GURU' || isUploadingChatIcon" @click="openChatIconModal">
                     <img v-if="selectedSubject.chat_icon_url" :src="selectedSubject.chat_icon_url" alt="Ikon grup mapel"
                       class="h-full w-full object-cover" />
                     <Icon v-else :icon="getSubjectIcon(selectedSubject)" class="h-6 w-6 opacity-95" />
                   </button>
-                  <div class="min-w-0">
-                    <h2 class="truncate text-base font-bold text-slate-900 dark:text-white md:text-lg">{{
+                  <div class="min-w-0 flex-1">
+                    <h2 class="truncate text-[15px] font-medium text-[#111b21] dark:text-[#e9edef]">{{
                       selectedSubject.name }}
                     </h2>
-                    <p class="truncate text-xs text-slate-500 dark:text-slate-400 md:text-sm">
-                      {{ selectedSubject.class_name }}
-                      <span v-if="selectedSubject.teacher_name">• {{ selectedSubject.teacher_name }}</span>
-                    </p>
-                    <p class="truncate text-xs text-emerald-600 dark:text-emerald-400">
-                      {{ onlineIndicatorText }}
-                    </p>
-                    <p v-if="typingIndicatorText" class="truncate text-xs font-medium text-sky-600 dark:text-sky-400">
-                      {{ typingIndicatorText }}
+                    <p class="truncate text-xs text-[#667781] dark:text-[#8696a0]">
+                      <span v-if="typingIndicatorText" class="text-[#00a884]">{{ typingIndicatorText }}</span>
+                      <span v-else>{{ selectedSubject.class_name }}<span v-if="selectedSubject.teacher_name"> • {{
+                        selectedSubject.teacher_name }}</span> • {{ onlineIndicatorText }}</span>
                     </p>
                   </div>
                 </div>
-              </div>
+                <button type="button"
+                  class="ml-auto flex h-10 w-10 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10">
+                  <Icon icon="mdi:dots-vertical" class="h-5 w-5" />
+                </button>
+              </header>
 
               <div ref="messageListRef" :style="messageListStyle"
-                class="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.8),_rgba(239,234,226,0.8)_40%,_rgba(239,234,226,1)_100%)] px-2 py-3 dark:bg-[radial-gradient(circle_at_top_left,_rgba(30,41,59,0.7),_rgba(15,23,42,0.98)_45%,_rgba(2,6,23,1)_100%)] md:space-y-4 md:px-8 md:py-5">
+                class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 md:px-14">
                 <div v-if="isLoadingMessages"
-                  class="flex h-full min-h-[420px] items-center justify-center text-sm font-medium text-slate-500 dark:text-slate-400">
-                  Memuat percakapan...
+                  class="flex h-full min-h-[420px] items-center justify-center">
+                  <div
+                    class="rounded-lg bg-white/80 px-4 py-2 text-sm text-[#667781] shadow-sm dark:bg-[#202c33]/90 dark:text-[#8696a0]">
+                    Memuat percakapan...
+                  </div>
                 </div>
 
                 <div v-else-if="currentMessages.length === 0"
                   class="flex h-full min-h-[420px] items-center justify-center">
                   <div
-                    class="max-w-md rounded-3xl bg-white/90 px-8 py-8 text-center shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900/85 dark:ring-white/10">
-                    <div
-                      class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                      <svg class="h-8 w-8 text-slate-500 dark:text-slate-300" fill="none" viewBox="0 0 24 24"
-                        stroke-width="1.6" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M2.25 12.76l.904-.903a2.25 2.25 0 013.182 0l.904.903m0 0l2.69 2.69a2.25 2.25 0 003.182 0l5.44-5.439a2.25 2.25 0 013.182 0l.904.903M7.5 15.75h9" />
-                      </svg>
-                    </div>
-                    <h3 class="mt-4 text-lg font-bold text-slate-900 dark:text-white">Belum ada pesan</h3>
-                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Mulai percakapan di grup {{
-                      selectedSubject.name }}.</p>
+                    class="max-w-sm rounded-lg bg-[#fffef7]/95 px-5 py-4 text-center text-sm text-[#667781] shadow-sm dark:bg-[#202c33]/95 dark:text-[#d1d7db]">
+                    Belum ada pesan di grup {{ selectedSubject.name }}.
                   </div>
                 </div>
 
-                <div v-for="item in currentMessages" :key="item.id" class="flex"
-                  :class="item.sender_id === currentUserId ? 'justify-end' : 'justify-start'">
-                  <article
-                    class="max-w-[90%] rounded-2xl px-3 py-2.5 shadow-sm md:max-w-[70%] md:rounded-3xl md:px-4 md:py-3"
-                    :class="[
-                      item.sender_id === currentUserId ? ownMessageClass : 'rounded-tl-md bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-800',
-                      replyHighlightMessageId === Number(item.id) ? 'ring-2 ring-amber-400 dark:ring-amber-300' : '',
-                    ]" :data-message-id="item.id" @touchstart.passive="handleMessagePressStart(item)"
-                    @touchend="handleMessagePressEnd" @touchcancel="handleMessagePressEnd">
-                    <div class="flex items-center justify-between gap-3 text-xs font-semibold">
-                      <div class="flex items-center gap-2">
-                        <span>{{ item.sender_name || "Pengguna" }}</span>
-                        <span class="rounded-full px-2 py-0.5" :class="roleBadgeClass(item.sender_role)">
-                          {{ roleLabel(item.sender_role) }}
-                        </span>
-                      </div>
+                <div v-else class="space-y-1">
+                  <template v-for="entry in renderedMessages" :key="entry.key">
+                    <div v-if="entry.type === 'date'" class="sticky top-2 z-[1] flex justify-center py-2">
+                      <span
+                        class="rounded-lg bg-[#e1f3fb] px-3 py-1 text-xs text-[#54656f] shadow-sm dark:bg-[#182229] dark:text-[#8696a0]">
+                        {{ entry.label }}
+                      </span>
                     </div>
-                    <button v-if="parseReplyPayload(item.message).replyName" type="button"
-                      @click="jumpToReplyTarget(item)"
-                      class="mt-2 w-full rounded-xl border-l-4 px-2 py-1.5 text-left text-[11px]"
-                      :class="item.sender_id === currentUserId ? 'border-white/70 bg-white/15 text-white/90' : 'border-sky-500 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'">
-                      <p class="line-clamp-2">{{ parseReplyPayload(item.message).replyPreview }}</p>
-                    </button>
-                    <p v-if="parseReplyPayload(item.message).body"
-                      class="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed">
-                      {{ parseReplyPayload(item.message).body }}
-                    </p>
-                    <div v-if="item.attachment_url" class="mt-3">
-                      <audio v-if="isVoiceMessage(item)" :src="normalizePublicUrl(item.attachment_url)" controls
-                        class="w-full max-w-sm" />
-                      <button v-else-if="item.message_type === 'IMAGE'" type="button"
-                        @click="openImagePreview(normalizePublicUrl(item.attachment_url), item.attachment_name)"
-                        class="block w-full overflow-hidden rounded-2xl text-left">
-                        <img :src="normalizePublicUrl(item.attachment_url)"
-                          :alt="item.attachment_name || 'Lampiran gambar'" class="max-h-72 w-full object-cover" />
-                      </button>
-                      <a v-else-if="item.message_type === 'PDF'" :href="normalizePublicUrl(item.attachment_url)"
-                        target="_blank" rel="noreferrer"
-                        class="flex items-center gap-3 rounded-2xl bg-black/5 px-4 py-3 text-sm font-semibold hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15">
-                        <Icon icon="ph:file-pdf" class="h-6 w-6 shrink-0" />
-                        <span class="truncate">{{ item.attachment_name || "Buka PDF" }}</span>
-                      </a>
-                      <a v-else :href="normalizePublicUrl(item.attachment_url)" target="_blank" rel="noreferrer"
-                        class="flex items-center gap-3 rounded-2xl bg-black/5 px-4 py-3 text-sm font-semibold hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15">
-                        <Icon icon="ph:paperclip" class="h-5 w-5 shrink-0" />
-                        <span class="truncate">{{ item.attachment_name || "Buka file" }}</span>
-                      </a>
+
+                    <div v-else class="flex"
+                      :class="entry.message.sender_id === currentUserId ? 'justify-end' : 'justify-start'">
+                      <article
+                        class="learning-message-bubble relative px-2.5 py-1.5 text-sm leading-5 shadow-sm"
+                        :class="[
+                          entry.message.sender_id === currentUserId ? 'own bg-[#d9fdd3] text-[#111b21] dark:bg-[#005c4b] dark:text-[#e9edef]' : 'other bg-white text-[#111b21] dark:bg-[#202c33] dark:text-[#e9edef]',
+                          replyHighlightMessageId === Number(entry.message.id) ? 'ring-2 ring-amber-400 dark:ring-amber-300' : '',
+                        ]" :data-message-id="entry.message.id" @touchstart.passive="handleMessagePressStart(entry.message)"
+                        @touchend="handleMessagePressEnd" @touchcancel="handleMessagePressEnd">
+                        <div v-if="entry.message.sender_id !== currentUserId"
+                          class="mb-1 flex items-center gap-2 text-xs font-semibold text-[#00a884]">
+                          <span>{{ entry.message.sender_name || "Pengguna" }}</span>
+                          <span class="rounded-full bg-black/5 px-2 py-0.5 text-[10px] text-[#667781] dark:bg-white/10 dark:text-[#aebac1]">
+                            {{ roleLabel(entry.message.sender_role) }}
+                          </span>
+                        </div>
+                        <button v-if="parseReplyPayload(entry.message.message).replyName" type="button"
+                          @click="jumpToReplyTarget(entry.message)"
+                          class="mb-1 w-full rounded-md border-l-4 px-2 py-1.5 text-left text-[11px]"
+                          :class="entry.message.sender_id === currentUserId ? 'border-[#00a884] bg-black/5 text-[#3b4a54] dark:text-[#d1d7db]' : 'border-[#00a884] bg-[#f0f2f5] text-[#3b4a54] dark:bg-[#111b21] dark:text-[#d1d7db]'">
+                          <p class="line-clamp-2">{{ parseReplyPayload(entry.message.message).replyPreview }}</p>
+                        </button>
+                        <p v-if="parseReplyPayload(entry.message.message).body"
+                          class="whitespace-pre-wrap break-words pr-12">
+                          {{ parseReplyPayload(entry.message.message).body }}
+                        </p>
+                        <div v-if="entry.message.attachment_url" class="mt-2">
+                          <audio v-if="isVoiceMessage(entry.message)" :src="normalizePublicUrl(entry.message.attachment_url)" controls
+                            class="w-full max-w-sm" />
+                          <button v-else-if="entry.message.message_type === 'IMAGE'" type="button"
+                            @click="openImagePreview(normalizePublicUrl(entry.message.attachment_url), entry.message.attachment_name)"
+                            class="block w-full overflow-hidden rounded-md text-left">
+                            <img :src="normalizePublicUrl(entry.message.attachment_url)"
+                              :alt="entry.message.attachment_name || 'Lampiran gambar'" class="max-h-72 w-full object-cover" />
+                          </button>
+                          <a v-else-if="entry.message.message_type === 'PDF'" :href="normalizePublicUrl(entry.message.attachment_url)"
+                            target="_blank" rel="noreferrer"
+                            class="flex items-center gap-3 rounded-md bg-black/5 px-3 py-2 text-sm font-semibold hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15">
+                            <Icon icon="ph:file-pdf" class="h-6 w-6 shrink-0" />
+                            <span class="truncate">{{ entry.message.attachment_name || "Buka PDF" }}</span>
+                          </a>
+                          <a v-else :href="normalizePublicUrl(entry.message.attachment_url)" target="_blank" rel="noreferrer"
+                            class="flex items-center gap-3 rounded-md bg-black/5 px-3 py-2 text-sm font-semibold hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15">
+                            <Icon icon="ph:paperclip" class="h-5 w-5 shrink-0" />
+                            <span class="truncate">{{ entry.message.attachment_name || "Buka file" }}</span>
+                          </a>
+                        </div>
+                        <div class="-mb-0.5 mt-0.5 flex justify-end gap-1 pl-8 text-[11px] leading-none text-[#667781] dark:text-[#8696a0]">
+                          <time>{{ formatChatTime(entry.message.created_at) }}</time>
+                          <Icon v-if="entry.message.sender_id === currentUserId" :icon="ownMessageReadIcon(entry.message)"
+                            class="h-4 w-4" :class="ownMessageReadIconClass(entry.message)" />
+                        </div>
+                      </article>
                     </div>
-                    <div class="mt-2 flex items-center justify-between gap-4 text-[11px] opacity-70">
-                      <p>{{ formatDateTime(item.created_at) }}</p>
-                      <p v-if="item.sender_id === currentUserId" class="font-semibold">
-                        {{ ownMessageReadLabel(item) }}
-                      </p>
-                    </div>
-                  </article>
+                  </template>
                 </div>
               </div>
 
               <form ref="composerBarRef" @submit.prevent="sendMessage"
-                class="fixed inset-x-0 z-20 shrink-0 border-t border-slate-200 bg-white px-2 pt-2 dark:border-slate-800 dark:bg-slate-900 md:sticky md:inset-auto md:px-6 md:py-4"
+                class="fixed inset-x-0 z-20 shrink-0 bg-[#f0f2f5] px-3 py-2 dark:bg-[#202c33] md:sticky md:inset-auto md:px-4"
                 :style="composerBarStyle">
                 <div v-if="replyTarget"
-                  class="mb-2 rounded-xl border-l-4 border-sky-500 bg-slate-100 px-3 py-1.5 text-[11px] dark:bg-slate-800">
+                  class="mb-2 rounded-lg border-l-4 border-[#00a884] bg-white px-3 py-2 text-[11px] shadow-sm dark:bg-[#2a3942]">
                   <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
-                      <p class="truncate text-slate-500 dark:text-slate-400">
+                      <p class="truncate text-[#667781] dark:text-[#aebac1]">
                         {{ getMessagePreview(replyTarget) }}
                       </p>
                     </div>
                     <button type="button" @click="clearReplyTarget"
-                      class="rounded-full p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200">
+                      class="rounded-full p-1 text-[#667781] hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10">
                       <Icon icon="mdi:close" class="h-4 w-4" />
                     </button>
                   </div>
                 </div>
                 <div v-if="attachmentPreviewName || isRecordingVoice || recordedVoiceUrl"
-                  class="mb-3 rounded-2xl bg-slate-100 px-4 py-3 text-sm dark:bg-slate-800">
+                  class="mb-2 rounded-lg bg-white px-4 py-3 text-sm shadow-sm dark:bg-[#2a3942]">
                   <div v-if="attachmentPreviewName" class="flex items-center justify-between gap-3">
                     <div class="min-w-0">
-                      <p class="font-semibold text-slate-900 dark:text-white">Lampiran siap dikirim</p>
-                      <p class="truncate text-slate-500 dark:text-slate-400">{{ attachmentPreviewName }}</p>
+                      <p class="font-semibold text-[#111b21] dark:text-[#e9edef]">Lampiran siap dikirim</p>
+                      <p class="truncate text-[#667781] dark:text-[#8696a0]">{{ attachmentPreviewName }}</p>
                     </div>
-                    <button type="button" class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200"
+                    <button type="button" class="text-[#667781] hover:text-[#111b21] dark:text-[#aebac1]"
                       @click="clearAttachment">
                       <Icon icon="mdi:close" class="h-5 w-5" />
                     </button>
                   </div>
                   <div v-if="recordedVoiceUrl" class="flex items-center justify-between gap-3">
                     <div class="min-w-0 flex-1">
-                      <p class="font-semibold text-slate-900 dark:text-white">Voice note siap dikirim</p>
+                      <p class="font-semibold text-[#111b21] dark:text-[#e9edef]">Voice note siap dikirim</p>
                       <audio :src="recordedVoiceUrl" controls class="mt-2 w-full" />
                     </div>
-                    <button type="button" class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200"
+                    <button type="button" class="text-[#667781] hover:text-[#111b21] dark:text-[#aebac1]"
                       @click="clearAttachment">
                       <Icon icon="mdi:close" class="h-5 w-5" />
                     </button>
                   </div>
                   <div v-else-if="isRecordingVoice" class="flex items-center justify-between gap-3">
                     <div class="flex-1">
-                      <p class="font-semibold text-slate-900 dark:text-white">Sedang merekam voice note...</p>
+                      <p class="font-semibold text-[#111b21] dark:text-[#e9edef]">Sedang merekam voice note...</p>
                       <svg class="mt-2 h-10 w-full max-w-sm rounded-md bg-rose-50/70 dark:bg-rose-500/10"
                         viewBox="0 0 300 40" preserveAspectRatio="none">
                         <polyline :points="recordingWavePoints" fill="none" stroke="#ef4444" stroke-width="2"
                           stroke-linecap="round" stroke-linejoin="round" />
                       </svg>
-                      <p class="text-slate-500 dark:text-slate-400">{{ recordingDurationLabel }}</p>
+                      <p class="text-[#667781] dark:text-[#8696a0]">{{ recordingDurationLabel }}</p>
                     </div>
                     <button type="button" class="rounded-full bg-rose-500 p-2 text-white hover:bg-rose-400"
                       @click="stopVoiceRecording">
@@ -259,59 +251,45 @@
                     </button>
                   </div>
                 </div>
-                <div
-                  class="flex items-end gap-2 rounded-2xl border border-slate-200 bg-white px-2.5 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-                  <!-- ACTION -->
-                  <div class="flex shrink-0 items-center gap-1.5">
-                    <!-- ATTACH -->
+                <div class="flex min-h-[44px] items-end gap-2">
+                  <button type="button"
+                    class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10">
+                    <Icon icon="mdi:emoticon-outline" class="h-6 w-6" />
+                  </button>
+                  <div class="mb-1 flex shrink-0 items-center gap-1">
                     <button type="button"
-                      class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                      class="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
                       :disabled="isSendingMessage || isRecordingVoice" @click="openAttachmentPicker">
-                      <Icon icon="ph:paperclip" class="h-4.5 w-4.5" />
-                    </button>
-
-                    <!-- MIC -->
-                    <button type="button"
-                      class="inline-flex h-9 w-9 items-center justify-center rounded-xl text-white transition disabled:opacity-60"
-                      :class="isRecordingVoice
-                        ? 'bg-rose-500 hover:bg-rose-400'
-                        : roleAccentClass
-                        " :disabled="isSendingMessage || Boolean(attachmentFile)" @click="toggleVoiceRecording">
-                      <Icon :icon="isRecordingVoice ? 'ph:stop-fill' : 'ph:microphone-fill'" class="h-4.5 w-4.5" />
+                      <Icon icon="mdi:paperclip" class="h-6 w-6" />
                     </button>
                   </div>
-
-                  <!-- INPUT -->
-                  <div class="flex flex-1 items-center rounded-xl bg-slate-100 px-3 py-2 dark:bg-slate-800">
-                    <textarea v-model="composer" rows="1" placeholder="Tulis pesan..." @input="handleComposerInput"
+                  <div class="mb-1 flex min-h-10 flex-1 items-center rounded-lg bg-white px-3 dark:bg-[#2a3942]">
+                    <textarea v-model="composer" rows="1" placeholder="Ketik pesan" @input="handleComposerInput"
                       @keydown="handleComposerKeydown" @focus="ensureComposerVisible"
-                      class="block max-h-[120px] min-h-[22px] w-full resize-none overflow-y-auto border-0 bg-transparent p-0 text-sm leading-6 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-0 dark:text-white" />
+                      class="block max-h-28 min-h-[24px] w-full resize-none overflow-y-auto border-0 bg-transparent py-2 text-[15px] leading-6 text-[#111b21] outline-none placeholder:text-[#667781] focus:outline-none focus:ring-0 dark:text-[#e9edef] dark:placeholder:text-[#8696a0]" />
                   </div>
-
-                  <!-- SEND -->
-                  <button :disabled="isSendingMessage || !composer.trim()"
-                    class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white transition hover:opacity-90 disabled:opacity-40 dark:bg-white dark:text-slate-900">
-                    <Icon icon="ph:arrow-up-bold" class="h-4 w-4" />
+                  <button type="button" v-if="!composer.trim()" :disabled="isSendingMessage || Boolean(attachmentFile)"
+                    class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 disabled:opacity-50 dark:text-[#aebac1] dark:hover:bg-white/10"
+                    :class="isRecordingVoice ? 'bg-rose-500 text-white hover:bg-rose-400 dark:text-white' : ''"
+                    @click="toggleVoiceRecording">
+                    <Icon :icon="isRecordingVoice ? 'ph:stop-fill' : 'mdi:microphone'" class="h-5 w-5" />
+                  </button>
+                  <button v-else :disabled="isSendingMessage"
+                    class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#00a884] text-white transition hover:bg-[#008f72] disabled:opacity-50">
+                    <Icon icon="mdi:send" class="h-5 w-5" />
                   </button>
                 </div>
               </form>
             </template>
 
-            <div v-else class="hidden h-full min-h-[720px] items-center justify-center px-6 lg:flex">
-              <div
-                class="max-w-lg rounded-[32px] bg-white/90 px-8 py-10 text-center shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900/85 dark:ring-white/10">
-                <div
-                  class="mx-auto flex h-18 w-18 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                  <svg class="h-10 w-10 text-slate-500 dark:text-slate-300" fill="none" viewBox="0 0 24 24"
-                    stroke-width="1.6" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M8.625 9.75a3.375 3.375 0 116.75 0m-6.75 0a3.375 3.375 0 106.75 0m-6.75 0v1.5m6.75-1.5v1.5m-8.25 8.25h9a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.186-1.016-.523-1.408L15.53 12.45A2.25 2.25 0 0013.851 11.7h-3.702a2.25 2.25 0 00-1.679.75l-2.297 2.57a2.25 2.25 0 00-.523 1.408v1.372A2.25 2.25 0 007.9 20.25z" />
-                  </svg>
+            <div v-else class="hidden h-full min-h-[560px] items-center justify-center bg-[#f0f2f5] px-8 dark:bg-[#222e35] lg:flex">
+              <div class="max-w-md text-center">
+                <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-[#d9dbd5] dark:bg-[#111b21]">
+                  <Icon icon="ph:chats-circle-duotone" class="h-12 w-12 text-[#667781] dark:text-[#8696a0]" />
                 </div>
-                <h2 class="mt-5 text-xl font-bold text-slate-900 dark:text-white">Pilih Grup Mapel</h2>
-                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                  Daftar mata pelajaran di panel kiri berfungsi sebagai grup chat. Pilih salah satu untuk mulai
-                  berdiskusi.
+                <h2 class="mt-6 text-2xl font-light text-[#41525d] dark:text-[#d1d7db]">Live Chat Mapel</h2>
+                <p class="mt-3 text-sm leading-6 text-[#667781] dark:text-[#8696a0]">
+                  Pilih grup mata pelajaran di sebelah kiri untuk membuka percakapan.
                 </p>
               </div>
             </div>
@@ -408,7 +386,6 @@ import { useRoute } from "vue-router";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { uploadFileDirect } from "@/api/upload";
-import { formatDateTime } from "@/utils/date";
 import { getStoredRole } from "@/utils/auth";
 import { normalizePublicUrl } from "@/utils/url";
 import { useSidebar } from "@/store/sidebar";
@@ -592,6 +569,68 @@ const currentMessages = computed(() =>
   selectedSubject.value ? messagesBySubject.value[selectedSubject.value.id] || [] : [],
 );
 
+const isSameDay = (left, right) =>
+  left.getFullYear() === right.getFullYear()
+  && left.getMonth() === right.getMonth()
+  && left.getDate() === right.getDate();
+
+const formatChatTime = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+};
+
+const formatSubjectTime = (subjectId) => {
+  const messages = messagesBySubject.value[subjectId] || [];
+  const lastMessage = messages[messages.length - 1];
+  if (!lastMessage?.created_at) return "";
+  const date = new Date(lastMessage.created_at);
+  if (Number.isNaN(date.getTime())) return "";
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+  if (isSameDay(date, today)) return formatChatTime(date);
+  if (isSameDay(date, yesterday)) return "Kemarin";
+  return date.toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "2-digit" });
+};
+
+const formatDateSeparator = (value) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+  if (isSameDay(date, today)) return "Hari ini";
+  if (isSameDay(date, yesterday)) return "Kemarin";
+  return date.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+};
+
+const renderedMessages = computed(() => {
+  const entries = [];
+  let lastDateKey = "";
+
+  currentMessages.value.forEach((message) => {
+    const date = new Date(message?.created_at || Date.now());
+    const dateKey = Number.isNaN(date.getTime()) ? "unknown" : date.toISOString().slice(0, 10);
+    if (dateKey !== lastDateKey) {
+      entries.push({
+        key: `date-${dateKey}`,
+        type: "date",
+        label: formatDateSeparator(message?.created_at || Date.now()),
+      });
+      lastDateKey = dateKey;
+    }
+    entries.push({
+      key: `message-${message.id}`,
+      type: "message",
+      message,
+    });
+  });
+
+  return entries;
+});
+
 const orderedSubjects = computed(() => {
   const subjectItems = Array.isArray(subjects.value) ? [...subjects.value] : [];
 
@@ -747,6 +786,15 @@ const ownMessageReadLabel = (message) => {
 
   return "Belum dilihat";
 };
+
+const ownMessageReadIcon = (message) => {
+  const label = ownMessageReadLabel(message);
+  if (label === "Terkirim") return "mdi:check";
+  return "mdi:check-all";
+};
+
+const ownMessageReadIconClass = (message) =>
+  ownMessageReadLabel(message) === "Sudah dilihat semua" ? "text-[#53bdeb]" : "";
 
 const getMessagePreview = (message) => {
   if (!message) return "-";
@@ -1698,4 +1746,70 @@ watch(
 );
 </script>
 
-<style scoped></style>
+<style scoped>
+.learning-chat-wallpaper {
+  background-color: #efeae2;
+  background-image:
+    linear-gradient(rgba(239, 234, 226, 0.88), rgba(239, 234, 226, 0.88)),
+    radial-gradient(circle at 20% 30%, rgba(0, 0, 0, 0.05) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 70% 60%, rgba(0, 0, 0, 0.05) 0 1px, transparent 1.5px);
+  background-size: auto, 34px 34px, 42px 42px;
+}
+
+:global(.dark) .learning-chat-wallpaper {
+  background-color: #0b141a;
+  background-image:
+    linear-gradient(rgba(11, 20, 26, 0.9), rgba(11, 20, 26, 0.9)),
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.05) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.05) 0 1px, transparent 1.5px);
+}
+
+.learning-message-bubble {
+  max-width: min(78%, 680px);
+  border-radius: 7.5px;
+}
+
+.learning-message-bubble.own {
+  border-top-right-radius: 2px;
+}
+
+.learning-message-bubble.other {
+  border-top-left-radius: 2px;
+}
+
+.learning-message-bubble.own::after,
+.learning-message-bubble.other::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 0;
+  height: 0;
+  border-top: 8px solid currentColor;
+}
+
+.learning-message-bubble.own::after {
+  right: -7px;
+  color: #d9fdd3;
+  border-right: 8px solid transparent;
+}
+
+.learning-message-bubble.other::after {
+  left: -7px;
+  color: #ffffff;
+  border-left: 8px solid transparent;
+}
+
+:global(.dark) .learning-message-bubble.own::after {
+  color: #005c4b;
+}
+
+:global(.dark) .learning-message-bubble.other::after {
+  color: #202c33;
+}
+
+@media (max-width: 767px) {
+  .learning-message-bubble {
+    max-width: 88%;
+  }
+}
+</style>
