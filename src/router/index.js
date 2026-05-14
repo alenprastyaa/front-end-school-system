@@ -1,5 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { cancelPendingApiRequests } from "@/api";
 import { getStoredRole, isAuthenticated } from "@/utils/auth";
+import { lazyRoute } from "./lazyRoute";
+import PublicLanding from "../views/PublicLanding.vue";
+import Dashboard from "../views/Dashboard.vue";
+import Login from "../views/layouts/auth/Login.vue";
 
 const appName = " - School System LMS";
 
@@ -7,7 +12,7 @@ const routes = [
   {
     path: "/",
     name: "PublicLanding",
-    component: () => import("../views/PublicLanding.vue"),
+    component: PublicLanding,
     meta: {
       title: "School System LMS" + appName,
       hideNav: true,
@@ -17,7 +22,7 @@ const routes = [
   {
     path: "/dashboard",
     name: "Dashboard",
-    component: () => import("../views/Dashboard.vue"),
+    component: Dashboard,
     meta: {
       title: "Dashboard" + appName,
       requiresAuth: true,
@@ -27,7 +32,7 @@ const routes = [
   {
     path: "/schools",
     name: "Schools",
-    component: () => import("../views/Schools.vue"),
+    component: lazyRoute(() => import("../views/Schools.vue")),
     meta: {
       title: "Sekolah" + appName,
       requiresAuth: true,
@@ -37,7 +42,7 @@ const routes = [
   {
     path: "/school-users",
     name: "SchoolUsers",
-    component: () => import("../views/SchoolUsers.vue"),
+    component: lazyRoute(() => import("../views/SchoolUsers.vue")),
     meta: {
       title: "User Sekolah" + appName,
       requiresAuth: true,
@@ -47,7 +52,7 @@ const routes = [
   {
     path: "/classes",
     name: "Classes",
-    component: () => import("../views/Classes.vue"),
+    component: lazyRoute(() => import("../views/Classes.vue")),
     meta: {
       title: "Kelas" + appName,
       requiresAuth: true,
@@ -58,7 +63,7 @@ const routes = [
     path: "/students",
     name: "Students",
     // Perhatikan nama file aslinya adalah Users.vue
-    component: () => import("../views/Users.vue"), 
+    component: lazyRoute(() => import("../views/Users.vue")),
     meta: {
       title: "Siswa" + appName,
       requiresAuth: true,
@@ -68,7 +73,7 @@ const routes = [
   {
     path: "/attendance",
     name: "Attendance",
-    component: () => import("../views/Attendance.vue"),
+    component: lazyRoute(() => import("../views/Attendance.vue")),
     meta: {
       title: "Absensi" + appName,
       requiresAuth: true,
@@ -78,7 +83,7 @@ const routes = [
   {
     path: "/face-enrollment",
     name: "FaceEnrollment",
-    component: () => import("../views/FaceEnrollment.vue"),
+    component: lazyRoute(() => import("../views/FaceEnrollment.vue")),
     meta: {
       title: "Enrol Wajah" + appName,
       requiresAuth: true,
@@ -88,7 +93,7 @@ const routes = [
   {
     path: "/homeroom-students",
     name: "TeacherStudents",
-    component: () => import("../views/TeacherStudents.vue"),
+    component: lazyRoute(() => import("../views/TeacherStudents.vue")),
     meta: {
       title: "Siswa Wali Kelas" + appName,
       requiresAuth: true,
@@ -98,7 +103,7 @@ const routes = [
   {
     path: "/private-chat",
     name: "PrivateChat",
-    component: () => import("../views/PrivateChat.vue"),
+    component: lazyRoute(() => import("../views/PrivateChat.vue")),
     meta: {
       title: "Chat Pribadi" + appName,
       requiresAuth: true,
@@ -108,7 +113,7 @@ const routes = [
   {
     path: "/learning-admin",
     name: "LearningAdmin",
-    component: () => import("../views/CurriculumAdmin.vue"),
+    component: lazyRoute(() => import("../views/CurriculumAdmin.vue")),
     props: { section: "subjects" },
     meta: {
       title: "Kurikulum Admin" + appName,
@@ -119,7 +124,7 @@ const routes = [
   {
     path: "/learning-admin/teacher-loads",
     name: "LearningAdminTeacherLoads",
-    component: () => import("../views/CurriculumAdmin.vue"),
+    component: lazyRoute(() => import("../views/CurriculumAdmin.vue")),
     props: { section: "teacher-loads" },
     meta: {
       title: "Beban Mengajar Guru" + appName,
@@ -130,7 +135,7 @@ const routes = [
   {
     path: "/learning-admin/class-distributions",
     name: "LearningAdminClassDistributions",
-    component: () => import("../views/CurriculumAdmin.vue"),
+    component: lazyRoute(() => import("../views/CurriculumAdmin.vue")),
     props: { section: "class-distributions" },
     meta: {
       title: "Distribusi Guru ke Kelas" + appName,
@@ -141,7 +146,7 @@ const routes = [
   {
     path: "/learning-admin/schedule",
     name: "LearningAdminSchedule",
-    component: () => import("../views/CurriculumAdmin.vue"),
+    component: lazyRoute(() => import("../views/CurriculumAdmin.vue")),
     props: { section: "schedule" },
     meta: {
       title: "Jadwal Pembelajaran" + appName,
@@ -152,7 +157,7 @@ const routes = [
   {
     path: "/learning-admin/generate",
     name: "LearningAdminGenerate",
-    component: () => import("../views/CurriculumAdmin.vue"),
+    component: lazyRoute(() => import("../views/CurriculumAdmin.vue")),
     props: { section: "generate" },
     meta: {
       title: "Generate Pembagian" + appName,
@@ -163,7 +168,7 @@ const routes = [
   {
     path: "/learning-exams-admin",
     name: "LearningExamAdmin",
-    component: () => import("../views/LearningExamAdmin.vue"),
+    component: lazyRoute(() => import("../views/LearningExamAdmin.vue")),
     meta: {
       title: "Ujian Resmi Admin" + appName,
       requiresAuth: true,
@@ -173,7 +178,7 @@ const routes = [
   {
     path: "/admin-settings",
     name: "AdminSettings",
-    component: () => import("../views/AdminSettings.vue"),
+    component: lazyRoute(() => import("../views/AdminSettings.vue")),
     meta: {
       title: "Setting Admin" + appName,
       requiresAuth: true,
@@ -183,7 +188,7 @@ const routes = [
   {
     path: "/billing",
     name: "Billing",
-    component: () => import("../views/Billing.vue"),
+    component: lazyRoute(() => import("../views/Billing.vue")),
     meta: {
       title: "Billing" + appName,
       requiresAuth: true,
@@ -193,7 +198,7 @@ const routes = [
   {
     path: "/academic-periods",
     name: "AcademicPeriods",
-    component: () => import("../views/AcademicPeriods.vue"),
+    component: lazyRoute(() => import("../views/AcademicPeriods.vue")),
     meta: {
       title: "Tahun Ajaran & Semester" + appName,
       requiresAuth: true,
@@ -203,7 +208,7 @@ const routes = [
   {
     path: "/learning-teacher",
     name: "LearningTeacher",
-    component: () => import("../views/LearningTeacher.vue"),
+    component: lazyRoute(() => import("../views/LearningTeacher.vue")),
     meta: {
       title: "Pembelajaran Guru" + appName,
       requiresAuth: true,
@@ -213,7 +218,7 @@ const routes = [
   {
     path: "/learning-grades-teacher",
     name: "LearningGradesTeacher",
-    component: () => import("../views/LearningGradesTeacher.vue"),
+    component: lazyRoute(() => import("../views/LearningGradesTeacher.vue")),
     meta: {
       title: "Penilaian Guru" + appName,
       requiresAuth: true,
@@ -223,7 +228,7 @@ const routes = [
   {
     path: "/learning-report-teacher",
     name: "LearningReportTeacher",
-    component: () => import("../views/LearningReportTeacher.vue"),
+    component: lazyRoute(() => import("../views/LearningReportTeacher.vue")),
     meta: {
       title: "Rapor Mapel Guru" + appName,
       requiresAuth: true,
@@ -233,7 +238,7 @@ const routes = [
   {
     path: "/system-chatbot",
     name: "SystemChatbot",
-    component: () => import("../views/SystemChatbot.vue"),
+    component: lazyRoute(() => import("../views/SystemChatbot.vue")),
     meta: {
       title: "Asisten Sistem" + appName,
       requiresAuth: true,
@@ -243,7 +248,7 @@ const routes = [
   {
     path: "/learning-chat-teacher",
     name: "LearningChatTeacher",
-    component: () => import("../views/LearningChat.vue"),
+    component: lazyRoute(() => import("../views/LearningChat.vue")),
     meta: {
       title: "Live Chat Guru" + appName,
       requiresAuth: true,
@@ -253,7 +258,7 @@ const routes = [
   {
     path: "/learning-question-bank-teacher",
     name: "LearningQuestionBankTeacher",
-    component: () => import("../views/LearningQuestionBankTeacher.vue"),
+    component: lazyRoute(() => import("../views/LearningQuestionBankTeacher.vue")),
     meta: {
       title: "Bank Soal Guru" + appName,
       requiresAuth: true,
@@ -263,7 +268,7 @@ const routes = [
   {
     path: "/learning-quiz-teacher",
     name: "LearningQuizTeacher",
-    component: () => import("../views/LearningQuizTeacher.vue"),
+    component: lazyRoute(() => import("../views/LearningQuizTeacher.vue")),
     meta: {
       title: "Quiz Guru" + appName,
       requiresAuth: true,
@@ -273,7 +278,7 @@ const routes = [
   {
     path: "/learning-exams-teacher",
     name: "LearningExamTeacher",
-    component: () => import("../views/LearningExamTeacher.vue"),
+    component: lazyRoute(() => import("../views/LearningExamTeacher.vue")),
     meta: {
       title: "Ujian Resmi Guru" + appName,
       requiresAuth: true,
@@ -283,7 +288,7 @@ const routes = [
   {
     path: "/learning-student",
     name: "LearningStudent",
-    component: () => import("../views/LearningStudent.vue"),
+    component: lazyRoute(() => import("../views/LearningStudent.vue")),
     meta: {
       title: "Pembelajaran Siswa" + appName,
       requiresAuth: true,
@@ -293,7 +298,7 @@ const routes = [
   {
     path: "/learning-chat-student",
     name: "LearningChatStudent",
-    component: () => import("../views/LearningChat.vue"),
+    component: lazyRoute(() => import("../views/LearningChat.vue")),
     meta: {
       title: "Live Chat Siswa" + appName,
       requiresAuth: true,
@@ -303,7 +308,7 @@ const routes = [
   {
     path: "/learning-quiz-student",
     name: "LearningQuizStudent",
-    component: () => import("../views/LearningQuizStudent.vue"),
+    component: lazyRoute(() => import("../views/LearningQuizStudent.vue")),
     props: { mode: "quiz" },
     meta: {
       title: "Quiz Siswa" + appName,
@@ -314,7 +319,7 @@ const routes = [
   {
     path: "/learning-exams-student",
     name: "LearningExamStudent",
-    component: () => import("../views/LearningExamStudent.vue"),
+    component: lazyRoute(() => import("../views/LearningExamStudent.vue")),
     meta: {
       title: "Ujian Resmi Siswa" + appName,
       requiresAuth: true,
@@ -324,7 +329,7 @@ const routes = [
   {
     path: "/learning-grades-student",
     name: "LearningGradesStudent",
-    component: () => import("../views/LearningGradesStudent.vue"),
+    component: lazyRoute(() => import("../views/LearningGradesStudent.vue")),
     meta: {
       title: "Nilai Siswa" + appName,
       requiresAuth: true,
@@ -335,7 +340,7 @@ const routes = [
     path: "/receipts",
     name: "Receipts",
     // Perhatikan nama file aslinya adalah Tabungan.vue
-    component: () => import("../views/Tabungan.vue"),
+    component: lazyRoute(() => import("../views/Tabungan.vue")),
     meta: {
       title: "Bukti Pembayaran" + appName,
       requiresAuth: true,
@@ -345,32 +350,32 @@ const routes = [
   {
     path: "/auth/login",
     name: "Login",
-    component: () => import("../views/layouts/auth/Login.vue"),
+    component: Login,
     meta: { title: "Login" + appName, hideNav: true, guestOnly: true },
   },
   {
     path: "/auth/register",
     name: "Register",
-    component: () => import("../views/layouts/auth/Register.vue"),
+    component: lazyRoute(() => import("../views/layouts/auth/Register.vue")),
     meta: { title: "Register" + appName, hideNav: true, guestOnly: true },
   },
   {
     path: "/student-registration",
     name: "PublicStudentRegistration",
-    component: () => import("../views/PublicStudentRegistration.vue"),
+    component: lazyRoute(() => import("../views/PublicStudentRegistration.vue")),
     meta: { title: "Registrasi Siswa" + appName, hideNav: true },
   },
   {
     path: "/payment/success",
     name: "PaymentSuccess",
-    component: () => import("../views/PaymentResult.vue"),
+    component: lazyRoute(() => import("../views/PaymentResult.vue")),
     props: { status: "success" },
     meta: { title: "Payment Success" + appName, hideNav: true },
   },
   {
     path: "/payment/failed",
     name: "PaymentFailed",
-    component: () => import("../views/PaymentResult.vue"),
+    component: lazyRoute(() => import("../views/PaymentResult.vue")),
     props: { status: "failed" },
     meta: { title: "Payment Failed" + appName, hideNav: true },
   },
@@ -387,25 +392,25 @@ const routes = [
   {
     path: "/auth/forgot-password",
     name: "ForgotPassword",
-    component: () => import("../views/layouts/auth/forgot-password.vue"),
+    component: lazyRoute(() => import("../views/layouts/auth/forgot-password.vue")),
     meta: { title: "Forgot Password" + appName, hideNav: true },
   },
   {
     path: "/500",
     name: "Page500",
-    component: () => import("../views/layouts/error/500.vue"),
+    component: lazyRoute(() => import("../views/layouts/error/500.vue")),
     meta: { title: "Server Error" + appName, hideNav: true },
   },
   {
     path: "/maintenance",
     name: "maintenance",
-    component: () => import("../views/layouts/error/maintenance.vue"),
+    component: lazyRoute(() => import("../views/layouts/error/maintenance.vue")),
     meta: { title: "Maintenance" + appName, hideNav: true },
   },
   {
     path: "/:pathMatch(.*)*",
     name: "Page404",
-    component: () => import("../views/layouts/error/404.vue"),
+    component: lazyRoute(() => import("../views/layouts/error/404.vue")),
     meta: { title: "404" + appName, hideNav: true },
   },
 ];
@@ -418,6 +423,10 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title || appName;
+
+  if (from.name && to.fullPath !== from.fullPath) {
+    cancelPendingApiRequests();
+  }
 
   if (to.meta.guestOnly && isAuthenticated()) {
     next({ name: "Dashboard" });

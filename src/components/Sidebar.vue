@@ -776,22 +776,29 @@ const bindRealtimeStream = () => {
 
 watch(
   () => route.path,
-  async () => {
-    await refreshLiveChatSummary(false);
+  () => {
+    refreshLiveChatSummary(false).catch(() => {});
   },
 );
 
-onMounted(async () => {
+onMounted(() => {
   profileStore.loadProfile().catch(() => {});
-  await refreshLiveChatSummary(false);
-  await sidebarStore.refreshLiveChatSubjects(role);
-  if (shouldTrackPrivateChat) {
-    await sidebarStore.refreshPrivateChatSummary({ force: false });
+
+  const startupTasks = [refreshLiveChatSummary(false)];
+  if (shouldTrackLiveChat) {
+    startupTasks.push(sidebarStore.refreshLiveChatSubjects(role));
   }
+  if (shouldTrackPrivateChat) {
+    startupTasks.push(sidebarStore.refreshPrivateChatSummary({ force: false }));
+  }
+
+  Promise.allSettled(startupTasks).finally(() => {
+    bindRealtimeStream();
+  });
+
   if (typeof window !== "undefined" && typeof Notification !== "undefined" && Notification.permission === "default") {
     Notification.requestPermission().catch(() => { });
   }
-  bindRealtimeStream();
 });
 
 onUnmounted(() => {

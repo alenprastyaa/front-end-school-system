@@ -554,9 +554,15 @@ const updateStudent = async () => {
 
 onMounted(async () => {
   try {
-    await loadClasses();
-    await loadStudents();
+    await Promise.all([
+      loadClasses(),
+      loadStudents(),
+    ]);
   } catch (error) {
+    if (error?.isAborted) {
+      return;
+    }
+
     pushToast({
       title: "Gagal Memuat Halaman Siswa",
       message: error.message,

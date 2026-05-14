@@ -30,8 +30,8 @@
       <Header v-if="!shouldHideChrome" @sidebarToggle="toggleSidebar" />
 
       <div class="flex-1 min-h-0" :class="isChatLayoutRoute ? 'overflow-hidden' : 'overflow-y-auto'">
-        <transition name="slide-up" mode="out-in">
-          <div :class="isChatLayoutRoute ? 'h-full' : ''">
+        <transition name="slide-up">
+          <div :key="$route.name || $route.path" :class="isChatLayoutRoute ? 'h-full' : ''">
             <router-view />
             <Footer v-if="!shouldHideChrome && !isChatLayoutRoute" />
           </div>
@@ -53,6 +53,10 @@
     :notice="forcedLogoutNotice"
     @close="closeForcedLogoutModal"
   />
+  <GlobalLoadingOverlay
+    :visible="globalLoading.visible"
+    :message="globalLoading.message"
+  />
   <FloatingSystemAssistant />
   <!-- End app -->
 </template>
@@ -63,12 +67,15 @@ import { defineAsyncComponent } from "vue";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import GlobalLoadingOverlay from "@/components/GlobalLoadingOverlay.vue";
 import ToastHost from "@/components/ToastHost.vue";
 import { pushToast } from "@/composables/useToast";
+import { useGlobalLoading } from "@/composables/useGlobalLoading";
 import { useLayoutChrome } from "@/composables/useLayoutChrome";
 import { clearForcedLogoutNotice, getForcedLogoutNotice } from "@/utils/auth";
 
 const layoutChromeState = useLayoutChrome();
+const globalLoadingState = useGlobalLoading();
 const SHOW_PWA_INSTALL_AFTER_LOGIN_KEY = "show-pwa-install-after-login";
 const PWA_INSTALLED_KEY = "school-system-pwa-installed";
 const PWA_PROMPT_SUPPRESSED_UNTIL_KEY = "school-system-pwa-prompt-suppressed-until";
@@ -103,6 +110,9 @@ export default {
     isDesktopViewport() {
       return this.viewportWidth >= 1024;
     },
+    globalLoading() {
+      return globalLoadingState;
+    },
     pwaInstructionTitle() {
       if (typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent)) {
         return "Install manual di Safari";
@@ -130,6 +140,7 @@ export default {
   components: {
     Header,
     Footer,
+    GlobalLoadingOverlay,
     PwaInstallModal,
     ForcedLogoutModal,
     FloatingSystemAssistant,
@@ -291,11 +302,11 @@ export default {
   durations and timing functions.
 */
 .slide-up-enter-active {
-  transition: all 0.3s ease-out;
+  transition: opacity 0.16s ease-out, transform 0.16s ease-out;
 }
 
 .slide-up-leave-active {
-  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+  transition: opacity 0.08s ease-in, transform 0.08s ease-in;
 }
 
 .slide-up-enter-from,

@@ -250,7 +250,9 @@ export const useSidebar = defineStore("sidebar", {
 
       this.liveChatSummaryInFlight = (async () => {
         try {
-          const summaryItems = normalizeSummaryList(await api.get("/learning/chat/summary"));
+          const summaryItems = normalizeSummaryList(await api.get("/learning/chat/summary", {
+            silentLoading: true,
+          }));
           this.applyLiveChatSummary(summaryItems);
         } catch (error) {
           // Keep previous summary if the request fails.
@@ -275,7 +277,9 @@ export const useSidebar = defineStore("sidebar", {
 
       this.privateChatSummaryInFlight = (async () => {
         try {
-          const summaryItems = normalizePrivateChatList(await api.get("/private-chat/summary"));
+          const summaryItems = normalizePrivateChatList(await api.get("/private-chat/summary", {
+            silentLoading: true,
+          }));
           this.applyPrivateChatSummary(summaryItems);
         } catch (error) {
           // Keep previous summary if the request fails.
@@ -308,7 +312,9 @@ export const useSidebar = defineStore("sidebar", {
 
       this.liveChatSubjectsInFlight = (async () => {
         try {
-          const response = await api.get(endpoint);
+          const response = await api.get(endpoint, {
+            silentLoading: true,
+          });
           this.liveChatSubjects = normalizeSubjectList(response);
           this.liveChatSubjectsLoadedAt = Date.now();
         } catch (error) {

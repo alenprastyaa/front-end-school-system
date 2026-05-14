@@ -1,4 +1,5 @@
 import { clearSessionAndRedirectToLogin, persistForcedLogoutNotice } from "@/utils/auth";
+import { beginGlobalLoading } from "@/composables/useGlobalLoading";
 
 const API_BASE_URL = (process.env.VUE_APP_API_BASE_URL || "https://alentest.my.id/school/api").replace(/\/$/, "");
 const pendingRequestControllers = new Set();
@@ -136,6 +137,9 @@ export const apiRequest = async (path, options = {}) => {
   const suppressAuthRedirect = Boolean(options.suppressAuthRedirect);
   const controller = options.signal ? null : new AbortController();
   const signal = options.signal || controller?.signal;
+  const finishGlobalLoading = options.silentLoading
+    ? null
+    : beginGlobalLoading(options.loadingMessage || "Memuat data...");
 
   if (controller) {
     pendingRequestControllers.add(controller);
@@ -182,6 +186,10 @@ export const apiRequest = async (path, options = {}) => {
 
     throw error;
   } finally {
+    if (finishGlobalLoading) {
+      finishGlobalLoading();
+    }
+
     if (controller) {
       pendingRequestControllers.delete(controller);
     }
