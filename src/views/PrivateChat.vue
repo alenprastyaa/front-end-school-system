@@ -114,22 +114,23 @@
                 </button>
               </header>
 
-              <div ref="messageListRef" class="min-h-0 flex-1 overflow-y-auto px-3 py-4 md:px-14">
-                <div v-if="isLoadingMessages" class="flex min-h-full items-center justify-center">
+              <div ref="messageListRef" :style="messageListStyle"
+                class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 md:px-14">
+                <div v-if="isLoadingMessages" class="flex h-full min-h-[420px] items-center justify-center">
                   <div
                     class="rounded-lg bg-white/80 px-4 py-2 text-sm text-[#667781] shadow-sm dark:bg-[#202c33]/90 dark:text-[#8696a0]">
                     Memuat pesan...
                   </div>
                 </div>
 
-                <div v-else-if="renderedMessages.length === 0" class="flex min-h-full items-center justify-center">
+                <div v-else-if="renderedMessages.length === 0" class="flex h-full min-h-[420px] items-center justify-center">
                   <div
                     class="max-w-sm rounded-lg bg-[#fffef7]/95 px-5 py-4 text-center text-sm text-[#667781] shadow-sm dark:bg-[#202c33]/95 dark:text-[#d1d7db]">
                     Belum ada pesan. Mulai percakapan dengan {{ displayPeerName(selectedPeer) }}.
                   </div>
                 </div>
 
-                <div v-else class="flex min-h-full flex-col justify-end space-y-1">
+                <div v-else class="space-y-1">
                   <template v-for="entry in renderedMessages" :key="entry.key">
                     <div v-if="entry.type === 'date'" class="sticky top-2 z-[1] flex justify-center py-2">
                       <span
@@ -170,8 +171,9 @@
                 </div>
               </div>
 
-              <form @submit.prevent="sendMessage"
-                class="shrink-0 bg-[#f0f2f5] px-3 py-2 dark:bg-[#202c33] md:px-4">
+              <form ref="composerBarRef" @submit.prevent="sendMessage"
+                class="fixed inset-x-0 z-20 shrink-0 bg-[#f0f2f5] px-3 py-2 dark:bg-[#202c33] md:sticky md:inset-auto md:px-4"
+                :style="composerBarStyle">
                 <div v-if="attachmentPreviewName || recordedVoiceUrl || isRecordingVoice"
                   class="mb-2 rounded-lg bg-white px-4 py-3 text-sm shadow-sm dark:bg-[#2a3942]">
                   <div v-if="recordedVoiceUrl" class="flex items-center justify-between gap-3">
@@ -231,6 +233,7 @@
                   </button>
                   <div class="mb-1 flex min-h-10 flex-1 items-center rounded-lg bg-white px-3 dark:bg-[#2a3942]">
                     <textarea v-model="composer" rows="1" placeholder="Ketik pesan" @input="resizeComposer"
+                      @focus="ensureComposerVisible"
                       @keydown="handleComposerKeydown"
                       class="block max-h-28 min-h-[24px] w-full resize-none overflow-y-auto border-0 bg-transparent py-2 text-[15px] leading-6 text-[#111b21] outline-none placeholder:text-[#667781] dark:text-[#e9edef] dark:placeholder:text-[#8696a0]" />
                   </div>
@@ -297,6 +300,7 @@ const isSendingMessage = ref(false);
 const isSearchingContacts = ref(false);
 const mobileChatOpen = ref(false);
 const messageListRef = ref(null);
+const composerBarRef = ref(null);
 const attachmentInputRef = ref(null);
 const attachmentFile = ref(null);
 const attachmentPreviewName = ref("");
@@ -311,6 +315,10 @@ const emojiPanelOpen = ref(false);
 const realtimeUnsubscribers = ref([]);
 const localClientId = ref(`private-chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
 const searchDebounceTimer = ref(null);
+const viewportBottomInset = ref(0);
+const isMobileViewport = ref(false);
+const composerBarHeight = ref(0);
+const composerResizeObserver = ref(null);
 const chatEmojis = ["😀", "😂", "😍", "🙏", "👍", "🔥", "🎉", "😊", "😢", "😎", "🤔", "👏", "💯", "📚", "✅", "❤️"];
 const AUDIO_MIME_EXTENSION_MAP = {
   "audio/webm": ".webm",
@@ -417,6 +425,17 @@ const recordingDurationLabel = computed(() => {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 });
 
+const composerBarStyle = computed(() => ({
+  bottom: `${viewportBottomInset.value}px`,
+  paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)",
+}));
+
+const messageListStyle = computed(() => ({
+  paddingBottom: isMobileViewport.value
+    ? `calc(${viewportBottomInset.value}px + env(safe-area-inset-bottom, 0px) + ${Math.max(composerBarHeight.value, 104) + 20}px)`
+    : "",
+}));
+
 const renderedMessages = computed(() => {
   const entries = [];
   let lastDateKey = "";
@@ -464,6 +483,35 @@ const scrollToBottom = async () => {
   if (messageListRef.value) {
     messageListRef.value.scrollTop = messageListRef.value.scrollHeight;
   }
+};
+
+const updateViewportInset = () => {
+  if (typeof window !== "undefined") {
+    isMobileViewport.value = window.innerWidth < 768;
+  }
+  if (typeof window === "undefined" || !window.visualViewport) {
+    viewportBottomInset.value = 0;
+    return;
+  }
+  const vv = window.visualViewport;
+  viewportBottomInset.value = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
+};
+
+const updateComposerBarMetrics = () => {
+  if (!composerBarRef.value) {
+    composerBarHeight.value = 0;
+    return;
+  }
+  composerBarHeight.value = Math.ceil(composerBarRef.value.getBoundingClientRect().height);
+};
+
+const ensureComposerVisible = async () => {
+  await nextTick();
+  updateViewportInset();
+  updateComposerBarMetrics();
+  window.setTimeout(() => {
+    scrollToBottom();
+  }, 80);
 };
 
 const isVoiceMessage = (message) => {
@@ -640,6 +688,7 @@ const resizeComposer = (event) => {
   if (!target) return;
   target.style.height = "auto";
   target.style.height = `${Math.min(target.scrollHeight, 112)}px`;
+  updateComposerBarMetrics();
 };
 
 const revokeRecordedVoiceUrl = () => {
@@ -812,6 +861,7 @@ const bindRealtime = () => {
 };
 
 onMounted(async () => {
+  updateViewportInset();
   await refreshSummary(true);
 
   const requestedPeerId = Number(route.query?.user || 0);
@@ -823,6 +873,19 @@ onMounted(async () => {
   }
 
   bindRealtime();
+
+  if (typeof window !== "undefined") {
+    window.addEventListener("resize", updateViewportInset);
+    window.visualViewport?.addEventListener("resize", updateViewportInset);
+  }
+
+  composerResizeObserver.value = new ResizeObserver(() => {
+    updateComposerBarMetrics();
+  });
+  if (composerBarRef.value) {
+    composerResizeObserver.value.observe(composerBarRef.value);
+  }
+  updateComposerBarMetrics();
 });
 
 onUnmounted(() => {
@@ -836,6 +899,12 @@ onUnmounted(() => {
     }
   });
   realtimeUnsubscribers.value = [];
+  composerResizeObserver.value?.disconnect?.();
+  composerResizeObserver.value = null;
+  if (typeof window !== "undefined") {
+    window.removeEventListener("resize", updateViewportInset);
+    window.visualViewport?.removeEventListener("resize", updateViewportInset);
+  }
 });
 
 watch(privateChatSummaryItems, () => {
