@@ -2,28 +2,20 @@
   <transition name="global-loading-fade">
     <div
       v-if="visible"
-      class="fixed inset-0 z-[140] flex items-center justify-center bg-white/90 px-5 backdrop-blur-[2px] dark:bg-slate-950/88"
+      class="fixed inset-0 z-[140] flex items-center justify-center bg-white px-5 dark:bg-slate-950"
       role="status"
       aria-live="polite"
     >
-      <div
-        class="w-full max-w-md rounded-[2rem] border border-emerald-100 bg-white p-7 text-slate-950 shadow-2xl shadow-emerald-950/10 dark:border-emerald-500/20 dark:bg-slate-900 dark:text-white"
-      >
-        <div class="flex justify-center">
-          <div class="relative h-28 w-28">
-            <div class="absolute inset-0 rounded-full border-[10px] border-slate-200 dark:border-slate-700"></div>
-            <div class="global-loading-ring absolute inset-0 rounded-full border-[10px] border-transparent border-t-emerald-500 border-r-emerald-500"></div>
-          </div>
+      <div class="relative flex h-80 w-80 items-center justify-center sm:h-96 sm:w-96">
+        <div class="global-dot-spinner absolute inset-0">
+          <span
+            v-for="index in dotCount"
+            :key="index"
+            class="global-dot"
+            :style="dotStyle(index - 1)"
+          ></span>
         </div>
-
-        <div class="mt-8">
-          <p class="text-4xl font-black tracking-normal text-slate-950 dark:text-white">Loading...</p>
-          <p class="mt-2 text-sm font-medium text-slate-500 dark:text-slate-400">{{ message || "Memuat data..." }}</p>
-        </div>
-
-        <div class="mt-8 h-5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-          <div class="global-loading-progress h-full rounded-full bg-emerald-500"></div>
-        </div>
+        <p class="relative text-4xl font-black tracking-normal text-slate-950 sm:text-5xl dark:text-white">loading...</p>
       </div>
     </div>
   </transition>
@@ -35,10 +27,14 @@ defineProps({
     type: Boolean,
     default: false,
   },
-  message: {
-    type: String,
-    default: "Memuat data...",
-  },
+});
+
+const dotCount = 24;
+
+const dotStyle = (index) => ({
+  "--dot-angle": `${index * (360 / dotCount)}deg`,
+  opacity: String(1 - (index / dotCount) * 0.82),
+  animationDelay: `${index * -0.045}s`,
 });
 </script>
 
@@ -53,12 +49,32 @@ defineProps({
   opacity: 0;
 }
 
-.global-loading-ring {
-  animation: global-loading-spin 0.85s linear infinite;
+.global-dot-spinner {
+  animation: global-loading-spin 1.05s linear infinite;
 }
 
-.global-loading-progress {
-  animation: global-loading-progress 1.4s ease-in-out infinite;
+.global-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 2rem;
+  width: 2rem;
+  margin-left: -1rem;
+  margin-top: -1rem;
+  border-radius: 9999px;
+  background: #111111;
+  transform: rotate(var(--dot-angle)) translateY(-9.25rem);
+  transform-origin: center;
+}
+
+@media (max-width: 640px) {
+  .global-dot {
+    height: 1.5rem;
+    width: 1.5rem;
+    margin-left: -0.75rem;
+    margin-top: -0.75rem;
+    transform: rotate(var(--dot-angle)) translateY(-7.35rem);
+  }
 }
 
 @keyframes global-loading-spin {
@@ -68,20 +84,6 @@ defineProps({
 
   100% {
     transform: rotate(360deg);
-  }
-}
-
-@keyframes global-loading-progress {
-  0% {
-    width: 18%;
-  }
-
-  45% {
-    width: 72%;
-  }
-
-  100% {
-    width: 96%;
   }
 }
 </style>

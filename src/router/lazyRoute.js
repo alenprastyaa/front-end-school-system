@@ -1,22 +1,24 @@
 import { defineAsyncComponent, defineComponent, h } from "vue";
 
+const dotCount = 24;
+
+const createDot = (index) => h("span", {
+  class: "absolute left-1/2 top-1/2 h-5 w-5 -ml-2.5 -mt-2.5 rounded-full bg-slate-950 dark:bg-white",
+  style: {
+    transform: `rotate(${index * (360 / dotCount)}deg) translateY(-5.5rem)`,
+    opacity: String(1 - (index / dotCount) * 0.82),
+  },
+});
+
 const RouteLoading = defineComponent({
   name: "RouteLoading",
   setup() {
     return () => h("div", {
-      class: "flex min-h-[320px] items-center justify-center p-6 text-slate-500 dark:text-slate-300",
+      class: "flex min-h-[320px] items-center justify-center bg-white p-6 text-slate-950 dark:bg-slate-950 dark:text-white",
     }, [
-      h("div", {
-        class: "w-full max-w-sm rounded-3xl border border-emerald-100 bg-white p-6 shadow-xl shadow-emerald-950/10 dark:border-emerald-500/20 dark:bg-slate-900",
-      }, [
-        h("div", { class: "mx-auto h-16 w-16 animate-spin rounded-full border-[7px] border-slate-200 border-t-emerald-500 border-r-emerald-500 dark:border-slate-700 dark:border-t-emerald-400 dark:border-r-emerald-400" }),
-        h("div", { class: "mt-5" }, [
-          h("p", { class: "text-2xl font-black text-slate-950 dark:text-white" }, "Loading..."),
-          h("p", { class: "mt-1 text-sm font-medium text-slate-500 dark:text-slate-400" }, "Memuat halaman..."),
-        ]),
-        h("div", { class: "mt-5 h-3 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700" }, [
-          h("div", { class: "h-full w-3/4 rounded-full bg-emerald-500" }),
-        ]),
+      h("div", { class: "relative flex h-56 w-56 items-center justify-center" }, [
+        h("div", { class: "absolute inset-0 animate-spin" }, Array.from({ length: dotCount }, (_, index) => createDot(index))),
+        h("p", { class: "relative text-3xl font-black tracking-normal" }, "loading..."),
       ]),
     ]);
   },
@@ -42,7 +44,7 @@ export const lazyRoute = (loader) => {
     loader,
     loadingComponent: RouteLoading,
     errorComponent: RouteLoadError,
-    delay: 80,
+    delay: 0,
     timeout: 30000,
     suspensible: false,
   });
