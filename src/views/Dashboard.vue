@@ -448,6 +448,7 @@ let dashboardClockTimer = null;
 const endpointByRole = {
   SUPER_ADMIN: "/dashboard/superadmin",
   ADMIN: "/dashboard/admin",
+  SARPRAS: "/dashboard/sarpras",
   GURU: "/dashboard/guru",
   SISWA: "/dashboard/siswa",
 };
@@ -533,6 +534,7 @@ const createSummaryCard = ({
 const heroTitle = computed(() => {
   if (role === "SUPER_ADMIN") return "Dashboard Super Admin Sekolah";
   if (role === "ADMIN") return `Dashboard Admin ${dashboardData.value?.school?.name || user?.school_name || ""}`.trim();
+  if (role === "SARPRAS") return `Dashboard Sarpras ${dashboardData.value?.school?.name || user?.school_name || ""}`.trim();
   if (role === "GURU") return `Wali Kelas ${dashboardData.value?.homeroom?.class_name || ""}`.trim();
   if (role === "SISWA") return `Halo, ${dashboardData.value?.student?.full_name || user?.full_name || user?.username || "Siswa"}`;
   return "Dashboard Overview";
@@ -541,6 +543,7 @@ const heroTitle = computed(() => {
 const heroDescription = computed(() => {
   if (role === "SUPER_ADMIN") return "Pantau kesiapan setiap sekolah, admin sekolah, struktur kelas, dan aktivitas operasional dari satu panel pusat.";
   if (role === "ADMIN") return "Metrik operasional sekolah, status absensi, dan data kelas secara real-time.";
+  if (role === "SARPRAS") return "Pantau stok barang, peminjaman aktif, dan barang yang perlu ditindaklanjuti dari satu panel sarpras.";
   if (role === "GURU") return "Pantau wali kelas, jadwal mengajar mingguan, dan status sesi mengajar hari ini dari satu dashboard.";
   if (role === "SISWA") return "Pantau riwayat absensi, status administrasi, dan tugas akademik Anda.";
   return "Ringkasan sistem berdasarkan akses pengguna.";
@@ -565,6 +568,13 @@ const summaryCards = computed(() => {
         createSummaryCard({ label: "Total Siswa", value: numberValue(overview.students), caption: "Siswa terdaftar", icon: "ph:student", cardClass: "bg-emerald-600" }),
         createSummaryCard({ label: "Check-in Hari Ini", value: numberValue(overview.attendance_today), caption: "Tercatat hadir", icon: "mdi:calendar-check-outline", cardClass: "bg-rose-600" }),
       ]
+      : role === "SARPRAS"
+        ? [
+          createSummaryCard({ label: "Total Barang", value: numberValue(overview.items_total), caption: "Semua inventaris", icon: "ph:archive-box", cardClass: "bg-amber-600" }),
+          createSummaryCard({ label: "Stok Tersedia", value: numberValue(overview.stock_available), caption: "Siap dipinjam", icon: "ph:package", cardClass: "bg-emerald-600" }),
+          createSummaryCard({ label: "Pinjaman Aktif", value: numberValue(overview.active_loans), caption: "Belum dikembalikan", icon: "ph:hand-coins", cardClass: "bg-sky-600" }),
+          createSummaryCard({ label: "Terlambat", value: numberValue(overview.overdue_loans), caption: "Perlu ditindaklanjuti", icon: "ph:warning-circle", cardClass: "bg-rose-600" }),
+        ]
       : role === "GURU"
         ? [
           createSummaryCard({ label: "Siswa Wali Kelas", value: numberValue(overview.students), caption: "Total siswa dibimbing", icon: "mdi:account-school-outline", cardClass: "bg-indigo-600" }),
@@ -739,6 +749,22 @@ const primaryPanel = computed(() => {
     };
   }
 
+  if (role === "SARPRAS") {
+    return {
+      title: "Barang dengan Stok Rendah",
+      description: "Daftar inventaris yang perlu perhatian atau penambahan stok.",
+      columns: [
+        { key: "name", label: "Barang" },
+        { key: "category", label: "Kategori" },
+        { key: "available_quantity", label: "Tersedia" },
+        { key: "borrowed_quantity", label: "Dipinjam" },
+        { key: "condition_status", label: "Kondisi" },
+      ],
+      rows: dashboardData.value?.lowStockItems || [],
+      emptyMessage: "Belum ada barang yang terdaftar.",
+    };
+  }
+
   if (role === "GURU") {
     return {
       title: "Monitoring Kehadiran Wali Kelas",
@@ -814,6 +840,19 @@ const secondaryPanel = computed(() => {
     };
   }
 
+  if (role === "SARPRAS") {
+    return {
+      title: "Riwayat Peminjaman Terbaru",
+      description: "Aktivitas peminjaman dan pengembalian terakhir.",
+      items: (dashboardData.value?.recentLoans || []).map((item) => ({
+        title: item.item_name || "-",
+        subtitle: `${item.borrower_name || "-"} • ${item.quantity || 0} unit • ${item.status || "-"}`,
+        meta: formatDateTime(item.borrowed_at),
+      })),
+      emptyMessage: "Belum ada riwayat peminjaman.",
+    };
+  }
+
   return {
     title: "Upload Administrasi",
     description: "Riwayat berkas pembayaran terakhir.",
@@ -837,6 +876,12 @@ const spotlight = computed(() => {
     cards: [
       { label: "Unit Aktif", value: dashboardData.value?.school?.name || "-", caption: "Nama Sekolah", icon: "ph:buildings", cardClass: "bg-cyan-700" },
       { label: "Volume Receipt", value: numberValue(dashboardData.value?.overview?.receipts_this_month), caption: "Bulan Berjalan", icon: "ph:receipt", cardClass: "bg-fuchsia-700" },
+    ]
+  };
+  if (role === "SARPRAS") return {
+    cards: [
+      { label: "Barang Aktif", value: numberValue(dashboardData.value?.overview?.items_active), caption: "Inventaris siap pakai", icon: "ph:archive-box", cardClass: "bg-amber-700" },
+      { label: "Stok Tersedia", value: numberValue(dashboardData.value?.overview?.stock_available), caption: "Belum dipinjam", icon: "ph:package", cardClass: "bg-emerald-700" },
     ]
   };
   if (role === "GURU") return {
@@ -868,6 +913,14 @@ const visualPanel = computed(() => {
     chartType: "bar",
     labels: (dashboardData.value?.classes || []).slice(0, 8).map((item) => item.class_name),
     series: [{ name: "Siswa", data: (dashboardData.value?.classes || []).slice(0, 8).map((item) => numberValue(item.student_count)) }],
+  };
+
+  if (role === "SARPRAS") return {
+    title: "Komposisi Stok Barang",
+    description: "Perbandingan stok tersedia, dipinjam, dan terlambat.",
+    chartType: "bar",
+    labels: ["Tersedia", "Dipinjam", "Terlambat"],
+    series: [{ name: "Jumlah", data: [numberValue(dashboardData.value?.overview?.stock_available), numberValue(dashboardData.value?.overview?.stock_borrowed), numberValue(dashboardData.value?.overview?.overdue_loans)] }],
   };
 
   const overview = dashboardData.value?.overview || {};

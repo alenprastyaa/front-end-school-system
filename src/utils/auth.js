@@ -11,21 +11,24 @@ export const getStoredUser = () => {
   }
 };
 
-export const getStoredRole = () => localStorage.getItem("role");
+export const normalizeRole = (role) => String(role || "").trim().toUpperCase();
+
+export const getStoredRole = () => normalizeRole(localStorage.getItem("role"));
 
 export const isAuthenticated = () => Boolean(localStorage.getItem("token"));
 
 export const persistSession = (payload) => {
   const data = payload?.data || payload;
+  const role = normalizeRole(data.role);
 
   localStorage.setItem("token", data.token);
-  localStorage.setItem("role", data.role);
+  localStorage.setItem("role", role);
   localStorage.setItem(
     "user",
     JSON.stringify({
       full_name: data.full_name || "",
       username: data.username,
-      role: data.role,
+      role,
       school_id: data.school_id,
       school_name: data.school_name,
       school_logo: normalizePublicUrl(data.school_logo) || null,

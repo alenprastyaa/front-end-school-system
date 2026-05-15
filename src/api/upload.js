@@ -1,6 +1,13 @@
 import { normalizePublicUrl } from "@/utils/url";
 
-const FILE_UPLOAD_URL = "https://alentest.my.id/file/api/upload-file";
+const resolvePublicBaseUrl = () =>
+  String(
+    process.env.VUE_APP_R2_PUBLIC_BASE_URL
+    || process.env.R2_PUBLIC_BASE_URL
+    || "https://upload.alentest.my.id",
+  ).trim().replace(/\/$/, "");
+
+const FILE_UPLOAD_URL = `${resolvePublicBaseUrl()}/file/api/upload-file`;
 
 const resolveUploadedFileUrl = (payload) => {
   if (!payload) {

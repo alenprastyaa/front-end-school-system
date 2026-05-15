@@ -1,7 +1,15 @@
 const HTTPS_HOSTS = new Set([
   "school-system.my.id",
   "alentest.my.id",
+  "upload.alentest.my.id",
 ]);
+
+const getPublicUploadBase = () =>
+  String(
+    process.env.VUE_APP_R2_PUBLIC_BASE_URL
+    || process.env.R2_PUBLIC_BASE_URL
+    || "",
+  ).trim().replace(/\/$/, "");
 
 const getApiOrigin = () => {
   const configuredBaseUrl = (process.env.VUE_APP_API_BASE_URL || "").trim();
@@ -45,6 +53,10 @@ export const normalizePublicUrl = (value) => {
   }
 
   if (rawValue.startsWith("/")) {
+    const publicUploadBase = getPublicUploadBase();
+    if (publicUploadBase && /^\/?(uploads?|files?)\//i.test(rawValue)) {
+      return `${publicUploadBase}${rawValue.startsWith("/") ? rawValue : `/${rawValue}`}`;
+    }
     return `${getApiOrigin()}${rawValue}`;
   }
 

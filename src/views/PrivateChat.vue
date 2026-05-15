@@ -143,7 +143,21 @@
                         :class="isOwnMessage(entry.message)
                           ? 'own bg-[#d9fdd3] text-[#111b21] dark:bg-[#005c4b] dark:text-[#e9edef]'
                           : 'other bg-white text-[#111b21] dark:bg-[#202c33] dark:text-[#e9edef]'">
-                        <p class="whitespace-pre-wrap break-words pr-12">{{ entry.message.message }}</p>
+                        <p v-if="entry.message.message" class="whitespace-pre-wrap break-words pr-12">{{ entry.message.message }}</p>
+                        <div v-if="entry.message.attachment_url" class="mt-2">
+                          <audio v-if="isVoiceMessage(entry.message)" :src="normalizePublicUrl(entry.message.attachment_url)" controls
+                            class="w-full max-w-sm" />
+                          <button v-else-if="isRenderableImageMessage(entry.message)" type="button"
+                            class="block w-full overflow-hidden rounded-md text-left" @click="openImagePreview(entry.message)">
+                            <img :src="normalizePublicUrl(entry.message.attachment_url)"
+                              :alt="entry.message.attachment_name || 'Lampiran gambar'" class="max-h-72 w-full object-cover" />
+                          </button>
+                          <a v-else :href="normalizePublicUrl(entry.message.attachment_url)" target="_blank" rel="noreferrer"
+                            class="flex items-center gap-3 rounded-md bg-black/5 px-3 py-2 text-sm font-semibold hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15">
+                            <Icon :icon="entry.message.message_type === 'PDF' ? 'ph:file-pdf' : 'ph:paperclip'" class="h-5 w-5 shrink-0" />
+                            <span class="truncate">{{ entry.message.attachment_name || "Buka file" }}</span>
+                          </a>
+                        </div>
                         <div class="-mb-0.5 mt-0.5 flex justify-end gap-1 pl-8 text-[11px] leading-none"
                           :class="isOwnMessage(entry.message) ? 'text-[#667781] dark:text-[#aebac1]' : 'text-[#667781] dark:text-[#8696a0]'">
                           <time>{{ formatMessageTime(entry.message.created_at) }}</time>
@@ -158,25 +172,83 @@
 
               <form @submit.prevent="sendMessage"
                 class="shrink-0 bg-[#f0f2f5] px-3 py-2 dark:bg-[#202c33] md:px-4">
+                <div v-if="attachmentPreviewName || recordedVoiceUrl || isRecordingVoice"
+                  class="mb-2 rounded-lg bg-white px-4 py-3 text-sm shadow-sm dark:bg-[#2a3942]">
+                  <div v-if="recordedVoiceUrl" class="flex items-center justify-between gap-3">
+                    <div class="min-w-0 flex-1">
+                      <p class="font-semibold text-[#111b21] dark:text-[#e9edef]">Voice note siap dikirim</p>
+                      <audio :src="recordedVoiceUrl" controls class="mt-2 w-full" />
+                    </div>
+                    <button type="button" class="text-[#667781] hover:text-[#111b21] dark:text-[#aebac1]"
+                      @click="clearAttachment">
+                      <Icon icon="mdi:close" class="h-5 w-5" />
+                    </button>
+                  </div>
+                  <div v-else-if="isRecordingVoice" class="flex items-center justify-between gap-3">
+                    <div class="min-w-0 flex-1">
+                      <p class="font-semibold text-[#111b21] dark:text-[#e9edef]">Sedang merekam voice note...</p>
+                      <p class="mt-1 text-[#667781] dark:text-[#8696a0]">{{ recordingDurationLabel }}</p>
+                    </div>
+                    <button type="button" class="rounded-full bg-rose-500 p-2 text-white hover:bg-rose-400"
+                      @click="stopVoiceRecording">
+                      <Icon icon="ph:stop-fill" class="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div v-else class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="font-semibold text-[#111b21] dark:text-[#e9edef]">Lampiran siap dikirim</p>
+                      <p class="truncate text-[#667781] dark:text-[#8696a0]">{{ attachmentPreviewName }}</p>
+                    </div>
+                    <button type="button" class="text-[#667781] hover:text-[#111b21] dark:text-[#aebac1]"
+                      @click="clearAttachment">
+                      <Icon icon="mdi:close" class="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
                 <div class="flex min-h-[44px] items-end gap-2">
+                  <div class="relative mb-1">
+                    <button type="button"
+                      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
+                      @click="toggleEmojiPanel">
+                      <Icon icon="mdi:emoticon-outline" class="h-6 w-6" />
+                    </button>
+                    <div v-if="emojiPanelOpen"
+                      class="absolute bottom-12 left-0 z-30 w-64 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Emoji</p>
+                      <div class="grid grid-cols-8 gap-1">
+                        <button v-for="emoji in chatEmojis" :key="emoji" type="button"
+                          class="rounded-lg p-1 text-xl transition hover:bg-slate-100 dark:hover:bg-slate-800"
+                          @click="insertEmoji(emoji)">
+                          {{ emoji }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                   <button type="button"
-                    class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10">
-                    <Icon icon="mdi:emoticon-outline" class="h-6 w-6" />
+                    class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
+                    :disabled="isSendingMessage || isRecordingVoice" @click="openAttachmentPicker">
+                    <Icon icon="mdi:paperclip" class="h-6 w-6" />
                   </button>
                   <div class="mb-1 flex min-h-10 flex-1 items-center rounded-lg bg-white px-3 dark:bg-[#2a3942]">
                     <textarea v-model="composer" rows="1" placeholder="Ketik pesan" @input="resizeComposer"
                       @keydown="handleComposerKeydown"
                       class="block max-h-28 min-h-[24px] w-full resize-none overflow-y-auto border-0 bg-transparent py-2 text-[15px] leading-6 text-[#111b21] outline-none placeholder:text-[#667781] dark:text-[#e9edef] dark:placeholder:text-[#8696a0]" />
                   </div>
-                  <button type="submit" :disabled="isSendingMessage || !composer.trim()"
-                    class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition"
-                    :class="composer.trim()
-                      ? 'bg-[#00a884] text-white hover:bg-[#008f72]'
-                      : 'bg-transparent text-[#54656f] dark:text-[#aebac1]'">
-                    <Icon :icon="composer.trim() ? 'mdi:send' : 'mdi:microphone'" class="h-5 w-5" />
+                  <button v-if="!composer.trim() && !attachmentFile" type="button" :disabled="isSendingMessage"
+                    class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition text-[#54656f] hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
+                    :class="isRecordingVoice ? 'bg-rose-500 text-white hover:bg-rose-400 dark:text-white' : ''"
+                    @click="toggleVoiceRecording">
+                    <Icon :icon="isRecordingVoice ? 'ph:stop-fill' : 'mdi:microphone'" class="h-5 w-5" />
+                  </button>
+                  <button v-else type="submit" :disabled="isSendingMessage"
+                    class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#00a884] text-white transition hover:bg-[#008f72] disabled:opacity-50">
+                    <Icon icon="mdi:send" class="h-5 w-5" />
                   </button>
                 </div>
               </form>
+              <input ref="attachmentInputRef" type="file" class="hidden"
+                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,audio/*"
+                @change="handleAttachmentChange" />
             </template>
 
             <div v-else class="hidden h-full min-h-[560px] items-center justify-center bg-[#f0f2f5] px-8 dark:bg-[#222e35] lg:flex">
@@ -204,6 +276,7 @@ import { Icon } from "@iconify/vue";
 import { storeToRefs } from "pinia";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
+import { convertHeicToJpegIfPossible } from "@/utils/fileImage";
 import { normalizePublicUrl } from "@/utils/url";
 import { useRealtimeStore } from "@/store/realtime";
 import { useSidebar } from "@/store/sidebar";
@@ -224,9 +297,39 @@ const isSendingMessage = ref(false);
 const isSearchingContacts = ref(false);
 const mobileChatOpen = ref(false);
 const messageListRef = ref(null);
+const attachmentInputRef = ref(null);
+const attachmentFile = ref(null);
+const attachmentPreviewName = ref("");
+const recordedVoiceUrl = ref("");
+const isRecordingVoice = ref(false);
+const recordingSeconds = ref(0);
+const recordingTimer = ref(null);
+const mediaRecorder = ref(null);
+const mediaStream = ref(null);
+const recordedChunks = ref([]);
+const emojiPanelOpen = ref(false);
 const realtimeUnsubscribers = ref([]);
 const localClientId = ref(`private-chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
 const searchDebounceTimer = ref(null);
+const chatEmojis = ["😀", "😂", "😍", "🙏", "👍", "🔥", "🎉", "😊", "😢", "😎", "🤔", "👏", "💯", "📚", "✅", "❤️"];
+const AUDIO_MIME_EXTENSION_MAP = {
+  "audio/webm": ".webm",
+  "audio/mp4": ".m4a",
+  "audio/x-m4a": ".m4a",
+  "audio/mpeg": ".mp3",
+  "audio/mp3": ".mp3",
+  "audio/wav": ".wav",
+  "audio/x-wav": ".wav",
+  "audio/wave": ".wav",
+  "audio/ogg": ".ogg",
+  "audio/ogg; codecs=opus": ".ogg",
+  "audio/aac": ".aac",
+  "audio/flac": ".flac",
+  "audio/amr": ".amr",
+  "audio/3gpp": ".3gp",
+  "audio/3gpp2": ".3g2",
+  "audio/mp4a-latm": ".m4a",
+};
 
 const getCurrentUserId = () => {
   try {
@@ -308,6 +411,11 @@ const ownReadLabel = (message) => {
 
 const ownReadIcon = (message) => (ownReadLabel(message) === "Sudah dibaca" ? "mdi:check-all" : "mdi:check");
 const ownReadIconClass = (message) => (ownReadLabel(message) === "Sudah dibaca" ? "text-[#53bdeb]" : "");
+const recordingDurationLabel = computed(() => {
+  const minutes = Math.floor(recordingSeconds.value / 60);
+  const seconds = recordingSeconds.value % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+});
 
 const renderedMessages = computed(() => {
   const entries = [];
@@ -358,6 +466,40 @@ const scrollToBottom = async () => {
   }
 };
 
+const isVoiceMessage = (message) => {
+  const explicitType = String(message?.message_type || "").toUpperCase();
+  if (explicitType === "VOICE") return true;
+  const mimeType = String(message?.attachment_mime_type || "").toLowerCase();
+  if (mimeType.startsWith("audio/")) return true;
+  const attachmentName = String(message?.attachment_name || "").toLowerCase();
+  return /\.(mp3|wav|m4a|ogg|aac|webm|flac|amr|3gp|3g2)$/i.test(attachmentName);
+};
+
+const isRenderableImageMessage = (message) => {
+  if (String(message?.message_type || "").toUpperCase() !== "IMAGE") {
+    return false;
+  }
+
+  const mimeType = String(message?.attachment_mime_type || "").toLowerCase();
+  const attachmentName = String(message?.attachment_name || "").toLowerCase();
+
+  if (mimeType.includes("heic") || mimeType.includes("heif")) {
+    return false;
+  }
+
+  if (/\.(heic|heif)$/i.test(attachmentName)) {
+    return false;
+  }
+
+  return true;
+};
+
+const openImagePreview = (message) => {
+  const url = normalizePublicUrl(message?.attachment_url);
+  if (!url) return;
+  window.open(url, "_blank", "noopener,noreferrer");
+};
+
 const refreshSummary = async (force = false) => {
   await sidebarStore.refreshPrivateChatSummary({ force });
   syncPeersFromStore();
@@ -367,6 +509,15 @@ const clearSearch = () => {
   search.value = "";
   searchedPeers.value = [];
   isSearchingContacts.value = false;
+};
+
+const toggleEmojiPanel = () => {
+  emojiPanelOpen.value = !emojiPanelOpen.value;
+};
+
+const insertEmoji = (emoji) => {
+  composer.value = `${composer.value || ""}${emoji}`;
+  emojiPanelOpen.value = false;
 };
 
 const searchContacts = async (keyword) => {
@@ -442,16 +593,32 @@ const markAsRead = async (peerUserId) => {
 };
 
 const sendMessage = async () => {
-  if (!selectedPeer.value || !composer.value.trim() || isSendingMessage.value) return;
+  if (!selectedPeer.value || (!composer.value.trim() && !attachmentFile.value) || isSendingMessage.value) return;
 
   isSendingMessage.value = true;
   const messageText = composer.value.trim();
   try {
-    const response = await api.post(`/private-chat/${selectedPeer.value.user_id}/messages`, {
+    let payload = {
       message: messageText,
       client_id: localClientId.value,
-    });
+    };
+    if (attachmentFile.value) {
+      const formData = new FormData();
+      formData.append("message", messageText);
+      formData.append("client_id", localClientId.value);
+      formData.append("attachment", attachmentFile.value);
+      formData.append("attachment_name", attachmentFile.value.name || "");
+      formData.append("attachment_mime_type", attachmentFile.value.type || "");
+      formData.append("attachment_size", String(Number(attachmentFile.value.size) || 0));
+      if (String(attachmentFile.value.type || "").toLowerCase().startsWith("audio/")) {
+        formData.append("message_type", "VOICE");
+      }
+      payload = formData;
+    }
+    const response = await api.post(`/private-chat/${selectedPeer.value.user_id}/messages`, payload);
     composer.value = "";
+    emojiPanelOpen.value = false;
+    clearAttachment();
     if (response?.data) {
       messages.value = [...messages.value, response.data];
       await scrollToBottom();
@@ -475,6 +642,129 @@ const resizeComposer = (event) => {
   target.style.height = `${Math.min(target.scrollHeight, 112)}px`;
 };
 
+const revokeRecordedVoiceUrl = () => {
+  if (recordedVoiceUrl.value) {
+    URL.revokeObjectURL(recordedVoiceUrl.value);
+    recordedVoiceUrl.value = "";
+  }
+};
+
+const cleanupMediaStream = () => {
+  if (mediaStream.value) {
+    mediaStream.value.getTracks().forEach((track) => track.stop());
+    mediaStream.value = null;
+  }
+};
+
+const clearAttachment = () => {
+  attachmentFile.value = null;
+  attachmentPreviewName.value = "";
+  revokeRecordedVoiceUrl();
+  cleanupMediaStream();
+  recordedChunks.value = [];
+  recordingSeconds.value = 0;
+  if (recordingTimer.value) {
+    window.clearInterval(recordingTimer.value);
+    recordingTimer.value = null;
+  }
+  if (mediaRecorder.value && mediaRecorder.value.state !== "inactive") {
+    mediaRecorder.value.stop();
+  }
+  mediaRecorder.value = null;
+  isRecordingVoice.value = false;
+};
+
+const openAttachmentPicker = () => {
+  emojiPanelOpen.value = false;
+  attachmentInputRef.value?.click();
+};
+
+const handleAttachmentChange = async (event) => {
+  const rawFile = event.target.files?.[0] || null;
+  event.target.value = "";
+  if (!rawFile) return;
+  clearAttachment();
+  try {
+    const file = await convertHeicToJpegIfPossible(rawFile);
+    attachmentFile.value = file;
+    attachmentPreviewName.value = file.name;
+  } catch (error) {
+    attachmentFile.value = rawFile;
+    attachmentPreviewName.value = rawFile.name;
+  }
+};
+
+const stopVoiceRecording = async () => {
+  if (!isRecordingVoice.value) return;
+  if (mediaRecorder.value && mediaRecorder.value.state !== "inactive") {
+    mediaRecorder.value.stop();
+  }
+};
+
+const toggleVoiceRecording = async () => {
+  if (isRecordingVoice.value) {
+    await stopVoiceRecording();
+    return;
+  }
+
+  try {
+    clearAttachment();
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaStream.value = stream;
+    const supportedMimeTypes = Object.keys(AUDIO_MIME_EXTENSION_MAP).filter((mimeType) => {
+      try {
+        return typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(mimeType);
+      } catch (error) {
+        return false;
+      }
+    });
+    const selectedMimeType = supportedMimeTypes[0] || "";
+    const recorder = selectedMimeType ? new MediaRecorder(stream, { mimeType: selectedMimeType }) : new MediaRecorder(stream);
+    recordedChunks.value = [];
+    recordingSeconds.value = 0;
+    recorder.ondataavailable = (event) => {
+      if (event.data && event.data.size > 0) {
+        recordedChunks.value.push(event.data);
+      }
+    };
+    recorder.onstop = () => {
+      isRecordingVoice.value = false;
+      if (recordingTimer.value) {
+        window.clearInterval(recordingTimer.value);
+        recordingTimer.value = null;
+      }
+      cleanupMediaStream();
+      if (recordedChunks.value.length === 0) {
+        mediaRecorder.value = null;
+        return;
+      }
+      const mimeType = recorder.mimeType || selectedMimeType || "audio/webm";
+      const extension = AUDIO_MIME_EXTENSION_MAP[mimeType] || ".webm";
+      const blob = new Blob(recordedChunks.value, { type: mimeType });
+      revokeRecordedVoiceUrl();
+      recordedVoiceUrl.value = URL.createObjectURL(blob);
+      attachmentFile.value = new File([blob], `voice-note-${Date.now()}${extension}`, { type: mimeType });
+      attachmentPreviewName.value = attachmentFile.value.name;
+      recordedChunks.value = [];
+      mediaRecorder.value = null;
+    };
+    mediaRecorder.value = recorder;
+    recorder.start();
+    isRecordingVoice.value = true;
+    recordingTimer.value = window.setInterval(() => {
+      recordingSeconds.value += 1;
+    }, 1000);
+  } catch (error) {
+    pushToast({
+      title: "Mikrofon Tidak Aktif",
+      message: "Izin mikrofon dibutuhkan untuk merekam voice note.",
+      type: "error",
+    });
+    cleanupMediaStream();
+    isRecordingVoice.value = false;
+  }
+};
+
 const handleComposerKeydown = (event) => {
   if (event.key !== "Enter" || event.shiftKey) return;
   event.preventDefault();
@@ -483,6 +773,7 @@ const handleComposerKeydown = (event) => {
 
 const backToPeerList = () => {
   mobileChatOpen.value = false;
+  emojiPanelOpen.value = false;
 };
 
 const bindRealtime = () => {
@@ -535,6 +826,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  clearAttachment();
   if (searchDebounceTimer.value) {
     window.clearTimeout(searchDebounceTimer.value);
   }

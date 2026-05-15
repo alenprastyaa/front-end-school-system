@@ -1,37 +1,81 @@
 <template>
   <div
-    class="min-h-screen bg-slate-50/50 pb-12 pt-4 font-sans text-slate-900 md:px-8 md:pt-8 dark:bg-slate-950 dark:text-slate-100">
-    <div class="mx-auto  space-y-6">
-
-      <section class="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-        <div class="flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">Manajemen Siswa</h1>
+    class="min-h-screen bg-slate-50/70 pb-12 pt-4 font-sans text-slate-900 md:px-6 md:pt-8 lg:px-8 dark:bg-slate-950 dark:text-slate-100">
+    <div class="mx-auto max-w-[1440px] space-y-6">
+      <section
+        class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div class="flex flex-col gap-5 px-6 py-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+          <div class="max-w-3xl">
+            <h1 class="mt-4 max-w-2xl text-2xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
+              Manajemen Siswa
+            </h1>
+            <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+              Kelola data siswa, pencarian akun, perpindahan kelas, dan kontak orang tua dari satu halaman yang lebih
+              rapi.
+            </p>
           </div>
-          <button @click="openCreateModal"
-            class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            Tambah Siswa
-          </button>
+          <div class="grid gap-3 sm:grid-cols-2 xl:min-w-[440px] xl:max-w-[500px] xl:grid-cols-2">
+            <button @click="openCreateModal"
+              class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-sky-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              Tambah Siswa
+            </button>
+            <button @click="openPromotionModal"
+              class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
+              </svg>
+              Naik Kelas
+            </button>
+            <button @click="openStudentImportPicker" :disabled="isImportingStudents"
+              class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-slate-900 bg-slate-900 px-5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-700 dark:hover:bg-slate-600">
+              {{ isImportingStudents ? "Mengimpor..." : "Upload Excel Siswa" }}
+            </button>
+            <button @click="openStudentTemplateModal"
+              class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-yellow-200 bg-red-500 px-5 text-sm font-semibold text-white transition hover:bg-red-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+              Template Siswa
+            </button>
+          </div>
         </div>
       </section>
 
       <div>
         <main
-          class="flex min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-
-          <div
-            class="flex flex-col gap-4 border-b border-slate-200 p-5 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 class="text-base font-semibold text-slate-900 dark:text-white">Direktori Siswa</h2>
-              <p class="mt-1 text-sm text-slate-500">Total {{ students.length }} data siswa termuat.</p>
+          class="flex min-w-0 flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div class="flex flex-col gap-5 border-b border-slate-200 p-5 dark:border-slate-800 sm:p-6">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Direktori Siswa</h2>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  {{ studentDirectoryDescription }}
+                </p>
+              </div>
+              <div
+                class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-300">
+                <span class="font-semibold text-slate-900 dark:text-white">{{ displayedStudents.length }}</span>
+                siswa tampil dari
+                <span class="font-semibold text-slate-900 dark:text-white">{{ students.length }}</span>
+                siswa pada halaman ini
+              </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-3">
+            <div class="grid gap-3 xl:grid-cols-[minmax(0,1.2fr)_minmax(260px,0.9fr)_180px_120px]">
               <div class="relative">
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                  <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="m21 21-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input v-model.trim="searchQuery" type="text"
+                  placeholder="Cari nama siswa, username, kelas, email ortu, atau no. HP"
+                  class="block w-full rounded-2xl border-0 bg-white py-3 pl-11 pr-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-300 transition placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+              </div>
+              <div class="relative">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                   <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -39,21 +83,98 @@
                   </svg>
                 </div>
                 <select v-model="filters.class_id" @change="handleClassFilterChange"
-                  class="block w-full rounded-lg border-0 py-2 pl-9 pr-8 text-sm text-slate-900 ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                  class="block w-full rounded-2xl border-0 bg-white py-3 pl-11 pr-9 text-sm text-slate-900 ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
                   <option value="">Semua Kelas</option>
                   <option v-for="item in classOptions" :key="item.id" :value="item.id">
                     {{ item.class_name }}
                   </option>
                 </select>
               </div>
+              <select v-model.number="filters.limit" @change="handleLimitChange"
+                class="rounded-2xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                <option :value="10">10 / halaman</option>
+                <option :value="25">25 / halaman</option>
+                <option :value="50">50 / halaman</option>
+              </select>
               <button @click="loadStudents"
-                class="inline-flex h-9 items-center justify-center rounded-lg bg-white px-3 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-800">
+                class="inline-flex h-[50px] items-center justify-center rounded-2xl bg-white px-4 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-800">
                 Refresh
               </button>
             </div>
           </div>
 
-          <div class="overflow-x-auto">
+          <div class="border-b border-slate-200 px-5 py-4 dark:border-slate-800 sm:px-6">
+            <div class="flex flex-wrap items-center gap-2">
+              <span
+                class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                Kelas: {{ activeClassLabel }}
+              </span>
+              <span
+                class="inline-flex items-center rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-200">
+                Pencarian: {{ searchQuery ? `“${searchQuery}”` : "semua data pada halaman ini" }}
+              </span>
+            </div>
+          </div>
+
+          <div class="block space-y-4 p-4 md:hidden">
+            <article v-for="item in displayedStudents" :key="`card-${item.id}`"
+              class="rounded-3xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex min-w-0 items-center gap-3">
+                  <div
+                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-100 text-sm font-bold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+                    {{ studentInitial(item) }}
+                  </div>
+                  <div class="min-w-0">
+                    <p class="truncate text-sm font-semibold text-slate-900 dark:text-white">{{ item.full_name || "-" }}
+                    </p>
+                    <p class="truncate text-xs text-slate-500 dark:text-slate-400">@{{ item.username }}</p>
+                  </div>
+                </div>
+                <span
+                  class="inline-flex shrink-0 items-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  {{ item.class_name || "Belum ada kelas" }}
+                </span>
+              </div>
+              <div class="mt-4 grid gap-3 rounded-2xl bg-slate-50/80 p-3 text-sm dark:bg-slate-800/70">
+                <div>
+                  <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Email Ortu</p>
+                  <p class="mt-1 break-all text-slate-700 dark:text-slate-200">{{ item.parent_email || "-" }}</p>
+                </div>
+                <div>
+                  <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">No. HP</p>
+                  <p class="mt-1 text-slate-700 dark:text-slate-200">{{ item.phone_number || "Tanpa nomor telepon" }}
+                  </p>
+                </div>
+              </div>
+              <div class="mt-4 flex items-center gap-2">
+                <button @click="startEdit(item)"
+                  class="inline-flex flex-1 items-center justify-center rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white dark:bg-slate-700">
+                  Edit Data
+                </button>
+                <button @click="openDeleteModal(item)"
+                  class="inline-flex items-center justify-center rounded-2xl border border-rose-200 px-4 py-2.5 text-sm font-semibold text-rose-600 dark:border-rose-500/20 dark:text-rose-300">
+                  Hapus
+                </button>
+              </div>
+            </article>
+
+            <div v-if="displayedStudents.length === 0"
+              class="rounded-3xl border border-dashed border-slate-300 bg-white/80 px-6 py-12 text-center dark:border-slate-700 dark:bg-slate-900/80">
+              <div
+                class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                <svg class="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+              </div>
+              <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ emptyStateTitle }}</p>
+              <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ emptyStateMessage }}</p>
+            </div>
+          </div>
+
+          <div class="hidden overflow-x-auto md:block">
             <table class="min-w-full text-left text-sm">
               <thead
                 class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
@@ -88,11 +209,14 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr v-for="item in sortedStudents" :key="item.id"
+                <tr v-for="item in displayedStudents" :key="item.id"
                   class="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
                   :class="editingId === item.id ? 'bg-sky-50/50 dark:bg-sky-900/10' : ''">
                   <td class="px-6 py-4">
-                    <span class="font-medium text-slate-900 dark:text-white">{{ item.full_name || "-" }}</span>
+                    <div>
+                      <span class="font-medium text-slate-900 dark:text-white">{{ item.full_name || "-" }}</span>
+                      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">ID siswa #{{ item.id }}</p>
+                    </div>
                   </td>
                   <td class="px-6 py-4">
                     <div class="flex items-center gap-3">
@@ -143,7 +267,7 @@
                   </td>
                 </tr>
 
-                <tr v-if="students.length === 0">
+                <tr v-if="displayedStudents.length === 0">
                   <td colspan="5" class="px-6 py-12 text-center">
                     <div class="mx-auto flex flex-col items-center">
                       <div
@@ -154,18 +278,19 @@
                             d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                         </svg>
                       </div>
-                      <span class="text-sm font-semibold text-slate-900 dark:text-white">Tidak Ada Data Siswa</span>
-                      <span class="mt-1 text-sm text-slate-500">Gunakan tombol tambah siswa untuk mendaftarkan siswa
-                        baru.</span>
+                      <span class="text-sm font-semibold text-slate-900 dark:text-white">{{ emptyStateTitle }}</span>
+                      <span class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ emptyStateMessage }}</span>
                     </div>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <div class="flex items-center justify-between border-t border-slate-200 px-6 py-4 dark:border-slate-800">
+          <div
+            class="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <p class="text-xs text-slate-500 dark:text-slate-400">
-              Halaman {{ filters.page }} · Menampilkan {{ students.length }} siswa
+              Halaman {{ filters.page }} · Menampilkan {{ displayedStudents.length }} dari {{ students.length }} siswa ·
+              Batas {{ filters.limit }} data per halaman
             </p>
             <div class="flex items-center gap-2">
               <button @click="goToPrevPage" :disabled="filters.page <= 1"
@@ -184,7 +309,7 @@
       <div v-if="showModal"
         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-sm">
         <div
-          class="w-full max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
+          class="w-full max-w-3xl overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900">
           <div
             class="flex items-center justify-between gap-4 border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
             <div class="flex items-center gap-2">
@@ -218,52 +343,72 @@
             </button>
           </div>
 
-          <form @submit.prevent="editingId ? updateStudent() : createStudent()" class="space-y-4 p-6">
-            <div>
-              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Nama Lengkap <span
-                  class="text-rose-500">*</span></label>
-              <input v-model="form.full_name" type="text" required placeholder="e.g. Budi Santoso"
-                class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-            </div>
+          <form @submit.prevent="editingId ? updateStudent() : createStudent()" class="space-y-6 p-6">
+            <div class="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.95fr)]">
+              <section
+                class="space-y-4 rounded-3xl border border-slate-200 bg-slate-50/70 p-5 dark:border-slate-800 dark:bg-slate-950/50">
+                <div>
+                  <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Data Akun</h3>
+                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Identitas utama yang dipakai untuk login
+                    dan identifikasi siswa.</p>
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Nama Lengkap <span
+                      class="text-rose-500">*</span></label>
+                  <input v-model="form.full_name" type="text" required placeholder="e.g. Budi Santoso"
+                    class="block w-full rounded-2xl border-0 py-3 pl-4 pr-4 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                </div>
 
-            <div>
-              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Username <span
-                  class="text-rose-500">*</span></label>
-              <input v-model="form.username" type="text" required placeholder="e.g. budi_santoso"
-                class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-              <p class="mt-1 text-xs font-medium text-sky-600 dark:text-sky-400">Gunakan username ini saat login
-                siswa/guru.</p>
-            </div>
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Username <span
+                      class="text-rose-500">*</span></label>
+                  <input v-model="form.username" type="text" required placeholder="e.g. budi_santoso"
+                    class="block w-full rounded-2xl border-0 py-3 pl-4 pr-4 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <p class="mt-1 text-xs font-medium text-sky-600 dark:text-sky-400">Gunakan username ini saat login
+                    siswa.</p>
+                </div>
 
-            <div v-if="!editingId">
-              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Password <span
-                  class="text-rose-500">*</span></label>
-              <input v-model="form.password" type="password" required placeholder="••••••••"
-                class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-            </div>
+                <div v-if="!editingId">
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Password <span
+                      class="text-rose-500">*</span></label>
+                  <input v-model="form.password" type="password" required placeholder="••••••••"
+                    class="block w-full rounded-2xl border-0 py-3 pl-4 pr-4 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                </div>
+              </section>
 
-            <div>
-              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Penempatan Kelas <span
-                  class="text-rose-500">*</span></label>
-              <select v-model="form.class_id" required
-                class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-8 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
-                <option disabled value="">-- Pilih Rombongan Belajar --</option>
-                <option v-for="item in classOptions" :key="item.id" :value="item.id">
-                  {{ item.class_name }}
-                </option>
-              </select>
-            </div>
+              <section
+                class="space-y-4 rounded-3xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+                <div>
+                  <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Penempatan & Kontak</h3>
+                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Pastikan kelas dan kontak wali terisi agar
+                    tindak lanjut lebih mudah.</p>
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Penempatan Kelas
+                    <span class="text-rose-500">*</span></label>
+                  <select v-model="form.class_id" required
+                    class="block w-full rounded-2xl border-0 py-3 pl-4 pr-8 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                    <option disabled value="">-- Pilih Rombongan Belajar --</option>
+                    <option v-for="item in classOptions" :key="item.id" :value="item.id">
+                      {{ item.class_name }}
+                    </option>
+                  </select>
+                </div>
 
-            <div>
-              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Email Orang Tua</label>
-              <input v-model="form.parent_email" type="email" placeholder="ortu@contoh.com"
-                class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-            </div>
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Email Orang
+                    Tua</label>
+                  <input v-model="form.parent_email" type="email" placeholder="ortu@contoh.com"
+                    class="block w-full rounded-2xl border-0 py-3 pl-4 pr-4 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                </div>
 
-            <div>
-              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Nomor Telepon</label>
-              <input v-model="form.phone_number" type="text" placeholder="08123456789"
-                class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Nomor
+                    Telepon</label>
+                  <input v-model="form.phone_number" type="text" placeholder="08123456789"
+                    class="block w-full rounded-2xl border-0 py-3 pl-4 pr-4 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                </div>
+              </section>
             </div>
 
             <div class="flex justify-end gap-3 pt-2">
@@ -290,6 +435,204 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal Download Template Siswa -->
+  <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
+    enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+    leave-to-class="opacity-0">
+    <div v-if="isStudentTemplateModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+      <div
+        class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+        @click.stop>
+        <div
+          class="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Download Template Siswa</h2>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Pilih kelas agar kolom Kelas otomatis terisi.</p>
+          </div>
+          <button @click="closeStudentTemplateModal"
+            class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form @submit.prevent="downloadStudentTemplate" class="space-y-5 p-6">
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Kelas <span
+                class="text-rose-500">*</span></label>
+            <select v-model="studentTemplateClassId" required
+              class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-8 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+              <option disabled value="">Pilih kelas</option>
+              <option v-for="item in classOptions" :key="`template-${item.id}`" :value="item.id">
+                {{ item.class_name }}
+              </option>
+            </select>
+          </div>
+
+          <div
+            class="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-800 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-200">
+            File template akan khusus untuk kelas yang dipilih, sehingga admin cukup mengisi data siswa.
+          </div>
+
+          <div class="flex justify-end gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+            <button type="button" @click="closeStudentTemplateModal"
+              class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+              Batal
+            </button>
+            <button type="submit"
+              class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500">
+              Download
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </Transition>
+
+  <!-- Modal Naik Kelas -->
+  <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
+    enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+    leave-to-class="opacity-0">
+    <div v-if="isPromotionModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+      <div
+        class="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+        @click.stop>
+        <div
+          class="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Naik Kelas</h2>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Pilih siswa yang naik kelas, siswa tidak
+              dicentang tetap di kelas asal.</p>
+          </div>
+          <button @click="closePromotionModal"
+            class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form @submit.prevent="submitPromotion" class="space-y-5 p-6">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Kelas Asal <span
+                  class="text-rose-500">*</span></label>
+              <select v-model="promotionForm.from_class_id" required
+                class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-8 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                <option disabled value="">Pilih kelas asal</option>
+                <option v-for="item in classOptions" :key="`from-${item.id}`" :value="item.id">
+                  {{ item.class_name }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Kelas Tujuan <span
+                  class="text-rose-500">*</span></label>
+              <select v-model="promotionForm.to_class_id" required
+                class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-8 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                <option disabled value="">Pilih kelas tujuan</option>
+                <option v-for="item in classOptions" :key="`to-${item.id}`" :value="item.id"
+                  :disabled="String(item.id) === String(promotionForm.from_class_id)">
+                  {{ item.class_name }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Tanggal Efektif</label>
+            <input v-model="promotionForm.effective_date" type="date"
+              class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+          </div>
+
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Catatan</label>
+            <textarea v-model="promotionForm.note" rows="3" placeholder="Contoh: Kenaikan kelas tahun ajaran baru"
+              class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"></textarea>
+          </div>
+
+          <div>
+            <div class="mb-2 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Siswa yang Ikut Naik Kelas</h3>
+                <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                  {{ promotionSelectedCount }} dipilih · {{ promotionRetainedCount }} tinggal kelas
+                </p>
+              </div>
+              <label v-if="promotionCandidates.length"
+                class="inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
+                <input type="checkbox" :checked="promotionAllSelected" @change="toggleAllPromotionCandidates"
+                  class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                Pilih Semua
+              </label>
+            </div>
+
+            <div
+              class="max-h-64 overflow-y-auto rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
+              <div v-if="isLoadingPromotionCandidates"
+                class="flex items-center justify-center gap-2 px-4 py-8 text-sm font-medium text-slate-500 dark:text-slate-400">
+                <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+                Memuat siswa
+              </div>
+              <div v-else-if="!promotionForm.from_class_id"
+                class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                Pilih kelas asal terlebih dahulu.
+              </div>
+              <div v-else-if="promotionCandidates.length === 0"
+                class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                Tidak ada siswa di kelas asal.
+              </div>
+              <template v-else>
+                <label v-for="student in promotionCandidates" :key="student.id"
+                  class="flex cursor-pointer items-center gap-3 border-b border-slate-100 px-4 py-3 last:border-b-0 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
+                  <input v-model="promotionSelectedStudentIds" type="checkbox" :value="student.id"
+                    class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-semibold text-slate-900 dark:text-white">
+                      {{ student.full_name || student.username || "-" }}
+                    </p>
+                    <p class="truncate text-xs text-slate-500 dark:text-slate-400">
+                      {{ student.username || "-" }}
+                    </p>
+                  </div>
+                </label>
+              </template>
+            </div>
+          </div>
+
+          <div
+            class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
+            Hanya siswa yang dicentang akan pindah ke kelas tujuan. Riwayat kelas lama tetap disimpan untuk audit.
+          </div>
+
+          <div class="flex justify-end gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+            <button type="button" @click="closePromotionModal"
+              class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+              Batal
+            </button>
+            <button type="submit" :disabled="isPromoting"
+              class="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60">
+              <svg v-if="isPromoting" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+              {{ isPromoting ? "Memproses..." : "Proses Naik Kelas" }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </Transition>
 
   <!-- Modal Konfirmasi Hapus Siswa -->
   <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
@@ -339,10 +682,13 @@
   </Transition>
 
   <SuccessModal ref="successModal" />
+  <input ref="studentImportInput" type="file"
+    accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden"
+    @change="handleStudentImportFileChange" />
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
@@ -364,23 +710,144 @@ const baseForm = () => ({
 const isDeleteModalOpen = ref(false);
 const isDeletingStudent = ref(false);
 const studentToDelete = ref(null);
+const isPromotionModalOpen = ref(false);
+const isPromoting = ref(false);
+const isLoadingPromotionCandidates = ref(false);
+const isImportingStudents = ref(false);
+const isStudentTemplateModalOpen = ref(false);
+const studentTemplateClassId = ref("");
+const studentImportInput = ref(null);
 
 const form = reactive(baseForm());
+const promotionForm = reactive({
+  from_class_id: "",
+  to_class_id: "",
+  effective_date: "",
+  note: "",
+});
 const filters = reactive({ class_id: "", page: 1, limit: 10 });
+const searchQuery = ref("");
 const students = ref([]);
 const classOptions = ref([]);
+const promotionCandidates = ref([]);
+const promotionSelectedStudentIds = ref([]);
 const editingId = ref(null);
 const showModal = ref(false);
 const isSubmitting = ref(false);
 const tableSort = createSortState("username");
 
-const sortedStudents = computed(() =>
-  sortItems(students.value, tableSort, {
+const filteredStudents = computed(() => {
+  const keyword = searchQuery.value.trim().toLowerCase();
+  if (!keyword) {
+    return students.value;
+  }
+
+  return students.value.filter((item) => {
+    const haystacks = [
+      item.full_name,
+      item.username,
+      item.class_name,
+      item.parent_email,
+      item.phone_number,
+    ];
+
+    return haystacks.some((value) => String(value || "").toLowerCase().includes(keyword));
+  });
+});
+
+const displayedStudents = computed(() =>
+  sortItems(filteredStudents.value, tableSort, {
     full_name: (item) => item.full_name || "",
+    username: (item) => item.username || "",
     class_name: (item) => item.class_name || "",
     parent_email: (item) => item.parent_email || "",
     phone_number: (item) => item.phone_number || "",
   }),
+);
+
+const studentsWithParentContact = computed(() =>
+  students.value.filter((item) => item.parent_email || item.phone_number).length,
+);
+
+const studentsWithoutClass = computed(() =>
+  students.value.filter((item) => !item.class_name).length,
+);
+
+const summaryCards = computed(() => [
+  {
+    label: "Siswa di Halaman Ini",
+    value: students.value.length,
+    caption: "Jumlah data yang termuat sesuai filter kelas dan halaman aktif.",
+    icon: "students",
+    iconWrapClass: "bg-sky-600 shadow-sky-600/25",
+  },
+  {
+    label: "Kontak Wali Tersedia",
+    value: studentsWithParentContact.value,
+    caption: "Siswa yang sudah punya email ortu atau nomor telepon untuk tindak lanjut.",
+    icon: "contact",
+    iconWrapClass: "bg-emerald-600 shadow-emerald-600/25",
+  },
+  {
+    label: "Kelas Aktif",
+    value: filters.class_id ? 1 : classOptions.value.length,
+    caption: filters.class_id ? "Anda sedang fokus ke satu kelas tertentu." : "Jumlah kelas yang bisa dipilih pada filter.",
+    icon: "class",
+    iconWrapClass: "bg-violet-600 shadow-violet-600/25",
+  },
+  {
+    label: "Belum Ada Kelas",
+    value: studentsWithoutClass.value,
+    caption: "Siswa yang perlu ditinjau karena belum punya penempatan kelas di halaman ini.",
+    icon: "check",
+    iconWrapClass: "bg-amber-500 shadow-amber-500/25",
+  },
+]);
+
+const activeClassLabel = computed(() => {
+  if (!filters.class_id) {
+    return "Semua kelas";
+  }
+
+  const selectedClass = classOptions.value.find((item) => String(item.id) === String(filters.class_id));
+  return selectedClass?.class_name || "Kelas terpilih";
+});
+
+const studentDirectoryDescription = computed(() => {
+  if (searchQuery.value.trim()) {
+    return `Menampilkan hasil pencarian “${searchQuery.value.trim()}” pada halaman ${filters.page}.`;
+  }
+
+  if (filters.class_id) {
+    return `Fokus pada ${activeClassLabel.value} untuk mempermudah peninjauan dan pengelolaan siswa.`;
+  }
+
+  return "Gunakan pencarian, filter kelas, dan jumlah data per halaman untuk mempercepat pengelolaan.";
+});
+
+const emptyStateTitle = computed(() =>
+  searchQuery.value.trim() ? "Tidak ada hasil yang cocok" : "Tidak Ada Data Siswa",
+);
+
+const emptyStateMessage = computed(() => {
+  if (searchQuery.value.trim()) {
+    return "Coba kata kunci lain atau ubah filter kelas agar data yang dicari lebih mudah ditemukan.";
+  }
+
+  if (filters.class_id) {
+    return "Belum ada siswa pada kelas ini. Anda bisa menambahkan siswa baru atau memilih kelas lain.";
+  }
+
+  return "Gunakan tombol tambah siswa untuk mendaftarkan siswa baru.";
+});
+
+const promotionSelectedCount = computed(() => promotionSelectedStudentIds.value.length);
+const promotionRetainedCount = computed(() =>
+  Math.max(0, promotionCandidates.value.length - promotionSelectedStudentIds.value.length),
+);
+const promotionAllSelected = computed(() =>
+  promotionCandidates.value.length > 0 &&
+  promotionSelectedStudentIds.value.length === promotionCandidates.value.length,
 );
 
 const handleSort = (key) => {
@@ -410,6 +877,137 @@ const openCreateModal = () => {
   showModal.value = true;
 };
 
+const openStudentTemplateModal = () => {
+  studentTemplateClassId.value = filters.class_id || "";
+  isStudentTemplateModalOpen.value = true;
+};
+
+const closeStudentTemplateModal = () => {
+  isStudentTemplateModalOpen.value = false;
+  studentTemplateClassId.value = "";
+};
+
+const downloadStudentTemplate = () => {
+  if (!studentTemplateClassId.value) {
+    pushToast({
+      title: "Pilih Kelas",
+      message: "Pilih kelas terlebih dahulu sebelum download template siswa.",
+      type: "info",
+    });
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+  const params = new URLSearchParams({ class_id: String(studentTemplateClassId.value) });
+  fetch(`${api.baseUrl}/auth/student/template?${params.toString()}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        throw new Error("Gagal mengunduh template siswa");
+      }
+      return response.blob();
+    })
+    .then((blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const selectedClass = classOptions.value.find((item) => String(item.id) === String(studentTemplateClassId.value));
+      link.download = `template-siswa-${slugifyFilename(selectedClass?.class_name || "kelas")}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      closeStudentTemplateModal();
+    })
+    .catch((error) => {
+      pushToast({
+        title: "Gagal Download Template",
+        message: error.message,
+        type: "error",
+      });
+    });
+};
+
+const slugifyFilename = (value) => {
+  const normalized = String(value || "kelas").trim().toLowerCase().replace(/\s+/g, "-");
+  return normalized.replace(/[^a-z0-9_-]/g, "") || "kelas";
+};
+
+const openStudentImportPicker = () => {
+  studentImportInput.value?.click();
+};
+
+const handleStudentImportFileChange = async (event) => {
+  const file = event?.target?.files?.[0];
+  if (!file) return;
+
+  isImportingStudents.value = true;
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await api.post("/auth/register/student/import", formData);
+    const imported = Number(response?.data?.imported || 0);
+    const failed = Number(response?.data?.failed || 0);
+
+    await loadStudents();
+    pushToast({
+      title: "Import Siswa Selesai",
+      message: `${imported} siswa berhasil diimport${failed > 0 ? `, ${failed} baris gagal` : ""}.`,
+      type: failed > 0 ? "warning" : "success",
+    });
+    if (failed > 0) {
+      pushToast({
+        title: "Sebagian Baris Gagal",
+        message: "Periksa username, password, kelas, atau data yang sudah terdaftar.",
+        type: "error",
+      });
+    }
+  } catch (error) {
+    pushToast({
+      title: "Gagal Import Siswa",
+      message: error.message,
+      type: "error",
+    });
+  } finally {
+    isImportingStudents.value = false;
+    if (studentImportInput.value) {
+      studentImportInput.value.value = "";
+    }
+  }
+};
+
+const localDateString = () => {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const resetPromotionForm = () => {
+  promotionForm.from_class_id = filters.class_id || "";
+  promotionForm.to_class_id = "";
+  promotionForm.effective_date = localDateString();
+  promotionForm.note = "";
+  promotionCandidates.value = [];
+  promotionSelectedStudentIds.value = [];
+};
+
+const openPromotionModal = () => {
+  resetPromotionForm();
+  isPromotionModalOpen.value = true;
+  if (promotionForm.from_class_id) {
+    loadPromotionCandidates(promotionForm.from_class_id);
+  }
+};
+
+const closePromotionModal = () => {
+  if (isPromoting.value) return;
+  isPromotionModalOpen.value = false;
+  resetPromotionForm();
+};
+
 const loadClasses = async () => {
   classOptions.value = await masterDataStore.getClasses();
 };
@@ -436,9 +1034,55 @@ const loadStudents = async () => {
   }
 };
 
+const loadPromotionCandidates = async (classId) => {
+  if (!classId) {
+    promotionCandidates.value = [];
+    promotionSelectedStudentIds.value = [];
+    return;
+  }
+
+  isLoadingPromotionCandidates.value = true;
+  try {
+    const params = new URLSearchParams({
+      page: "1",
+      limit: "5000",
+      class_id: String(classId),
+    });
+    const response = await api.get(`/student?${params.toString()}`, { silentLoading: true });
+    promotionCandidates.value = response?.data?.data || [];
+    promotionSelectedStudentIds.value = promotionCandidates.value.map((item) => item.id);
+  } catch (error) {
+    promotionCandidates.value = [];
+    promotionSelectedStudentIds.value = [];
+    pushToast({
+      title: "Gagal Memuat Siswa Kelas Asal",
+      message: error.message,
+      type: "error",
+    });
+  } finally {
+    isLoadingPromotionCandidates.value = false;
+  }
+};
+
+const toggleAllPromotionCandidates = (event) => {
+  promotionSelectedStudentIds.value = event.target.checked
+    ? promotionCandidates.value.map((item) => item.id)
+    : [];
+};
+
 const handleClassFilterChange = async () => {
   filters.page = 1;
   await loadStudents();
+};
+
+const handleLimitChange = async () => {
+  filters.page = 1;
+  await loadStudents();
+};
+
+const studentInitial = (item) => {
+  const source = item?.full_name || item?.username || "S";
+  return source.charAt(0).toUpperCase();
 };
 
 const goToPrevPage = async () => {
@@ -551,6 +1195,75 @@ const updateStudent = async () => {
     isSubmitting.value = false;
   }
 };
+
+const submitPromotion = async () => {
+  if (!promotionForm.from_class_id || !promotionForm.to_class_id) {
+    pushToast({
+      title: "Data Belum Lengkap",
+      message: "Pilih kelas asal dan kelas tujuan.",
+      type: "warning",
+    });
+    return;
+  }
+  if (String(promotionForm.from_class_id) === String(promotionForm.to_class_id)) {
+    pushToast({
+      title: "Kelas Tidak Valid",
+      message: "Kelas asal dan kelas tujuan tidak boleh sama.",
+      type: "warning",
+    });
+    return;
+  }
+  if (promotionCandidates.value.length === 0) {
+    pushToast({
+      title: "Tidak Ada Siswa",
+      message: "Kelas asal tidak memiliki siswa untuk dinaikkan.",
+      type: "warning",
+    });
+    return;
+  }
+  if (promotionSelectedStudentIds.value.length === 0) {
+    pushToast({
+      title: "Belum Ada Siswa Dipilih",
+      message: "Centang minimal satu siswa yang akan naik kelas.",
+      type: "warning",
+    });
+    return;
+  }
+
+  isPromoting.value = true;
+  try {
+    const response = await api.post("/student/promotions", {
+      from_class_id: Number(promotionForm.from_class_id),
+      to_class_id: Number(promotionForm.to_class_id),
+      student_ids: promotionSelectedStudentIds.value.map((id) => Number(id)),
+      effective_date: promotionForm.effective_date || undefined,
+      note: promotionForm.note || undefined,
+    });
+    isPromotionModalOpen.value = false;
+    await loadStudents();
+    const promotedCount = Number(response?.data?.promoted_count || 0);
+    successModal.value.show(response?.message || `${promotedCount} siswa berhasil dinaikkan kelas.`);
+    resetPromotionForm();
+  } catch (error) {
+    pushToast({
+      title: "Gagal Memproses Naik Kelas",
+      message: error.message,
+      type: "error",
+    });
+  } finally {
+    isPromoting.value = false;
+  }
+};
+
+watch(
+  () => promotionForm.from_class_id,
+  async (classId) => {
+    if (!isPromotionModalOpen.value) {
+      return;
+    }
+    await loadPromotionCandidates(classId);
+  },
+);
 
 onMounted(async () => {
   try {

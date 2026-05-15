@@ -26,7 +26,17 @@ const routes = [
     meta: {
       title: "Dashboard" + appName,
       requiresAuth: true,
-      roles: ["SUPER_ADMIN", "ADMIN", "GURU", "SISWA"],
+      roles: ["SUPER_ADMIN", "ADMIN", "SARPRAS", "GURU", "SISWA"],
+    },
+  },
+  {
+    path: "/inventory",
+    name: "Inventory",
+    component: lazyRoute(() => import("../views/Inventory.vue")),
+    meta: {
+      title: "Inventaris" + appName,
+      requiresAuth: true,
+      roles: ["ADMIN", "SARPRAS", "SISWA"],
     },
   },
   {

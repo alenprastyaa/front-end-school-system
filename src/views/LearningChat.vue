@@ -167,7 +167,7 @@
                         <div v-if="entry.message.attachment_url" class="mt-2">
                           <audio v-if="isVoiceMessage(entry.message)" :src="normalizePublicUrl(entry.message.attachment_url)" controls
                             class="w-full max-w-sm" />
-                          <button v-else-if="entry.message.message_type === 'IMAGE'" type="button"
+                          <button v-else-if="isRenderableImageMessage(entry.message)" type="button"
                             @click="openImagePreview(normalizePublicUrl(entry.message.attachment_url), entry.message.attachment_name)"
                             class="block w-full overflow-hidden rounded-md text-left">
                             <img :src="normalizePublicUrl(entry.message.attachment_url)"
@@ -252,10 +252,24 @@
                   </div>
                 </div>
                 <div class="flex min-h-[44px] items-end gap-2">
-                  <button type="button"
-                    class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10">
-                    <Icon icon="mdi:emoticon-outline" class="h-6 w-6" />
-                  </button>
+                  <div class="relative mb-1">
+                    <button type="button"
+                      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
+                      @click="toggleEmojiPanel">
+                      <Icon icon="mdi:emoticon-outline" class="h-6 w-6" />
+                    </button>
+                    <div v-if="emojiPanelOpen"
+                      class="absolute bottom-12 left-0 z-30 w-64 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Emoji</p>
+                      <div class="grid grid-cols-8 gap-1">
+                        <button v-for="emoji in chatEmojis" :key="emoji" type="button"
+                          class="rounded-lg p-1 text-xl transition hover:bg-slate-100 dark:hover:bg-slate-800"
+                          @click="insertEmoji(emoji)">
+                          {{ emoji }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                   <div class="mb-1 flex shrink-0 items-center gap-1">
                     <button type="button"
                       class="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
@@ -268,7 +282,7 @@
                       @keydown="handleComposerKeydown" @focus="ensureComposerVisible"
                       class="block max-h-28 min-h-[24px] w-full resize-none overflow-y-auto border-0 bg-transparent py-2 text-[15px] leading-6 text-[#111b21] outline-none placeholder:text-[#667781] focus:outline-none focus:ring-0 dark:text-[#e9edef] dark:placeholder:text-[#8696a0]" />
                   </div>
-                  <button type="button" v-if="!composer.trim()" :disabled="isSendingMessage || Boolean(attachmentFile)"
+                  <button type="button" v-if="!composer.trim() && !attachmentFile" :disabled="isSendingMessage"
                     class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 disabled:opacity-50 dark:text-[#aebac1] dark:hover:bg-white/10"
                     :class="isRecordingVoice ? 'bg-rose-500 text-white hover:bg-rose-400 dark:text-white' : ''"
                     @click="toggleVoiceRecording">
@@ -280,6 +294,9 @@
                   </button>
                 </div>
               </form>
+              <input ref="attachmentInputRef" type="file" class="hidden"
+                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,audio/*"
+                @change="handleAttachmentChange" />
             </template>
 
             <div v-else class="hidden h-full min-h-[560px] items-center justify-center bg-[#f0f2f5] px-8 dark:bg-[#222e35] lg:flex">
@@ -385,7 +402,7 @@ import { Icon } from "@iconify/vue";
 import { useRoute } from "vue-router";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { uploadFileDirect } from "@/api/upload";
+import { convertHeicToJpegIfPossible } from "@/utils/fileImage";
 import { getStoredRole } from "@/utils/auth";
 import { normalizePublicUrl } from "@/utils/url";
 import { useSidebar } from "@/store/sidebar";
@@ -434,6 +451,7 @@ const previewImageZoom = ref(1);
 const showMessageActionSheet = ref(false);
 const actionSheetMessage = ref(null);
 const longPressTimer = ref(null);
+const emojiPanelOpen = ref(false);
 const messagesBySubject = ref({});
 const chatSummaryBySubject = ref({});
 const realtimeUnsubscribers = ref([]);
@@ -448,6 +466,7 @@ const composerBarHeight = ref(0);
 const composerResizeObserver = ref(null);
 const isConnected = computed(() => realtimeConnected.value);
 const localClientId = ref(`chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
+const chatEmojis = ["😀", "😂", "😍", "🙏", "👍", "🔥", "🎉", "😊", "😢", "😎", "🤔", "👏", "💯", "📚", "✅", "❤️"];
 
 const AUDIO_MIME_EXTENSION_MAP = {
   "audio/webm": ".webm",
@@ -873,6 +892,25 @@ const isVoiceMessage = (message) => {
   return /\.(mp3|wav|m4a|ogg|aac|webm|flac|amr|3gp|3g2)$/i.test(attachmentName);
 };
 
+const isRenderableImageMessage = (message) => {
+  if (String(message?.message_type || "").toUpperCase() !== "IMAGE") {
+    return false;
+  }
+
+  const mimeType = String(message?.attachment_mime_type || "").toLowerCase();
+  const attachmentName = String(message?.attachment_name || "").toLowerCase();
+
+  if (mimeType.includes("heic") || mimeType.includes("heif")) {
+    return false;
+  }
+
+  if (/\.(heic|heif)$/i.test(attachmentName)) {
+    return false;
+  }
+
+  return true;
+};
+
 const scrollToBottom = async () => {
   await nextTick();
   if (messageListRef.value) {
@@ -1155,6 +1193,16 @@ const clearReplyTarget = () => {
   replyTarget.value = null;
 };
 
+const toggleEmojiPanel = () => {
+  emojiPanelOpen.value = !emojiPanelOpen.value;
+};
+
+const insertEmoji = (emoji) => {
+  composer.value = `${composer.value || ""}${emoji}`;
+  emojiPanelOpen.value = false;
+  handleComposerInput();
+};
+
 const openImagePreview = (url, name = "") => {
   if (!url) return;
   previewImageUrl.value = url;
@@ -1219,6 +1267,7 @@ const replyFromActionSheet = () => {
 
 const backToGroupList = () => {
   mobileChatOpen.value = false;
+  emojiPanelOpen.value = false;
 };
 
 const handleComposerKeydown = (event) => {
@@ -1236,6 +1285,7 @@ const handleComposerKeydown = (event) => {
 };
 
 const openAttachmentPicker = () => {
+  emojiPanelOpen.value = false;
   attachmentInputRef.value?.click();
 };
 
@@ -1299,6 +1349,7 @@ const revokeRecordedVoiceUrl = () => {
 };
 
 const clearAttachment = () => {
+  emojiPanelOpen.value = false;
   attachmentFile.value = null;
   attachmentPreviewName.value = "";
   revokeRecordedVoiceUrl();
@@ -1327,17 +1378,23 @@ const clearAttachment = () => {
   }
 };
 
-const handleAttachmentChange = (event) => {
-  const file = event.target.files?.[0] || null;
+const handleAttachmentChange = async (event) => {
+  const rawFile = event.target.files?.[0] || null;
   event.target.value = "";
 
-  if (!file) {
+  if (!rawFile) {
     return;
   }
 
   clearAttachment();
-  attachmentFile.value = file;
-  attachmentPreviewName.value = file.name;
+  try {
+    const file = await convertHeicToJpegIfPossible(rawFile);
+    attachmentFile.value = file;
+    attachmentPreviewName.value = file.name;
+  } catch (error) {
+    attachmentFile.value = rawFile;
+    attachmentPreviewName.value = rawFile.name;
+  }
 };
 
 const stopVoiceRecording = async () => {
@@ -1556,21 +1613,22 @@ const sendMessage = async () => {
     let payload = { message: finalMessage };
 
     if (hasAttachment) {
-      const uploadedFile = await uploadFileDirect(attachmentFile.value);
-      const isVoiceAttachment = String(uploadedFile.mimeType || "").toLowerCase().startsWith("audio/");
-      payload = {
-        message: finalMessage,
-        message_type: isVoiceAttachment ? "VOICE" : undefined,
-        attachment_url: uploadedFile.url,
-        attachment_name: uploadedFile.name,
-        attachment_mime_type: uploadedFile.mimeType,
-        attachment_size: uploadedFile.size,
-      };
+      const formData = new FormData();
+      formData.append("message", finalMessage);
+      formData.append("attachment", attachmentFile.value);
+      formData.append("attachment_name", attachmentFile.value.name || "");
+      formData.append("attachment_mime_type", attachmentFile.value.type || "");
+      formData.append("attachment_size", String(Number(attachmentFile.value.size) || 0));
+      if (String(attachmentFile.value.type || "").toLowerCase().startsWith("audio/")) {
+        formData.append("message_type", "VOICE");
+      }
+      payload = formData;
     }
 
     const response = await api.post(`/learning/subjects/${selectedSubject.value.id}/chat`, payload);
     await sendTypingEvent(false);
     composer.value = "";
+    emojiPanelOpen.value = false;
     clearReplyTarget();
     clearAttachment();
 

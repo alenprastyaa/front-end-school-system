@@ -23,6 +23,12 @@
           <router-link to="/dashboard" class="min-w-0 flex-1 pr-2">
             <h2 class="truncate text-xl font-semibold text-gray-800 dark:text-gray-200">{{ schoolNameLabel }}</h2>
             <p class="text-xs text-gray-400">{{ role || "Guest" }}</p>
+            <p
+              v-if="isSarprasRole"
+              class="mt-1 inline-flex rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-600 dark:text-amber-300"
+            >
+              CMS Sarpras
+            </p>
           </router-link>
           <button
             class="lg:hidden inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-500 transition hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-slate-700"
@@ -264,6 +270,7 @@ const schoolEditForm = reactive({
 let toastIdCounter = 0;
 
 const isAdminRole = role === "ADMIN";
+const isSarprasRole = role === "SARPRAS";
 const schoolNameLabel = computed(() => storedProfile.value?.school_name || "School System");
 const schoolLogoSrc = computed(() => normalizePublicUrl(storedProfile.value?.school_logo) || "");
 
@@ -412,6 +419,7 @@ const menuByRole = {
     { key: "classes", to: "/classes", dataTour: "classes", label: "Kelas", icon: "mdi:google-classroom" },
     { key: "students", to: "/students", dataTour: "students-admin", label: "Siswa", icon: "mdi:account-school-outline" },
     { key: "academic-periods", to: "/academic-periods", label: "Tahun Ajaran", icon: "ph:calendar-blank" },
+    { key: "inventory", to: "/inventory", label: "Sarpras", icon: "ph:archive-box" },
     {
       key: "curriculum-module",
       label: "Kurikulum",
@@ -447,6 +455,10 @@ const menuByRole = {
       ],
     },
   ],
+  SARPRAS: [
+    { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
+    { key: "inventory", to: "/inventory", label: "Daftar Barang", icon: "ph:archive-box" },
+  ],
   SISWA: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     { key: "private-chat", to: "/private-chat", label: "Chat Pribadi", icon: "ph:chat-circle-dots" },
@@ -465,6 +477,7 @@ const menuByRole = {
     { key: "attendance", to: "/attendance", dataTour: "attendance", label: "Absensi", icon: "mdi:calendar-check-outline" },
     { key: "face-enrollment", to: "/face-enrollment", label: "Enrol Wajah", icon: "mdi:face-recognition" },
     { key: "receipts", to: "/receipts", label: "Bukti Pembayaran", icon: "ph:receipt" },
+    { key: "inventory", to: "/inventory", label: "Peminjaman Barang", icon: "ph:archive-box" },
   ],
 };
 
