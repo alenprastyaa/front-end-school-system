@@ -297,7 +297,7 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
 
         <div
-          class="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          class="flex h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
           @click.stop>
 
           <div
@@ -316,185 +316,196 @@
             </button>
           </div>
 
-          <form @submit.prevent="generateQuestionBankWithAi" class="flex min-h-0 flex-1 flex-col">
-            <div class="flex-1 space-y-6 overflow-y-auto p-6">
-              <section v-if="isGeneratingAiQuestions"
-                class="rounded-2xl border border-sky-200 bg-sky-50/80 p-5 dark:border-sky-500/20 dark:bg-sky-500/10">
-                <div class="flex items-start gap-4">
-                  <div
-                    class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-sky-600 ring-1 ring-sky-200 dark:bg-slate-900 dark:text-sky-300 dark:ring-sky-500/20">
-                    <svg class="h-6 w-6 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                      stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                    </svg>
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <h3 class="font-semibold text-sky-900 dark:text-sky-100">AI sedang menyusun soal</h3>
-                    <p class="mt-1 text-sm text-sky-800 dark:text-sky-200">
-                      {{ activeAiGenerationStage }}
-                    </p>
-                    <div class="mt-4 h-2 overflow-hidden rounded-full bg-white/80 dark:bg-slate-900/70">
-                      <div class="h-full w-1/2 animate-pulse rounded-full bg-sky-500"></div>
+          <form @submit.prevent="generateQuestionBankWithAi" class="relative flex min-h-0 flex-1 flex-col">
+            <fieldset :disabled="isGeneratingAiQuestions" class="flex min-h-0 flex-1 flex-col">
+              <div ref="aiGeneratorScrollRef"
+                class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6 [-webkit-overflow-scrolling:touch]">
+                <div class="space-y-6">
+                  <div class="grid gap-5 md:grid-cols-2">
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tipe Soal</label>
+                      <select v-model="aiGeneratorForm.question_type"
+                        class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
+                        <option value="MCQ">Pilihan Ganda</option>
+                        <option value="ESSAY">Essay</option>
+                      </select>
+                    </div>
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jumlah Soal</label>
+                      <input v-model="aiGeneratorForm.question_count" type="number" min="1" max="20"
+                        class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
                     </div>
                   </div>
-                </div>
-              </section>
 
-              <div class="grid gap-5 md:grid-cols-2">
-                <div class="space-y-1.5">
-                  <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tipe Soal</label>
-                  <select v-model="aiGeneratorForm.question_type"
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
-                    <option value="MCQ">Pilihan Ganda</option>
-                    <option value="ESSAY">Essay</option>
-                  </select>
-                </div>
-                <div class="space-y-1.5">
-                  <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jumlah Soal</label>
-                  <input v-model="aiGeneratorForm.question_count" type="number" min="1" max="20"
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                </div>
-              </div>
-
-              <div class="grid gap-5 md:grid-cols-2">
-                <div class="space-y-1.5">
-                  <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tingkat Kesulitan</label>
-                  <select v-model="aiGeneratorForm.difficulty"
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
-                    <option value="MUDAH">Mudah</option>
-                    <option value="MENENGAH">Menengah</option>
-                    <option value="SULIT">Sulit</option>
-                  </select>
-                </div>
-                <div class="space-y-1.5">
-                  <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Mapel Aktif</label>
-                  <div
-                    class="rounded-xl bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-800/50 dark:text-slate-200 dark:ring-slate-700/50">
-                    {{ selectedSubject?.name }} • {{ selectedSubject?.class_name }}
-                  </div>
-                </div>
-              </div>
-
-              <div class="grid gap-5 md:grid-cols-3">
-                <div class="space-y-1.5">
-                  <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jenjang / Kelas</label>
-                  <input v-model="aiGeneratorForm.grade_label" type="text" placeholder="Contoh: Kelas 8 SMP"
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                </div>
-                <div class="space-y-1.5">
-                  <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Fase</label>
-                  <input v-model="aiGeneratorForm.phase_name" type="text" placeholder="Contoh: Fase D"
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                </div>
-                <div class="space-y-1.5">
-                  <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Kurikulum</label>
-                  <input v-model="aiGeneratorForm.curriculum_name" type="text" placeholder="Contoh: Kurikulum Merdeka"
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                </div>
-              </div>
-
-              <div class="space-y-1.5">
-                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Topik / Materi</label>
-                <textarea v-model="aiGeneratorForm.topic" rows="3"
-                  placeholder="Contoh: Persamaan linear satu variabel, ekosistem, teks eksplanasi..."
-                  class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-              </div>
-
-              <div class="space-y-1.5">
-                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Instruksi Tambahan</label>
-                <textarea v-model="aiGeneratorForm.additional_instructions" rows="4"
-                  placeholder="Contoh: fokus ke HOTS, hindari angka pecahan, gunakan konteks kehidupan sehari-hari..."
-                  class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-              </div>
-
-              <section v-if="generatedAiQuestions.length" ref="aiPreviewSectionRef"
-                class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5 dark:border-slate-700 dark:bg-slate-800/30">
-                <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <h3 class="font-semibold text-slate-900 dark:text-white">Preview Soal AI</h3>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                      Pilih soal yang ingin disimpan ke bank soal. Saat ini terpilih {{
-                      selectedGeneratedAiQuestions.length }} dari {{ generatedAiQuestions.length }} soal.
-                    </p>
-                  </div>
-                  <div class="flex flex-wrap gap-2">
-                    <button type="button" @click="selectAllGeneratedAiQuestions"
-                      class="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">
-                      Pilih Semua
-                    </button>
-                    <button type="button" @click="clearGeneratedAiSelection"
-                      class="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">
-                      Kosongkan Pilihan
-                    </button>
-                  </div>
-                </div>
-
-                <div class="mt-4 space-y-4">
-                  <article v-for="(item, index) in generatedAiQuestions" :key="item.temp_id"
-                    class="rounded-2xl border bg-white p-4 shadow-sm dark:bg-slate-900"
-                    :class="selectedGeneratedAiQuestionIds.includes(item.temp_id) ? 'border-sky-300 dark:border-sky-500/40' : 'border-slate-200 dark:border-slate-700'">
-                    <div class="flex items-start gap-4">
-                      <input v-model="selectedGeneratedAiQuestionIds" :value="item.temp_id" type="checkbox"
-                        class="mt-1 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-600 dark:border-slate-600 dark:bg-slate-800" />
-                      <div class="min-w-0 flex-1">
-                        <div class="flex flex-wrap items-center gap-2">
-                          <span
-                            class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                            Soal {{ index + 1 }}
-                          </span>
-                          <span
-                            class="inline-flex rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
-                            {{ item.question_type === "MCQ" ? "Pilihan Ganda" : "Essay" }}
-                          </span>
-                        </div>
-                        <p class="mt-3 text-sm font-semibold leading-6 text-slate-900 dark:text-white">
-                          {{ parseQuestionContent(item.question_text).question_text }}
-                        </p>
-                        <img v-if="parseQuestionContent(item.question_text).question_image_url"
-                          :src="parseQuestionContent(item.question_text).question_image_url" alt="Gambar pertanyaan"
-                          class="mt-3 max-h-48 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
-
-                        <div v-if="item.question_type === 'MCQ'" class="mt-4 grid gap-2">
-                          <div v-for="(option, optionIndex) in item.options || []"
-                            :key="`${item.temp_id}-option-${optionIndex}`" class="rounded-xl border px-3 py-2 text-sm"
-                            :class="optionIndex === item.correct_option
-                              ? 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300'
-                              : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300'">
-                            <div>{{ String.fromCharCode(65 + optionIndex) }}. {{ parseOptionItem(option).text }}</div>
-                          </div>
-                        </div>
-
-                        <div v-else
-                          class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
-                          <span class="font-semibold">Rubrik:</span> {{ item.rubric }}
-                        </div>
+                  <div class="grid gap-5 md:grid-cols-2">
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tingkat Kesulitan</label>
+                      <select v-model="aiGeneratorForm.difficulty"
+                        class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
+                        <option value="MUDAH">Mudah</option>
+                        <option value="MENENGAH">Menengah</option>
+                        <option value="SULIT">Sulit</option>
+                      </select>
+                    </div>
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Mapel Aktif</label>
+                      <div
+                        class="rounded-xl bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-800/50 dark:text-slate-200 dark:ring-slate-700/50">
+                        {{ selectedSubject?.name }} • {{ selectedSubject?.class_name }}
                       </div>
                     </div>
-                  </article>
-                </div>
-              </section>
-            </div>
+                  </div>
 
-            <div
-              class="flex flex-none items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/80 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/50">
-              <button @click="aiGeneratorModalOpen = false" type="button"
-                class="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
-                Batal
-              </button>
-              <button v-if="generatedAiQuestions.length" type="button" @click="saveGeneratedAiQuestions"
-                :disabled="isSavingGeneratedAiQuestions || selectedGeneratedAiQuestions.length === 0"
-                class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
-                {{ isSavingGeneratedAiQuestions ? "Menyimpan..." : `Simpan ${selectedGeneratedAiQuestions.length} Soal
-                Terpilih` }}
-              </button>
-              <button type="submit" :disabled="isGeneratingAiQuestions"
-                class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60">
-                {{ isGeneratingAiQuestions ? "Generating..." : generatedAiQuestions.length ? "Generate Ulang Preview" :
-                "Generate Preview" }}
-              </button>
-            </div>
+                  <div class="grid gap-5 md:grid-cols-3">
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jenjang / Kelas</label>
+                      <input v-model="aiGeneratorForm.grade_label" type="text" placeholder="Contoh: Kelas 8 SMP"
+                        class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+                    </div>
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Fase</label>
+                      <input v-model="aiGeneratorForm.phase_name" type="text" placeholder="Contoh: Fase D"
+                        class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+                    </div>
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Kurikulum</label>
+                      <input v-model="aiGeneratorForm.curriculum_name" type="text" placeholder="Contoh: Kurikulum Merdeka"
+                        class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+                    </div>
+                  </div>
+
+                  <div class="space-y-1.5">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Topik / Materi</label>
+                    <textarea v-model="aiGeneratorForm.topic" rows="3"
+                      placeholder="Contoh: Persamaan linear satu variabel, ekosistem, teks eksplanasi..."
+                      class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+                  </div>
+
+                  <div class="space-y-1.5">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Instruksi Tambahan</label>
+                    <textarea v-model="aiGeneratorForm.additional_instructions" rows="4"
+                      placeholder="Contoh: fokus ke HOTS, hindari angka pecahan, gunakan konteks kehidupan sehari-hari..."
+                      class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+                  </div>
+
+                  <section v-if="generatedAiQuestions.length" ref="aiPreviewSectionRef"
+                    class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5 dark:border-slate-700 dark:bg-slate-800/30">
+                    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <div>
+                        <h3 class="font-semibold text-slate-900 dark:text-white">Preview Soal AI</h3>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                          Pilih soal yang ingin disimpan ke bank soal. Saat ini terpilih {{ selectedGeneratedAiQuestions.length }} dari {{ generatedAiQuestions.length }} soal.
+                        </p>
+                      </div>
+                      <div class="flex flex-wrap gap-2">
+                        <button type="button" @click="selectAllGeneratedAiQuestions"
+                          class="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">
+                          Pilih Semua
+                        </button>
+                        <button type="button" @click="clearGeneratedAiSelection"
+                          class="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">
+                          Kosongkan Pilihan
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="mt-4 space-y-4">
+                      <article v-for="(item, index) in generatedAiQuestions" :key="item.temp_id"
+                        class="rounded-2xl border bg-white p-4 shadow-sm dark:bg-slate-900"
+                        :class="selectedGeneratedAiQuestionIds.includes(item.temp_id) ? 'border-sky-300 dark:border-sky-500/40' : 'border-slate-200 dark:border-slate-700'">
+                        <div class="flex items-start gap-4">
+                          <input v-model="selectedGeneratedAiQuestionIds" :value="item.temp_id" type="checkbox"
+                            class="mt-1 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-600 dark:border-slate-600 dark:bg-slate-800" />
+                          <div class="min-w-0 flex-1">
+                            <div class="flex flex-wrap items-center gap-2">
+                              <span
+                                class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                Soal {{ index + 1 }}
+                              </span>
+                              <span
+                                class="inline-flex rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+                                {{ item.question_type === "MCQ" ? "Pilihan Ganda" : "Essay" }}
+                              </span>
+                            </div>
+                            <p class="mt-3 text-sm font-semibold leading-6 text-slate-900 dark:text-white">
+                              {{ parseQuestionContent(item.question_text).question_text }}
+                            </p>
+                            <img v-if="parseQuestionContent(item.question_text).question_image_url"
+                              :src="parseQuestionContent(item.question_text).question_image_url" alt="Gambar pertanyaan"
+                              class="mt-3 max-h-48 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+
+                            <div v-if="item.question_type === 'MCQ'" class="mt-4 grid gap-2">
+                              <div v-for="(option, optionIndex) in item.options || []"
+                                :key="`${item.temp_id}-option-${optionIndex}`" class="rounded-xl border px-3 py-2 text-sm"
+                                :class="optionIndex === item.correct_option
+                                  ? 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300'
+                                  : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300'">
+                                <div>{{ String.fromCharCode(65 + optionIndex) }}. {{ parseOptionItem(option).text }}</div>
+                              </div>
+                            </div>
+
+                            <div v-else
+                              class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
+                              <span class="font-semibold">Rubrik:</span> {{ item.rubric }}
+                            </div>
+                          </div>
+                        </div>
+                      </article>
+                    </div>
+                  </section>
+                </div>
+              </div>
+
+              <div class="flex flex-none items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/80 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/50">
+                <button @click="aiGeneratorModalOpen = false" type="button"
+                  class="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+                  Batal
+                </button>
+                <button v-if="generatedAiQuestions.length" type="button" @click="saveGeneratedAiQuestions"
+                  :disabled="isSavingGeneratedAiQuestions || selectedGeneratedAiQuestions.length === 0"
+                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
+                  {{ isSavingGeneratedAiQuestions ? "Menyimpan..." : `Simpan ${selectedGeneratedAiQuestions.length} Soal Terpilih` }}
+                </button>
+                <button type="submit" :disabled="isGeneratingAiQuestions"
+                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60">
+                  {{ isGeneratingAiQuestions ? "Generating..." : generatedAiQuestions.length ? "Generate Ulang Preview" : "Generate Preview" }}
+                </button>
+              </div>
+            </fieldset>
           </form>
+        </div>
+      </div>
+    </Transition>
+
+    <Transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100" leave-active-class="transition ease-in duration-150"
+      leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+      <div v-if="isGeneratingAiQuestions"
+        class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm">
+        <div
+          class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl ring-1 ring-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:ring-white/10">
+          <div class="flex items-start gap-4">
+            <div
+              class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">
+              <svg class="h-6 w-6 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <h3 class="text-lg font-bold text-slate-900 dark:text-white">Sedang membuat soal AI</h3>
+              <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                Mohon tunggu sampai proses selesai. Form sedang dikunci agar input tidak berubah.
+              </p>
+              <div class="mt-4 space-y-2">
+                <p class="text-sm font-medium text-sky-700 dark:text-sky-300">{{ activeAiGenerationStage }}</p>
+                <div class="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                  <div class="h-full w-1/2 animate-pulse rounded-full bg-sky-500"></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </Transition>
@@ -990,6 +1001,7 @@ const isGeneratingAiQuestions = ref(false);
 const isSavingGeneratedAiQuestions = ref(false);
 const aiGeneratorModalOpen = ref(false);
 const aiPreviewSectionRef = ref(null);
+const aiGeneratorScrollRef = ref(null);
 const questionBankModalOpen = ref(false);
 const questionBankDocumentInput = ref(null);
 const questionBankImportFile = ref(null);
@@ -1737,7 +1749,12 @@ const generateQuestionBankWithAi = async () => {
       type: "success",
     });
     await nextTick();
-    aiPreviewSectionRef.value?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (aiGeneratorScrollRef.value && aiPreviewSectionRef.value) {
+      aiGeneratorScrollRef.value.scrollTo({
+        top: aiPreviewSectionRef.value.offsetTop - 16,
+        behavior: "smooth",
+      });
+    }
   } catch (error) {
     isError.value = true;
     message.value = error.message;

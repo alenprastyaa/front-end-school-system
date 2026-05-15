@@ -105,7 +105,7 @@ export default {
       return Boolean(this.$route.meta.hideNav || layoutChromeState.hidden);
     },
     isChatLayoutRoute() {
-      return ["LearningChatTeacher", "LearningChatStudent"].includes(this.$route.name);
+      return ["LearningChatTeacher", "LearningChatStudent", "PrivateChat"].includes(this.$route.name);
     },
     isDesktopViewport() {
       return this.viewportWidth >= 1024;

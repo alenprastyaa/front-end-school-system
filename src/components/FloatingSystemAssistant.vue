@@ -72,7 +72,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { Icon } from "@iconify/vue";
 import { useRoute } from "vue-router";
 import { api } from "@/api";
@@ -106,6 +106,7 @@ const assistantConfigByRole = {
 };
 const assistantConfig = assistantConfigByRole[currentRole] || assistantConfigByRole.GURU;
 const open = ref(false);
+const viewportWidth = ref(typeof window !== "undefined" ? window.innerWidth : 1280);
 const question = ref("");
 const isLoading = ref(false);
 const messages = ref([
@@ -119,9 +120,17 @@ const quickQuestions = ref(assistantConfig.quickQuestions);
 let messageCounter = 2;
 
 const hiddenRouteNames = new Set(["Login", "Register", "PublicLanding", "PublicStudentRegistration"]);
+const chatRouteNames = new Set(["PrivateChat", "LearningChatTeacher", "LearningChatStudent"]);
+const isMobileViewport = computed(() => viewportWidth.value < 1024);
+const shouldHideOnMobileChat = computed(() =>
+  isMobileViewport.value && chatRouteNames.has(String(route.name || "")),
+);
 const isAllowed = computed(() => {
   const role = getStoredRole();
-  return isAuthenticated() && ["ADMIN", "GURU"].includes(role) && !hiddenRouteNames.has(route.name);
+  return isAuthenticated()
+    && ["ADMIN", "GURU"].includes(role)
+    && !hiddenRouteNames.has(route.name)
+    && !shouldHideOnMobileChat.value;
 });
 
 const addMessage = (role, text) => {
@@ -152,4 +161,25 @@ const sendQuestion = async () => {
     isLoading.value = false;
   }
 };
+
+const syncViewportWidth = () => {
+  if (typeof window === "undefined") return;
+  viewportWidth.value = window.innerWidth;
+};
+
+watch(shouldHideOnMobileChat, (hidden) => {
+  if (hidden) {
+    open.value = false;
+  }
+});
+
+onMounted(() => {
+  if (typeof window === "undefined") return;
+  window.addEventListener("resize", syncViewportWidth, { passive: true });
+});
+
+onUnmounted(() => {
+  if (typeof window === "undefined") return;
+  window.removeEventListener("resize", syncViewportWidth);
+});
 </script>

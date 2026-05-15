@@ -1,6 +1,6 @@
 <template>
-  <div class="h-full min-h-0 overflow-hidden bg-[#d9dbd5] text-[#111b21] dark:bg-[#0b141a] dark:text-[#e9edef]">
-    <main class="mx-auto flex h-full min-h-0 w-full flex-col p-0 lg:p-5">
+  <div class="h-full min-h-full overflow-hidden bg-[#d9dbd5] text-[#111b21] dark:bg-[#0b141a] dark:text-[#e9edef]">
+    <main class="mx-auto flex h-full min-h-full w-full flex-col p-0 lg:p-5">
       <div class="min-h-0 flex-1 overflow-hidden bg-white shadow-sm dark:bg-[#111b21] lg:rounded-md">
         <div class="grid h-full min-h-0 lg:grid-cols-[390px_minmax(0,1fr)]">
           <aside
@@ -129,7 +129,7 @@
                   </div>
                 </div>
 
-                <div v-else class="space-y-1">
+                <div v-else class="flex min-h-full flex-col justify-end space-y-1">
                   <template v-for="entry in renderedMessages" :key="entry.key">
                     <div v-if="entry.type === 'date'" class="sticky top-2 z-[1] flex justify-center py-2">
                       <span

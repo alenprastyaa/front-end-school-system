@@ -102,12 +102,62 @@
                   </div>
 
                   <div class="space-y-1.5">
-                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Durasi per Soal (detik)</label>
-                    <input v-model="assignmentForm.question_duration_seconds" type="number" min="1" max="3600"
-                      placeholder="Contoh: 10"
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Mode Durasi Quiz</label>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                      <button type="button" @click="setQuestionDurationMode('PER_QUESTION')"
+                        class="rounded-2xl border p-4 text-left transition"
+                        :class="assignmentForm.question_duration_mode === 'PER_QUESTION'
+                          ? 'border-sky-500 bg-sky-50 ring-2 ring-sky-100 dark:border-sky-400 dark:bg-sky-500/10 dark:ring-sky-500/20'
+                          : 'border-slate-200 bg-white hover:border-sky-200 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-sky-500/40 dark:hover:bg-slate-800/60'">
+                        <div class="flex items-start gap-3">
+                          <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border"
+                            :class="assignmentForm.question_duration_mode === 'PER_QUESTION'
+                              ? 'border-sky-600 bg-sky-600 text-white dark:border-sky-400 dark:bg-sky-400'
+                              : 'border-slate-300 dark:border-slate-600'">
+                            <span v-if="assignmentForm.question_duration_mode === 'PER_QUESTION'" class="h-2 w-2 rounded-full bg-white"></span>
+                          </span>
+                          <span>
+                            <span class="block text-sm font-bold text-slate-900 dark:text-white">Per Soal</span>
+                            <span class="mt-1 block text-xs leading-5 text-slate-500 dark:text-slate-400">
+                              Timer berjalan untuk setiap soal. Cocok untuk latihan cepat.
+                            </span>
+                          </span>
+                        </div>
+                      </button>
+                      <button type="button" @click="setQuestionDurationMode('GLOBAL')"
+                        class="rounded-2xl border p-4 text-left transition"
+                        :class="assignmentForm.question_duration_mode === 'GLOBAL'
+                          ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-100 dark:border-emerald-400 dark:bg-emerald-500/10 dark:ring-emerald-500/20'
+                          : 'border-slate-200 bg-white hover:border-emerald-200 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-emerald-500/40 dark:hover:bg-slate-800/60'">
+                        <div class="flex items-start gap-3">
+                          <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border"
+                            :class="assignmentForm.question_duration_mode === 'GLOBAL'
+                              ? 'border-emerald-600 bg-emerald-600 text-white dark:border-emerald-400 dark:bg-emerald-400'
+                              : 'border-slate-300 dark:border-slate-600'">
+                            <span v-if="assignmentForm.question_duration_mode === 'GLOBAL'" class="h-2 w-2 rounded-full bg-white"></span>
+                          </span>
+                          <span>
+                            <span class="block text-sm font-bold text-slate-900 dark:text-white">Global</span>
+                            <span class="mt-1 block text-xs leading-5 text-slate-500 dark:text-slate-400">
+                              Timer berjalan untuk seluruh sesi, seperti ujian resmi tanpa kode.
+                            </span>
+                          </span>
+                        </div>
+                      </button>
+                    </div>
+                    <label class="mt-3 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      {{ assignmentForm.question_duration_mode === 'PER_QUESTION'
+                        ? 'Durasi per Soal (detik)'
+                        : 'Durasi Quiz Total (menit)' }}
+                    </label>
+                    <input v-model="assignmentForm.question_duration_value" type="number" min="1"
+                      :max="assignmentForm.question_duration_mode === 'PER_QUESTION' ? 3600 : 180"
+                      :placeholder="assignmentForm.question_duration_mode === 'PER_QUESTION' ? 'Contoh: 10' : 'Contoh: 30'"
                       class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
                     <p class="text-xs text-slate-500 dark:text-slate-400">
-                      Setiap siswa mendapat hitung mundur terpisah untuk tiap soal. Saat waktu habis, soal otomatis dikunci lalu lanjut ke soal berikutnya.
+                      {{ assignmentForm.question_duration_mode === 'PER_QUESTION'
+                        ? 'Setiap siswa mendapat hitung mundur terpisah untuk tiap soal. Saat waktu habis, soal otomatis dikunci lalu lanjut ke soal berikutnya.'
+                        : 'Waktu dihitung untuk seluruh sesi quiz dalam menit. Siswa bebas pindah soal selama waktu masih tersisa, seperti ujian tetapi tanpa kode ujian.' }}
                     </p>
                   </div>
 
@@ -188,7 +238,7 @@
                             <div class="mt-1 flex items-center gap-2">
                               <span class="text-xs text-slate-500">{{ formatDateTime(item.due_date) }}</span>
                               <span class="h-1 w-1 rounded-full bg-slate-300"></span>
-                              <span class="text-xs text-slate-500">{{ item.is_exam ? `${formatDurationSeconds(item.question_duration_seconds)}/sesi` : `${formatDurationSeconds(item.question_duration_seconds)}/soal` }}</span>
+                              <span class="text-xs text-slate-500">{{ item.is_exam || String(item.question_duration_mode || '').toUpperCase() === 'GLOBAL' ? `${formatDurationSeconds(item.question_duration_seconds)}/sesi` : `${formatDurationSeconds(item.question_duration_seconds)}/soal` }}</span>
                               <span class="h-1 w-1 rounded-full bg-slate-300"></span>
                               <span class="text-xs font-medium text-sky-600 dark:text-sky-400">{{ item.submission_count || 0 }} Submit</span>
                             </div>
@@ -852,7 +902,8 @@ const assignmentForm = reactive({
   due_date: "",
   assignment_type: "MCQ",
   shuffle_questions: false,
-  question_duration_seconds: 10,
+  question_duration_mode: "PER_QUESTION",
+  question_duration_value: 10,
   selected_question_bank_ids: [],
 });
 
@@ -1001,8 +1052,17 @@ const resetAssignmentForm = () => {
   assignmentForm.due_date = "";
   assignmentForm.assignment_type = "MCQ";
   assignmentForm.shuffle_questions = false;
-  assignmentForm.question_duration_seconds = 10;
+  assignmentForm.question_duration_mode = "PER_QUESTION";
+  assignmentForm.question_duration_value = 10;
   assignmentForm.selected_question_bank_ids = [];
+};
+
+const setQuestionDurationMode = (mode) => {
+  if (assignmentForm.question_duration_mode === mode) {
+    return;
+  }
+  assignmentForm.question_duration_mode = mode;
+  assignmentForm.question_duration_value = mode === "GLOBAL" ? 30 : 10;
 };
 
 const clearSelectedQuestions = () => {
@@ -1315,6 +1375,14 @@ const submitAssignment = async () => {
   isError.value = false;
 
   try {
+    const durationValue = Number(assignmentForm.question_duration_value) || 0;
+    if (assignmentForm.question_duration_mode === "GLOBAL" && (durationValue < 1 || durationValue > 180)) {
+      throw new Error("Durasi quiz global harus 1 sampai 180 menit.");
+    }
+    if (assignmentForm.question_duration_mode !== "GLOBAL" && durationValue < 1) {
+      throw new Error("Durasi per soal minimal 1 detik.");
+    }
+
     const formData = new FormData();
     formData.append("subject_id", selectedSubject.value.id);
     formData.append("title", assignmentForm.title);
@@ -1322,7 +1390,12 @@ const submitAssignment = async () => {
     formData.append("due_date", assignmentForm.due_date || "");
     formData.append("assignment_type", assignmentForm.assignment_type);
     formData.append("shuffle_questions", String(Boolean(assignmentForm.shuffle_questions)));
-    formData.append("question_duration_seconds", String(Number(assignmentForm.question_duration_seconds) || 0));
+    formData.append("question_duration_mode", assignmentForm.question_duration_mode);
+    if (assignmentForm.question_duration_mode === "GLOBAL") {
+      formData.append("question_duration_minutes", String(durationValue));
+    } else {
+      formData.append("question_duration_seconds", String(durationValue));
+    }
     formData.append("question_bank_ids", JSON.stringify(assignmentForm.selected_question_bank_ids));
 
     const response = await api.post("/learning/assignments", formData);

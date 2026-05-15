@@ -82,6 +82,112 @@
       </div>
     </div>
 
+    <div v-if="reviewTarget"
+      class="fixed inset-0 z-[126] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+      <div
+        class="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+        <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-4 dark:border-slate-800">
+          <div>
+            <h3 class="text-xl font-black tracking-tight text-slate-900 dark:text-white">Review Jawaban</h3>
+            <div class="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+              <span>{{ reviewTarget.title }}</span>
+              <span class="h-1 w-1 rounded-full bg-slate-300"></span>
+              <span>{{ assignmentTypeLabel(reviewTarget.assignment_type) }}</span>
+              <span v-if="reviewTarget.submitted_at" class="h-1 w-1 rounded-full bg-slate-300"></span>
+              <span v-if="reviewTarget.submitted_at">{{ formatDateTime(reviewTarget.submitted_at) }}</span>
+            </div>
+          </div>
+          <button type="button" @click="closeAssignmentReview"
+            class="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-6 py-5">
+          <div v-if="reviewTarget.score !== null || reviewTarget.feedback"
+            class="mb-5 rounded-2xl bg-slate-50 px-4 py-4 ring-1 ring-inset ring-slate-200 dark:bg-slate-800/50 dark:ring-slate-700">
+            <p v-if="reviewTarget.score !== null" class="text-sm font-bold text-emerald-700 dark:text-emerald-300">
+              Nilai: {{ reviewTarget.score }} / 100
+            </p>
+            <p v-if="reviewTarget.feedback" class="mt-1 text-sm text-slate-600 dark:text-slate-300">
+              <span class="font-bold text-slate-900 dark:text-white">Catatan Guru:</span> {{ reviewTarget.feedback }}
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <article v-for="(item, index) in reviewItems" :key="`review-answer-${index}`"
+              class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5 dark:border-slate-700 dark:bg-slate-800/30">
+              <p class="font-medium leading-relaxed text-slate-900 dark:text-white">
+                <span class="text-slate-400">{{ index + 1 }}.</span> {{ item.question }}
+              </p>
+              <img v-if="item.questionImageUrl" :src="item.questionImageUrl" alt="Gambar pertanyaan"
+                class="mt-3 max-h-56 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+
+              <div v-if="item.type === 'MCQ'" class="mt-4 space-y-2">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span v-if="item.selectedIndex === null"
+                    class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
+                    Belum Dijawab
+                  </span>
+                  <span v-else-if="item.isCorrect"
+                    class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20">
+                    Benar
+                  </span>
+                  <span v-else
+                    class="inline-flex items-center rounded-full bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700 ring-1 ring-inset ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
+                    Salah
+                  </span>
+                </div>
+                <div v-for="(option, optionIndex) in item.options" :key="`review-option-${index}-${optionIndex}`"
+                  class="rounded-xl border px-4 py-3 text-sm"
+                  :class="item.correctIndex === optionIndex
+                    ? 'border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-100'
+                    : item.selectedIndex === optionIndex
+                      ? 'border-sky-300 bg-sky-50 text-sky-900 dark:border-sky-500/40 dark:bg-sky-500/10 dark:text-sky-100'
+                      : 'border-slate-200 bg-white text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'">
+                  <div class="flex items-start gap-3">
+                    <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                      :class="item.correctIndex === optionIndex
+                        ? 'bg-emerald-600 text-white'
+                        : item.selectedIndex === optionIndex
+                          ? 'bg-sky-600 text-white'
+                          : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'">
+                      {{ String.fromCharCode(65 + optionIndex) }}
+                    </span>
+                    <div class="space-y-2 flex-1">
+                      <span class="block font-medium leading-relaxed">{{ option.text }}</span>
+                      <img v-if="option.imageUrl" :src="option.imageUrl" :alt="`Opsi ${String.fromCharCode(65 + optionIndex)}`"
+                        class="max-h-40 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+                    </div>
+                    <span v-if="item.correctIndex === optionIndex"
+                      class="inline-flex shrink-0 items-center rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
+                      Jawaban Benar
+                    </span>
+                  </div>
+                </div>
+                <p v-if="item.selectedIndex === null" class="text-sm italic text-slate-500 dark:text-slate-400">
+                  Belum ada jawaban yang tersimpan untuk soal ini.
+                </p>
+              </div>
+
+              <div v-else class="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                {{ item.answerText || "Belum ada jawaban essay yang tersimpan." }}
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-100 bg-slate-50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/50">
+          <button type="button" @click="closeAssignmentReview"
+            class="w-full rounded-xl bg-slate-900 py-3 text-sm font-bold text-white transition hover:bg-slate-800 dark:bg-rose-600 dark:hover:bg-rose-500">
+            Tutup Review
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div v-if="!submissionTarget"
       class="min-h-screen bg-slate-50/50 p-4 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
 
@@ -242,13 +348,13 @@
                                     : `${item.is_exam ? "Ujian" : "Quiz"} siap dikerjakan sekarang.` }}
                         </div>
 
-                        <button @click="startSubmission(item)"
-                          :disabled="Boolean(item.is_submitted) || isExamUnavailable(item)"
+                        <button @click="item.is_submitted ? openAssignmentReview(item) : startSubmission(item)"
+                          :disabled="!item.is_submitted && isExamUnavailable(item)"
                           class="inline-flex w-full items-center justify-center rounded-2xl px-6 py-3 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                           :class="item.is_submitted
-                            ? 'bg-slate-100 text-slate-400 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-500 dark:ring-slate-700'
+                            ? 'bg-white text-slate-700 ring-1 ring-inset ring-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-700'
                             : 'bg-slate-900 text-white shadow-lg shadow-slate-900/10 hover:bg-rose-600 dark:bg-white dark:text-slate-900 dark:hover:bg-rose-200'">
-                          {{ startButtonLabel(item) }}
+                          {{ item.is_submitted ? "Review Jawaban" : startButtonLabel(item) }}
                         </button>
                       </div>
                     </div>
@@ -332,14 +438,14 @@
           <div class="p-6">
 
             <form @submit.prevent="requestSubmitAssignment" class="space-y-8">
-              <div v-if="submissionTarget?.is_exam" class="grid gap-6 xl:grid-cols-[minmax(0,1fr),320px]">
+              <div v-if="isExamStyleSession" class="grid gap-6 xl:grid-cols-[minmax(0,1fr),320px]">
                 <section class="space-y-6">
                   <div class="grid gap-4 md:grid-cols-3">
                     <div
                       class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
-                      <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Jenis Ujian</p>
+                      <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{{ sessionTypeTitle }}</p>
                       <p class="mt-2 text-lg font-black text-slate-900 dark:text-white">
-                        {{ examCategoryLabel(submissionTarget.exam_category) }}
+                        {{ sessionTypeValue }}
                       </p>
                     </div>
                     <div
@@ -631,6 +737,7 @@ const pseudoViewportHeight = ref(null);
 const examCodeModalOpen = ref(false);
 const confirmSubmitModalOpen = ref(false);
 const pendingExamAssignmentForCode = ref(null);
+const reviewTarget = ref(null);
 const maxViolations = 3;
 let questionTimerInterval = null;
 let antiCheatListenersBound = false;
@@ -670,9 +777,27 @@ const workspaceTitle = computed(() => (isExamPage.value ? "Pusat Ujian Resmi" : 
 const workspaceDescription = computed(() => (isExamPage.value
   ? "Silakan pilih salah satu mata pelajaran dari panel geser di atas untuk melihat daftar ujian resmi yang tersedia."
   : "Silakan pilih salah satu mata pelajaran dari panel geser di atas untuk melihat dan mengerjakan quiz."));
-const sessionLabel = computed(() => (submissionTarget.value?.is_exam ? "Sesi Ujian Aktif" : "Sesi Quiz Aktif"));
-const progressLabel = computed(() => (submissionTarget.value?.is_exam ? "Progres Ujian" : "Progres Quiz"));
-const primarySubmitLabel = computed(() => (submissionTarget.value?.is_exam ? "Selesai & Kirim Ujian" : "Selesai & Kirim Quiz"));
+const sessionLabel = computed(() =>
+  submissionTarget.value?.is_exam
+    ? "Sesi Ujian Aktif"
+    : isSessionTimedQuiz.value
+      ? "Sesi Quiz Global Aktif"
+      : "Sesi Quiz Aktif",
+);
+const progressLabel = computed(() =>
+  submissionTarget.value?.is_exam
+    ? "Progres Ujian"
+    : isSessionTimedQuiz.value
+      ? "Progres Quiz Global"
+      : "Progres Quiz",
+);
+const primarySubmitLabel = computed(() =>
+  submissionTarget.value?.is_exam
+    ? "Selesai & Kirim Ujian"
+    : isSessionTimedQuiz.value
+      ? "Selesai & Kirim Quiz"
+      : "Selesai & Kirim Quiz",
+);
 const quickAdvanceLabel = computed(() => (isLastQuestion.value ? "Tetap di Soal Terakhir" : "Kunci & Lanjut"));
 const hasPreviousQuestion = computed(() => activeQuestionIndex.value > 0);
 
@@ -705,6 +830,12 @@ const currentQuestionImageUrl = computed(() =>
 const currentAnswer = computed(() => submissionForm.answers[activeQuestionIndex.value] || {});
 const questionDurationSeconds = computed(() => Number(submissionTarget.value?.question_duration_seconds || 0));
 const isSessionTimedExam = computed(() => Boolean(submissionTarget.value?.is_exam));
+const isSessionTimedQuiz = computed(() => Boolean(submissionTarget.value && isGlobalTimedQuiz(submissionTarget.value)));
+const isExamStyleSession = computed(() => Boolean(submissionTarget.value && isSessionTimedAssignment(submissionTarget.value)));
+const sessionTypeTitle = computed(() => (submissionTarget.value?.is_exam ? "Jenis Ujian" : "Mode Quiz"));
+const sessionTypeValue = computed(() =>
+  submissionTarget.value?.is_exam ? examCategoryLabel(submissionTarget.value.exam_category) : "Quiz Global",
+);
 const questionDurationMs = computed(() => questionDurationSeconds.value * 1000);
 const isLastQuestion = computed(() => activeQuestionIndex.value >= Math.max(totalQuestions.value - 1, 0));
 const questionProgressPercent = computed(() => {
@@ -775,6 +906,8 @@ const assignmentTypeLabel = (type) => {
   return "Quiz";
 };
 
+const SESSION_DURATION_MAX_MINUTES = 180;
+
 const examCategoryLabel = (type) => {
   if (type === "UTS") return "UTS";
   if (type === "UAS") return "UAS";
@@ -797,6 +930,12 @@ const optionImageUrl = (option) => {
   return "";
 };
 
+const normalizeReviewOptions = (options) =>
+  safeParseJSONArray(options).map((item) => ({
+    text: optionText(item),
+    imageUrl: optionImageUrl(item),
+  }));
+
 const safeParseJSONArray = (value) => {
   if (Array.isArray(value)) return value;
   if (typeof value === "string") {
@@ -815,6 +954,8 @@ const safeParseJSONArray = (value) => {
 const normalizeAssignment = (item) => ({
   ...item,
   assignment_type: String(item?.assignment_type || "").toUpperCase(),
+  question_duration_mode: String(item?.question_duration_mode || "PER_QUESTION").toUpperCase(),
+  question_duration_seconds: normalizeTimedDurationSeconds(item),
   access_blocked: Boolean(item?.access_blocked),
   is_submitted: Boolean(item?.is_submitted),
   quiz_payload: safeParseJSONArray(item?.quiz_payload).map((question) => {
@@ -824,6 +965,69 @@ const normalizeAssignment = (item) => ({
   }),
   answer_payload: safeParseJSONArray(item?.answer_payload),
 });
+
+const reviewItems = computed(() => {
+  if (!reviewTarget.value) {
+    return [];
+  }
+
+  const questions = Array.isArray(reviewTarget.value.quiz_payload) ? reviewTarget.value.quiz_payload : [];
+  const answers = Array.isArray(reviewTarget.value.answer_payload) ? reviewTarget.value.answer_payload : [];
+
+  return questions.map((question, index) => {
+    const parsedQuestion = parseQuestionContent(question?.question || question?.question_text || "");
+    const answer = answers[index] || {};
+
+    if (reviewTarget.value.assignment_type === "MCQ") {
+      const rawSelectedOption = answer?.selected_option;
+      const selectedIndex = rawSelectedOption === null || rawSelectedOption === undefined || rawSelectedOption === ""
+        ? null
+        : Number.isInteger(Number(rawSelectedOption))
+          ? Number(rawSelectedOption)
+          : null;
+      const rawCorrectOption = question?.correct_option;
+      const correctIndex = rawCorrectOption === null || rawCorrectOption === undefined || rawCorrectOption === ""
+        ? null
+        : Number.isInteger(Number(rawCorrectOption))
+          ? Number(rawCorrectOption)
+          : null;
+
+      return {
+        type: "MCQ",
+        question: parsedQuestion.question_text || "Soal tidak tersedia.",
+        questionImageUrl: parsedQuestion.question_image_url,
+        options: normalizeReviewOptions(question?.options),
+        selectedIndex,
+        correctIndex,
+        isCorrect: selectedIndex !== null && correctIndex !== null && selectedIndex === correctIndex,
+      };
+    }
+
+    return {
+      type: "ESSAY",
+      question: parsedQuestion.question_text || "Soal tidak tersedia.",
+      questionImageUrl: parsedQuestion.question_image_url,
+      answerText: String(answer?.answer_text || "").trim(),
+    };
+  });
+});
+
+function normalizeTimedDurationSeconds(item) {
+  const rawValue = Number(item?.question_duration_seconds || 0);
+  if (rawValue <= 0) {
+    return 0;
+  }
+
+  const isSessionTimed = Boolean(
+    item?.is_exam || String(item?.question_duration_mode || "").toUpperCase() === "GLOBAL",
+  );
+
+  if (isSessionTimed && rawValue <= SESSION_DURATION_MAX_MINUTES) {
+    return rawValue * 60;
+  }
+
+  return rawValue;
+}
 
 const isExamNotStarted = (assignment) =>
   Boolean(assignment?.is_exam && assignment?.start_at && new Date(assignment.start_at).getTime() > Date.now());
@@ -838,9 +1042,20 @@ const startButtonLabel = (assignment) => {
   if (assignment?.is_submitted) return "Selesai Dikerjakan";
   if (assignment?.access_blocked) return "Masuk dengan Kode Baru";
   if (isExamNotStarted(assignment)) return "Menunggu Jadwal";
-  if (isExamClosed(assignment)) return "Ujian Ditutup";
   if (assignment?.attempt_started_at) return assignment?.is_exam ? "Lanjutkan Ujian" : "Lanjutkan Quiz";
+  if (isExamClosed(assignment)) return assignment?.is_exam ? "Ujian Ditutup" : "Quiz Ditutup";
   return assignment?.is_exam ? "Masuk Ujian" : "Mulai Kerjakan Quiz";
+};
+
+const openAssignmentReview = (assignment) => {
+  if (!assignment?.is_submitted) {
+    return;
+  }
+  reviewTarget.value = assignment;
+};
+
+const closeAssignmentReview = () => {
+  reviewTarget.value = null;
 };
 
 const getAttemptStorageKey = (assignmentId) => `quiz-attempt-session-${assignmentId}`;
@@ -858,11 +1073,25 @@ const assignmentDurationSummary = (assignment) => {
     return "-";
   }
 
-  if (assignment?.is_exam) {
+  if (assignment?.is_exam || String(assignment?.question_duration_mode || "").toUpperCase() === "GLOBAL") {
     return `Sesi ${formatDuration(totalSeconds)}`;
   }
 
   return `Per soal ${formatDuration(totalSeconds)}`;
+};
+
+const isGlobalTimedQuiz = (assignment) =>
+  !assignment?.is_exam && String(assignment?.question_duration_mode || "").toUpperCase() === "GLOBAL";
+
+const isSessionTimedAssignment = (assignment) => Boolean(assignment?.is_exam || isGlobalTimedQuiz(assignment));
+
+const buildSessionExpiresAt = (startedAt, durationSeconds) => {
+  const startMs = new Date(startedAt).getTime();
+  const seconds = Number(durationSeconds || 0);
+  if (!Number.isFinite(startMs) || seconds <= 0) {
+    return null;
+  }
+  return new Date(startMs + seconds * 1000).toISOString();
 };
 
 const buildInitialAnswers = (assignment) => {
@@ -1238,7 +1467,7 @@ const getStoredAttemptSession = (assignment) => {
 };
 
 const syncAttemptProgressWithClock = () => {
-  if (!submissionTarget.value || questionDurationMs.value <= 0 || isSessionTimedExam.value) return false;
+  if (!submissionTarget.value || questionDurationMs.value <= 0 || isSessionTimedAssignment(submissionTarget.value)) return false;
 
   let finished = false;
   while (
@@ -1267,7 +1496,7 @@ const refreshQuestionTimer = () => {
     return;
   }
 
-  const referenceTime = isSessionTimedExam.value
+  const referenceTime = isSessionTimedAssignment(submissionTarget.value)
     ? submissionTarget.value.session_started_at
     : submissionTarget.value.current_question_started_at;
 
@@ -1293,7 +1522,7 @@ const startQuestionTimer = () => {
     }
 
     if (questionTimeLeftMs.value <= 0) {
-      if (isSessionTimedExam.value) {
+      if (isSessionTimedAssignment(submissionTarget.value)) {
         stopQuestionTimer();
         await submitAssignment(true);
         return;
@@ -1307,12 +1536,24 @@ const startQuestionTimer = () => {
 const initializeAttemptSession = (assignment, startPayload) => {
   resetAntiCheatState();
   setLayoutChromeHidden(true);
-  const localSessionStartedAt = new Date().toISOString();
+  const attemptStartedAt = startPayload?.started_at || assignment.attempt_started_at || new Date().toISOString();
+  const localQuestionStartedAt = new Date().toISOString();
+  const questionDurationMode = String(startPayload?.question_duration_mode || assignment.question_duration_mode || "PER_QUESTION").toUpperCase();
+  const questionDurationValue = normalizeTimedDurationSeconds({
+    is_exam: assignment.is_exam,
+    question_duration_mode: questionDurationMode,
+    question_duration_seconds: startPayload?.question_duration_seconds ?? assignment.question_duration_seconds ?? 0,
+  });
   submissionTarget.value = {
     ...assignment,
-    attempt_started_at: startPayload?.started_at || assignment.attempt_started_at || new Date().toISOString(),
-    session_started_at: localSessionStartedAt,
-    current_question_started_at: new Date().toISOString(),
+    question_duration_mode: questionDurationMode,
+    question_duration_seconds: questionDurationValue,
+    expires_at: (assignment.is_exam || questionDurationMode === "GLOBAL")
+      ? buildSessionExpiresAt(attemptStartedAt, questionDurationValue)
+      : null,
+    attempt_started_at: attemptStartedAt,
+    session_started_at: attemptStartedAt,
+    current_question_started_at: localQuestionStartedAt,
   };
 
   const storedSession = getStoredAttemptSession(submissionTarget.value);
@@ -1324,8 +1565,10 @@ const initializeAttemptSession = (assignment, startPayload) => {
     ? storedSession.active_question_index
     : 0;
 
-  submissionTarget.value.session_started_at = storedSession?.session_started_at || localSessionStartedAt;
-  submissionTarget.value.current_question_started_at = storedSession?.question_started_at || new Date().toISOString();
+  submissionTarget.value.session_started_at = isSessionTimedAssignment(submissionTarget.value)
+    ? attemptStartedAt
+    : storedSession?.session_started_at || localQuestionStartedAt;
+  submissionTarget.value.current_question_started_at = storedSession?.question_started_at || localQuestionStartedAt;
   syncAntiCheatStateFromSession(startPayload);
 
   const isFinished = syncAttemptProgressWithClock();
@@ -1376,6 +1619,7 @@ const selectSubject = async (subject) => {
   submissionTarget.value = null;
   submissionForm.answers = [];
   resetAntiCheatState();
+  closeAssignmentReview();
   message.value = "";
   await loadSubjectData();
 };
@@ -1490,7 +1734,7 @@ const goToPreviousQuestion = () => {
   }
 
   activeQuestionIndex.value -= 1;
-  if (!isSessionTimedExam.value) {
+  if (!isSessionTimedAssignment(submissionTarget.value)) {
     submissionTarget.value.current_question_started_at = new Date().toISOString();
   }
   persistAttemptSession();
@@ -1508,7 +1752,7 @@ const jumpToQuestion = (index) => {
   }
 
   activeQuestionIndex.value = safeIndex;
-  if (!isSessionTimedExam.value) {
+  if (!isSessionTimedAssignment(submissionTarget.value)) {
     submissionTarget.value.current_question_started_at = new Date().toISOString();
   }
   persistAttemptSession();
@@ -1582,6 +1826,7 @@ const completeSubmittedSession = async (target, triggeredAutomatically, toastTyp
   setLayoutChromeHidden(false);
   submissionTarget.value = null;
   submissionForm.answers = [];
+  closeAssignmentReview();
   resetAntiCheatState();
   await loadSubjectData();
   window.scrollTo(0, 0);
