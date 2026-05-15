@@ -1,7 +1,6 @@
 import { readonly, reactive } from "vue";
 
-const SHOW_DELAY_MS = 180;
-const MIN_VISIBLE_MS = 350;
+const MIN_VISIBLE_MS = 450;
 
 const state = reactive({
   pendingCount: 0,
@@ -10,23 +9,12 @@ const state = reactive({
   shownAt: 0,
 });
 
-let showTimer = null;
 let hideTimer = null;
 
 const clearTimer = (timer) => {
   if (timer) {
     window.clearTimeout(timer);
   }
-};
-
-const showLoading = () => {
-  showTimer = null;
-  if (state.pendingCount <= 0) {
-    return;
-  }
-
-  state.visible = true;
-  state.shownAt = Date.now();
 };
 
 const hideLoading = () => {
@@ -49,8 +37,9 @@ export const beginGlobalLoading = (message = "Memuat data...") => {
   clearTimer(hideTimer);
   hideTimer = null;
 
-  if (!state.visible && !showTimer) {
-    showTimer = window.setTimeout(showLoading, SHOW_DELAY_MS);
+  if (!state.visible) {
+    state.visible = true;
+    state.shownAt = Date.now();
   }
 
   return () => {
@@ -64,9 +53,6 @@ export const beginGlobalLoading = (message = "Memuat data...") => {
     if (state.pendingCount > 0) {
       return;
     }
-
-    clearTimer(showTimer);
-    showTimer = null;
 
     if (!state.visible) {
       return;

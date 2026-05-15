@@ -4,15 +4,19 @@ const RouteLoading = defineComponent({
   name: "RouteLoading",
   setup() {
     return () => h("div", {
-      class: "flex min-h-[240px] items-center justify-center p-6 text-slate-500 dark:text-slate-300",
+      class: "flex min-h-[320px] items-center justify-center p-6 text-slate-500 dark:text-slate-300",
     }, [
       h("div", {
-        class: "flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-900",
+        class: "w-full max-w-sm rounded-3xl border border-emerald-100 bg-white p-6 shadow-xl shadow-emerald-950/10 dark:border-emerald-500/20 dark:bg-slate-900",
       }, [
-        h("span", {
-          class: "h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-sky-600 dark:border-slate-700 dark:border-t-sky-400",
-        }),
-        h("span", { class: "text-sm font-medium" }, "Memuat halaman..."),
+        h("div", { class: "mx-auto h-16 w-16 animate-spin rounded-full border-[7px] border-slate-200 border-t-emerald-500 border-r-emerald-500 dark:border-slate-700 dark:border-t-emerald-400 dark:border-r-emerald-400" }),
+        h("div", { class: "mt-5" }, [
+          h("p", { class: "text-2xl font-black text-slate-950 dark:text-white" }, "Loading..."),
+          h("p", { class: "mt-1 text-sm font-medium text-slate-500 dark:text-slate-400" }, "Memuat halaman..."),
+        ]),
+        h("div", { class: "mt-5 h-3 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700" }, [
+          h("div", { class: "h-full w-3/4 rounded-full bg-emerald-500" }),
+        ]),
       ]),
     ]);
   },
