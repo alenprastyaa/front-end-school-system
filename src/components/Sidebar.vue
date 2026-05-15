@@ -273,6 +273,8 @@ const isAdminRole = role === "ADMIN";
 const isSarprasRole = role === "SARPRAS";
 const schoolNameLabel = computed(() => storedProfile.value?.school_name || "School System");
 const schoolLogoSrc = computed(() => normalizePublicUrl(storedProfile.value?.school_logo) || "");
+const isInventoryEnabled = computed(() => storedProfile.value?.inventory_module_enabled !== false);
+const isOfficialExamEnabled = computed(() => storedProfile.value?.official_exam_module_enabled !== false);
 
 const getCurrentUserId = () => {
   try {
@@ -410,6 +412,7 @@ const menuByRole = {
   SUPER_ADMIN: [
     { key: "dashboard", to: "/dashboard", dataTour: "dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     { key: "schools", to: "/schools", label: "Sekolah", icon: "ph:buildings" },
+    { key: "module-settings", to: "/module-settings", label: "Setting Modul", icon: "ph:squares-four" },
     { key: "billing", to: "/billing", label: "Billing", icon: "ph:credit-card" },
   ],
   ADMIN: [
@@ -481,7 +484,32 @@ const menuByRole = {
   ],
 };
 
-const visibleMenu = computed(() => menuByRole[role] || []);
+const filterMenuItems = (items = []) =>
+  items
+    .map((item) => {
+      if (item.key === "inventory" && !isInventoryEnabled.value) {
+        return null;
+      }
+      if (item.key === "learning-exams-admin" && !isOfficialExamEnabled.value) {
+        return null;
+      }
+      if (item.children) {
+        const children = item.children.filter((child) => {
+          if ((child.to === "/learning-exams-teacher" || child.to === "/learning-exams-student") && !isOfficialExamEnabled.value) {
+            return false;
+          }
+          return true;
+        });
+        if (children.length === 0) {
+          return null;
+        }
+        return { ...item, children };
+      }
+      return item;
+    })
+    .filter(Boolean);
+
+const visibleMenu = computed(() => filterMenuItems(menuByRole[role] || []));
 const shouldTrackLiveChat = ["GURU", "SISWA"].includes(role);
 const shouldTrackPrivateChat = ["ADMIN", "GURU", "SISWA"].includes(role);
 

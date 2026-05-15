@@ -13,14 +13,16 @@ const wait = (duration) =>
 
 export const useProfileStore = defineStore("profile", {
   state: () => ({
-    profile: {
+      profile: {
       full_name: "",
       username: "User",
       role: "Guest",
       school_name: "",
       school_id: "",
-      school_logo: "",
-      parent_email: "",
+        school_logo: "",
+        inventory_module_enabled: true,
+        official_exam_module_enabled: true,
+        parent_email: "",
       phone_number: "",
       profile_image: "",
       face_reference_image: "",
@@ -48,6 +50,8 @@ export const useProfileStore = defineStore("profile", {
         ...this.profile,
         ...profile,
         school_logo: normalizePublicUrl(profile.school_logo) || null,
+        inventory_module_enabled: profile.inventory_module_enabled !== false,
+        official_exam_module_enabled: profile.official_exam_module_enabled !== false,
         profile_image: normalizePublicUrl(profile.profile_image) || null,
         face_reference_image: normalizePublicUrl(profile.face_reference_image) || null,
         face_reference_descriptor: profile.face_reference_descriptor || null,
@@ -60,6 +64,8 @@ export const useProfileStore = defineStore("profile", {
         school_id: nextProfile.school_id,
         school_name: nextProfile.school_name,
         school_logo: nextProfile.school_logo,
+        inventory_module_enabled: nextProfile.inventory_module_enabled,
+        official_exam_module_enabled: nextProfile.official_exam_module_enabled,
         profile_image: nextProfile.profile_image,
         face_reference_image: nextProfile.face_reference_image,
         face_reference_descriptor: nextProfile.face_reference_descriptor,

@@ -59,7 +59,8 @@
           </button>
         </div>
 
-        <div class="mt-5 rounded-2xl bg-slate-50 px-4 py-4 ring-1 ring-inset ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700">
+        <div
+          class="mt-5 rounded-2xl bg-slate-50 px-4 py-4 ring-1 ring-inset ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700">
           <p class="text-sm font-semibold text-slate-900 dark:text-white">
             {{ answeredQuestionCount }} dari {{ totalQuestions }} soal sudah terjawab.
           </p>

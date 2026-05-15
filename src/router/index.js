@@ -50,6 +50,16 @@ const routes = [
     },
   },
   {
+    path: "/module-settings",
+    name: "ModuleSettings",
+    component: lazyRoute(() => import("../views/ModuleSettings.vue")),
+    meta: {
+      title: "Setting Modul" + appName,
+      requiresAuth: true,
+      roles: ["SUPER_ADMIN"],
+    },
+  },
+  {
     path: "/school-users",
     name: "SchoolUsers",
     component: lazyRoute(() => import("../views/SchoolUsers.vue")),

@@ -390,6 +390,8 @@ const isError = ref(false);
 
 const form = reactive({
   name: "",
+  inventory_module_enabled: true,
+  official_exam_module_enabled: true,
 });
 const schoolLogoFile = ref(null);
 const schoolLogoPreview = ref("");
@@ -427,6 +429,8 @@ const summaryCards = computed(() => {
 const resetForm = () => {
   editingId.value = null;
   form.name = "";
+  form.inventory_module_enabled = true;
+  form.official_exam_module_enabled = true;
   schoolLogoFile.value = null;
   schoolLogoPreview.value = "";
   removeSchoolLogo.value = false;
@@ -472,6 +476,8 @@ const submitSchool = async () => {
   try {
     const payload = new FormData();
     payload.append("name", form.name);
+    payload.append("inventory_module_enabled", String(Boolean(form.inventory_module_enabled)));
+    payload.append("official_exam_module_enabled", String(Boolean(form.official_exam_module_enabled)));
     if (schoolLogoFile.value) {
       payload.append("logo", schoolLogoFile.value);
     }
@@ -496,6 +502,8 @@ const submitSchool = async () => {
 const editSchool = (item) => {
   editingId.value = item.id;
   form.name = item.name || "";
+  form.inventory_module_enabled = item.inventory_module_enabled !== false;
+  form.official_exam_module_enabled = item.official_exam_module_enabled !== false;
   schoolLogoFile.value = null;
   schoolLogoPreview.value = normalizePublicUrl(item.logo_url) || "";
   removeSchoolLogo.value = false;
