@@ -636,11 +636,11 @@
         class="fixed inset-0 z-[140] flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm"
         @click.self="closePaymentQrModal"
       >
-        <div class="w-full max-w-md rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
-          <div class="border-b border-slate-100 px-6 py-5 dark:border-slate-800">
-            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-300">Pembayaran Non Tunai</p>
-            <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">QRIS Xendit</h2>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+        <div class="w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
+          <div class="border-b border-slate-100 px-5 py-4 sm:px-6 sm:py-5 dark:border-slate-800">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-300">Pembayaran Non Tunai</p>
+            <h2 class="mt-2 text-xl font-black tracking-tight text-slate-900 sm:text-2xl dark:text-white">QRIS Xendit</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
               Pesanan {{ paymentQrOrderNumber || "-" }} siap dibayar dengan QRIS.
             </p>
             <p v-if="paymentQrSandboxEnabled" class="mt-3 inline-flex rounded-full bg-sky-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-sky-700 dark:bg-sky-500/10 dark:text-sky-200">
@@ -648,15 +648,15 @@
             </p>
           </div>
 
-          <div class="space-y-4 px-6 py-5">
-            <div class="flex items-center justify-center rounded-3xl bg-slate-50 p-4 dark:bg-slate-800/60">
+          <div class="space-y-4 px-5 py-4 sm:px-6 sm:py-5">
+            <div class="flex items-center justify-center rounded-3xl bg-slate-50 p-3 sm:p-4 dark:bg-slate-800/60">
               <img
                 v-if="paymentQrDataUrl"
                 :src="paymentQrDataUrl"
                 alt="QRIS Pembayaran"
-                class="h-72 w-72 rounded-2xl bg-white p-2 shadow-sm"
+                class="h-56 w-56 rounded-2xl bg-white p-2 shadow-sm sm:h-64 sm:w-64 lg:h-72 lg:w-72"
               />
-              <div v-else class="flex h-72 w-72 items-center justify-center rounded-2xl bg-white text-center text-sm text-slate-500 shadow-sm">
+              <div v-else class="flex h-56 w-56 items-center justify-center rounded-2xl bg-white text-center text-sm text-slate-500 shadow-sm sm:h-64 sm:w-64 lg:h-72 lg:w-72">
                 QRIS tidak tersedia
               </div>
             </div>
@@ -677,7 +677,7 @@
               </p>
             </div>
 
-            <div class="flex items-center justify-end gap-3">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
               <button
                 type="button"
                 class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
@@ -688,9 +688,10 @@
               <button
                 type="button"
                 class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500"
-                @click="copyPaymentQrString"
+                :disabled="!paymentQrDataUrl"
+                @click="downloadPaymentQrImage"
               >
-                Salin QR
+                Download QRIS
               </button>
               <button
                 v-if="paymentQrSandboxEnabled && paymentQrOrderId"
@@ -1508,24 +1509,25 @@ const simulateSandboxPaymentById = async () => {
   await simulateSandboxPayment({ id: paymentQrOrderId.value, order_number: paymentQrOrderNumber.value });
 };
 
-const copyPaymentQrString = async () => {
-  if (!paymentQrString.value) {
+const downloadPaymentQrImage = async () => {
+  if (!paymentQrDataUrl.value) {
     return;
   }
 
   try {
-    await navigator.clipboard.writeText(paymentQrString.value);
-    pushToast({
-      title: "QRIS Disalin",
-      message: "String QR berhasil disalin ke clipboard.",
-      type: "success",
-    });
+    const response = await fetch(paymentQrDataUrl.value);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${paymentQrOrderNumber.value || "qris-koperasi"}.png`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.URL.revokeObjectURL(url);
+    pushToast({ title: "QRIS Diunduh", message: "Gambar QRIS berhasil diunduh.", type: "success" });
   } catch (error) {
-    pushToast({
-      title: "Gagal Menyalin QRIS",
-      message: error.message || "Clipboard tidak tersedia.",
-      type: "error",
-    });
+    pushToast({ title: "Gagal Unduh QRIS", message: error.message || "QRIS tidak dapat diunduh.", type: "error" });
   }
 };
 
