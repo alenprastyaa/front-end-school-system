@@ -3,40 +3,95 @@
     class="min-h-screen bg-slate-50/70 pb-12 pt-4 font-sans text-slate-900 md:px-6 md:pt-8 lg:px-8 dark:bg-slate-950 dark:text-slate-100">
     <div class="mx-auto max-w-[1440px] space-y-6">
       <section
-        class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div class="flex flex-col gap-5 px-6 py-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+        class="relative overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div
+          class="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-sky-50/70 via-sky-50/20 to-transparent dark:from-sky-500/10 dark:via-sky-500/5">
+        </div>
+        <div
+          class="relative grid gap-6 px-6 py-7 lg:grid-cols-[minmax(0,1.15fr)_minmax(380px,0.85fr)] lg:items-center lg:px-8">
           <div class="max-w-3xl">
-            <h1 class="mt-4 max-w-2xl text-2xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
+            <div
+              class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-200">
+              Student Operations
+            </div>
+            <h1 class="mt-4 max-w-2xl text-xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-xl">
               Manajemen Siswa
             </h1>
-            <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-              Kelola data siswa, pencarian akun, perpindahan kelas, dan kontak orang tua dari satu halaman yang lebih
-              rapi.
+            <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">
+              Kelola akun siswa, perpindahan kelas, import massal, dan distribusi kredensial dari satu tempat yang
+              rapi, terarah, dan mudah dipindai.
             </p>
+            <div class="mt-5 flex flex-wrap gap-2">
+              <span
+                class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                <span class="h-2 w-2 rounded-full bg-sky-500"></span>
+                {{ students.length }} siswa
+              </span>
+              <span
+                class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                {{ classOptions.length }} kelas
+              </span>
+              <span
+                class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                <span class="h-2 w-2 rounded-full bg-amber-500"></span>
+                {{ filters.class_id ? activeClassLabel : "Semua kelas" }}
+              </span>
+            </div>
           </div>
-          <div class="grid gap-3 sm:grid-cols-2 xl:min-w-[440px] xl:max-w-[500px] xl:grid-cols-2">
-            <button @click="openCreateModal"
-              class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-sky-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-              Tambah Siswa
-            </button>
-            <button @click="openPromotionModal"
-              class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
-              </svg>
-              Naik Kelas
-            </button>
-            <button @click="openStudentImportPicker" :disabled="isImportingStudents"
-              class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-slate-900 bg-slate-900 px-5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-700 dark:hover:bg-slate-600">
-              {{ isImportingStudents ? "Mengimpor..." : "Upload Excel Siswa" }}
-            </button>
-            <button @click="openStudentTemplateModal"
-              class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-yellow-200 bg-red-500 px-5 text-sm font-semibold text-white transition hover:bg-red-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
-              Template Siswa
-            </button>
+
+          <div
+            class="rounded-[28px] border border-slate-200 bg-slate-50/90 p-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/40">
+            <div class="flex items-center justify-between gap-3 px-1 pb-4">
+              <div>
+                <p class="text-sm font-semibold text-slate-900 dark:text-white">Aksi Cepat</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Operasi yang paling sering dipakai admin.</p>
+              </div>
+              <span
+                class="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-500 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
+                5 aksi
+              </span>
+            </div>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <button @click="openCreateModal"
+                class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-sky-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60 sm:col-span-2">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Tambah Siswa
+              </button>
+              <button @click="openPromotionModal"
+                class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-white px-4 text-sm font-semibold text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-500/20 dark:bg-slate-900 dark:text-emerald-300 dark:hover:bg-emerald-500/10 sm:col-span-2">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
+                </svg>
+                Naik Kelas
+              </button>
+              <button @click="openStudentImportModal" :disabled="isImportingStudents"
+                class="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                <svg class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 3v12m0 0l-3.75-3.75M12 15l3.75-3.75M4.5 21h15" />
+                </svg>
+                {{ isImportingStudents ? "Mengimpor..." : "Upload Template" }}
+              </button>
+              <button @click="openStudentTemplateModal"
+                class="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-white px-4 text-sm font-medium text-sky-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 dark:border-sky-500/20 dark:bg-slate-900 dark:text-sky-300 dark:hover:bg-sky-500/10">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 3v12m0 0l-3.75-3.75M12 15l3.75-3.75M5 21h14" />
+                </svg>
+                Template Siswa
+              </button>
+              <button @click="openStudentAccountExportModal"
+                class="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-white px-4 text-sm font-medium text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-500/20 dark:bg-slate-900 dark:text-emerald-300 dark:hover:bg-emerald-500/10">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l7.5 7.5 7.5-7.5m-7.5-9v16" />
+                </svg>
+                Akun Kelas
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -96,10 +151,6 @@
                 <option :value="25">25 / halaman</option>
                 <option :value="50">50 / halaman</option>
               </select>
-              <button @click="loadStudents"
-                class="inline-flex h-[50px] items-center justify-center rounded-2xl bg-white px-4 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-800">
-                Refresh
-              </button>
             </div>
           </div>
 
@@ -148,6 +199,10 @@
                 </div>
               </div>
               <div class="mt-4 flex items-center gap-2">
+                <button @click="openStudentDetail(item)"
+                  class="inline-flex flex-1 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                  Detail
+                </button>
                 <button @click="startEdit(item)"
                   class="inline-flex flex-1 items-center justify-center rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white dark:bg-slate-700">
                   Edit Data
@@ -246,6 +301,17 @@
 
                   <td class="px-6 py-4 text-right">
                     <div class="flex items-center justify-end gap-2">
+                      <button @click="openStudentDetail(item)"
+                        class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm ring-1 ring-inset ring-sky-200 transition hover:bg-sky-50 dark:bg-slate-800 dark:text-sky-300 dark:ring-sky-500/20 dark:hover:bg-sky-500/10">
+                        <svg class="h-3.5 w-3.5 text-sky-500" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                          stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        Detail
+                      </button>
                       <button @click="startEdit(item)"
                         class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700">
                         <svg class="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2"
@@ -348,9 +414,9 @@
               <section
                 class="space-y-4 rounded-3xl border border-slate-200 bg-slate-50/70 p-5 dark:border-slate-800 dark:bg-slate-950/50">
                 <div>
-                  <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Data Akun</h3>
-                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Identitas utama yang dipakai untuk login
-                    dan identifikasi siswa.</p>
+                  <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Data Siswa</h3>
+                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Isi identitas siswa. Username dan
+                    password dibuat otomatis oleh sistem.</p>
                 </div>
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Nama Lengkap <span
@@ -359,7 +425,7 @@
                     class="block w-full rounded-2xl border-0 py-3 pl-4 pr-4 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
 
-                <div>
+                <div v-if="editingId">
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Username <span
                       class="text-rose-500">*</span></label>
                   <input v-model="form.username" type="text" required placeholder="e.g. budi_santoso"
@@ -368,11 +434,11 @@
                     siswa.</p>
                 </div>
 
-                <div v-if="!editingId">
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Password <span
-                      class="text-rose-500">*</span></label>
-                  <input v-model="form.password" type="password" required placeholder="••••••••"
-                    class="block w-full rounded-2xl border-0 py-3 pl-4 pr-4 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                <div
+                  class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200">
+                  {{ editingId
+                    ? "Data akun tetap dikelola otomatis. Edit hanya untuk nama dan penempatan kelas."
+                    : "Akun akan dibuat otomatis dan password awal akan ditampilkan setelah simpan." }}
                 </div>
               </section>
 
@@ -380,8 +446,9 @@
                 class="space-y-4 rounded-3xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
                 <div>
                   <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Penempatan & Kontak</h3>
-                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Pastikan kelas dan kontak wali terisi agar
-                    tindak lanjut lebih mudah.</p>
+                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    Kelas wajib dipilih. Kontak wali bisa dilengkapi nanti saat siswa memperbarui profil.
+                  </p>
                 </div>
                 <div>
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Penempatan Kelas
@@ -395,14 +462,14 @@
                   </select>
                 </div>
 
-                <div>
+                <div v-if="editingId">
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Email Orang
                     Tua</label>
                   <input v-model="form.parent_email" type="email" placeholder="ortu@contoh.com"
                     class="block w-full rounded-2xl border-0 py-3 pl-4 pr-4 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
 
-                <div>
+                <div v-if="editingId">
                   <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Nomor
                     Telepon</label>
                   <input v-model="form.phone_number" type="text" placeholder="08123456789"
@@ -436,6 +503,79 @@
     </div>
   </div>
 
+  <!-- Modal Upload Template Siswa -->
+  <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
+    enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+    leave-to-class="opacity-0">
+    <div v-if="isStudentImportModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+      <div
+        class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+        @click.stop>
+        <div
+          class="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Upload Template Siswa</h2>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Pilih kelas lalu upload file Excel template
+              siswa.</p>
+          </div>
+          <button @click="closeStudentImportModal"
+            class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form @submit.prevent="uploadStudentTemplate" class="space-y-5 p-6">
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Kelas <span
+                class="text-rose-500">*</span></label>
+            <select v-model="studentImportClassId" required
+              class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-8 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+              <option disabled value="">Pilih kelas</option>
+              <option v-for="item in classOptions" :key="`import-${item.id}`" :value="item.id">
+                {{ item.class_name }}
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">File Excel <span
+                class="text-rose-500">*</span></label>
+            <input type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              @change="handleStudentImportFileChange"
+              class="block w-full rounded-lg border-0 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 file:mr-4 file:rounded-md file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700" />
+            <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              Template hanya perlu kolom nama lengkap. Username dan password dibuat otomatis oleh sistem.
+            </p>
+          </div>
+
+          <div
+            class="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-800 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-200">
+            Pastikan file yang diunggah adalah template siswa yang sudah disesuaikan untuk kelas terpilih.
+          </div>
+
+          <div class="flex justify-end gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+            <button type="button" @click="closeStudentImportModal"
+              class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+              Batal
+            </button>
+            <button type="submit" :disabled="isImportingStudents"
+              class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
+              <svg v-if="isImportingStudents" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"
+                stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+              {{ isImportingStudents ? "Mengimpor..." : "Upload" }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </Transition>
+
   <!-- Modal Download Template Siswa -->
   <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
     enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
@@ -449,7 +589,8 @@
           class="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
           <div>
             <h2 class="text-lg font-bold text-slate-900 dark:text-white">Download Template Siswa</h2>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Pilih kelas agar kolom Kelas otomatis terisi.</p>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Pilih kelas agar template disesuaikan untuk
+              kelas tersebut.</p>
           </div>
           <button @click="closeStudentTemplateModal"
             class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
@@ -474,7 +615,7 @@
 
           <div
             class="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm leading-6 text-sky-800 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-200">
-            File template akan khusus untuk kelas yang dipilih, sehingga admin cukup mengisi data siswa.
+            File template akan khusus untuk kelas yang dipilih. Username dan password dibuat otomatis oleh sistem.
           </div>
 
           <div class="flex justify-end gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
@@ -484,6 +625,64 @@
             </button>
             <button type="submit"
               class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500">
+              Download
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </Transition>
+
+  <!-- Modal Download Akun Kelas -->
+  <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
+    enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+    leave-to-class="opacity-0">
+    <div v-if="isStudentAccountExportModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+      <div
+        class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+        @click.stop>
+        <div
+          class="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Download Akun Kelas</h2>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Pilih kelas untuk mengekspor Nama Lengkap,
+              Username, dan Password.</p>
+          </div>
+          <button @click="closeStudentAccountExportModal"
+            class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form @submit.prevent="downloadStudentAccounts" class="space-y-5 p-6">
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Kelas <span
+                class="text-rose-500">*</span></label>
+            <select v-model="studentAccountExportClassId" required
+              class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-8 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+              <option disabled value="">Pilih kelas</option>
+              <option v-for="item in classOptions" :key="`accounts-${item.id}`" :value="item.id">
+                {{ item.class_name }}
+              </option>
+            </select>
+          </div>
+
+          <div
+            class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200">
+            File ini memuat akun login yang siap dibagikan. Minta siswa segera mengganti password setelah login
+            pertama.
+          </div>
+
+          <div class="flex justify-end gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+            <button type="button" @click="closeStudentAccountExportModal"
+              class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+              Batal
+            </button>
+            <button type="submit"
+              class="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500">
               Download
             </button>
           </div>
@@ -634,6 +833,134 @@
     </div>
   </Transition>
 
+  <!-- Modal Detail Siswa -->
+  <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
+    enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+    leave-to-class="opacity-0">
+    <div v-if="isStudentDetailModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+      <div
+        class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+        @click.stop>
+        <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5 dark:border-slate-800">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Detail Akun Siswa</h2>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Username dan password awal siswa ditampilkan di sini.
+            </p>
+          </div>
+          <button @click="closeStudentDetailModal"
+            class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div v-if="isLoadingStudentDetail" class="px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+          Memuat detail siswa...
+        </div>
+
+        <div v-else class="space-y-4 px-6 py-6">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/70">
+                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Nama Lengkap</p>
+                <p class="mt-1 break-words text-sm font-semibold text-slate-900 dark:text-white">
+                  {{ studentDetail.full_name }}
+              </p>
+            </div>
+            <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/70">
+              <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Kelas</p>
+              <p class="mt-1 break-words text-sm font-semibold text-slate-900 dark:text-white">
+                {{ studentDetail.class_name }}
+              </p>
+            </div>
+            <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/70">
+              <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Username</p>
+              <p class="mt-1 break-words font-mono text-sm font-semibold text-slate-900 dark:text-white">
+                {{ studentDetail.username }}
+              </p>
+            </div>
+            <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/70">
+              <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Password Awal</p>
+              <p class="mt-1 break-words font-mono text-sm font-semibold text-slate-900 dark:text-white">
+                {{ studentDetail.password }}
+              </p>
+            </div>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="rounded-2xl border border-slate-200 px-4 py-3 dark:border-slate-700">
+              <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Email Ortu</p>
+              <p class="mt-1 break-all text-sm text-slate-700 dark:text-slate-200">{{ studentDetail.parent_email }}</p>
+            </div>
+            <div class="rounded-2xl border border-slate-200 px-4 py-3 dark:border-slate-700">
+              <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">No. HP</p>
+              <p class="mt-1 break-words text-sm text-slate-700 dark:text-slate-200">{{ studentDetail.phone_number }}</p>
+            </div>
+          </div>
+
+          <div
+            class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
+            {{ studentDetail.password_available ? "Minta siswa segera mengganti password setelah login pertama." : "Password awal tidak tersedia untuk akun lama." }}
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
+          <button type="button" @click="resetStudentPassword" :disabled="isResettingStudentPassword || isLoadingStudentDetail"
+            class="mr-auto inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
+            {{ isResettingStudentPassword ? "Mereset..." : "Reset Password" }}
+          </button>
+          <button type="button" @click="closeStudentDetailModal"
+            class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </Transition>
+
+  <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
+    enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+    leave-to-class="opacity-0">
+    <div v-if="isResetConfirmOpen"
+      class="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+      <div
+        class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+        @click.stop>
+        <div class="flex items-start gap-4 px-6 py-5">
+          <div
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Reset Password?</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+              Reset password untuk
+              <span class="font-semibold text-slate-700 dark:text-slate-200">
+                {{ resetTargetStudentLabel || "-" }}
+              </span>
+              akan membuat password baru secara otomatis. Password lama akan tidak berlaku.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/60 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/40">
+          <button type="button" @click="closeResetConfirm"
+            class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+            Batal
+          </button>
+          <button type="button" @click="confirmResetStudentPassword" :disabled="isResettingStudentPassword"
+            class="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-60">
+            {{ isResettingStudentPassword ? "Mereset..." : "Ya, Reset" }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </Transition>
+
   <!-- Modal Konfirmasi Hapus Siswa -->
   <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
     enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
@@ -682,9 +1009,6 @@
   </Transition>
 
   <SuccessModal ref="successModal" />
-  <input ref="studentImportInput" type="file"
-    accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden"
-    @change="handleStudentImportFileChange" />
 </template>
 
 <script setup>
@@ -714,9 +1038,29 @@ const isPromotionModalOpen = ref(false);
 const isPromoting = ref(false);
 const isLoadingPromotionCandidates = ref(false);
 const isImportingStudents = ref(false);
+const isStudentImportModalOpen = ref(false);
 const isStudentTemplateModalOpen = ref(false);
+const isStudentAccountExportModalOpen = ref(false);
+const isStudentDetailModalOpen = ref(false);
+const isLoadingStudentDetail = ref(false);
+const isResettingStudentPassword = ref(false);
+const isResetConfirmOpen = ref(false);
+const resetTargetStudentId = ref(null);
+const resetTargetStudentLabel = ref("");
+const studentImportClassId = ref("");
+const studentImportFile = ref(null);
 const studentTemplateClassId = ref("");
-const studentImportInput = ref(null);
+const studentAccountExportClassId = ref("");
+const studentDetail = ref({
+  id: null,
+  full_name: "-",
+  username: "-",
+  class_name: "-",
+  parent_email: "-",
+  phone_number: "-",
+  password: "-",
+  password_available: false,
+});
 
 const form = reactive(baseForm());
 const promotionForm = reactive({
@@ -887,6 +1231,118 @@ const closeStudentTemplateModal = () => {
   studentTemplateClassId.value = "";
 };
 
+const openStudentAccountExportModal = () => {
+  studentAccountExportClassId.value = filters.class_id || "";
+  isStudentAccountExportModalOpen.value = true;
+};
+
+const closeStudentAccountExportModal = () => {
+  isStudentAccountExportModalOpen.value = false;
+  studentAccountExportClassId.value = "";
+};
+
+const closeStudentDetailModal = () => {
+  if (isLoadingStudentDetail.value) {
+    return;
+  }
+  isStudentDetailModalOpen.value = false;
+  studentDetail.value = {
+    id: null,
+    full_name: "-",
+    username: "-",
+    class_name: "-",
+    parent_email: "-",
+    phone_number: "-",
+    password: "-",
+    password_available: false,
+  };
+};
+
+const normalizeStudentDetail = (payload = {}) => ({
+  id: payload.id ?? null,
+  full_name: payload.full_name || "-",
+  username: payload.username || "-",
+  class_name: payload.class_name || "-",
+  parent_email: payload.parent_email || "-",
+  phone_number: payload.phone_number || "-",
+  password: payload.password || "-",
+  password_available: Boolean(payload.password_available),
+});
+
+const openStudentDetail = async (item) => {
+  if (!item?.id) {
+    return;
+  }
+
+  isLoadingStudentDetail.value = true;
+  isStudentDetailModalOpen.value = true;
+  try {
+    const response = await api.get(`/student/${item.id}/detail`);
+    studentDetail.value = normalizeStudentDetail(response?.data?.data || response?.data || {});
+  } catch (error) {
+    isLoadingStudentDetail.value = false;
+    pushToast({
+      title: "Gagal Memuat Detail Siswa",
+      message: error.message,
+      type: "error",
+    });
+    closeStudentDetailModal();
+    return;
+  } finally {
+    isLoadingStudentDetail.value = false;
+  }
+};
+
+const openStudentDetailFromCreate = (payload, className = "") => {
+  studentDetail.value = normalizeStudentDetail({
+    ...payload,
+    class_name: className || payload?.class_name || "-",
+  });
+  isStudentDetailModalOpen.value = true;
+};
+
+const resetStudentPassword = async () => {
+  if (!studentDetail.value?.id || isResettingStudentPassword.value) return;
+  resetTargetStudentId.value = studentDetail.value.id;
+  resetTargetStudentLabel.value = studentDetail.value.full_name || studentDetail.value.username || "siswa ini";
+  isResetConfirmOpen.value = true;
+};
+
+const closeResetConfirm = () => {
+  if (isResettingStudentPassword.value) return;
+  isResetConfirmOpen.value = false;
+  resetTargetStudentId.value = null;
+  resetTargetStudentLabel.value = "";
+};
+
+const confirmResetStudentPassword = async () => {
+  if (!resetTargetStudentId.value || isResettingStudentPassword.value) return;
+  isResettingStudentPassword.value = true;
+  try {
+    const response = await api.post(`/student/${resetTargetStudentId.value}/reset-password`);
+    const nextPassword = response?.data?.data?.password || response?.data?.password || "";
+    studentDetail.value = {
+      ...studentDetail.value,
+      password: nextPassword || studentDetail.value.password,
+      password_available: true,
+    };
+    isResetConfirmOpen.value = false;
+    resetTargetStudentId.value = null;
+    resetTargetStudentLabel.value = "";
+    successModal.value.show(
+      response?.message || `Password siswa berhasil direset. Password baru: ${nextPassword || "-"}`,
+    );
+  } catch (error) {
+    pushToast({
+      title: "Gagal Reset Password Siswa",
+      message: error.message,
+      type: "error",
+    });
+  } finally {
+    isResettingStudentPassword.value = false;
+  }
+};
+
 const downloadStudentTemplate = () => {
   if (!studentTemplateClassId.value) {
     pushToast({
@@ -929,23 +1385,98 @@ const downloadStudentTemplate = () => {
     });
 };
 
+const downloadStudentAccounts = () => {
+  if (!studentAccountExportClassId.value) {
+    pushToast({
+      title: "Pilih Kelas",
+      message: "Pilih kelas terlebih dahulu sebelum download akun siswa.",
+      type: "info",
+    });
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+  const params = new URLSearchParams({ class_id: String(studentAccountExportClassId.value) });
+  fetch(`${api.baseUrl}/auth/student/accounts?${params.toString()}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        throw new Error("Gagal mengunduh akun siswa");
+      }
+      return response.blob();
+    })
+    .then((blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const selectedClass = classOptions.value.find((item) => String(item.id) === String(studentAccountExportClassId.value));
+      link.download = `akun-siswa-${slugifyFilename(selectedClass?.class_name || "kelas")}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      closeStudentAccountExportModal();
+    })
+    .catch((error) => {
+      pushToast({
+        title: "Gagal Download Akun",
+        message: error.message,
+        type: "error",
+      });
+    });
+};
+
 const slugifyFilename = (value) => {
   const normalized = String(value || "kelas").trim().toLowerCase().replace(/\s+/g, "-");
   return normalized.replace(/[^a-z0-9_-]/g, "") || "kelas";
 };
 
-const openStudentImportPicker = () => {
-  studentImportInput.value?.click();
+const openStudentImportModal = () => {
+  studentImportClassId.value = filters.class_id || "";
+  studentImportFile.value = null;
+  isStudentImportModalOpen.value = true;
 };
 
-const handleStudentImportFileChange = async (event) => {
-  const file = event?.target?.files?.[0];
-  if (!file) return;
+const closeStudentImportModal = () => {
+  if (isImportingStudents.value) {
+    return;
+  }
+
+  isStudentImportModalOpen.value = false;
+  studentImportClassId.value = "";
+  studentImportFile.value = null;
+};
+
+const handleStudentImportFileChange = (event) => {
+  studentImportFile.value = event?.target?.files?.[0] || null;
+};
+
+const uploadStudentTemplate = async () => {
+  if (!studentImportClassId.value) {
+    pushToast({
+      title: "Pilih Kelas",
+      message: "Pilih kelas terlebih dahulu sebelum upload template siswa.",
+      type: "warning",
+    });
+    return;
+  }
+
+  if (!studentImportFile.value) {
+    pushToast({
+      title: "Pilih File",
+      message: "Pilih file template Excel terlebih dahulu.",
+      type: "warning",
+    });
+    return;
+  }
 
   isImportingStudents.value = true;
+  let importSucceeded = false;
   try {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", studentImportFile.value);
+    formData.append("class_id", String(studentImportClassId.value));
     const response = await api.post("/auth/register/student/import", formData);
     const imported = Number(response?.data?.imported || 0);
     const failed = Number(response?.data?.failed || 0);
@@ -959,10 +1490,11 @@ const handleStudentImportFileChange = async (event) => {
     if (failed > 0) {
       pushToast({
         title: "Sebagian Baris Gagal",
-        message: "Periksa username, password, kelas, atau data yang sudah terdaftar.",
-        type: "error",
+        message: "Periksa data yang kosong. Username dan password dibuat otomatis dari nama lengkap.",
+        type: "warning",
       });
     }
+    importSucceeded = true;
   } catch (error) {
     pushToast({
       title: "Gagal Import Siswa",
@@ -971,8 +1503,8 @@ const handleStudentImportFileChange = async (event) => {
     });
   } finally {
     isImportingStudents.value = false;
-    if (studentImportInput.value) {
-      studentImportInput.value.value = "";
+    if (importSucceeded) {
+      closeStudentImportModal();
     }
   }
 };
@@ -1103,14 +1635,22 @@ const createStudent = async () => {
   try {
     const response = await api.post("/auth/register/student", {
       full_name: form.full_name,
-      username: form.username,
-      password: form.password,
       role: "SISWA",
       class_id: Number(form.class_id),
-      parent_email: form.parent_email || null,
-      phone_number: form.phone_number || null,
     });
     await loadStudents();
+    const matchedClass = classOptions.value.find((classItem) => String(classItem.id) === String(form.class_id));
+    openStudentDetailFromCreate(
+      {
+        id: response?.data?.id,
+        full_name: response?.data?.full_name || form.full_name,
+        username: response?.data?.username || "-",
+        password: response?.data?.password || "-",
+        parent_email: response?.data?.parent_email || "-",
+        phone_number: response?.data?.phone_number || "-",
+      },
+      matchedClass?.class_name || "-",
+    );
     closeModal();
     successModal.value.show(response?.message || "Siswa berhasil didaftarkan.");
   } catch (error) {

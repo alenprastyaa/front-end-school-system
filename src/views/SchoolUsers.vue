@@ -50,6 +50,11 @@
                   </button>
                 </th>
                 <th class="py-3 pr-4">
+                  <button @click="handleSort('username')" class="inline-flex items-center gap-1 font-medium">
+                    Username {{ sortIndicator("username") }}
+                  </button>
+                </th>
+                <th class="py-3 pr-4">
                   <button @click="handleSort('role')" class="inline-flex items-center gap-1 font-medium">
                     Role {{ sortIndicator("role") }}
                   </button>
@@ -71,11 +76,16 @@
               <tr v-for="item in paginatedUsers" :key="item.id"
                 class="border-b dark:border-gray-700 text-gray-800 dark:text-gray-200">
                 <td class="py-3 pr-4">{{ item.full_name || item.username || "-" }}</td>
+                <td class="py-3 pr-4">{{ item.username || "-" }}</td>
                 <td class="py-3 pr-4">{{ item.role }}</td>
                 <td class="py-3 pr-4">{{ item.parent_email || "-" }}</td>
                 <td class="py-3 pr-4">{{ item.phone_number || "-" }}</td>
                 <td class="py-3 pr-4">
                   <div class="flex items-center gap-2">
+                    <button @click="openDetailModal(item)"
+                      class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700">
+                      Detail
+                    </button>
                     <!-- <button
                       @click="startEdit(item)"
                       class="px-3 py-1 rounded-md bg-blue-600 text-white text-sm font-medium"
@@ -103,7 +113,7 @@
                 </td>
               </tr>
               <tr v-if="users.length === 0">
-                <td colspan="5" class="py-6 text-center text-gray-500 dark:text-gray-400">
+                <td colspan="6" class="py-6 text-center text-gray-500 dark:text-gray-400">
                   Belum ada user sekolah.
                 </td>
               </tr>
@@ -128,6 +138,114 @@
       </div>
     </section>
 
+    <div v-if="isDetailModalOpen" class="fixed inset-0 z-[55] flex items-center justify-center bg-black/50 px-4">
+      <div class="w-full max-w-lg overflow-hidden rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
+        <div class="flex items-center justify-between gap-4 border-b border-gray-100 px-6 py-4 dark:border-gray-700">
+          <div>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Detail User</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Ringkasan data akun user sekolah.</p>
+          </div>
+          <button @click="closeDetailModal" class="text-2xl leading-none text-gray-500 dark:text-gray-300">
+            &times;
+          </button>
+        </div>
+
+        <div class="space-y-4 px-6 py-5">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Nama Lengkap</p>
+            <p class="mt-1 text-sm font-medium text-gray-900 dark:text-white">
+              {{ detailUser?.full_name || "-" }}
+            </p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Username</p>
+            <p class="mt-1 text-sm font-medium text-gray-900 dark:text-white">
+              {{ detailUser?.username || "-" }}
+            </p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Password</p>
+            <p class="mt-1 text-sm font-medium text-gray-900 dark:text-white">
+              {{ detailUser?.initial_password || "-" }}
+            </p>
+          </div>
+          <div class="grid gap-4 md:grid-cols-2">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Role</p>
+              <p class="mt-1 text-sm font-medium text-gray-900 dark:text-white">
+                {{ detailUser?.role || "-" }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">ID User</p>
+              <p class="mt-1 text-sm font-medium text-gray-900 dark:text-white">
+                {{ detailUser?.id || "-" }}
+              </p>
+            </div>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Email</p>
+            <p class="mt-1 text-sm font-medium text-gray-900 dark:text-white">
+              {{ detailUser?.parent_email || "-" }}
+            </p>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">No. HP</p>
+            <p class="mt-1 text-sm font-medium text-gray-900 dark:text-white">
+              {{ detailUser?.phone_number || "-" }}
+            </p>
+          </div>
+          <div class="flex justify-end pt-2">
+            <button type="button" @click="resetDetailPassword" :disabled="isResettingPassword"
+              class="mr-auto inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+              {{ isResettingPassword ? "Mereset..." : "Reset Password" }}
+            </button>
+            <button type="button" @click="editDetailUser"
+              class="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500">
+              Edit User
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="isResetConfirmOpen"
+      class="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+      <div
+        class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+        @click.stop>
+        <div class="flex items-start gap-4 px-6 py-5">
+          <div
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Reset Password?</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+              Reset password untuk
+              <span class="font-semibold text-slate-700 dark:text-slate-200">
+                {{ resetTargetLabel || "-" }}
+              </span>
+              akan membuat password baru secara otomatis. Password lama akan tidak berlaku.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/60 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/40">
+          <button type="button" @click="closeResetConfirm"
+            class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+            Batal
+          </button>
+          <button type="button" @click="confirmResetPassword" :disabled="isResettingPassword"
+            class="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-60">
+            {{ isResettingPassword ? "Mereset..." : "Ya, Reset" }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
       <div class="w-full max-w-lg bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-xl">
         <div class="flex items-center justify-between gap-4 px-6 py-4 border-b dark:border-gray-700">
@@ -147,19 +265,11 @@
 
         <form @submit.prevent="submitUser" class="p-6 space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
-            <input v-model="form.username" type="text" required
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nama Lengkap</label>
+            <input v-model="form.full_name" type="text" required
               class="mt-1 w-full px-3 py-2 rounded-md border dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {{ editingUserId ? "Password Baru" : "Password" }}
-            </label>
-            <input v-model="form.password" type="password" :required="!editingUserId"
-              class="mt-1 w-full px-3 py-2 rounded-md border dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
-            <p v-if="editingUserId" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Kosongkan jika password tidak ingin diganti.
+            <p v-if="form.role === 'GURU'" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Untuk guru, username dan password akan dibuat otomatis dari nama lengkap.
             </p>
           </div>
 
@@ -173,6 +283,25 @@
               <option value="KOPERASI">KOPERASI</option>
             </select>
           </div>
+
+          <template v-if="form.role !== 'GURU'">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
+              <input v-model="form.username" type="text" required
+                class="mt-1 w-full px-3 py-2 rounded-md border dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                {{ editingUserId ? "Password Baru" : "Password" }}
+              </label>
+              <input v-model="form.password" type="password" :required="!editingUserId"
+                class="mt-1 w-full px-3 py-2 rounded-md border dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
+              <p v-if="editingUserId" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Kosongkan jika password tidak ingin diganti.
+              </p>
+            </div>
+          </template>
 
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
@@ -275,9 +404,10 @@ const successModal = ref(null);
 const guruImportInput = ref(null);
 
 const baseForm = () => ({
+  full_name: "",
   username: "",
   password: "",
-  role: "ADMIN",
+  role: "GURU",
   parent_email: "",
   phone_number: "",
 });
@@ -285,6 +415,12 @@ const baseForm = () => ({
 const isDeleteModalOpen = ref(false);
 const isDeletingUser = ref(false);
 const userToDelete = ref(null);
+const isDetailModalOpen = ref(false);
+const detailUser = ref(null);
+const isResettingPassword = ref(false);
+const isResetConfirmOpen = ref(false);
+const resetTargetId = ref(null);
+const resetTargetLabel = ref("");
 
 const form = reactive(baseForm());
 const users = ref([]);
@@ -300,6 +436,8 @@ const tableSort = createSortState("full_name");
 const sortedUsers = computed(() =>
   sortItems(users.value, tableSort, {
     full_name: (item) => item.full_name || item.username || "",
+    username: (item) => item.username || "",
+    initial_password: (item) => item.initial_password || "",
     parent_email: (item) => item.parent_email || "",
     phone_number: (item) => item.phone_number || "",
   }),
@@ -395,8 +533,8 @@ const handleGuruImportFileChange = async (event) => {
     if (failed > 0) {
       pushToast({
         title: "Sebagian Baris Gagal",
-        message: "Periksa data yang kosong atau username yang sudah ada.",
-        type: "error",
+        message: "Periksa data yang kosong. Username dan password dibuat otomatis dari nama lengkap.",
+        type: "warning",
       });
     }
   } catch (error) {
@@ -451,6 +589,7 @@ const goToNextPage = () => {
 
 const startEdit = (item) => {
   editingUserId.value = item.id;
+  form.full_name = item.full_name || "";
   form.username = item.username;
   form.password = "";
   form.role = item.role;
@@ -462,6 +601,65 @@ const startEdit = (item) => {
 const openDeleteModal = (item) => {
   userToDelete.value = item;
   isDeleteModalOpen.value = true;
+};
+
+const openDetailModal = (item) => {
+  detailUser.value = item;
+  isDetailModalOpen.value = true;
+};
+
+const closeDetailModal = () => {
+  isDetailModalOpen.value = false;
+  detailUser.value = null;
+};
+
+const editDetailUser = () => {
+  if (!detailUser.value) return;
+  const user = detailUser.value;
+  closeDetailModal();
+  startEdit(user);
+};
+
+const resetDetailPassword = async () => {
+  if (!detailUser.value?.id || isResettingPassword.value) return;
+  resetTargetId.value = detailUser.value.id;
+  resetTargetLabel.value = detailUser.value.full_name || detailUser.value.username || "user ini";
+  isResetConfirmOpen.value = true;
+};
+
+const closeResetConfirm = () => {
+  if (isResettingPassword.value) return;
+  isResetConfirmOpen.value = false;
+  resetTargetId.value = null;
+  resetTargetLabel.value = "";
+};
+
+const confirmResetPassword = async () => {
+  if (!resetTargetId.value || isResettingPassword.value) return;
+  isResettingPassword.value = true;
+  try {
+    const response = await api.post(`/auth/user-school/${resetTargetId.value}/reset-password`);
+    detailUser.value = {
+      ...detailUser.value,
+      initial_password: response?.data?.password || response?.data?.initial_password || "",
+    };
+    isResetConfirmOpen.value = false;
+    resetTargetId.value = null;
+    resetTargetLabel.value = "";
+    await loadUsers();
+    successModal.value.show(
+      response?.message ||
+      `Password berhasil direset. Password baru: ${response?.data?.password || response?.data?.initial_password || "-"}`,
+    );
+  } catch (error) {
+    pushToast({
+      title: "Gagal Reset Password",
+      message: error.message,
+      type: "error",
+    });
+  } finally {
+    isResettingPassword.value = false;
+  }
 };
 
 const closeDeleteModal = () => {
@@ -496,14 +694,19 @@ const submitUser = async () => {
 
   try {
     const payload = {
+      full_name: form.full_name,
       username: form.username,
       role: form.role,
       parent_email: form.parent_email || null,
       phone_number: form.phone_number || null,
     };
 
-    if (form.password) {
+    if (form.role !== "GURU" && form.password) {
       payload.password = form.password;
+    }
+    if (form.role === "GURU") {
+      delete payload.username;
+      delete payload.password;
     }
 
     const response = editingUserId.value
@@ -512,11 +715,15 @@ const submitUser = async () => {
 
     await loadUsers();
     closeModal();
+    const generatedCredentials =
+      !editingUserId.value && form.role === "GURU" && response?.data?.username && response?.data?.password
+        ? ` Username: ${response.data.username}. Password: ${response.data.password}`
+        : "";
     successModal.value.show(
       response?.message ||
       (editingUserId.value
         ? "User sekolah berhasil diupdate"
-        : "User sekolah berhasil dibuat"),
+        : `User sekolah berhasil dibuat.${generatedCredentials}`),
     );
   } catch (error) {
     pushToast({

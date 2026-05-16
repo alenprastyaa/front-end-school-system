@@ -19,8 +19,8 @@
               </div>
               <button type="button"
                 class="flex h-10 w-10 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
-                @click="refreshSummary(true)">
-                <Icon icon="mdi:refresh" class="h-5 w-5" />
+                @click="isMobileViewport ? goBack() : refreshSummary(true)">
+                <Icon :icon="isMobileViewport ? 'mdi:arrow-left' : 'mdi:refresh'" class="h-5 w-5" />
               </button>
             </header>
 
@@ -108,10 +108,6 @@
                     {{ peerMeta(selectedPeer) }}
                   </p>
                 </div>
-                <button type="button"
-                  class="flex h-10 w-10 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10">
-                  <Icon icon="mdi:dots-vertical" class="h-5 w-5" />
-                </button>
               </header>
 
               <div ref="messageListRef" :style="messageListStyle"
@@ -274,7 +270,7 @@
 
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
 import { storeToRefs } from "pinia";
 import { api } from "@/api";
@@ -285,6 +281,7 @@ import { useRealtimeStore } from "@/store/realtime";
 import { useSidebar } from "@/store/sidebar";
 
 const route = useRoute();
+const router = useRouter();
 const realtimeStore = useRealtimeStore();
 const sidebarStore = useSidebar();
 const { privateChatSummaryItems } = storeToRefs(sidebarStore);
@@ -338,6 +335,8 @@ const AUDIO_MIME_EXTENSION_MAP = {
   "audio/3gpp2": ".3g2",
   "audio/mp4a-latm": ".m4a",
 };
+
+const goBack = () => router.back();
 
 const getCurrentUserId = () => {
   try {

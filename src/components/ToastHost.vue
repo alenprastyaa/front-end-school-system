@@ -57,27 +57,29 @@ const { toasts, dismissToast } = useToast();
 const toastContainerClass = (type) => {
   if (type === "success") return "border-emerald-700 bg-emerald-600 ring-emerald-700/40";
   if (type === "error") return "border-red-700 bg-red-600 ring-red-700/40";
+  if (type === "warning") return "border-amber-700 bg-amber-500 ring-amber-700/30";
   return "border-sky-200 bg-white ring-sky-100 dark:border-sky-500/30 dark:bg-slate-900 dark:ring-sky-500/10";
 };
 
 const toastDotClass = (type) => {
   if (type === "success") return "bg-white/90";
   if (type === "error") return "bg-white/90";
+  if (type === "warning") return "bg-white/90";
   return "bg-sky-500";
 };
 
 const toastTitleClass = (type) => {
-  if (type === "success" || type === "error") return "text-white";
+  if (type === "success" || type === "error" || type === "warning") return "text-white";
   return "text-slate-900 dark:text-white";
 };
 
 const toastMessageClass = (type) => {
-  if (type === "success" || type === "error") return "text-white/90";
+  if (type === "success" || type === "error" || type === "warning") return "text-white/90";
   return "text-slate-600 dark:text-slate-300";
 };
 
 const toastCloseClass = (type) => {
-  if (type === "success" || type === "error") {
+  if (type === "success" || type === "error" || type === "warning") {
     return "text-white/80 hover:bg-white/10 hover:text-white";
   }
   return "text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200";
@@ -86,6 +88,7 @@ const toastCloseClass = (type) => {
 const toastProgressClass = (type) => {
   if (type === "success") return "bg-white/80";
   if (type === "error") return "bg-white/80";
+  if (type === "warning") return "bg-white/80";
   return "bg-sky-500";
 };
 </script>

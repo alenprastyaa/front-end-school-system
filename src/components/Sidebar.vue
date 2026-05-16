@@ -473,7 +473,6 @@ const menuByRole = {
   SARPRAS: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     { key: "inventory", to: "/inventory", label: "Daftar Barang", icon: "ph:archive-box" },
-    { key: "koperasi", to: "/koperasi", label: "Koperasi", icon: "ph:shopping-cart" },
   ],
   SISWA: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },

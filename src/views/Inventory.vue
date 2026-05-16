@@ -11,7 +11,7 @@
 
       <section v-else
         class="rounded-3xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
-        <div class="border-b border-slate-100 px-6 py-5 dark:border-slate-800">
+        <div class="border-b border-slate-100 px-4 py-5 sm:px-6 dark:border-slate-800">
           <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-amber-500 dark:text-amber-300">
@@ -27,7 +27,52 @@
             </span>
           </div>
         </div>
-        <div class="overflow-x-auto">
+        <div class="p-4 md:hidden">
+          <div v-if="visibleActiveLoans.length > 0" class="space-y-3">
+            <article
+              v-for="loan in visibleActiveLoans"
+              :key="loan.id"
+              class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="truncate text-sm font-semibold text-slate-900 dark:text-white">
+                    {{ loan.item_name || "-" }}
+                  </div>
+                  <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {{ loan.item_code || "-" }} · {{ resolveTeacherName(loan) }}
+                  </div>
+                </div>
+                <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold" :class="loan.status === 'BORROWED'
+                  ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300'
+                  : loan.status === 'RETURN_REQUESTED'
+                    ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300'
+                    : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300'">
+                  {{ loan.status === 'RETURN_REQUESTED' ? 'MENUNGGU ACC SARPRAS' : loan.status || '-' }}
+                </span>
+              </div>
+              <dl class="mt-3 grid grid-cols-2 gap-3 text-xs text-slate-500 dark:text-slate-400">
+                <div>
+                  <dt class="font-medium text-slate-400 dark:text-slate-500">Qty</dt>
+                  <dd class="mt-1 font-semibold text-slate-900 dark:text-white">{{ numberValue(loan.quantity) }}</dd>
+                </div>
+                <div>
+                  <dt class="font-medium text-slate-400 dark:text-slate-500">Jatuh Tempo</dt>
+                  <dd class="mt-1 font-semibold text-slate-900 dark:text-white">{{ formatDate(loan.due_date) }}</dd>
+                </div>
+              </dl>
+              <div class="mt-4">
+                <button v-if="loan.status === 'BORROWED'" @click="returnLoan(loan)"
+                  class="w-full rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-500">
+                  Ajukan Pengembalian
+                </button>
+              </div>
+            </article>
+          </div>
+          <div v-else class="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+            Belum ada barang yang sedang dipinjam.
+          </div>
+        </div>
+        <div class="hidden overflow-x-auto md:block">
           <table class="min-w-full text-left text-sm">
             <thead class="bg-slate-50 text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
               <tr>
@@ -76,7 +121,7 @@
           </table>
         </div>
         <div
-          class="flex items-center justify-between gap-3 border-t border-slate-100 px-6 py-4 text-sm dark:border-slate-800">
+          class="flex flex-col gap-3 border-t border-slate-100 px-4 py-4 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-slate-800">
           <span class="text-slate-500 dark:text-slate-400">{{ paginationLabel(activeLoansMeta) }}</span>
           <div class="flex items-center gap-2">
             <button
@@ -102,7 +147,7 @@
 
       <section v-if="canManageInventory" class="grid gap-6">
         <section class="rounded-3xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
-          <div class="border-b border-slate-100 px-6 py-5 dark:border-slate-800">
+          <div class="border-b border-slate-100 px-4 py-5 sm:px-6 dark:border-slate-800">
             <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <h2 class="text-lg font-bold text-slate-900 dark:text-white">Daftar Barang</h2>
@@ -113,7 +158,7 @@
                 <input v-model="search" type="text" placeholder="Cari barang..."
                   class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-amber-600 lg:max-w-sm dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 <button
-                  class="rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-500"
+                  class="rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-500 lg:w-auto"
                   @click="openItemModal">
                   Tambah Barang
                 </button>
@@ -121,7 +166,61 @@
             </div>
           </div>
 
-          <div class="overflow-x-auto">
+          <div class="p-4 md:hidden">
+            <div v-if="filteredItems.length > 0" class="space-y-3">
+              <article v-for="item in filteredItems" :key="item.id"
+                class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="truncate text-sm font-semibold text-slate-900 dark:text-white">{{ item.name || "-" }}
+                    </div>
+                    <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      {{ item.code || "-" }} · {{ item.description || "Tanpa deskripsi" }}
+                    </div>
+                  </div>
+                  <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                    :class="item.is_active ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'">
+                    {{ item.is_active ? "Aktif" : "Nonaktif" }}
+                  </span>
+                </div>
+                <dl class="mt-3 grid grid-cols-2 gap-3 text-xs text-slate-500 dark:text-slate-400">
+                  <div>
+                    <dt class="font-medium text-slate-400 dark:text-slate-500">Kategori</dt>
+                    <dd class="mt-1 font-semibold text-slate-900 dark:text-white">{{ item.category || "-" }}</dd>
+                  </div>
+                  <div>
+                    <dt class="font-medium text-slate-400 dark:text-slate-500">Stok</dt>
+                    <dd class="mt-1 font-semibold text-slate-900 dark:text-white">
+                      {{ numberValue(item.available_quantity) }} / {{ numberValue(item.total_quantity) }}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt class="font-medium text-slate-400 dark:text-slate-500">Dipinjam</dt>
+                    <dd class="mt-1 font-semibold text-slate-900 dark:text-white">{{ numberValue(item.borrowed_quantity)
+                    }}</dd>
+                  </div>
+                  <div>
+                    <dt class="font-medium text-slate-400 dark:text-slate-500">Kondisi</dt>
+                    <dd class="mt-1 font-semibold text-slate-900 dark:text-white">{{ item.condition_status || "-" }}</dd>
+                  </div>
+                </dl>
+                <div class="mt-4 flex gap-2">
+                  <button @click="startEditItem(item)"
+                    class="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">
+                    Edit
+                  </button>
+                  <button @click="deleteItem(item)"
+                    class="flex-1 rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-rose-500">
+                    Nonaktifkan
+                  </button>
+                </div>
+              </article>
+            </div>
+            <div v-else class="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+              Belum ada barang yang cocok.
+            </div>
+          </div>
+          <div class="hidden overflow-x-auto md:block">
             <table class="min-w-full text-left text-sm">
               <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
                 <tr>
@@ -177,7 +276,7 @@
             </table>
           </div>
           <div
-            class="flex items-center justify-between gap-3 border-t border-slate-100 px-6 py-4 text-sm dark:border-slate-800">
+            class="flex flex-col gap-3 border-t border-slate-100 px-4 py-4 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-slate-800">
             <span class="text-slate-500 dark:text-slate-400">{{ paginationLabel(itemsMeta) }}</span>
             <div class="flex items-center gap-2">
               <button
@@ -200,7 +299,7 @@
       <section v-if="canManageInventory || isStudentRole"
         class="rounded-3xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
         <div
-          class="flex flex-col gap-4 border-b border-slate-100 px-6 py-5 dark:border-slate-800 md:flex-row md:items-start md:justify-between">
+          class="flex flex-col gap-4 border-b border-slate-100 px-4 py-5 sm:px-6 dark:border-slate-800 md:flex-row md:items-start md:justify-between">
           <div>
             <h2 class="text-lg font-bold text-slate-900 dark:text-white">Riwayat Peminjaman</h2>
             <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
@@ -211,7 +310,66 @@
             </p>
           </div>
         </div>
-        <div class="overflow-x-auto">
+        <div class="p-4 md:hidden">
+          <div v-if="visibleLoans.length > 0" class="space-y-3">
+            <article v-for="loan in visibleLoans" :key="loan.id"
+              class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="truncate text-sm font-semibold text-slate-900 dark:text-white">
+                    {{ loan.item_name || "-" }}
+                  </div>
+                  <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {{ loan.item_code || "-" }}
+                  </div>
+                </div>
+                <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold" :class="loan.status === 'BORROWED'
+                  ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300'
+                  : loan.status === 'RETURN_REQUESTED'
+                    ? 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300'
+                    : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300'">
+                  {{ loan.status === 'RETURN_REQUESTED' ? 'MENUNGGU ACC SARPRAS' : loan.status }}
+                </span>
+              </div>
+              <dl class="mt-3 grid grid-cols-2 gap-3 text-xs text-slate-500 dark:text-slate-400">
+                <div>
+                  <dt class="font-medium text-slate-400 dark:text-slate-500">Peminjam</dt>
+                  <dd class="mt-1 font-semibold text-slate-900 dark:text-white">{{ loan.borrower_name || "-" }}</dd>
+                </div>
+                <div>
+                  <dt class="font-medium text-slate-400 dark:text-slate-500">Guru</dt>
+                  <dd class="mt-1 font-semibold text-slate-900 dark:text-white">{{ resolveTeacherName(loan) }}</dd>
+                </div>
+                <div>
+                  <dt class="font-medium text-slate-400 dark:text-slate-500">Qty</dt>
+                  <dd class="mt-1 font-semibold text-slate-900 dark:text-white">{{ numberValue(loan.quantity) }}</dd>
+                </div>
+                <div>
+                  <dt class="font-medium text-slate-400 dark:text-slate-500">Tgl Pinjam</dt>
+                  <dd class="mt-1 font-semibold text-slate-900 dark:text-white">{{ formatDateTime(loan.borrowed_at) }}</dd>
+                </div>
+                <div>
+                  <dt class="font-medium text-slate-400 dark:text-slate-500">Jatuh Tempo</dt>
+                  <dd class="mt-1 font-semibold text-slate-900 dark:text-white">{{ formatDate(loan.due_date) }}</dd>
+                </div>
+              </dl>
+              <div class="mt-4">
+                <button v-if="canManageInventory && loan.status === 'RETURN_REQUESTED'" @click="returnLoan(loan)"
+                  class="w-full rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-500">
+                  Acc Pengembalian
+                </button>
+                <button v-else-if="isStudentRole && loan.status === 'BORROWED'" @click="returnLoan(loan)"
+                  class="w-full rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-500">
+                  Ajukan Pengembalian
+                </button>
+              </div>
+            </article>
+          </div>
+          <div v-else class="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+            Belum ada riwayat peminjaman.
+          </div>
+        </div>
+        <div class="hidden overflow-x-auto md:block">
           <table class="min-w-full text-left text-sm">
             <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
               <tr>
@@ -266,7 +424,7 @@
           </table>
         </div>
         <div
-          class="flex items-center justify-between gap-3 border-t border-slate-100 px-6 py-4 text-sm dark:border-slate-800">
+          class="flex flex-col gap-3 border-t border-slate-100 px-4 py-4 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-slate-800">
           <span class="text-slate-500 dark:text-slate-400">{{ paginationLabel(loansMeta) }}</span>
           <div class="flex items-center gap-2">
             <button
@@ -402,20 +560,59 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
         @click.self="closeCatalogModal">
         <div
-          class="w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
+          class="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
           <div
-            class="flex flex-col gap-4 border-b border-slate-100 px-6 py-5 dark:border-slate-800 md:flex-row md:items-center md:justify-between">
+            class="flex flex-col gap-4 border-b border-slate-100 px-4 py-4 dark:border-slate-800 sm:px-6 sm:py-5 md:flex-row md:items-center md:justify-between">
             <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-amber-500 dark:text-amber-300">
+              <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-500 dark:text-amber-300">
                 Katalog Barang
               </p>
-              <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Barang Tersedia</h2>
+              <h2 class="mt-1.5 text-xl font-bold tracking-tight text-slate-900 dark:text-white sm:mt-2 sm:text-2xl sm:font-black">Barang Tersedia</h2>
             </div>
             <input v-model="search" type="text" placeholder="Cari barang..."
               class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-amber-600 md:max-w-sm dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
           </div>
 
-          <div class="overflow-x-auto">
+          <div class="flex-1 overflow-y-auto">
+            <div class="grid gap-3 p-4 md:hidden">
+              <article v-for="item in filteredItems" :key="item.id"
+                class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="truncate text-sm font-semibold text-slate-900 dark:text-white">{{ item.name || "-" }}</div>
+                    <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      {{ item.code || "-" }} · {{ item.description || "Tanpa deskripsi" }}
+                    </div>
+                  </div>
+                  <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                    :class="numberValue(item.available_quantity) > 0 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300'">
+                    {{ numberValue(item.available_quantity) > 0 ? 'Tersedia' : 'Habis' }}
+                  </span>
+                </div>
+                <dl class="mt-3 grid grid-cols-2 gap-3 text-xs text-slate-500 dark:text-slate-400">
+                  <div>
+                    <dt class="font-medium text-slate-400 dark:text-slate-500">Kategori</dt>
+                    <dd class="mt-1 font-semibold text-slate-900 dark:text-white">{{ item.category || "-" }}</dd>
+                  </div>
+                  <div>
+                    <dt class="font-medium text-slate-400 dark:text-slate-500">Tersedia</dt>
+                    <dd class="mt-1 font-semibold text-slate-900 dark:text-white">
+                      {{ numberValue(item.available_quantity) }}
+                    </dd>
+                  </div>
+                  <div class="col-span-2">
+                    <dt class="font-medium text-slate-400 dark:text-slate-500">Kondisi</dt>
+                    <dd class="mt-1 font-semibold text-slate-900 dark:text-white">{{ item.condition_status || "-" }}</dd>
+                  </div>
+                </dl>
+                <button @click="openBorrowModal(item)" :disabled="numberValue(item.available_quantity) <= 0"
+                  class="mt-4 w-full rounded-xl bg-amber-600 px-3 py-2.5 text-xs font-semibold text-white transition hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-50">
+                  Pinjam
+                </button>
+              </article>
+            </div>
+
+            <div class="hidden overflow-x-auto md:block">
             <table class="min-w-full text-left text-sm">
               <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
                 <tr>
@@ -452,9 +649,10 @@
                 </tr>
               </tbody>
             </table>
+            </div>
           </div>
           <div
-            class="flex items-center justify-between gap-3 border-t border-slate-100 px-6 py-4 text-sm dark:border-slate-800">
+            class="flex flex-col gap-3 border-t border-slate-100 px-4 py-4 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:border-slate-800">
             <span class="text-slate-500 dark:text-slate-400">{{ paginationLabel(itemsMeta) }}</span>
             <div class="flex items-center gap-2">
               <button
@@ -478,30 +676,30 @@
       enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="borrowModalOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
+        class="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:items-center sm:p-4"
         @click.self="closeBorrowModal">
         <div
-          class="w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
-          <div class="border-b border-slate-100 px-6 py-5 dark:border-slate-800">
-            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-amber-500 dark:text-amber-300">Pinjam
+          class="w-full max-w-lg max-h-[90vh] overflow-hidden rounded-t-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10 sm:max-h-[88vh] sm:rounded-3xl">
+          <div class="border-b border-slate-100 px-4 py-4 dark:border-slate-800 sm:px-6 sm:py-5">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-500 dark:text-amber-300">Pinjam
               Barang</p>
-            <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">{{ selectedItem?.name ||
+            <h2 class="mt-1.5 text-lg font-bold tracking-tight text-slate-900 dark:text-white sm:mt-2 sm:text-2xl sm:font-black">{{ selectedItem?.name ||
               "-" }}</h2>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">{{
+            <p class="mt-1.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400 sm:mt-2 sm:text-sm">{{
               selectedItem?.description || "Tidak ada deskripsi" }}</p>
           </div>
 
-          <form class="space-y-4 px-6 py-5" @submit.prevent="submitBorrow">
+          <form class="max-h-[calc(90vh-88px)] space-y-4 overflow-y-auto px-4 py-4 sm:max-h-[calc(88vh-104px)] sm:px-6 sm:py-5" @submit.prevent="submitBorrow">
             <div>
-              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jumlah</label>
+              <label class="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300 sm:text-sm">Jumlah</label>
               <input v-model="borrowForm.quantity" type="number" min="1" :max="selectedItem?.available_quantity || 1"
-                class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-amber-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                class="block w-full rounded-xl border-0 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-amber-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700 sm:px-4 sm:py-3" />
             </div>
             <div>
-              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Guru yang
+              <label class="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300 sm:text-sm">Guru yang
                 mengajar</label>
               <select v-model="borrowForm.teacher_id"
-                class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-amber-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                class="block w-full rounded-xl border-0 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-amber-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700 sm:px-4 sm:py-3">
                 <option value="">Pilih guru</option>
                 <option v-for="teacher in teacherUsers" :key="teacher.id" :value="teacher.id">
                   {{ teacher.full_name || teacher.username || "-" }}{{ teacher.subjects ? ` - ${teacher.subjects}` : ""
@@ -510,10 +708,10 @@
               </select>
             </div>
             <div>
-              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jam
+              <label class="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300 sm:text-sm">Jam
                 Pembelajaran</label>
               <select v-model="borrowForm.schedule_slot_id"
-                class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-amber-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                class="block w-full rounded-xl border-0 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-amber-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700 sm:px-4 sm:py-3">
                 <option value="">Pilih jam kembali</option>
                 <option v-for="slot in scheduleOptions" :key="slot.id" :value="slot.id">
                   {{ slot.day_name }} - {{ slot.label || `Sesi ${slot.session_order}` }} ({{ slot.start_time }} - {{
@@ -521,23 +719,23 @@
                   ${slot.teacher_name}` : "" }}
                 </option>
               </select>
-              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              <p class="mt-1 text-[11px] text-slate-500 dark:text-slate-400 sm:text-xs">
                 Dipilih dari jadwal kurikulum kelas Anda.
               </p>
             </div>
             <div>
-              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Catatan</label>
+              <label class="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300 sm:text-sm">Catatan</label>
               <textarea v-model="borrowForm.notes" rows="4"
-                class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-amber-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"></textarea>
+                class="block w-full rounded-xl border-0 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-amber-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700 sm:px-4 sm:py-3"></textarea>
             </div>
-            <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-5 dark:border-slate-800">
+            <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-end sm:pt-5">
               <button type="button"
-                class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200"
+                class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200 sm:w-auto"
                 @click="closeBorrowModal">
                 Batal
               </button>
               <button type="submit" :disabled="isBorrowing"
-                class="rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-500 disabled:opacity-50">
+                class="rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-500 disabled:opacity-50 sm:w-auto">
                 {{ isBorrowing ? "Memproses..." : "Ajukan Pinjaman" }}
               </button>
             </div>

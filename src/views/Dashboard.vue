@@ -339,7 +339,50 @@
               <h2 class="text-base font-semibold text-slate-900 dark:text-white">{{ primaryPanel.title }}</h2>
               <p class="mt-1 text-sm text-slate-500">{{ primaryPanel.description }}</p>
             </div>
-            <div class="overflow-x-auto">
+            <div v-if="role === 'SISWA'" class="p-4 md:hidden">
+              <div v-if="sortedPrimaryRows.length" class="space-y-3">
+                <article v-for="row in sortedPrimaryRows" :key="`${row.attendance_date}-${row.clock_in || ''}-${row.clock_out || ''}`"
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/30">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold text-slate-900 dark:text-white">
+                        {{ formatDate(row.attendance_date) }}
+                      </p>
+                      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        Riwayat absensi harian
+                      </p>
+                    </div>
+                    <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                      :class="row.status === 'HADIR'
+                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300'
+                        : row.status === 'TERLAMBAT'
+                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300'
+                          : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'">
+                      {{ row.status || "-" }}
+                    </span>
+                  </div>
+
+                  <dl class="mt-3 grid grid-cols-2 gap-3 text-xs text-slate-500 dark:text-slate-400">
+                    <div>
+                      <dt class="font-medium text-slate-400 dark:text-slate-500">Masuk</dt>
+                      <dd class="mt-1 font-semibold text-slate-900 dark:text-white">
+                        {{ formatTime(row.clock_in) }}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt class="font-medium text-slate-400 dark:text-slate-500">Pulang</dt>
+                      <dd class="mt-1 font-semibold text-slate-900 dark:text-white">
+                        {{ formatTime(row.clock_out) }}
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+              <div v-else class="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                Belum ada riwayat absensi.
+              </div>
+            </div>
+            <div class="hidden overflow-x-auto md:block">
               <table class="min-w-full text-left text-sm">
                 <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
                   <tr>
@@ -400,19 +443,21 @@
           <section
             class="flex-1 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
             <h2 class="text-base font-semibold text-slate-900 dark:text-white">{{ secondaryPanel.title }}</h2>
-            <div class="mt-5 space-y-4 sm:mt-6 sm:space-y-5">
-              <div v-for="(item, index) in secondaryPanel.items" :key="index" class="flex gap-4">
-                <div class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-blue-500 ring-4 ring-blue-50 dark:ring-blue-500/10">
-                </div>
-                <div class="flex-1">
-                  <div class="flex items-start justify-between gap-2">
-                    <p class="text-sm font-medium text-slate-900 dark:text-white">{{ item.title }}</p>
+            <div class="mt-5 space-y-3 sm:mt-6 sm:space-y-4">
+              <div v-for="(item, index) in secondaryPanel.items" :key="index"
+                class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/30 sm:px-5 sm:py-4">
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+                    <p class="min-w-0 flex-1 text-sm font-medium leading-5 text-slate-900 dark:text-white">
+                      {{ item.title }}
+                    </p>
                     <span class="text-xs text-slate-500 whitespace-nowrap">{{ item.meta }}</span>
                   </div>
-                  <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ item.subtitle }}</p>
+                  <p class="mt-1 text-sm leading-5 text-slate-600 dark:text-slate-400">{{ item.subtitle }}</p>
                 </div>
               </div>
-              <div v-if="secondaryPanel.items.length === 0" class="py-6 text-center text-sm text-slate-500">
+              <div v-if="secondaryPanel.items.length === 0"
+                class="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500 dark:border-slate-800">
                 {{ secondaryPanel.emptyMessage }}
               </div>
             </div>
@@ -870,8 +915,8 @@ const secondaryPanel = computed(() => {
       title: "Pesanan Terbaru",
       description: "Aktivitas pembelian terakhir dari warga sekolah.",
       items: (dashboardData.value?.recentOrders || []).map((item) => ({
-        title: `${item.order_number || "-"} • ${item.buyer_name || "-"}`,
-        subtitle: `${item.status || "-"} • ${item.item_count || 0} item • ${item.total_amount ? `Rp ${Number(item.total_amount).toLocaleString("id-ID")}` : "-"}`,
+        title: item.buyer_name || "-",
+        subtitle: `${item.buyer_class_name && item.buyer_class_name !== "-" ? `Kelas ${item.buyer_class_name} • ` : ""}${item.status || "-"} • ${item.item_count || 0} item • ${item.total_amount ? `Rp ${Number(item.total_amount).toLocaleString("id-ID")}` : "-"}`,
         meta: formatDateTime(item.created_at),
       })),
       emptyMessage: "Belum ada pesanan masuk.",
@@ -884,7 +929,7 @@ const secondaryPanel = computed(() => {
       description: "Aktivitas peminjaman dan pengembalian terakhir.",
       items: (dashboardData.value?.recentLoans || []).map((item) => ({
         title: item.item_name || "-",
-        subtitle: `${item.borrower_name || "-"} • ${item.quantity || 0} unit • ${item.status || "-"}`,
+        subtitle: `${item.borrower_class_name && item.borrower_class_name !== "-" ? `Kelas ${item.borrower_class_name} • ` : ""}${item.borrower_name || "-"} • ${item.quantity || 0} unit • ${item.status || "-"}`,
         meta: formatDateTime(item.borrowed_at),
       })),
       emptyMessage: "Belum ada riwayat peminjaman.",

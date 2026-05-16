@@ -12,10 +12,10 @@
               ? 'bg-sky-600 shadow-md ring-1 ring-sky-600 dark:bg-cyan-600'
               : 'bg-white shadow-sm ring-1 ring-slate-900/5 hover:bg-slate-50 dark:bg-slate-900 dark:ring-white/10 dark:hover:bg-slate-800/80'">
             <span :class="selectedSubject?.id === item.id ? 'text-white' : 'text-slate-900 dark:text-white'"
-              class="line-clamp-1 text-sm font-bold tracking-tight">{{ item.name }}</span>
+              class="line-clamp-1 text-xs font-semibold tracking-tight sm:text-sm sm:font-bold">{{ item.name }}</span>
             <span
               :class="selectedSubject?.id === item.id ? 'text-sky-200 dark:text-cyan-100' : 'text-slate-500 dark:text-slate-400'"
-              class="mt-0.5 line-clamp-1 text-[11px] font-medium">
+              class="mt-0.5 line-clamp-1 text-[10px] font-normal sm:text-[11px] sm:font-medium">
               {{ item.class_name }}
             </span>
             <div v-if="selectedSubject?.id === item.id"
@@ -29,19 +29,19 @@
           class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
 
           <div class="border-b border-slate-100 bg-slate-50/50 px-6 pt-6 dark:border-slate-800 dark:bg-slate-800/20">
-            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ selectedSubject.name }}</h2>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <h2 class="text-lg font-semibold text-slate-900 sm:text-2xl sm:font-bold dark:text-white">{{ selectedSubject.name }}</h2>
+            <p class="mt-1 text-xs font-normal text-slate-500 sm:text-sm dark:text-slate-400">
               {{ selectedSubject.class_name }} &bull; {{ selectedSubject.description || "Tidak ada deskripsi." }}
             </p>
 
             <nav class="-mb-px mt-6 flex gap-6 overflow-x-auto">
               <button @click="activeTab = 'materials'"
-                class="border-b-2 py-3 text-sm font-semibold transition-colors focus:outline-none"
+                class="border-b-2 py-2.5 text-xs font-medium transition-colors focus:outline-none sm:py-3 sm:text-sm sm:font-semibold"
                 :class="activeTab === 'materials' ? 'border-sky-600 text-sky-700 dark:border-cyan-400 dark:text-cyan-300' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'">
                 Manajemen Materi
               </button>
               <button @click="activeTab = 'assignments'"
-                class="border-b-2 py-3 text-sm font-semibold transition-colors focus:outline-none"
+                class="border-b-2 py-2.5 text-xs font-medium transition-colors focus:outline-none sm:py-3 sm:text-sm sm:font-semibold"
                 :class="activeTab === 'assignments' ? 'border-sky-600 text-sky-700 dark:border-cyan-400 dark:text-cyan-300' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'">
                 Tugas & Penilaian
               </button>
@@ -51,12 +51,12 @@
           <div v-show="activeTab === 'materials'" class="p-6">
             <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h3 class="font-bold text-slate-900 dark:text-white">Library Materi</h3>
-                <p class="text-sm text-slate-500">Bahan bacaan dan modul untuk dipelajari siswa.</p>
+                <h3 class="font-semibold text-slate-900 sm:font-bold dark:text-white">Library Materi</h3>
+                <p class="text-xs font-normal text-slate-500 sm:text-sm">Bahan bacaan dan modul untuk dipelajari siswa.</p>
               </div>
               <div class="flex flex-col gap-3 sm:flex-row">
                 <button @click="openMaterialModal('ai-pptx')"
-                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60">
+                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-xs font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm">
                   <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round"
                       d="M4.5 7.5h15m-15 4.5h15m-15 4.5h9M6 4.5v15m12-15v15" />
@@ -64,7 +64,7 @@
                   Generate PPT AI
                 </button>
                 <button @click="openMaterialModal('manual')"
-                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
+                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-xs font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm">
                   <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                   </svg>
@@ -78,7 +78,7 @@
                 class="flex flex-col justify-between rounded-2xl border border-slate-100 bg-slate-50/50 p-5 dark:border-slate-800 dark:bg-slate-900/50">
                 <div>
                   <div class="flex items-start justify-between gap-3">
-                    <h4 class="font-bold text-slate-900 line-clamp-2 dark:text-white">{{ item.title }}</h4>
+                    <h4 class="line-clamp-2 font-semibold text-slate-900 dark:text-white sm:font-bold">{{ item.title }}</h4>
                     <div class="flex shrink-0 items-center gap-2">
                       <button @click="openMaterialEditModal(item)"
                         class="inline-flex rounded-lg bg-white px-2.5 py-1.5 text-xs font-bold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
@@ -90,14 +90,14 @@
                       </button>
                     </div>
                   </div>
-                  <span class="mt-1 block text-xs font-medium text-slate-400">{{ formatDateTime(item.created_at)
+                  <span class="mt-1 block text-[11px] font-normal text-slate-400 sm:text-xs">{{ formatDateTime(item.created_at)
                   }}</span>
-                  <p class="mt-3 text-sm leading-relaxed text-slate-600 line-clamp-3 dark:text-slate-400">{{
+                  <p class="mt-3 line-clamp-3 text-xs leading-relaxed text-slate-600 dark:text-slate-400 sm:text-sm">{{
                     item.content || "Tidak ada deskripsi." }}</p>
                 </div>
                 <div class="mt-5 pt-4 border-t border-slate-200/60 dark:border-slate-700/60">
                   <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank" rel="noreferrer"
-                    class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-sky-50 px-3 py-2 text-xs font-bold text-sky-700 transition hover:bg-sky-100 dark:bg-cyan-500/10 dark:text-cyan-300 dark:hover:bg-cyan-500/20">
+                    class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-sky-50 px-3 py-2 text-[11px] font-semibold text-sky-700 transition hover:bg-sky-100 dark:bg-cyan-500/10 dark:text-cyan-300 dark:hover:bg-cyan-500/20 sm:text-xs sm:font-bold">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round"
                         d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -132,17 +132,17 @@
             <div class="grid items-start gap-6 lg:grid-cols-12">
 
               <section class="lg:col-span-4 xl:col-span-3">
-                <h3 class="mb-4 font-bold text-slate-900 dark:text-white">Daftar Tugas & Penilaian</h3>
+                <h3 class="mb-4 font-semibold text-slate-900 dark:text-white sm:font-bold">Daftar Tugas & Penilaian</h3>
                 <div class="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
                   <div class="rounded-2xl border border-sky-200 bg-sky-50/70 p-4 dark:border-cyan-500/20 dark:bg-cyan-500/10">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-sky-700 dark:text-cyan-300">Dalam LMS</p>
-                    <p class="mt-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 dark:text-cyan-300 sm:text-xs">Dalam LMS</p>
+                    <p class="mt-2 text-xs font-normal text-slate-700 dark:text-slate-200 sm:text-sm">
                       Siswa mengumpulkan file atau jawaban langsung lewat sistem.
                     </p>
                   </div>
                   <div class="rounded-2xl border border-amber-200 bg-amber-50/80 p-4 dark:border-amber-500/20 dark:bg-amber-500/10">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300">Di Luar LMS</p>
-                    <p class="mt-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300 sm:text-xs">Di Luar LMS</p>
+                    <p class="mt-2 text-xs font-normal text-slate-700 dark:text-slate-200 sm:text-sm">
                       Ujian, praktik, presentasi, atau observasi dilakukan offline, lalu nilainya dicatat di sini.
                     </p>
                   </div>
@@ -157,7 +157,7 @@
                   <div class="grid grid-cols-2 gap-2">
                     <select
                       v-model="assignmentTypeFilter"
-                      class="block rounded-xl border-0 bg-white py-2.5 px-3 text-xs text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
+                    class="block rounded-xl border-0 bg-white py-2.5 px-3 text-[11px] text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700 sm:text-xs"
                     >
                       <option value="ALL">Semua Jenis</option>
                       <option value="FILE">Dalam LMS</option>
@@ -165,7 +165,7 @@
                     </select>
                     <select
                       v-model="assignmentSort"
-                      class="block rounded-xl border-0 bg-white py-2.5 px-3 text-xs text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
+                    class="block rounded-xl border-0 bg-white py-2.5 px-3 text-[11px] text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700 sm:text-xs"
                     >
                       <option value="NEWEST">Terbaru</option>
                       <option value="DUE_ASC">Tenggat Terdekat</option>
@@ -197,8 +197,8 @@
                         </svg>
                       </button>
                     </div>
-                    <h4 class="pr-16 font-bold text-slate-900 dark:text-white">{{ item.title }}</h4>
-                    <div class="mt-2 mb-3 flex flex-wrap items-center gap-2 text-[11px] font-semibold">
+                    <h4 class="pr-16 font-semibold text-slate-900 dark:text-white sm:font-bold">{{ item.title }}</h4>
+                    <div class="mt-2 mb-3 flex flex-wrap items-center gap-2 text-[10px] font-medium sm:text-[11px] sm:font-semibold">
                       <span :class="assignmentTypeBadgeClass(item.assignment_type)"
                         class="inline-flex items-center rounded-md px-2 py-1">
                         {{ assignmentTypeLabel(item.assignment_type) }}
@@ -217,20 +217,20 @@
                       </span>
                     </div>
                     <button @click="loadSubmissions(item)"
-                      class="w-full rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-cyan-900/30 dark:hover:text-cyan-300">
+                        class="w-full rounded-xl bg-slate-50 px-3 py-2 text-[11px] font-semibold text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-cyan-900/30 dark:hover:text-cyan-300 sm:text-xs sm:font-bold">
                       {{ selectedAssignment?.id === item.id ? 'Sedang Dinilai' : 'Buka Penilaian' }}
                     </button>
                     <a v-if="item.attachment_url"
                       :href="normalizePublicUrl(item.attachment_url)"
                       target="_blank"
                       rel="noreferrer"
-                      class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-50 px-3 py-2 text-xs font-bold text-sky-700 transition hover:bg-sky-100 dark:bg-cyan-500/10 dark:text-cyan-300 dark:hover:bg-cyan-500/20">
+                      class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-50 px-3 py-2 text-[11px] font-semibold text-sky-700 transition hover:bg-sky-100 dark:bg-cyan-500/10 dark:text-cyan-300 dark:hover:bg-cyan-500/20 sm:text-xs sm:font-bold">
                       Buka Lampiran Soal
                     </a>
                   </article>
 
                   <div v-if="filteredAssignments.length === 0"
-                    class="rounded-2xl border-2 border-dashed border-slate-200 py-8 text-center text-sm text-slate-500 dark:border-slate-800">
+                    class="rounded-2xl border-2 border-dashed border-slate-200 py-8 text-center text-xs text-slate-500 dark:border-slate-800 sm:text-sm">
                     Tidak ada tugas sesuai filter.
                   </div>
                 </div>
@@ -243,8 +243,8 @@
                 <div
                   class="flex flex-col gap-4 border-b border-slate-200 bg-slate-50/50 p-5 dark:border-slate-800 dark:bg-slate-800/30 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <h3 class="font-bold text-slate-900 dark:text-white">Meja Penilaian Massal</h3>
-                    <p class="mt-1 text-sm font-medium text-sky-600 dark:text-cyan-400">
+                    <h3 class="font-semibold text-slate-900 dark:text-white sm:font-bold">Meja Penilaian Massal</h3>
+                    <p class="mt-1 text-xs font-normal text-sky-600 dark:text-cyan-400 sm:text-sm sm:font-medium">
                       {{ selectedAssignment?.title || "Belum ada tugas yang dipilih." }}
                     </p>
                   </div>

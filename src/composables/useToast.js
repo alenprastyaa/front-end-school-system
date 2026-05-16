@@ -4,7 +4,7 @@ const toasts = reactive([]);
 let toastCounter = 0;
 
 const normalizeToastType = (type) => {
-  if (type === "success" || type === "error" || type === "info") return type;
+  if (type === "success" || type === "error" || type === "warning" || type === "info") return type;
   return "info";
 };
 

@@ -1,24 +1,29 @@
 <template>
   <div class="min-h-screen bg-slate-50/50 p-4 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
 
-    <main class="mx-auto mt-8 ">
+    <main class="mx-auto mt-8 max-w-6xl">
 
       <section class="mb-8">
-        <div class="mb-4 flex items-center justify-between">
-          <h2 class="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">Pilih Mata Pelajaran
+        <div class="mb-4 flex items-center justify-between gap-3">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+            Pilih Mata Pelajaran
           </h2>
-          <button @click="loadSubjects"
-            class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-emerald-600 transition hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-500/10">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-            </svg>
-            Refresh Data
-          </button>
+        </div>
+
+        <div class="mb-3 md:hidden">
+          <select
+            :value="selectedSubject?.id || ''"
+            @change="handleSubjectChange"
+            class="block w-full rounded-2xl border-0 bg-white px-4 py-3 text-sm font-semibold text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700">
+            <option value="" disabled>Pilih mata pelajaran</option>
+            <option v-for="item in subjects" :key="item.id" :value="item.id">
+              {{ item.name }} - {{ item.class_name }}
+            </option>
+          </select>
         </div>
 
         <div
-          class="flex flex-nowrap gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          class="hidden flex-nowrap gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:flex">
           <button v-for="item in subjects" :key="item.id" @click="selectSubject(item)"
             class="group relative flex min-w-[260px] flex-none snap-start flex-col items-start overflow-hidden rounded-2xl p-5 text-left transition-all"
             :class="selectedSubject?.id === item.id
@@ -61,7 +66,7 @@
                 Materi Pembelajaran
               </button>
               <button @click="activeTab = 'assignments'"
-                class="border-b-2 py-3 text-sm font-bold transition-colors focus:outline-none flex items-center gap-2"
+                class="flex items-center gap-2 border-b-2 py-3 text-sm font-bold transition-colors focus:outline-none"
                 :class="activeTab === 'assignments'
                   ? 'border-emerald-600 text-emerald-700 dark:border-emerald-400 dark:text-emerald-400'
                   : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
@@ -81,17 +86,17 @@
                 class="flex flex-col justify-between rounded-2xl border border-slate-100 bg-slate-50/50 p-5 transition-all hover:border-slate-300 dark:border-slate-800 dark:bg-slate-800/30 dark:hover:border-slate-700">
                 <div>
                   <div class="flex items-start justify-between gap-4">
-                    <h3 class="font-bold text-slate-900 dark:text-white line-clamp-2">{{ item.title }}</h3>
+                    <h3 class="line-clamp-2 font-bold text-slate-900 dark:text-white">{{ item.title }}</h3>
                   </div>
                   <span class="mt-1 block text-xs font-medium text-slate-400">
                     Dipublikasikan: {{ formatDateTime(item.created_at) }}
                   </span>
-                  <p class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400 line-clamp-3">
+                  <p class="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
                     {{ item.content || "Tidak ada deskripsi materi." }}
                   </p>
                 </div>
 
-                <div class="mt-5 pt-4 border-t border-slate-200/60 dark:border-slate-700/60">
+                <div class="mt-5 border-t border-slate-200/60 pt-4 dark:border-slate-700/60">
                   <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
                     rel="noreferrer"
                     class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-3 py-2.5 text-xs font-bold text-emerald-700 shadow-sm ring-1 ring-inset ring-slate-200 transition hover:bg-emerald-50 hover:ring-emerald-200 dark:bg-slate-900 dark:text-emerald-400 dark:ring-slate-700 dark:hover:bg-emerald-500/10 dark:hover:ring-emerald-500/30">
@@ -107,7 +112,7 @@
 
               <div v-if="materials.length === 0"
                 class="col-span-full flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 py-16 text-center dark:border-slate-800">
-                <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Belum ada materi pembelajaran
+                <span class="text-xs font-medium text-slate-500 dark:text-slate-400 sm:text-sm">Belum ada materi pembelajaran
                   dipublikasikan.</span>
               </div>
             </div>
@@ -122,11 +127,11 @@
                   :class="submissionTarget?.id === item.id ? 'border-emerald-500 ring-1 ring-emerald-500 dark:border-emerald-500' : 'border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700'">
                   <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div class="flex-1">
-                      <h4 class="text-lg font-bold text-slate-900 dark:text-white">{{ item.title }}</h4>
+                      <h4 class="text-base font-semibold text-slate-900 dark:text-white sm:text-lg sm:font-bold">{{ item.title }}</h4>
 
                       <div class="mt-2.5 flex flex-wrap items-center gap-2">
                         <span
-                          class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                        class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300 sm:text-xs sm:font-semibold">
                           <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -136,15 +141,15 @@
                         </span>
 
                         <span v-if="item.score !== null"
-                          class="inline-flex items-center rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20">
+                          class="inline-flex items-center rounded-md bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20 sm:text-xs sm:font-bold">
                           Nilai: {{ item.score }} / 100
                         </span>
                         <span v-else-if="item.submission_id"
-                          class="inline-flex items-center rounded-md bg-sky-50 px-2.5 py-1 text-xs font-bold text-sky-700 ring-1 ring-inset ring-sky-600/20 dark:bg-sky-500/10 dark:text-sky-400 dark:ring-sky-500/20">
+                          class="inline-flex items-center rounded-md bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700 ring-1 ring-inset ring-sky-600/20 dark:bg-sky-500/10 dark:text-sky-400 dark:ring-sky-500/20 sm:text-xs sm:font-bold">
                           Terkumpul (Menunggu Dinilai)
                         </span>
                         <span v-else
-                          class="inline-flex items-center rounded-md bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-700 ring-1 ring-inset ring-rose-600/20 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
+                          class="inline-flex items-center rounded-md bg-rose-50 px-2.5 py-1 text-[11px] font-semibold text-rose-700 ring-1 ring-inset ring-rose-600/20 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20 sm:text-xs sm:font-bold">
                           Belum Dikerjakan
                         </span>
                       </div>
@@ -154,14 +159,14 @@
                       </p>
 
                       <div v-if="item.feedback"
-                        class="mt-4 rounded-xl border border-slate-100 bg-slate-50/80 p-3.5 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-300">
-                        <span class="font-bold text-slate-900 dark:text-white">📝 Catatan Guru:</span> {{ item.feedback
+                        class="mt-4 rounded-xl border border-slate-100 bg-slate-50/80 p-3.5 text-xs font-normal text-slate-700 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-300 sm:text-sm">
+                        <span class="font-semibold text-slate-900 dark:text-white">📝 Catatan Guru:</span> {{ item.feedback
                         }}
                       </div>
 
                       <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
                         rel="noreferrer"
-                        class="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-emerald-600 transition hover:text-emerald-500 dark:text-emerald-400">
+                        class="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 transition hover:text-emerald-500 dark:text-emerald-400 sm:text-sm sm:font-bold">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round"
                             d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -172,7 +177,7 @@
 
                     <div class="mt-4 sm:mt-0">
                       <button @click="startSubmission(item)"
-                        class="w-full sm:w-auto rounded-xl px-5 py-2.5 text-sm font-bold shadow-sm transition focus:outline-none"
+                        class="w-full sm:w-auto rounded-xl px-5 py-2.5 text-xs font-semibold shadow-sm transition focus:outline-none sm:text-sm sm:font-bold"
                         :class="submissionTarget?.id === item.id
                           ? 'bg-emerald-600 text-white ring-1 ring-emerald-600 hover:bg-emerald-500'
                           : item.submission_id
@@ -204,8 +209,8 @@
                 d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0A50.57 50.57 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15h.008v.008H6.75V15zm0-2.25h.008v.008H6.75v-.008zm0-2.25h.008v.008H6.75V10.5zm0-2.25h.008v.008H6.75V8.25zm10.5 6.75h.008v.008h-.008V15zm0-2.25h.008v.008h-.008v-.008zm0-2.25h.008v.008h-.008V10.5zm0-2.25h.008v.008h-.008V8.25z" />
             </svg>
           </div>
-          <h3 class="mt-5 text-xl font-bold text-slate-900 dark:text-white">Workspace Kosong</h3>
-          <p class="mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">Silakan pilih salah satu mata pelajaran
+          <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white sm:text-xl sm:font-bold">Workspace Kosong</h3>
+          <p class="mt-2 max-w-md text-xs font-normal text-slate-500 dark:text-slate-400 sm:text-sm">Silakan pilih salah satu mata pelajaran
             dari panel geser di atas untuk mulai melihat materi dan mengerjakan tugas.</p>
         </div>
       </div>
@@ -336,6 +341,16 @@ const selectSubject = async (subject) => {
   message.value = "";
   activeTab.value = "materials";
   await loadSubjectData();
+};
+
+const handleSubjectChange = async (event) => {
+  const nextSubjectId = Number(event?.target?.value || 0);
+  const nextSubject = subjects.value.find((item) => Number(item.id) === nextSubjectId);
+  if (!nextSubject) {
+    return;
+  }
+
+  await selectSubject(nextSubject);
 };
 
 const startSubmission = (assignment) => {

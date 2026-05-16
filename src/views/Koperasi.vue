@@ -2,37 +2,27 @@
   <div class="min-h-screen bg-gray-50 font-sans text-gray-900 dark:bg-gray-950 dark:text-gray-100">
     <!-- TOP NAVIGATION BARR -->
     <header class="sticky top-0 z-10 bg-gradient-to-r from-orange-500 to-orange-600 shadow-md">
-      <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 p-4 md:px-8">
+      <div class="mx-auto flex max-w-7xl flex-nowrap items-center gap-2 px-4 py-3 md:gap-3 md:px-8 md:py-4">
         <!-- Brand -->
-        <div class="hidden items-center gap-2 md:flex">
+        <div class="hidden flex-none items-center gap-2 md:flex">
           <Icon icon="ph:storefront-duotone" class="h-8 w-8 text-white" />
           <h1 class="text-xl font-bold tracking-tight text-white">KoperasiKu</h1>
         </div>
 
         <!-- Search Bar -->
-        <div class="relative flex-1 max-w-3xl">
+        <div class="relative min-w-0 flex-1">
           <input v-model.trim="searchQuery" type="text" placeholder="Cari produk, kode, atau kategori..."
-            class="w-full rounded-sm border-0 bg-white py-2.5 pl-4 pr-10 text-sm text-gray-900 shadow-inner focus:ring-2 focus:ring-orange-300" />
-          <button class="absolute right-0 top-0 h-full rounded-r-sm bg-orange-600 px-4 transition hover:bg-orange-700">
-            <Icon icon="ph:magnifying-glass-bold" class="h-5 w-5 text-white" />
+            @keyup.enter="applyProductFilters"
+            class="w-full rounded-sm border-0 bg-white py-2 pl-3 pr-9 text-xs text-gray-900 shadow-inner placeholder:text-xs focus:ring-2 focus:ring-orange-300 sm:py-2.5 sm:pl-4 sm:pr-10 sm:text-sm sm:placeholder:text-sm md:pr-12" />
+          <button class="absolute right-0 top-0 h-full rounded-r-sm bg-orange-600 px-3 transition hover:bg-orange-700 md:px-4"
+            @click="applyProductFilters">
+            <Icon icon="ph:magnifying-glass-bold" class="h-4 w-4 text-white md:h-5 md:w-5" />
           </button>
-        </div>
-
-        <!-- Header Actions -->
-        <div class="flex items-center gap-4">
-
-          <div class="relative cursor-pointer" @click="activeTab = 'shop'">
-            <Icon icon="ph:shopping-cart-simple-bold" class="h-7 w-7 text-white" />
-            <span v-if="cartTotalItems > 0"
-              class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full border-2 border-orange-500 bg-white text-[10px] font-bold text-orange-600">
-              {{ cartTotalItems }}
-            </span>
-          </div>
         </div>
       </div>
     </header>
 
-    <main class="mx-auto max-w-7xl p-4 pb-28 md:p-8">
+    <main class="mx-auto p-4 pb-28 md:p-8">
       <!-- NOTIFICATIONS -->
       <section v-if="message" class="mb-6 rounded-sm px-4 py-3 text-sm font-medium shadow-sm"
         :class="isError ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'">
@@ -60,30 +50,62 @@
       </nav>
 
       <!-- TAB CONTENT: SHOP -->
-      <div v-show="activeTab === 'shop'" class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div v-show="activeTab === 'shop'" class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div class="space-y-4">
           <!-- Categories Banner/Pills -->
           <div
-            class="flex items-center gap-2 overflow-x-auto bg-white p-4 rounded-sm shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
-            <span class="text-sm font-medium text-gray-500 mr-2">Kategori:</span>
-            <button @click="selectedCategory = ''"
-              class="whitespace-nowrap rounded-sm px-4 py-1.5 text-sm transition-colors border"
-              :class="selectedCategory === '' ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-gray-200 bg-white text-gray-600 hover:border-orange-500'">
-              Semua
-            </button>
-            <button v-for="category in categories" :key="category" @click="selectedCategory = category"
-              class="whitespace-nowrap rounded-sm px-4 py-1.5 text-sm transition-colors border"
-              :class="selectedCategory === category ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-gray-200 bg-white text-gray-600 hover:border-orange-500'">
-              {{ category }}
-            </button>
+            class="flex flex-col gap-3 rounded-sm bg-white p-3 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800 sm:p-4 lg:flex-row lg:items-center lg:justify-between">
+            <div
+              class="grid grid-cols-[minmax(0,1fr)_96px] gap-2 sm:hidden">
+              <select v-model="selectedCategory" @change="applyProductFilters"
+                class="min-w-0 rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
+                <option value="">Semua kategori</option>
+                <option v-for="category in categories" :key="`mobile-${category}`" :value="category">
+                  {{ category }}
+                </option>
+              </select>
+              <select v-model.number="productsLimit" @change="applyProductFilters"
+                class="min-w-0 rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
+                <option :value="8">8</option>
+                <option :value="12">12</option>
+                <option :value="24">24</option>
+                <option :value="48">48</option>
+              </select>
+            </div>
+
+            <div
+              class="hidden items-center gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:flex [&::-webkit-scrollbar]:hidden">
+              <span class="mr-1 shrink-0 text-sm font-medium text-gray-500">Kategori:</span>
+              <button @click="selectedCategory = ''; applyProductFilters()"
+                class="shrink-0 whitespace-nowrap rounded-sm border px-3 py-1.5 text-sm transition-colors sm:px-4"
+                :class="selectedCategory === '' ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-gray-200 bg-white text-gray-600 hover:border-orange-500'">
+                Semua
+              </button>
+              <button v-for="category in categories" :key="category"
+                @click="selectedCategory = category; applyProductFilters()"
+                class="shrink-0 whitespace-nowrap rounded-sm border px-3 py-1.5 text-sm transition-colors sm:px-4"
+                :class="selectedCategory === category ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-gray-200 bg-white text-gray-600 hover:border-orange-500'">
+                {{ category }}
+              </button>
+            </div>
+            <div class="hidden items-center justify-between gap-3 sm:flex sm:justify-start">
+              <span class="text-xs font-medium text-gray-500">{{ paginationLabel(productsMeta) }}</span>
+              <select v-model.number="productsLimit" @change="applyProductFilters"
+                class="min-w-[88px] rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
+                <option :value="8">8</option>
+                <option :value="12">12</option>
+                <option :value="24">24</option>
+                <option :value="48">48</option>
+              </select>
+            </div>
           </div>
 
-          <!-- Product Grid -->
-          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
+          <!-- Product Grid: Diubah gap, padding, dan font size untuk mobile -->
+          <div class="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
             <article v-for="product in filteredProducts" :key="product.id"
-              class="relative flex flex-col overflow-hidden rounded-sm border-2 border-slate-200 bg-white shadow-sm transition-transform hover:-translate-y-1 hover:shadow-md dark:border-slate-700 dark:bg-gray-900">
+              class="relative flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-transform hover:-translate-y-1 hover:shadow-md dark:border-slate-700 dark:bg-gray-900">
               <!-- Image 1:1 Ratio -->
-              <div class="aspect-square bg-gray-100 dark:bg-gray-800 relative">
+              <div class="relative aspect-square bg-gray-100 dark:bg-gray-800">
                 <img v-if="product.image_url" :src="normalizePublicUrl(product.image_url)" :alt="product.name"
                   class="h-full w-full object-cover" />
                 <div v-else class="flex h-full items-center justify-center">
@@ -93,24 +115,27 @@
                 <div v-if="Number(product.stock || 0) <= 0"
                   class="absolute inset-0 bg-black/40 flex items-center justify-center">
                   <span
-                    class="bg-gray-900 text-white text-xs font-bold px-3 py-1 rounded-sm uppercase tracking-wider">Habis</span>
+                    class="bg-gray-900 text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-sm uppercase tracking-wider">Habis</span>
                 </div>
               </div>
 
-              <!-- Content -->
-              <div class="flex flex-1 flex-col p-3">
-                <h3 class="line-clamp-2 min-h-[40px] text-sm text-gray-800 dark:text-gray-200" :title="product.name">
+              <!-- Content Card: Diubah paddingnya supaya nggak bantet -->
+              <div class="flex flex-1 flex-col p-2.5 sm:p-4">
+                <h3
+                  class="line-clamp-2 min-h-[32px] sm:min-h-[40px] text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200"
+                  :title="product.name">
                   {{ product.name }}
                 </h3>
-                <div class="mt-auto pt-2 flex items-end justify-between">
-                  <div>
-                    <p class="text-base font-bold text-orange-600">{{ formatCurrency(product.price) }}</p>
-                    <p class="text-[11px] text-gray-500 mt-0.5">Sisa {{ product.stock || 0 }}</p>
+                <div class="mt-1 flex flex-col gap-1 sm:mt-2 sm:flex-row sm:items-end sm:justify-between">
+                  <div class="min-w-0">
+                    <p class="text-base font-semibold text-orange-600 sm:text-xl">{{ formatCurrency(product.price) }}</p>
+                    <p class="mt-0.5 text-[10px] sm:text-[11px] text-gray-500">Sisa {{ product.stock || 0 }}</p>
                   </div>
+                  <!-- Tombol Cart: Dikecilin pas di mobile -->
                   <button :disabled="!product.is_active || Number(product.stock || 0) <= 0"
-                    class="flex h-8 w-8 items-center justify-center rounded-sm bg-orange-500 text-white transition hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    class="mt-1 flex h-7 sm:h-9 w-full sm:w-9 items-center justify-center rounded-md bg-orange-500 text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-gray-300 sm:mt-0 sm:rounded-sm"
                     @click="addToCart(product)">
-                    <Icon icon="ph:shopping-cart-bold" class="h-4 w-4" />
+                    <Icon icon="ph:shopping-cart-bold" class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </button>
                 </div>
               </div>
@@ -120,6 +145,24 @@
               class="col-span-full rounded-sm bg-white p-12 text-center shadow-sm dark:bg-gray-900">
               <Icon icon="ph:magnifying-glass-duotone" class="mx-auto h-12 w-12 text-gray-300" />
               <p class="mt-4 text-sm font-medium text-gray-900 dark:text-white">Produk tidak ditemukan</p>
+            </div>
+          </div>
+
+          <div
+            class="flex flex-col gap-3 rounded-sm bg-white px-4 py-3 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800 sm:flex-row sm:items-center sm:justify-between">
+            <span class="text-center text-sm text-gray-500 sm:text-left">{{ paginationLabel(productsMeta) }}</span>
+            <div class="flex items-center gap-2">
+              <button
+                class="flex-1 rounded-sm border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-200 sm:flex-none"
+                :disabled="currentPage(productsMeta) <= 1" @click="setProductsPage(currentPage(productsMeta) - 1)">
+                Prev
+              </button>
+              <button
+                class="flex-1 rounded-sm border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-200 sm:flex-none"
+                :disabled="currentPage(productsMeta) >= totalPages(productsMeta)"
+                @click="setProductsPage(currentPage(productsMeta) + 1)">
+                Next
+              </button>
             </div>
           </div>
         </div>
@@ -168,16 +211,23 @@
               <div class="mb-3 space-y-3">
                 <div>
                   <label class="text-[11px] font-semibold uppercase text-gray-500">Metode Pembayaran</label>
-                  <select v-model="checkoutForm.payment_method"
-                    class="mt-1 block w-full rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
-                    <option value="TUNAI">Tunai</option>
-                    <option value="NON_TUNAI">Non Tunai (QRIS)</option>
-                  </select>
-                  <p class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
+                  <div
+                    class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800/60">
+                    <div class="grid grid-cols-2 gap-1">
+                      <button v-for="option in checkoutPaymentOptions" :key="option.value" type="button"
+                        class="rounded-xl px-3 py-2 text-sm font-semibold transition" :class="checkoutForm.payment_method === option.value
+                          ? 'bg-white text-orange-600 shadow-sm ring-1 ring-orange-200 dark:bg-slate-900 dark:text-orange-300 dark:ring-orange-500/20'
+                          : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'"
+                        @click="checkoutForm.payment_method = option.value">
+                        <span class="block text-center">{{ option.label }}</span>
+                      </button>
+                    </div>
+                  </div>
+                  <p class="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
                     {{
                       checkoutForm.payment_method === 'TUNAI'
-                        ? 'Pembayaran dilakukan langsung saat barang diantar atau diambil di koperasi.'
-                        : 'QRIS Xendit akan ditampilkan setelah pesanan dibuat.'
+                        ? 'Bayar saat barang diantar atau diambil.'
+                        : 'QRIS akan muncul setelah checkout.'
                     }}
                   </p>
                 </div>
@@ -202,70 +252,47 @@
         </aside>
       </div>
 
-      <transition
-        enter-active-class="transition ease-out duration-200"
-        enter-from-class="opacity-0 translate-y-4"
-        enter-to-class="opacity-100 translate-y-0"
-        leave-active-class="transition ease-in duration-150"
-        leave-from-class="opacity-100 translate-y-0"
-        leave-to-class="opacity-0 translate-y-4"
-      >
-        <button
-          v-if="activeTab === 'shop'"
-          type="button"
-          class="fixed bottom-4 right-4 z-[120] inline-flex items-center gap-3 rounded-full bg-orange-600 px-4 py-3 text-white shadow-2xl ring-1 ring-orange-400/30 md:hidden"
-          @click="mobileCartOpen = true"
-        >
+      <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0 translate-y-4"
+        enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-150"
+        leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-4">
+        <button v-if="activeTab === 'shop'" type="button"
+          class="fixed bottom-4 right-4 z-[120] inline-flex h-14 w-14 items-center justify-center rounded-full bg-orange-600 text-white shadow-2xl ring-1 ring-orange-400/30 md:hidden"
+          @click="mobileCartOpen = true">
           <span class="relative flex items-center justify-center">
-            <Icon icon="ph:shopping-cart-simple-bold" class="h-5 w-5" />
-            <span
-              v-if="cartTotalItems > 0"
-              class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full border border-white bg-white text-[10px] font-bold text-orange-600"
-            >
+            <Icon icon="ph:shopping-cart-simple-bold" class="h-6 w-6" />
+            <span v-if="cartTotalItems > 0"
+              class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full border border-white bg-white text-[10px] font-bold text-orange-600">
               {{ cartTotalItems }}
-            </span>
-          </span>
-          <span class="text-left">
-            <span class="block text-[11px] font-medium uppercase tracking-[0.18em] text-orange-100">Keranjang</span>
-            <span class="block text-sm font-semibold">
-              {{ cartTotalItems > 0 ? formatCurrency(cartTotal) : "Kosong" }}
             </span>
           </span>
         </button>
       </transition>
 
-      <transition
-        enter-active-class="transition ease-out duration-200"
-        enter-from-class="opacity-0"
-        enter-to-class="opacity-100"
-        leave-active-class="transition ease-in duration-150"
-        leave-from-class="opacity-100"
-        leave-to-class="opacity-0"
-      >
-        <div
-          v-if="mobileCartOpen"
-          class="fixed inset-0 z-[135] bg-slate-950/60 backdrop-blur-sm md:hidden"
-          @click.self="mobileCartOpen = false"
-        >
+      <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0"
+        enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100"
+        leave-to-class="opacity-0">
+        <div v-if="mobileCartOpen" class="fixed inset-0 z-[135] bg-slate-950/60 backdrop-blur-sm md:hidden"
+          @click.self="mobileCartOpen = false">
           <div
-            class="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-hidden rounded-t-[2rem] bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10"
-          >
+            class="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-hidden rounded-t-[2rem] bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
             <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
               <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600 dark:text-orange-300">Keranjang</p>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600 dark:text-orange-300">
+                  Keranjang</p>
                 <h3 class="mt-1 text-lg font-black text-slate-900 dark:text-white">Pesanan Anda</h3>
               </div>
-              <button
-                type="button"
-                class="rounded-full border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300"
-                @click="mobileCartOpen = false"
-              >
-                Tutup
+              <button type="button"
+                class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300"
+                aria-label="Tutup keranjang"
+                title="Tutup"
+                @click="mobileCartOpen = false">
+                <Icon icon="ph:x-bold" class="h-4 w-4" />
               </button>
             </div>
 
             <div class="max-h-[42vh] overflow-y-auto px-5 py-4 space-y-4">
-              <div v-for="item in cartDetails" :key="`mobile-${item.product.id}`" class="flex gap-3 rounded-2xl border border-slate-200 p-3 dark:border-slate-800">
+              <div v-for="item in cartDetails" :key="`mobile-${item.product.id}`"
+                class="flex gap-3 rounded-2xl border border-slate-200 p-3 dark:border-slate-800">
                 <img v-if="item.product.image_url" :src="normalizePublicUrl(item.product.image_url)"
                   class="h-14 w-14 rounded-xl object-cover bg-gray-100" />
                 <div v-else class="flex h-14 w-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-800">
@@ -279,23 +306,24 @@
                   <div class="mt-3 flex items-center gap-2">
                     <button
                       class="flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-                      @click="decreaseQuantity(item.product.id)"
-                    >
+                      @click="decreaseQuantity(item.product.id)">
                       -
                     </button>
-                    <span class="min-w-[2rem] text-center text-sm font-semibold text-slate-900 dark:text-white">{{ item.quantity }}</span>
+                    <span class="min-w-[2rem] text-center text-sm font-semibold text-slate-900 dark:text-white">{{
+                      item.quantity }}</span>
                     <button
                       class="flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-                      @click="increaseQuantity(item.product)"
-                    >
+                      @click="increaseQuantity(item.product)">
                       +
                     </button>
-                    <span class="ml-auto text-xs font-medium text-slate-500 dark:text-slate-400">{{ formatCurrency(item.subtotal) }}</span>
+                    <span class="ml-auto text-xs font-medium text-slate-500 dark:text-slate-400">{{
+                      formatCurrency(item.subtotal) }}</span>
                   </div>
                 </div>
               </div>
 
-              <div v-if="cartDetails.length === 0" class="rounded-2xl border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+              <div v-if="cartDetails.length === 0"
+                class="rounded-2xl border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
                 Belum ada produk di keranjang.
               </div>
             </div>
@@ -304,11 +332,18 @@
               <div class="mb-3 space-y-3">
                 <div>
                   <label class="text-[11px] font-semibold uppercase text-gray-500">Metode Pembayaran</label>
-                  <select v-model="checkoutForm.payment_method"
-                    class="mt-1 block w-full rounded-xl border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
-                    <option value="TUNAI">Tunai</option>
-                    <option value="NON_TUNAI">Non Tunai (QRIS)</option>
-                  </select>
+                  <div
+                    class="mt-2 rounded-2xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800/60">
+                    <div class="grid grid-cols-2 gap-1">
+                      <button v-for="option in checkoutPaymentOptions" :key="`mobile-${option.value}`" type="button"
+                        class="rounded-xl px-3 py-2 text-sm font-semibold transition" :class="checkoutForm.payment_method === option.value
+                          ? 'bg-white text-orange-600 shadow-sm ring-1 ring-orange-200 dark:bg-slate-900 dark:text-orange-300 dark:ring-orange-500/20'
+                          : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'"
+                        @click="checkoutForm.payment_method = option.value">
+                        <span class="block text-center">{{ option.label }}</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <label class="text-[11px] font-semibold uppercase text-gray-500">Catatan</label>
@@ -334,301 +369,212 @@
       <!-- TAB CONTENT: ORDERS -->
       <div v-show="activeTab === 'orders'" class="space-y-6">
         <!-- Summary Cards for Orders Tab -->
-        <section class="grid gap-4 md:grid-cols-4">
+        <section class="grid grid-flow-col auto-cols-[minmax(220px,1fr)] gap-4 overflow-x-auto pb-1">
           <article v-for="card in summaryCards" :key="card.label"
-            class="rounded-sm bg-white p-5 shadow-sm ring-1 ring-gray-100 border-l-4 border-orange-500 dark:bg-gray-900">
-            <p class="text-xs font-semibold text-gray-500">{{ card.label }}</p>
-            <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">{{ card.value }}</p>
+            class="min-w-0 rounded-sm bg-white p-4 shadow-sm ring-1 ring-gray-100 border-l-4 border-orange-500 dark:bg-gray-900">
+            <p class="truncate text-xs font-semibold text-gray-500">{{ card.label }}</p>
+            <p class="mt-2 truncate text-2xl font-bold text-gray-900 dark:text-white">{{ card.value }}</p>
           </article>
         </section>
 
-        <section v-if="canManage" class="rounded-sm bg-white shadow-sm ring-1 ring-gray-100 dark:bg-gray-900">
-          <div class="flex flex-wrap items-center justify-between gap-3 border-b px-6 py-4">
-            <div>
-              <h2 class="text-lg font-bold text-gray-900 dark:text-white">Ringkasan Laporan</h2>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Periode {{ report?.range?.from || "-" }} sampai {{ report?.range?.to || "-" }}
-              </p>
+        <section class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100 dark:bg-gray-900">
+          <div class="border-b px-6 py-4">
+            <div class="flex flex-wrap items-center gap-3">
+              <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ orderHistoryTitle }}</h2>
+              <span
+                class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider"
+                :class="isRealtimeConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'">
+                {{ isRealtimeConnected ? "Live" : "Offline" }}
+              </span>
+              <span v-if="isKoperasiStaff"
+                class="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-orange-700">
+                Admin Koperasi
+              </span>
             </div>
-          </div>
-          <div class="grid gap-4 p-6 md:grid-cols-4">
-            <article v-for="card in reportCards" :key="card.label"
-              class="rounded-xl border border-orange-100 bg-orange-50/60 p-4 dark:border-orange-500/20 dark:bg-orange-500/10">
-              <p class="text-xs font-semibold uppercase tracking-wide text-orange-700 dark:text-orange-200">{{ card.label }}</p>
-              <p class="mt-2 text-2xl font-black text-orange-700 dark:text-orange-100">{{ card.value }}</p>
-            </article>
-          </div>
-          <div class="grid gap-4 border-t p-6 lg:grid-cols-2">
-            <div class="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-              <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Status Pembayaran</h3>
-              <div class="mt-3 space-y-2">
-                <div v-for="row in report.payment_status_breakdown || []" :key="row.payment_status" class="flex items-center justify-between text-sm">
-                  <span class="text-slate-600 dark:text-slate-300">{{ row.payment_status || "-" }}</span>
-                  <span class="font-semibold text-slate-900 dark:text-white">{{ row.total }}</span>
-                </div>
-                <div v-if="(report.payment_status_breakdown || []).length === 0" class="text-sm text-slate-500">
-                  Belum ada data.
-                </div>
-              </div>
-            </div>
-            <div class="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-              <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Metode Pembayaran</h3>
-              <div class="mt-3 space-y-2">
-                <div v-for="row in report.payment_method_breakdown || []" :key="row.payment_method" class="flex items-center justify-between text-sm">
-                  <span class="text-slate-600 dark:text-slate-300">{{ row.payment_method || "-" }}</span>
-                  <span class="font-semibold text-slate-900 dark:text-white">{{ row.total }}</span>
-                </div>
-                <div v-if="(report.payment_method_breakdown || []).length === 0" class="text-sm text-slate-500">
-                  Belum ada data.
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="grid gap-4 border-t p-6 lg:grid-cols-2">
-            <div class="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-              <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Produk Terlaris</h3>
-              <div class="mt-3 space-y-2">
-                <div v-for="row in report.top_products || []" :key="`${row.product_name}-${row.product_code}`" class="flex items-center justify-between gap-4 text-sm">
-                  <div>
-                    <p class="font-medium text-slate-900 dark:text-white">{{ row.product_name || "-" }}</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ row.product_category || "-" }}</p>
-                  </div>
-                  <div class="text-right">
-                    <p class="font-semibold text-slate-900 dark:text-white">{{ row.total_quantity }}</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ formatCurrency(row.revenue) }}</p>
-                  </div>
-                </div>
-                <div v-if="(report.top_products || []).length === 0" class="text-sm text-slate-500">
-                  Belum ada data.
-                </div>
-              </div>
-            </div>
-            <div class="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
-              <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Stok Menipis</h3>
-              <div class="mt-3 space-y-2">
-                <div v-for="row in report.low_stock_items || []" :key="row.id" class="flex items-center justify-between gap-4 text-sm">
-                  <div>
-                    <p class="font-medium text-slate-900 dark:text-white">{{ row.name || "-" }}</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ row.category || "-" }}</p>
-                  </div>
-                  <div class="text-right">
-                    <p class="font-semibold text-rose-600">{{ Number(row.stock || 0) }}</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ formatCurrency(row.price) }}</p>
-                  </div>
-                </div>
-                <div v-if="(report.low_stock_items || []).length === 0" class="text-sm text-slate-500">
-                  Tidak ada stok yang menipis.
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="rounded-sm bg-white shadow-sm ring-1 ring-gray-100 dark:bg-gray-900">
-          <div class="flex flex-wrap items-center justify-between gap-3 border-b px-6 py-4">
-            <div>
-              <div class="flex flex-wrap items-center gap-3">
-                <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ orderHistoryTitle }}</h2>
-                <span
-                  class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider"
-                  :class="isRealtimeConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'"
-                >
-                  {{ isRealtimeConnected ? "Live" : "Offline" }}
-                </span>
-                <span
-                  v-if="isKoperasiStaff"
-                  class="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-orange-700"
-                >
-                  Admin Koperasi
-                </span>
-              </div>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {{ orderHistorySubtitle }}
-              </p>
-            </div>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {{ orderHistorySubtitle }}
+            </p>
           </div>
 
-          <div v-if="canManage" class="overflow-x-auto">
-            <table class="min-w-full text-left text-sm">
-              <thead class="bg-gray-50 text-gray-600 dark:bg-gray-800">
-                <tr>
-                  <th class="px-6 py-3 font-medium">No. Pesanan</th>
-                  <th class="px-6 py-3 font-medium">Pembeli</th>
-                  <th class="px-6 py-3 font-medium">Total Harga</th>
-                  <th class="px-6 py-3 font-medium">Status</th>
-                  <th class="px-6 py-3 font-medium text-right">Aksi</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                <tr v-for="order in orders" :key="order.id"
-                  class="hover:bg-orange-50/50 dark:hover:bg-gray-800/40 transition-colors">
-                  <td class="px-6 py-4">
-                    <div class="font-semibold text-gray-900 dark:text-white">{{ order.order_number }}</div>
-                    <div class="mt-1 text-xs text-gray-500">{{ formatDateTime(order.created_at) }}</div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <div class="font-medium text-gray-900 dark:text-white">{{ order.buyer_name || "-" }}</div>
-                    <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                      {{ order.buyer_class_name && order.buyer_class_name !== "-" ? `Kelas ${order.buyer_class_name}` : "Kelas -" }}
+          <div class="grid gap-3 border-b px-6 py-4 lg:grid-cols-[minmax(0,1.7fr)_170px_170px_170px_120px]">
+            <div class="flex items-center gap-2">
+              <input v-model.trim="orderSearchQuery" type="text" placeholder="Cari nomor pesanan atau nama pembeli..."
+                @keyup.enter="applyOrderFilters"
+                class="block w-full rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500" />
+              <button type="button"
+                class="rounded-sm bg-orange-600 px-3 py-2 text-sm font-semibold text-white hover:bg-orange-700"
+                @click="applyOrderFilters">
+                Cari
+              </button>
+            </div>
+            <select v-model="orderStatusFilter" @change="applyOrderFilters"
+              class="rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
+              <option value="">Semua status</option>
+              <option value="PENDING">Pending</option>
+              <option value="PROCESSING">Processing</option>
+              <option value="READY">Ready</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="CANCELED">Canceled</option>
+            </select>
+            <select v-model="orderPaymentStatusFilter" @change="applyOrderFilters"
+              class="rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
+              <option value="">Semua pembayaran</option>
+              <option value="PENDING">Menunggu</option>
+              <option value="CASH_DUE">Tunai saat terima</option>
+              <option value="PAID">Lunas</option>
+              <option value="EXPIRED">Kedaluwarsa</option>
+              <option value="FAILED">Gagal</option>
+            </select>
+            <select v-model="orderPaymentMethodFilter" @change="applyOrderFilters"
+              class="rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
+              <option value="">Semua metode</option>
+              <option value="TUNAI">Tunai</option>
+              <option value="NON_TUNAI">Non Tunai</option>
+            </select>
+            <select v-model.number="ordersLimit" @change="applyOrderFilters"
+              class="rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
+              <option :value="5">5 / halaman</option>
+              <option :value="10">10 / halaman</option>
+              <option :value="20">20 / halaman</option>
+              <option :value="40">40 / halaman</option>
+            </select>
+          </div>
+
+          <div class="p-4 sm:p-6">
+            <div class="space-y-3">
+              <article v-for="order in orders" :key="order.id"
+                class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div class="min-w-0 flex-1">
+                    <div class="min-w-0">
+                      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <h3 class="truncate text-sm font-black text-slate-900 dark:text-white sm:text-base">{{ order.order_number
+                          }}</h3>
+                        <span
+                          class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider sm:px-2.5 sm:py-1 sm:text-[11px]"
+                          :class="statusClass(order.status)">
+                          {{ order.status }}
+                        </span>
+                      </div>
+                      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">{{ formatDateTime(order.created_at)
+                        }}</p>
+                      <p v-if="canManage" class="mt-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 sm:mt-2 sm:text-sm">
+                        {{ order.buyer_name || "-" }}
+                        <span class="text-slate-400 dark:text-slate-500">
+                          {{ order.buyer_class_name && order.buyer_class_name !== "-" ? `• Kelas
+                          ${order.buyer_class_name}` : "" }}
+                        </span>
+                      </p>
+                      <p v-else class="mt-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 sm:mt-2 sm:text-sm">
+                        Pesanan Anda
+                      </p>
                     </div>
-                    <div class="mt-1 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-600">
-                      {{ order.buyer_role || "User" }}
-                    </div>
-                    <div class="mt-2 flex flex-wrap gap-2 text-[11px] font-semibold">
-                      <span class="rounded-full bg-orange-100 px-2 py-0.5 text-orange-700 dark:bg-orange-500/10 dark:text-orange-200">
+
+                    <div class="mt-3 flex flex-wrap gap-1.5 text-[10px] font-semibold sm:mt-4 sm:gap-2 sm:text-[11px]">
+                      <span
+                        class="rounded-full bg-orange-100 px-2 py-0.5 text-orange-700 dark:bg-orange-500/10 dark:text-orange-200 sm:px-2.5 sm:py-1">
                         {{ paymentMethodLabel(order.payment_method) }}
                       </span>
-                      <span
-                        class="rounded-full px-2 py-0.5"
-                        :class="paymentStatusClassForOrder(order)"
-                      >
+                      <span class="rounded-full px-2 py-0.5 sm:px-2.5 sm:py-1" :class="paymentStatusClassForOrder(order)">
                         {{ order.payment_status_label || paymentStatusLabelForOrder(order) }}
                       </span>
+                      <span
+                        class="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600 dark:bg-slate-800 dark:text-slate-300 sm:px-2.5 sm:py-1">
+                        {{ Array.isArray(order.items) ? `${order.items.length} item` : "0 item" }}
+                      </span>
                     </div>
-                    <div class="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
-                      Status pembayaran: {{ order.payment_status_label || paymentStatusLabelForOrder(order) }}
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 font-semibold text-orange-600">
-                    {{ formatCurrency(order.total_amount) }}
-                  </td>
-                  <td class="px-6 py-4">
-                    <span class="inline-flex rounded-sm px-2 py-1 text-[11px] font-bold uppercase tracking-wider"
-                      :class="statusClass(order.status)">
-                      {{ order.status }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 text-right">
-                    <details class="relative inline-block text-left">
-                      <summary
-                        class="cursor-pointer list-none rounded-sm border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                      >
-                        Aksi
-                      </summary>
-                      <div class="absolute right-0 z-20 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-800 dark:bg-slate-900">
-                        <button
-                          class="block w-full rounded-lg px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
-                          @click="openOrderDetail(order.id)"
-                        >
-                          Detail pesanan
-                        </button>
-                        <button
-                          v-if="order.payment_qr_string && String(order.payment_method || '').toUpperCase() === 'NON_TUNAI'"
-                          class="block w-full rounded-lg px-3 py-2 text-left text-sm text-emerald-700 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-500/10"
-                          @click="openPaymentQrModal(order.order_number, order.payment_qr_string, {
-                            orderId: order.id,
-                            sandboxEnabled: Boolean(order.payment_sandbox),
-                            paymentStatus: effectivePaymentStatus(order),
-                            paymentExpiresAt: order.payment_expires_at,
-                          })"
-                        >
-                          Buka QRIS
-                        </button>
-                        <button
-                          v-if="String(order.payment_method || '').toUpperCase() === 'NON_TUNAI' && String(effectivePaymentStatus(order)).toUpperCase() === 'EXPIRED'"
-                          class="block w-full rounded-lg px-3 py-2 text-left text-sm text-orange-700 hover:bg-orange-50 dark:text-orange-300 dark:hover:bg-orange-500/10"
-                          @click="reissuePayment(order)"
-                        >
-                          Bayar ulang QRIS
-                        </button>
-                        <button
-                          v-if="order.payment_sandbox && String(order.payment_method || '').toUpperCase() === 'NON_TUNAI' && String(order.payment_status || '').toUpperCase() !== 'PAID'"
-                          class="block w-full rounded-lg px-3 py-2 text-left text-sm text-sky-700 hover:bg-sky-50 dark:text-sky-300 dark:hover:bg-sky-500/10"
-                          @click="simulateSandboxPayment(order)"
-                        >
-                          Simulasi bayar
-                        </button>
-                        <template v-if="isKoperasiStaff">
-                          <button
-                            v-for="nextStatus in nextStatuses(order.status)"
-                            :key="`${order.id}-${nextStatus}`"
-                            class="block w-full rounded-lg px-3 py-2 text-left text-sm text-orange-700 hover:bg-orange-50 dark:text-orange-300 dark:hover:bg-orange-500/10"
-                            @click="updateOrderStatus(order, nextStatus)"
-                          >
-                            Ubah ke {{ nextStatus }}
-                          </button>
-                        </template>
+
+                    <p v-if="order.note" class="mt-2 line-clamp-2 text-xs text-slate-600 dark:text-slate-300 sm:mt-3 sm:text-sm">
+                      {{ order.note }}
+                    </p>
+                  </div>
+
+                  <div class="flex min-w-0 flex-col gap-3 lg:items-end lg:text-right">
+                    <div class="flex w-full flex-wrap items-end justify-between gap-3 lg:w-auto lg:justify-end">
+                      <div>
+                        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400 sm:text-[11px]">Total</p>
+                        <p class="mt-1 text-lg font-bold text-orange-600 sm:text-xl">{{ formatCurrency(order.total_amount) }}</p>
                       </div>
-                    </details>
-                  </td>
-                </tr>
-                <tr v-if="orders.length === 0">
-                  <td colspan="5" class="px-6 py-12 text-center text-gray-500">
-                    Belum ada riwayat pesanan.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+
+                      <div class="flex flex-wrap gap-2">
+                      <button
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 sm:h-9 sm:w-9"
+                        title="Detail"
+                        aria-label="Detail"
+                        @click="openOrderDetail(order.id)">
+                          <Icon icon="ph:eye-bold" class="h-4 w-4 sm:h-5 sm:w-5" />
+                        </button>
+                        <details v-if="canManage" class="relative inline-block text-left">
+                          <summary
+                            class="inline-flex h-8 w-8 cursor-pointer list-none items-center justify-center rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 sm:h-9 sm:w-9"
+                            title="Aksi"
+                            aria-label="Aksi">
+                            <Icon icon="ph:dots-three-vertical-bold" class="h-4 w-4 sm:h-5 sm:w-5" />
+                          </summary>
+                          <div
+                            class="absolute left-0 z-20 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-2 text-left shadow-lg dark:border-slate-800 dark:bg-slate-900 sm:left-auto sm:right-0">
+                            <button
+                              class="block w-full rounded-lg px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                              @click="openOrderDetail(order.id)">
+                              Buka detail
+                            </button>
+                            <template v-if="isKoperasiStaff">
+                              <button v-for="nextStatus in nextStatuses(order.status)" :key="`${order.id}-${nextStatus}`"
+                                class="block w-full rounded-lg px-3 py-2 text-left text-sm text-orange-700 hover:bg-orange-50 dark:text-orange-300 dark:hover:bg-orange-500/10"
+                                @click="updateOrderStatus(order, nextStatus)">
+                                Ubah ke {{ nextStatus }}
+                              </button>
+                            </template>
+                          </div>
+                        </details>
+                      </div>
+                    </div>
+
+                    <div v-if="!canManage && (order.payment_qr_string || String(order.payment_method || '').toUpperCase() === 'NON_TUNAI')"
+                      class="flex flex-wrap gap-2">
+                      <button
+                        v-if="order.payment_qr_string && String(order.payment_method || '').toUpperCase() === 'NON_TUNAI'"
+                        class="rounded-xl border border-emerald-500 px-3 py-1.5 text-xs font-medium text-emerald-600 hover:bg-emerald-50 dark:text-emerald-300 sm:px-4 sm:py-2 sm:text-sm sm:font-semibold"
+                        @click="openPaymentQrModal(order.order_number, order.payment_qr_string, {
+                          orderId: order.id,
+                          sandboxEnabled: Boolean(order.payment_sandbox),
+                          paymentStatus: effectivePaymentStatus(order),
+                          paymentExpiresAt: order.payment_expires_at,
+                        })">
+                        Buka QRIS
+                      </button>
+                      <button
+                        v-if="String(order.payment_method || '').toUpperCase() === 'NON_TUNAI' && String(effectivePaymentStatus(order)).toUpperCase() === 'EXPIRED'"
+                        class="rounded-xl border border-orange-500 px-3 py-1.5 text-xs font-medium text-orange-600 hover:bg-orange-50 sm:px-4 sm:py-2 sm:text-sm sm:font-semibold"
+                        @click="reissuePayment(order)">
+                        Bayar ulang
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <div v-if="orders.length === 0"
+                class="rounded-2xl border border-dashed border-slate-300 px-6 py-12 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                Belum ada riwayat pesanan.
+              </div>
+            </div>
           </div>
 
-          <div v-else class="grid gap-4 p-4 md:grid-cols-2 lg:grid-cols-3">
-            <article
-              v-for="order in orders"
-              :key="order.id"
-              class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
-            >
-              <div class="flex items-start justify-between gap-4">
-                <div>
-                  <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Pesanan</p>
-                  <h3 class="mt-1 text-base font-black text-slate-900 dark:text-white">{{ order.order_number }}</h3>
-                  <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ formatDateTime(order.created_at) }}</p>
-                </div>
-                <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider" :class="statusClass(order.status)">
-                  {{ order.status }}
-                </span>
-              </div>
-
-              <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
-                <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/60">
-                  <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Pembayaran</p>
-                  <p class="mt-1 font-semibold text-slate-900 dark:text-white">{{ paymentMethodLabel(order.payment_method) }}</p>
-                  <p class="mt-1 text-xs font-medium" :class="paymentStatusClassForOrder(order)">
-                    {{ order.payment_status_label || paymentStatusLabelForOrder(order) }}
-                  </p>
-                </div>
-                <div class="rounded-2xl bg-slate-50 p-3 text-right dark:bg-slate-800/60">
-                  <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Total</p>
-                  <p class="mt-1 font-black text-orange-600">{{ formatCurrency(order.total_amount) }}</p>
-                  <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ Array.isArray(order.items) ? `${order.items.length} item` : "0 item" }}</p>
-                </div>
-              </div>
-
-              <div class="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-sm dark:border-slate-800 dark:bg-slate-800/50">
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Catatan</p>
-                <p class="mt-1 line-clamp-2 text-slate-600 dark:text-slate-300">{{ order.note || "-" }}</p>
-              </div>
-
-              <div class="mt-4 flex flex-wrap gap-2">
-                <button
-                  class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
-                  @click="openOrderDetail(order.id)"
-                >
-                  Detail pesanan
-                </button>
-                <button
-                  v-if="order.payment_qr_string && String(order.payment_method || '').toUpperCase() === 'NON_TUNAI'"
-                  class="rounded-xl border border-emerald-500 px-4 py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 dark:text-emerald-300"
-                  @click="openPaymentQrModal(order.order_number, order.payment_qr_string, {
-                    orderId: order.id,
-                    sandboxEnabled: Boolean(order.payment_sandbox),
-                    paymentStatus: effectivePaymentStatus(order),
-                    paymentExpiresAt: order.payment_expires_at,
-                  })"
-                >
-                  Buka QRIS
-                </button>
-                <button
-                  v-if="String(order.payment_method || '').toUpperCase() === 'NON_TUNAI' && String(effectivePaymentStatus(order)).toUpperCase() === 'EXPIRED'"
-                  class="rounded-xl border border-orange-500 px-4 py-2 text-sm font-semibold text-orange-600 hover:bg-orange-50"
-                  @click="reissuePayment(order)"
-                >
-                  Bayar ulang
-                </button>
-              </div>
-            </article>
-
-            <div v-if="orders.length === 0" class="col-span-full rounded-3xl border border-dashed border-slate-300 px-6 py-12 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400">
-              Belum ada riwayat pesanan.
+          <div class="flex items-center justify-between gap-3 border-t px-6 py-4 text-sm">
+            <span class="text-gray-500 dark:text-gray-400">{{ paginationLabel(ordersMeta) }}</span>
+            <div class="flex items-center gap-2">
+              <button
+                class="rounded-sm border border-slate-300 px-3 py-1.5 font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-200"
+                :disabled="currentPage(ordersMeta) <= 1" @click="setOrdersPage(currentPage(ordersMeta) - 1)">
+                Prev
+              </button>
+              <button
+                class="rounded-sm border border-slate-300 px-3 py-1.5 font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-200"
+                :disabled="currentPage(ordersMeta) >= totalPages(ordersMeta)"
+                @click="setOrdersPage(currentPage(ordersMeta) + 1)">
+                Next
+              </button>
             </div>
           </div>
         </section>
@@ -637,22 +583,61 @@
       <!-- TAB CONTENT: MANAGE (ADMIN ONLY) -->
       <div v-show="activeTab === 'manage' && canManage" class="space-y-6">
         <section class="rounded-sm bg-white shadow-sm ring-1 ring-gray-100 dark:bg-gray-900">
-          <div class="flex items-center justify-between border-b px-6 py-4">
-            <h2 class="text-lg font-bold text-gray-900 dark:text-white">Inventaris Koperasi</h2>
-            <button @click="openProductModal"
-              class="rounded-sm bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700">
-              + Tambah Produk Baru
-            </button>
+          <div class="border-b px-6 py-4">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h2 class="text-base font-semibold text-gray-900 dark:text-white">Inventaris Koperasi</h2>
+                <p class="mt-1 text-xs font-normal text-gray-500 dark:text-gray-400">
+                  Filter produk sebelum membuka detail agar daftar tetap ringan.
+                </p>
+              </div>
+              <button @click="openProductModal"
+                class="rounded-sm bg-orange-600 px-4 py-2 text-xs font-medium text-white hover:bg-orange-700 sm:text-sm">
+                + Tambah Produk Baru
+              </button>
+            </div>
+            <div class="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1.6fr)_160px_160px_140px]">
+              <div class="flex items-center gap-2">
+                <input v-model.trim="searchQuery" type="text" placeholder="Cari produk..."
+                  @keyup.enter="applyProductFilters"
+                  class="block w-full rounded-sm border-gray-300 text-xs font-normal focus:border-orange-500 focus:ring-orange-500 sm:text-sm" />
+                <button type="button"
+                  class="rounded-sm bg-orange-600 px-3 py-2 text-xs font-medium text-white hover:bg-orange-700 sm:text-sm"
+                  @click="applyProductFilters">
+                  Cari
+                </button>
+              </div>
+              <select v-model="selectedCategory" @change="applyProductFilters"
+                class="rounded-sm border-gray-300 text-xs font-normal focus:border-orange-500 focus:ring-orange-500 sm:text-sm">
+                <option value="">Semua kategori</option>
+                <option v-for="category in categories" :key="`manage-${category}`" :value="category">
+                  {{ category }}
+                </option>
+              </select>
+              <select v-model="productActiveFilter" @change="applyProductFilters"
+                class="rounded-sm border-gray-300 text-xs font-normal focus:border-orange-500 focus:ring-orange-500 sm:text-sm">
+                <option value="active">Aktif</option>
+                <option value="all">Semua status</option>
+                <option value="inactive">Nonaktif</option>
+              </select>
+              <select v-model.number="productsLimit" @change="applyProductFilters"
+                class="rounded-sm border-gray-300 text-xs font-normal focus:border-orange-500 focus:ring-orange-500 sm:text-sm">
+                <option :value="8">8 / halaman</option>
+                <option :value="12">12 / halaman</option>
+                <option :value="24">24 / halaman</option>
+                <option :value="48">48 / halaman</option>
+              </select>
+            </div>
           </div>
           <div class="overflow-x-auto">
-            <table class="min-w-full text-left text-sm">
-              <thead class="bg-gray-50 text-gray-600 dark:bg-gray-800">
+            <table class="min-w-full text-left text-xs sm:text-sm">
+              <thead class="bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
                 <tr>
-                  <th class="px-6 py-3 font-medium">Info Produk</th>
-                  <th class="px-6 py-3 font-medium">Harga</th>
-                  <th class="px-6 py-3 font-medium">Stok</th>
-                  <th class="px-6 py-3 font-medium">Status</th>
-                  <th class="px-6 py-3 font-medium text-right">Aksi</th>
+                  <th class="px-6 py-3 font-normal">Info Produk</th>
+                  <th class="px-6 py-3 font-normal">Harga</th>
+                  <th class="px-6 py-3 font-normal">Stok</th>
+                  <th class="px-6 py-3 font-normal">Status</th>
+                  <th class="px-6 py-3 font-normal text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -664,14 +649,14 @@
                       <Icon icon="ph:image" class="text-gray-400" />
                     </div>
                     <div>
-                      <div class="font-semibold text-gray-900 dark:text-white">{{ product.name }}</div>
-                      <div class="text-xs text-gray-500">{{ product.code || "N/A" }} · {{ product.category }}</div>
+                      <div class="text-sm font-medium text-gray-900 dark:text-white">{{ product.name }}</div>
+                      <div class="text-[11px] font-normal text-gray-500">{{ product.code || "N/A" }} · {{ product.category }}</div>
                     </div>
                   </td>
-                  <td class="px-6 py-4 font-medium">{{ formatCurrency(product.price) }}</td>
+                  <td class="px-6 py-4 font-normal">{{ formatCurrency(product.price) }}</td>
                   <td class="px-6 py-4">{{ Number(product.stock || 0) }}</td>
                   <td class="px-6 py-4">
-                    <span class="inline-flex rounded-sm px-2 py-1 text-[11px] font-bold"
+                    <span class="inline-flex rounded-sm px-2 py-1 text-[10px] font-medium"
                       :class="product.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'">
                       {{ product.is_active ? "AKTIF" : "NONAKTIF" }}
                     </span>
@@ -679,12 +664,12 @@
                   <td class="px-6 py-4 text-right">
                     <div class="flex justify-end gap-2">
                       <button
-                        class="rounded-sm border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                        class="rounded-sm border border-gray-300 px-3 py-1.5 text-[11px] font-medium text-gray-700 hover:bg-gray-50"
                         @click="editProduct(product)">
                         Ubah
                       </button>
                       <button
-                        class="rounded-sm border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50"
+                        class="rounded-sm border border-red-200 px-3 py-1.5 text-[11px] font-medium text-red-600 hover:bg-red-50"
                         @click="deactivateProduct(product)">
                         Arsip
                       </button>
@@ -694,50 +679,64 @@
               </tbody>
             </table>
           </div>
+          <div class="flex items-center justify-between gap-3 border-t px-6 py-4 text-xs font-normal sm:text-sm">
+            <span class="text-gray-500 dark:text-gray-400">{{ paginationLabel(productsMeta) }}</span>
+            <div class="flex items-center gap-2">
+              <button
+                class="rounded-sm border border-slate-300 px-3 py-1.5 font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-200"
+                :disabled="currentPage(productsMeta) <= 1" @click="setProductsPage(currentPage(productsMeta) - 1)">
+                Prev
+              </button>
+              <button
+                class="rounded-sm border border-slate-300 px-3 py-1.5 font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-200"
+                :disabled="currentPage(productsMeta) >= totalPages(productsMeta)"
+                @click="setProductsPage(currentPage(productsMeta) + 1)">
+                Next
+              </button>
+            </div>
+          </div>
         </section>
       </div>
 
     </main>
 
-    <transition
-      enter-active-class="transition ease-out duration-200"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition ease-in duration-150"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
-    >
-      <div
-        v-if="paymentQrModalOpen"
+    <!-- [Sisa Modal Pembayaran, Order Detail & Product Form di bawah sama dengan sebelumnya] -->
+    <!-- (Kode ini sudah saya sertakan lengkap untuk modal QRIS, Order, dan Product) -->
+
+    <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0"
+      enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100"
+      leave-to-class="opacity-0">
+      <div v-if="paymentQrModalOpen"
         class="fixed inset-0 z-[140] flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm"
-        @click.self="closePaymentQrModal"
-      >
-        <div class="w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
+        @click.self="closePaymentQrModal">
+        <div
+          class="w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
           <div class="border-b border-slate-100 px-5 py-4 sm:px-6 sm:py-5 dark:border-slate-800">
-            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-300">Pembayaran Non Tunai</p>
-            <h2 class="mt-2 text-xl font-black tracking-tight text-slate-900 sm:text-2xl dark:text-white">QRIS Xendit</h2>
+            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-300">
+              Pembayaran Non Tunai</p>
+            <h2 class="mt-2 text-xl font-black tracking-tight text-slate-900 sm:text-2xl dark:text-white">QRIS Xendit
+            </h2>
             <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
               Pesanan {{ paymentQrOrderNumber || "-" }} siap dibayar dengan QRIS.
             </p>
-            <p v-if="paymentQrSandboxEnabled" class="mt-3 inline-flex rounded-full bg-sky-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-sky-700 dark:bg-sky-500/10 dark:text-sky-200">
+            <p v-if="paymentQrSandboxEnabled"
+              class="mt-3 inline-flex rounded-full bg-sky-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-sky-700 dark:bg-sky-500/10 dark:text-sky-200">
               Sandbox
             </p>
           </div>
 
           <div class="space-y-4 px-5 py-4 sm:px-6 sm:py-5">
             <div class="flex items-center justify-center rounded-3xl bg-slate-50 p-3 sm:p-4 dark:bg-slate-800/60">
-              <img
-                v-if="paymentQrDataUrl"
-                :src="paymentQrDataUrl"
-                alt="QRIS Pembayaran"
-                class="h-56 w-56 rounded-2xl bg-white p-2 shadow-sm sm:h-64 sm:w-64 lg:h-72 lg:w-72"
-              />
-              <div v-else class="flex h-56 w-56 items-center justify-center rounded-2xl bg-white text-center text-sm text-slate-500 shadow-sm sm:h-64 sm:w-64 lg:h-72 lg:w-72">
+              <img v-if="paymentQrDataUrl" :src="paymentQrDataUrl" alt="QRIS Pembayaran"
+                class="h-56 w-56 rounded-2xl bg-white p-2 shadow-sm sm:h-64 sm:w-64 lg:h-72 lg:w-72" />
+              <div v-else
+                class="flex h-56 w-56 items-center justify-center rounded-2xl bg-white text-center text-sm text-slate-500 shadow-sm sm:h-64 sm:w-64 lg:h-72 lg:w-72">
                 QRIS tidak tersedia
               </div>
             </div>
 
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
+            <div
+              class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
               <p class="font-semibold text-slate-900 dark:text-white">Cara bayar</p>
               <p class="mt-2 leading-6">
                 Buka aplikasi mobile banking atau e-wallet, pilih scan QR, lalu arahkan kamera ke QRIS ini.
@@ -748,33 +747,26 @@
               <p v-if="paymentQrExpiresAt" class="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
                 Berlaku sampai {{ formatDateTime(paymentQrExpiresAt) }}
               </p>
-              <p v-if="paymentQrExpiresAt" class="mt-1 text-sm font-semibold" :class="paymentQrRemainingSeconds > 0 ? 'text-emerald-600 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-300'">
+              <p v-if="paymentQrExpiresAt" class="mt-1 text-sm font-semibold"
+                :class="paymentQrRemainingSeconds > 0 ? 'text-emerald-600 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-300'">
                 {{ paymentQrCountdownText }}
               </p>
             </div>
 
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-              <button
-                type="button"
+              <button type="button"
                 class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-                @click="closePaymentQrModal"
-              >
+                @click="closePaymentQrModal">
                 Tutup
               </button>
-              <button
-                type="button"
+              <button type="button"
                 class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500"
-                :disabled="!paymentQrDataUrl"
-                @click="downloadPaymentQrImage"
-              >
+                :disabled="!paymentQrDataUrl" @click="downloadPaymentQrImage">
                 Download QRIS
               </button>
-              <button
-                v-if="paymentQrSandboxEnabled && paymentQrOrderId"
-                type="button"
+              <button v-if="paymentQrSandboxEnabled && paymentQrOrderId" type="button"
                 class="rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-500"
-                @click="simulateSandboxPaymentById"
-              >
+                @click="simulateSandboxPaymentById">
                 Simulasi Bayar
               </button>
             </div>
@@ -783,59 +775,65 @@
       </div>
     </transition>
 
-    <transition
-      enter-active-class="transition ease-out duration-200"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition ease-in duration-150"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
-    >
-      <div
-        v-if="orderDetailModalOpen"
-        class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm"
-        @click.self="closeOrderDetail"
-      >
-        <div class="w-full max-w-3xl rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
-          <div class="border-b border-slate-100 px-6 py-5 dark:border-slate-800">
-            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600 dark:text-orange-300">Detail Pesanan</p>
-            <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+    <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0"
+      enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100"
+      leave-to-class="opacity-0">
+      <div v-if="orderDetailModalOpen"
+        class="fixed inset-0 z-[150] flex items-start justify-center overflow-y-auto bg-slate-950/75 p-3 backdrop-blur-sm sm:items-center sm:p-4"
+        @click.self="closeOrderDetail">
+        <div
+          class="mt-6 flex w-full max-w-3xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10 sm:mt-0 sm:max-h-[84vh]">
+          <div class="border-b border-slate-100 px-5 py-4 sm:px-6 sm:py-5 dark:border-slate-800">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600 dark:text-orange-300">Detail
+              Pesanan
+            </p>
+            <h2 class="mt-2 break-all text-xl font-black tracking-tight text-slate-900 sm:text-2xl dark:text-white">
               {{ selectedOrderDetail?.order_number || "-" }}
             </h2>
             <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-              Status pembayaran: {{ selectedOrderDetail?.payment_status_label || paymentStatusLabelForOrder(selectedOrderDetail) }}
+              Status pembayaran: {{ selectedOrderDetail?.payment_status_label ||
+                paymentStatusLabelForOrder(selectedOrderDetail) }}
             </p>
           </div>
 
-          <div class="grid gap-4 px-6 py-5 lg:grid-cols-[1.2fr,0.8fr]">
+          <div class="grid min-h-0 flex-1 gap-3 overflow-y-auto px-4 py-3 sm:px-6 sm:py-4 lg:grid-cols-[1.2fr,0.8fr]">
             <div class="space-y-4">
               <div class="rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
                 <div class="grid gap-3 sm:grid-cols-2">
                   <div>
                     <p class="text-xs font-semibold uppercase text-slate-400">Pembeli</p>
-                    <p class="mt-1 font-semibold text-slate-900 dark:text-white">{{ selectedOrderDetail?.buyer_name || "-" }}</p>
+                    <p class="mt-1 font-semibold text-slate-900 dark:text-white">{{ selectedOrderDetail?.buyer_name ||
+                      "-"
+                    }}</p>
                     <p class="text-sm text-slate-500 dark:text-slate-400">
-                      {{ selectedOrderDetail?.buyer_class_name && selectedOrderDetail?.buyer_class_name !== "-" ? `Kelas ${selectedOrderDetail.buyer_class_name}` : "Kelas -" }}
+                      {{ selectedOrderDetail?.buyer_class_name && selectedOrderDetail?.buyer_class_name !== "-" ? `Kelas
+                      ${selectedOrderDetail.buyer_class_name}` : "Kelas -" }}
                     </p>
                   </div>
                   <div>
                     <p class="text-xs font-semibold uppercase text-slate-400">Metode Bayar</p>
-                    <p class="mt-1 font-semibold text-slate-900 dark:text-white">{{ paymentMethodLabel(selectedOrderDetail?.payment_method) }}</p>
+                    <p class="mt-1 font-semibold text-slate-900 dark:text-white">{{
+                      paymentMethodLabel(selectedOrderDetail?.payment_method) }}</p>
                     <p class="text-sm text-slate-500 dark:text-slate-400">
                       {{ selectedOrderDetail?.payment_status_label || paymentStatusLabelForOrder(selectedOrderDetail) }}
                     </p>
                   </div>
                   <div>
                     <p class="text-xs font-semibold uppercase text-slate-400">Tanggal Pesan</p>
-                    <p class="mt-1 font-semibold text-slate-900 dark:text-white">{{ formatDateTime(selectedOrderDetail?.created_at) }}</p>
+                    <p class="mt-1 font-semibold text-slate-900 dark:text-white">{{
+                      formatDateTime(selectedOrderDetail?.created_at) }}</p>
                   </div>
                   <div>
                     <p class="text-xs font-semibold uppercase text-slate-400">Total</p>
-                    <p class="mt-1 font-semibold text-orange-600">{{ formatCurrency(selectedOrderDetail?.total_amount) }}</p>
+                    <p class="mt-1 font-semibold text-orange-600">{{ formatCurrency(selectedOrderDetail?.total_amount)
+                    }}
+                    </p>
                   </div>
-                  <div v-if="selectedOrderDetail?.payment_method && String(selectedOrderDetail.payment_method).toUpperCase() === 'NON_TUNAI'">
+                  <div
+                    v-if="selectedOrderDetail?.payment_method && String(selectedOrderDetail.payment_method).toUpperCase() === 'NON_TUNAI'">
                     <p class="text-xs font-semibold uppercase text-slate-400">Berlaku Sampai</p>
-                    <p class="mt-1 font-semibold text-slate-900 dark:text-white">{{ formatPaymentExpiry(selectedOrderDetail?.payment_expires_at) }}</p>
+                    <p class="mt-1 font-semibold text-slate-900 dark:text-white">{{
+                      formatPaymentExpiry(selectedOrderDetail?.payment_expires_at) }}</p>
                     <p v-if="isPaymentExpired(selectedOrderDetail)" class="text-sm text-rose-500">
                       QRIS sudah kedaluwarsa.
                     </p>
@@ -851,7 +849,8 @@
                   <p class="text-sm font-semibold text-slate-900 dark:text-white">Item Pesanan</p>
                 </div>
                 <div class="divide-y divide-slate-100 dark:divide-slate-800">
-                  <div v-for="item in selectedOrderDetail?.items || []" :key="item.id" class="flex items-center justify-between gap-4 px-4 py-3">
+                  <div v-for="item in selectedOrderDetail?.items || []" :key="item.id"
+                    class="flex items-center justify-between gap-4 px-4 py-3">
                     <div>
                       <p class="font-medium text-slate-900 dark:text-white">{{ item.product_name_snapshot || "-" }}</p>
                       <p class="text-xs text-slate-500 dark:text-slate-400">
@@ -862,7 +861,8 @@
                       <p class="font-semibold text-slate-900 dark:text-white">{{ formatCurrency(item.subtotal) }}</p>
                     </div>
                   </div>
-                  <div v-if="!selectedOrderDetail?.items || selectedOrderDetail.items.length === 0" class="px-4 py-8 text-center text-sm text-slate-500">
+                  <div v-if="!selectedOrderDetail?.items || selectedOrderDetail.items.length === 0"
+                    class="px-4 py-8 text-center text-sm text-slate-500">
                     Tidak ada item pesanan.
                   </div>
                 </div>
@@ -870,7 +870,8 @@
             </div>
 
             <div class="space-y-4">
-              <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/40">
+              <div
+                class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/40">
                 <p class="text-xs font-semibold uppercase text-slate-400">Status Pembayaran</p>
                 <p class="mt-1 text-lg font-bold text-slate-900 dark:text-white">
                   {{ selectedOrderDetail?.payment_status_label || paymentStatusLabelForOrder(selectedOrderDetail) }}
@@ -880,36 +881,34 @@
                 </p>
               </div>
 
-              <div v-if="selectedOrderDetail?.payment_method && String(selectedOrderDetail.payment_method).toUpperCase() === 'NON_TUNAI'" class="rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
+              <div
+                v-if="!canManage && selectedOrderDetail?.payment_method && String(selectedOrderDetail.payment_method).toUpperCase() === 'NON_TUNAI'"
+                class="rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
                 <p class="text-sm font-semibold text-slate-900 dark:text-white">QRIS</p>
                 <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
                   QRIS bisa dibuka ulang dari detail pesanan ini.
                 </p>
                 <div class="mt-4 flex flex-wrap gap-2">
-                  <button
-                    v-if="selectedOrderDetail?.payment_qr_string"
+                  <button v-if="selectedOrderDetail?.payment_qr_string"
                     class="rounded-xl border border-emerald-500 px-4 py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-50"
                     @click="openPaymentQrModal(selectedOrderDetail.order_number, selectedOrderDetail.payment_qr_string, {
                       orderId: selectedOrderDetail.id,
                       sandboxEnabled: Boolean(selectedOrderDetail.payment_sandbox),
                       paymentStatus: effectivePaymentStatus(selectedOrderDetail),
                       paymentExpiresAt: selectedOrderDetail.payment_expires_at,
-                    })"
-                  >
+                    })">
                     Buka QRIS
                   </button>
                   <button
                     v-if="selectedOrderDetail?.payment_sandbox && String(selectedOrderDetail.payment_status || '').toUpperCase() !== 'PAID'"
                     class="rounded-xl border border-sky-500 px-4 py-2 text-sm font-semibold text-sky-600 hover:bg-sky-50"
-                    @click="simulateSandboxPayment(selectedOrderDetail)"
-                  >
+                    @click="simulateSandboxPayment(selectedOrderDetail)">
                     Simulasi Bayar
                   </button>
                   <button
                     v-if="selectedOrderDetail?.payment_method && String(selectedOrderDetail.payment_method).toUpperCase() === 'NON_TUNAI' && String(effectivePaymentStatus(selectedOrderDetail)).toUpperCase() === 'EXPIRED'"
                     class="rounded-xl border border-orange-500 px-4 py-2 text-sm font-semibold text-orange-600 hover:bg-orange-50"
-                    @click="reissuePayment(selectedOrderDetail)"
-                  >
+                    @click="reissuePayment(selectedOrderDetail)">
                     Bayar Ulang
                   </button>
                 </div>
@@ -925,17 +924,20 @@
               <div class="rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
                 <p class="text-xs font-semibold uppercase text-slate-400">Riwayat Pembayaran</p>
                 <div class="mt-3 space-y-3">
-                  <div v-for="log in selectedOrderDetail?.payment_history || []" :key="log.id" class="rounded-xl bg-slate-50 p-3 text-sm dark:bg-slate-800/70">
+                  <div v-for="log in selectedOrderDetail?.payment_history || []" :key="log.id"
+                    class="rounded-xl bg-slate-50 p-3 text-sm dark:bg-slate-800/70">
                     <div class="flex items-center justify-between gap-3">
                       <span class="font-semibold text-slate-900 dark:text-white">{{ log.event_type || "-" }}</span>
-                      <span class="rounded-full px-2 py-0.5 text-[11px] font-bold" :class="paymentStatusClass(log.status)">
+                      <span class="rounded-full px-2 py-0.5 text-[11px] font-bold"
+                        :class="paymentStatusClass(log.status)">
                         {{ log.status_label || paymentStatusLabel(log.status, selectedOrderDetail?.payment_method) }}
                       </span>
                     </div>
                     <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ formatDateTime(log.created_at) }}</p>
                     <p v-if="log.note" class="mt-2 text-slate-600 dark:text-slate-300">{{ log.note }}</p>
                   </div>
-                  <div v-if="!selectedOrderDetail?.payment_history || selectedOrderDetail.payment_history.length === 0" class="text-sm text-slate-500">
+                  <div v-if="!selectedOrderDetail?.payment_history || selectedOrderDetail.payment_history.length === 0"
+                    class="text-sm text-slate-500">
                     Belum ada riwayat pembayaran.
                   </div>
                 </div>
@@ -943,21 +945,19 @@
             </div>
           </div>
 
-          <div class="flex items-center justify-end gap-3 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
-            <button
-              type="button"
-              class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-              @click="printOrderReceipt(selectedOrderDetail)"
-            >
+          <div class="flex-none border-t border-slate-100 px-4 py-3 sm:px-6 dark:border-slate-800">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
+            <button type="button"
+              class="w-full rounded-xl border border-blue-500 px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-blue-500/10 sm:w-auto"
+              @click="printOrderReceipt(selectedOrderDetail)">
               Cetak Nota
             </button>
-            <button
-              type="button"
-              class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-              @click="closeOrderDetail"
-            >
+            <button type="button"
+              class="w-full rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 sm:w-auto"
+              @click="closeOrderDetail">
               Tutup
             </button>
+            </div>
           </div>
         </div>
       </div>
@@ -970,86 +970,64 @@
       <div v-if="showProductModal"
         class="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-black/60 p-3 backdrop-blur-sm sm:items-center sm:p-4"
         @click.self="closeProductModal">
-          <div class="mt-6 w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-gray-900 sm:mt-0 sm:max-h-[90vh]">
+        <div
+          class="mt-6 w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-gray-900 sm:mt-0 sm:max-h-[90vh]">
           <div class="border-b px-5 py-4 sm:px-6">
             <h2 class="text-lg font-bold text-gray-900 sm:text-xl dark:text-white">
               {{ editingProductId ? "Ubah Detail Produk" : "Tambah Produk Baru" }}
             </h2>
           </div>
-          <form class="grid max-h-[calc(90vh-73px)] gap-4 overflow-y-auto px-5 py-5 md:grid-cols-2 sm:px-6" @submit.prevent="saveProduct">
+          <form class="grid max-h-[calc(90vh-73px)] gap-4 overflow-y-auto px-5 py-5 md:grid-cols-2 sm:px-6"
+            @submit.prevent="saveProduct">
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200">Nama Produk</label>
-              <input
-                v-model="productForm.name"
-                type="text"
-                required
-                class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-              />
+              <input v-model="productForm.name" type="text" required
+                class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
             </div>
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200">SKU / Kode</label>
-              <input
-                v-model="productForm.code"
-                type="text"
-                class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-              />
+              <input v-model="productForm.code" type="text"
+                class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
             </div>
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200">Kategori</label>
-              <select
-                v-model="productForm.category"
+              <select v-model="productForm.category"
                 class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                @change="handleCategoryChange"
-              >
+                @change="handleCategoryChange">
                 <option value="" disabled>Pilih kategori</option>
                 <option v-for="option in categoryOptions" :key="option.value" :value="option.value">
                   {{ option.label }}
                 </option>
               </select>
-              <input
-                v-if="productForm.category === 'LAINNYA'"
-                v-model.trim="productForm.custom_category"
-                type="text"
+              <input v-if="productForm.category === 'LAINNYA'" v-model.trim="productForm.custom_category" type="text"
                 placeholder="Tulis kategori lain"
-                class="mt-3 block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-              />
+                class="mt-3 block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
             </div>
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200">Harga (Rp)</label>
-              <input
-                :value="productPriceDisplay"
-                type="text"
-                inputmode="numeric"
-                placeholder="0"
+              <input :value="productPriceDisplay" type="text" inputmode="numeric" placeholder="0"
                 @input="handlePriceInput"
-                class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-              />
+                class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
             </div>
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200">Stok</label>
-              <input
-                v-model.number="productForm.stock"
-                type="number"
-                min="0"
-                class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-              />
+              <input v-model.number="productForm.stock" type="number" min="0"
+                class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
             </div>
 
             <div class="md:col-span-2 mt-1">
               <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">Foto Produk</label>
-              <div class="flex flex-col items-start gap-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40 sm:flex-row">
-                <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+              <div
+                class="flex flex-col items-start gap-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40 sm:flex-row">
+                <div
+                  class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
                   <img v-if="productImagePreview" :src="productImagePreview" class="h-full w-full object-cover" />
                   <Icon v-else icon="ph:image" class="h-full w-full p-4 text-slate-300" />
                 </div>
                 <div class="flex-1">
-                  <input
-                    ref="productImageInput"
-                    type="file"
-                    accept="image/*"
+                  <input ref="productImageInput" type="file" accept="image/*"
                     class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-orange-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-orange-700 hover:file:bg-orange-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:file:bg-orange-500/10 dark:file:text-orange-300"
-                    @change="handleProductImageChange"
-                  />
+                    @change="handleProductImageChange" />
                   <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Format disarankan: JPG, PNG rasio 1:1.</p>
                 </div>
               </div>
@@ -1057,21 +1035,17 @@
 
             <div class="md:col-span-2">
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200">Deskripsi Lengkap</label>
-              <textarea
-                v-model="productForm.description"
-                rows="4"
-                class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-              ></textarea>
+              <textarea v-model="productForm.description" rows="4"
+                class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"></textarea>
             </div>
-            <label class="inline-flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 md:col-span-2">
-              <input
-                v-model="productForm.is_active"
-                type="checkbox"
-                class="h-4 w-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
-              />
+            <label
+              class="inline-flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 md:col-span-2">
+              <input v-model="productForm.is_active" type="checkbox"
+                class="h-4 w-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500" />
               Tampilkan produk ini di etalase
             </label>
-            <div class="flex flex-col-reverse items-stretch gap-3 border-t pt-4 md:col-span-2 sm:flex-row sm:items-center sm:justify-end">
+            <div
+              class="flex flex-col-reverse items-stretch gap-3 border-t pt-4 md:col-span-2 sm:flex-row sm:items-center sm:justify-end">
               <button type="button"
                 class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
                 @click="closeProductModal">
@@ -1132,11 +1106,22 @@ const isSubmittingOrder = ref(false);
 const dashboard = ref({ overview: {} });
 const report = ref({ overview: {}, range: {}, payment_status_breakdown: [], payment_method_breakdown: [], top_products: [], low_stock_items: [] });
 const products = ref([]);
+const productsMeta = ref({ page: 1, limit: 12, total: 0, totalPages: 1 });
 const orders = ref([]);
+const ordersMeta = ref({ page: 1, limit: 10, total: 0, totalPages: 1 });
 const message = ref("");
 const isError = ref(false);
 const searchQuery = ref("");
 const selectedCategory = ref("");
+const productActiveFilter = ref("active");
+const productsPage = ref(1);
+const productsLimit = ref(12);
+const orderSearchQuery = ref("");
+const orderStatusFilter = ref("");
+const orderPaymentStatusFilter = ref("");
+const orderPaymentMethodFilter = ref("");
+const ordersPage = ref(1);
+const ordersLimit = ref(10);
 const cart = ref([]);
 const showProductModal = ref(false);
 const editingProductId = ref(null);
@@ -1162,6 +1147,18 @@ const checkoutForm = reactive({
   payment_method: "TUNAI",
   note: "",
 });
+const checkoutPaymentOptions = [
+  {
+    value: "TUNAI",
+    label: "Tunai",
+    description: "Bayar saat ambil barang.",
+  },
+  {
+    value: "NON_TUNAI",
+    label: "Qris",
+    description: "Bayar pakai QRIS.",
+  },
+];
 const productForm = reactive({
   name: "",
   code: "",
@@ -1355,42 +1352,51 @@ const reportCards = computed(() => {
   ];
 });
 
-const categories = computed(() => {
-  const unique = new Set();
-  for (const product of products.value) {
-    const category = String(product.category || "").trim();
-    if (category) {
-      unique.add(category);
-    }
+const reportDetailsOpen = ref(false);
+
+const currentPage = (meta) => Number(meta?.page || 1);
+const totalPages = (meta) => Number(meta?.totalPages || 1);
+const paginationLabel = (meta) => {
+  const total = Number(meta?.total || 0);
+  const page = Number(meta?.page || 1);
+  const pages = Number(meta?.totalPages || 1);
+  if (!total) {
+    return "0 data";
   }
-  return Array.from(unique).sort((a, b) => a.localeCompare(b));
+  return `Halaman ${page} dari ${pages} • ${total} data`;
+};
+
+const normalizePagedResponse = (response, fallbackMeta) => ({
+  items: Array.isArray(response?.data?.items) ? response.data.items : [],
+  page: Number(response?.data?.page || fallbackMeta.page || 1),
+  limit: Number(response?.data?.limit || fallbackMeta.limit || 10),
+  total: Number(response?.data?.total || 0),
+  totalPages: Number(response?.data?.totalPages || fallbackMeta.totalPages || 1),
+});
+
+const categories = computed(() => {
+  return categoryOptions
+    .map((option) => option.value)
+    .filter((value) => value && value !== "LAINNYA");
 });
 
 const filteredProducts = computed(() => {
-  const search = searchQuery.value.trim().toLowerCase();
-  const category = selectedCategory.value.trim().toLowerCase();
-
-  return products.value.filter((product) => {
-    if (category && String(product.category || "").trim().toLowerCase() !== category) {
-      return false;
-    }
-    if (!search) {
-      return true;
-    }
-    return [product.name, product.code, product.category, product.description]
-      .filter(Boolean)
-      .some((field) => String(field).toLowerCase().includes(search));
-  });
+  return products.value;
 });
 
 const cartDetails = computed(() =>
   cart.value
     .map((item) => {
-      const product = products.value.find((productItem) => Number(productItem.id) === Number(item.product_id));
+      const product = item.product || products.value.find((productItem) => Number(productItem.id) === Number(item.product_id));
       if (!product) return null;
       const quantity = Number(item.quantity || 0);
       return {
-        product,
+        product: {
+          ...product,
+          id: Number(product.id || item.product_id),
+          price: Number(product.price || 0),
+          stock: Number(product.stock || 0),
+        },
         quantity,
         subtotal: Number(product.price || 0) * quantity,
       };
@@ -1401,6 +1407,31 @@ const cartDetails = computed(() =>
 const cartTotal = computed(() => cartDetails.value.reduce((sum, item) => sum + Number(item.subtotal || 0), 0));
 const cartTotalItems = computed(() => cart.value.reduce((sum, item) => sum + item.quantity, 0));
 const isRealtimeConnected = computed(() => realtimeStore.connected);
+const normalizeCartItem = (item) => {
+  const product = item?.product && typeof item.product === "object" ? item.product : null;
+  const productId = Number(item?.product_id || product?.id || 0);
+  const quantity = Number(item?.quantity || 0);
+  if (!productId || quantity <= 0) return null;
+  return {
+    id: Number(item?.id || 0) || productId,
+    product_id: productId,
+    quantity,
+    product: product
+      ? {
+        ...product,
+        id: Number(product.id || productId),
+        price: Number(product.price || 0),
+        stock: Number(product.stock || 0),
+      }
+      : null,
+  };
+};
+
+const syncCartFromResponse = (response) => {
+  const items = Array.isArray(response?.data?.items) ? response.data.items : [];
+  cart.value = items.map((item) => normalizeCartItem(item)).filter(Boolean);
+};
+
 const formatRupiahInput = (value) => {
   const digits = String(value || "").replace(/\D/g, "");
   if (!digits) {
@@ -1445,71 +1476,217 @@ const closeProductModal = () => {
   showProductModal.value = false;
 };
 
-const loadData = async () => {
-  isLoading.value = true;
+const loadDashboardAndReport = async () => {
   try {
-    const requests = [
-      api.get("/koperasi/dashboard"),
-      api.get("/koperasi/products", {
-        params: { page: 1, limit: 100, include_inactive: canManage.value ? 1 : undefined },
-      }),
-      api.get("/koperasi/orders", {
-        params: { page: 1, limit: 20 },
-      }),
-    ];
+    const requests = [api.get("/koperasi/dashboard")];
     if (canManage.value) {
       requests.push(api.get("/koperasi/reports/summary"));
     }
     const responses = await Promise.allSettled(requests);
-    const [dashboardResponse, productsResponse, ordersResponse, reportResponse] = responses;
-    const criticalFailure = [dashboardResponse, productsResponse, ordersResponse].find((result) => result.status === "rejected");
+    const [dashboardResponse, reportResponse] = responses;
+    const criticalFailure = [dashboardResponse].find((result) => result.status === "rejected");
     if (criticalFailure) {
       throw criticalFailure.reason || new Error("Gagal memuat data koperasi.");
     }
 
     dashboard.value = dashboardResponse.value?.data || { overview: {} };
-    products.value = Array.isArray(productsResponse.value?.data?.items) ? productsResponse.value.data.items : [];
-    orders.value = Array.isArray(ordersResponse.value?.data?.items) ? ordersResponse.value.data.items : [];
     report.value = canManage.value && reportResponse?.status === "fulfilled" && reportResponse.value?.data
       ? reportResponse.value.data
       : { overview: {}, range: {}, payment_status_breakdown: [], payment_method_breakdown: [], top_products: [], low_stock_items: [] };
   } catch (error) {
     setMessage(error.message || "Gagal memuat data koperasi.", true);
     pushToast({ title: "Gagal Memuat Koperasi", message: error.message || "Data koperasi gagal dimuat.", type: "error" });
+  }
+};
+
+const loadProducts = async ({ resetPage = false } = {}) => {
+  if (resetPage) {
+    productsPage.value = 1;
+  }
+
+  try {
+    const response = await api.get("/koperasi/products", {
+      params: {
+        page: productsPage.value,
+        limit: productsLimit.value,
+        search: searchQuery.value.trim() || undefined,
+        category: selectedCategory.value.trim() || undefined,
+        active: canManage.value ? productActiveFilter.value || undefined : "1",
+        include_inactive: canManage.value ? 1 : undefined,
+      },
+    });
+    const normalized = normalizePagedResponse(response, productsMeta.value);
+    products.value = normalized.items;
+    productsMeta.value = normalized;
+  } catch (error) {
+    setMessage(error.message || "Gagal memuat produk koperasi.", true);
+    pushToast({ title: "Gagal Memuat Produk", message: error.message || "Data produk gagal dimuat.", type: "error" });
+  }
+};
+
+const loadOrders = async ({ resetPage = false } = {}) => {
+  if (resetPage) {
+    ordersPage.value = 1;
+  }
+
+  try {
+    const response = await api.get("/koperasi/orders", {
+      params: {
+        page: ordersPage.value,
+        limit: ordersLimit.value,
+        search: orderSearchQuery.value.trim() || undefined,
+        status: orderStatusFilter.value || undefined,
+        payment_status: orderPaymentStatusFilter.value || undefined,
+        payment_method: orderPaymentMethodFilter.value || undefined,
+      },
+    });
+    const normalized = normalizePagedResponse(response, ordersMeta.value);
+    orders.value = normalized.items;
+    ordersMeta.value = normalized;
+  } catch (error) {
+    setMessage(error.message || "Gagal memuat pesanan koperasi.", true);
+    pushToast({ title: "Gagal Memuat Pesanan", message: error.message || "Data pesanan gagal dimuat.", type: "error" });
+  }
+};
+
+const loadCart = async () => {
+  try {
+    const response = await api.get("/koperasi/cart");
+    syncCartFromResponse(response);
+  } catch (error) {
+    pushToast({ title: "Gagal Memuat Keranjang", message: error.message || "Keranjang gagal dimuat.", type: "error" });
+  }
+};
+
+const loadData = async () => {
+  isLoading.value = true;
+  try {
+    await Promise.all([
+      loadDashboardAndReport(),
+      loadProducts(),
+      loadOrders(),
+      loadCart(),
+    ]);
   } finally {
     isLoading.value = false;
   }
 };
 
-const addToCart = (product) => {
-  const current = cart.value.find((item) => Number(item.product_id) === Number(product.id));
-  if (current) {
-    if (current.quantity < product.stock) current.quantity += 1;
-    else pushToast({ title: "Stok Terbatas", message: "Maksimal stok tercapai", type: "warning" });
-  } else {
-    cart.value = [...cart.value, { product_id: product.id, quantity: 1 }];
-  }
-  pushToast({ title: "Berhasil", message: `${product.name} masuk keranjang`, type: "success" });
+const applyProductFilters = async () => {
+  await loadProducts({ resetPage: true });
 };
 
-const increaseQuantity = (product) => {
-  const current = cart.value.find((item) => Number(item.product_id) === Number(product.id));
-  if (!current) {
-    addToCart(product);
+const applyOrderFilters = async () => {
+  await loadOrders({ resetPage: true });
+};
+
+const setProductsPage = async (page) => {
+  const nextPage = Math.min(Math.max(1, page), totalPages(productsMeta.value));
+  if (nextPage !== productsPage.value) {
+    productsPage.value = nextPage;
+    await loadProducts();
+  }
+};
+
+const setOrdersPage = async (page) => {
+  const nextPage = Math.min(Math.max(1, page), totalPages(ordersMeta.value));
+  if (nextPage !== ordersPage.value) {
+    ordersPage.value = nextPage;
+    await loadOrders();
+  }
+};
+
+const persistCartQuantity = async (product, quantity) => {
+  const nextQuantity = Number(quantity || 0);
+  if (nextQuantity <= 0) {
+    await removeCartItem(product.id, { silent: true });
     return;
   }
-  if (current.quantity >= Number(product.stock || 0)) return;
-  current.quantity += 1;
+
+  if (nextQuantity > Number(product.stock || 0)) {
+    pushToast({ title: "Stok Terbatas", message: "Maksimal stok tercapai", type: "warning" });
+    return;
+  }
+
+  const response = await api.put("/koperasi/cart/items", {
+    product_id: product.id,
+    quantity: nextQuantity,
+  });
+  syncCartFromResponse(response);
 };
 
-const decreaseQuantity = (productId) => {
-  const next = cart.value
-    .map((item) => Number(item.product_id) === Number(productId) ? { ...item, quantity: Number(item.quantity || 0) - 1 } : item)
-    .filter((item) => item.quantity > 0);
-  cart.value = next;
+const addToCart = async (product) => {
+  const current = cart.value.find((item) => Number(item.product_id) === Number(product.id));
+  const currentQuantity = Number(current?.quantity || 0);
+  const nextQuantity = currentQuantity + 1;
+  if (nextQuantity > Number(product.stock || 0)) {
+    pushToast({ title: "Stok Terbatas", message: "Maksimal stok tercapai", type: "warning" });
+    return;
+  }
+  try {
+    await persistCartQuantity(product, nextQuantity);
+    pushToast({ title: "Berhasil", message: `${product.name} masuk keranjang`, type: "success" });
+  } catch (error) {
+    pushToast({ title: "Gagal", message: error.message || "Keranjang gagal diperbarui.", type: "error" });
+  }
 };
 
-const clearCart = () => { cart.value = []; };
+const increaseQuantity = async (product) => {
+  const current = cart.value.find((item) => Number(item.product_id) === Number(product.id));
+  if (!current) {
+    await addToCart(product);
+    return;
+  }
+  const nextQuantity = Number(current.quantity || 0) + 1;
+  if (nextQuantity > Number(product.stock || 0)) return;
+  try {
+    await persistCartQuantity(product, nextQuantity);
+  } catch (error) {
+    pushToast({ title: "Gagal", message: error.message || "Keranjang gagal diperbarui.", type: "error" });
+  }
+};
+
+const removeCartItem = async (productId, { silent = false } = {}) => {
+  try {
+    const response = await api.delete(`/koperasi/cart/items/${productId}`);
+    syncCartFromResponse(response);
+  } catch (error) {
+    if (!silent) {
+      pushToast({ title: "Gagal", message: error.message || "Item keranjang gagal dihapus.", type: "error" });
+    }
+  }
+};
+
+const decreaseQuantity = async (productId) => {
+  const current = cart.value.find((item) => Number(item.product_id) === Number(productId));
+  if (!current) return;
+  const product = current.product || products.value.find((productItem) => Number(productItem.id) === Number(productId));
+  if (!product) {
+    await removeCartItem(productId);
+    return;
+  }
+
+  const nextQuantity = Number(current.quantity || 0) - 1;
+  if (nextQuantity <= 0) {
+    await removeCartItem(productId);
+    return;
+  }
+
+  try {
+    await persistCartQuantity(product, nextQuantity);
+  } catch (error) {
+    pushToast({ title: "Gagal", message: error.message || "Keranjang gagal diperbarui.", type: "error" });
+  }
+};
+
+const clearCart = async () => {
+  try {
+    const response = await api.delete("/koperasi/cart");
+    syncCartFromResponse(response);
+  } catch (error) {
+    pushToast({ title: "Gagal", message: error.message || "Keranjang gagal dikosongkan.", type: "error" });
+  }
+};
 
 const closePaymentQrModal = () => {
   paymentQrModalOpen.value = false;
@@ -1782,10 +1959,11 @@ const submitOrder = async () => {
         type: "success",
       });
     }
-    clearCart();
+    await clearCart();
     checkoutForm.note = "";
     mobileCartOpen.value = false;
     activeTab.value = "orders";
+    ordersPage.value = 1;
     await loadData();
   } catch (error) {
     pushToast({ title: "Checkout Gagal", message: error.message || "Pesanan gagal.", type: "error" });
@@ -2001,3 +2179,91 @@ onUnmounted(() => {
   realtimeUnsubscribers = [];
 });
 </script>
+
+<style scoped>
+.koperasi-product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.koperasi-product-card {
+  border-radius: 8px;
+  min-width: 0;
+}
+
+.koperasi-product-media {
+  height: clamp(118px, 38vw, 156px);
+  overflow: hidden;
+}
+
+.koperasi-product-body {
+  min-height: 112px;
+  padding: 10px;
+}
+
+.koperasi-product-title {
+  min-height: 34px;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.koperasi-product-footer {
+  padding-top: 8px;
+}
+
+.koperasi-product-price {
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.koperasi-product-stock {
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.koperasi-product-add {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border-radius: 8px;
+}
+
+@media (min-width: 640px) {
+  .koperasi-product-grid {
+    gap: 12px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .koperasi-product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .koperasi-product-media {
+    aspect-ratio: 1 / 1;
+    height: auto;
+  }
+
+  .koperasi-product-body {
+    min-height: 124px;
+    padding: 14px;
+  }
+
+  .koperasi-product-title {
+    min-height: 40px;
+    font-size: 15px;
+  }
+
+  .koperasi-product-price {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .koperasi-product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+</style>

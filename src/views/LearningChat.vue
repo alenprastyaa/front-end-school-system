@@ -20,8 +20,8 @@
               </div>
               <button type="button"
                 class="flex h-10 w-10 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
-                @click="loadSubjects">
-                <Icon icon="mdi:refresh" class="h-5 w-5" />
+                @click="isMobileViewport ? goBack() : loadSubjects()">
+                <Icon :icon="isMobileViewport ? 'mdi:arrow-left' : 'mdi:refresh'" class="h-5 w-5" />
               </button>
             </header>
 
@@ -105,11 +105,12 @@
                     </p>
                   </div>
                 </div>
-                <button type="button"
-                  class="ml-auto flex h-10 w-10 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10">
-                  <Icon icon="mdi:dots-vertical" class="h-5 w-5" />
-                </button>
-              </header>
+              <button type="button"
+                class="flex h-10 w-10 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
+                @click="loadSubjects">
+                <Icon icon="mdi:refresh" class="h-5 w-5" />
+              </button>
+            </header>
 
               <div ref="messageListRef" :style="messageListStyle"
                 class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 md:px-14">
@@ -399,7 +400,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { Icon } from "@iconify/vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { convertHeicToJpegIfPossible } from "@/utils/fileImage";
@@ -410,6 +411,7 @@ import { useRealtimeStore } from "@/store/realtime";
 
 const role = getStoredRole();
 const route = useRoute();
+const router = useRouter();
 const sidebarStore = useSidebar();
 const realtimeStore = useRealtimeStore();
 const { connected: realtimeConnected } = storeToRefs(realtimeStore);
@@ -486,6 +488,8 @@ const AUDIO_MIME_EXTENSION_MAP = {
   "audio/3gpp2": ".3g2",
   "audio/mp4a-latm": ".m4a",
 };
+
+const goBack = () => router.back();
 
 const getCurrentUserId = () => {
   try {

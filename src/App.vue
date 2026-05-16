@@ -27,7 +27,7 @@
     </div>
 
     <div class="flex h-screen min-h-0 flex-auto w-full flex-col overflow-hidden transition-colors">
-      <Header v-if="!shouldHideChrome" @sidebarToggle="toggleSidebar" />
+      <Header v-if="!shouldHideChrome && !hideHeaderOnMobileChat" @sidebarToggle="toggleSidebar" />
 
       <div class="flex-1 min-h-0" :class="isChatLayoutRoute ? 'overflow-hidden' : 'overflow-y-auto'">
         <transition name="slide-up">
@@ -106,6 +106,9 @@ export default {
     },
     isChatLayoutRoute() {
       return ["LearningChatTeacher", "LearningChatStudent", "PrivateChat"].includes(this.$route.name);
+    },
+    hideHeaderOnMobileChat() {
+      return this.isChatLayoutRoute && !this.isDesktopViewport;
     },
     isDesktopViewport() {
       return this.viewportWidth >= 1024;
