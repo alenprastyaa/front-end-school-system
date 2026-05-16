@@ -32,7 +32,7 @@
       </div>
     </header>
 
-    <main class="mx-auto max-w-7xl p-4 md:p-8">
+    <main class="mx-auto max-w-7xl p-4 pb-28 md:p-8">
       <!-- NOTIFICATIONS -->
       <section v-if="message" class="mb-6 rounded-sm px-4 py-3 text-sm font-medium shadow-sm"
         :class="isError ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'">
@@ -201,6 +201,135 @@
           </div>
         </aside>
       </div>
+
+      <transition
+        enter-active-class="transition ease-out duration-200"
+        enter-from-class="opacity-0 translate-y-4"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition ease-in duration-150"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 translate-y-4"
+      >
+        <button
+          v-if="activeTab === 'shop'"
+          type="button"
+          class="fixed bottom-4 right-4 z-[120] inline-flex items-center gap-3 rounded-full bg-orange-600 px-4 py-3 text-white shadow-2xl ring-1 ring-orange-400/30 md:hidden"
+          @click="mobileCartOpen = true"
+        >
+          <span class="relative flex items-center justify-center">
+            <Icon icon="ph:shopping-cart-simple-bold" class="h-5 w-5" />
+            <span
+              v-if="cartTotalItems > 0"
+              class="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full border border-white bg-white text-[10px] font-bold text-orange-600"
+            >
+              {{ cartTotalItems }}
+            </span>
+          </span>
+          <span class="text-left">
+            <span class="block text-[11px] font-medium uppercase tracking-[0.18em] text-orange-100">Keranjang</span>
+            <span class="block text-sm font-semibold">
+              {{ cartTotalItems > 0 ? formatCurrency(cartTotal) : "Kosong" }}
+            </span>
+          </span>
+        </button>
+      </transition>
+
+      <transition
+        enter-active-class="transition ease-out duration-200"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition ease-in duration-150"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="mobileCartOpen"
+          class="fixed inset-0 z-[135] bg-slate-950/60 backdrop-blur-sm md:hidden"
+          @click.self="mobileCartOpen = false"
+        >
+          <div
+            class="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-hidden rounded-t-[2rem] bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10"
+          >
+            <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-orange-600 dark:text-orange-300">Keranjang</p>
+                <h3 class="mt-1 text-lg font-black text-slate-900 dark:text-white">Pesanan Anda</h3>
+              </div>
+              <button
+                type="button"
+                class="rounded-full border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300"
+                @click="mobileCartOpen = false"
+              >
+                Tutup
+              </button>
+            </div>
+
+            <div class="max-h-[42vh] overflow-y-auto px-5 py-4 space-y-4">
+              <div v-for="item in cartDetails" :key="`mobile-${item.product.id}`" class="flex gap-3 rounded-2xl border border-slate-200 p-3 dark:border-slate-800">
+                <img v-if="item.product.image_url" :src="normalizePublicUrl(item.product.image_url)"
+                  class="h-14 w-14 rounded-xl object-cover bg-gray-100" />
+                <div v-else class="flex h-14 w-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-800">
+                  <Icon icon="ph:image" class="text-gray-400" />
+                </div>
+
+                <div class="min-w-0 flex-1 text-sm">
+                  <p class="line-clamp-2 font-semibold text-slate-900 dark:text-white">{{ item.product.name }}</p>
+                  <p class="mt-1 text-orange-600 font-bold">{{ formatCurrency(item.product.price) }}</p>
+
+                  <div class="mt-3 flex items-center gap-2">
+                    <button
+                      class="flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                      @click="decreaseQuantity(item.product.id)"
+                    >
+                      -
+                    </button>
+                    <span class="min-w-[2rem] text-center text-sm font-semibold text-slate-900 dark:text-white">{{ item.quantity }}</span>
+                    <button
+                      class="flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                      @click="increaseQuantity(item.product)"
+                    >
+                      +
+                    </button>
+                    <span class="ml-auto text-xs font-medium text-slate-500 dark:text-slate-400">{{ formatCurrency(item.subtotal) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="cartDetails.length === 0" class="rounded-2xl border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                Belum ada produk di keranjang.
+              </div>
+            </div>
+
+            <div class="border-t border-slate-100 px-5 py-4 dark:border-slate-800">
+              <div class="mb-3 space-y-3">
+                <div>
+                  <label class="text-[11px] font-semibold uppercase text-gray-500">Metode Pembayaran</label>
+                  <select v-model="checkoutForm.payment_method"
+                    class="mt-1 block w-full rounded-xl border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
+                    <option value="TUNAI">Tunai</option>
+                    <option value="NON_TUNAI">Non Tunai (QRIS)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-[11px] font-semibold uppercase text-gray-500">Catatan</label>
+                  <input v-model="checkoutForm.note" type="text" placeholder="Pesan untuk penjual..."
+                    class="mt-1 block w-full rounded-xl border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500" />
+                </div>
+              </div>
+
+              <div class="mb-4 flex items-center justify-between">
+                <span class="text-sm text-gray-600">Total Harga</span>
+                <span class="text-lg font-bold text-orange-600">{{ formatCurrency(cartTotal) }}</span>
+              </div>
+              <button
+                class="w-full rounded-xl bg-orange-600 py-3 text-sm font-semibold text-white transition hover:bg-orange-700 disabled:opacity-50"
+                :disabled="isSubmittingOrder || cartDetails.length === 0" @click="submitOrder">
+                {{ isSubmittingOrder ? "Memproses..." : "Checkout" }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
 
       <!-- TAB CONTENT: ORDERS -->
       <div v-show="activeTab === 'orders'" class="space-y-6">
@@ -946,6 +1075,7 @@ const paymentQrExpiresAt = ref("");
 const nowTick = ref(Date.now());
 let nowTimer = null;
 let realtimeUnsubscribers = [];
+const mobileCartOpen = ref(false);
 const productImageInput = ref(null);
 const productImageFile = ref(null);
 const productImagePreview = ref("");
@@ -1538,6 +1668,7 @@ const submitOrder = async () => {
     }
     clearCart();
     checkoutForm.note = "";
+    mobileCartOpen.value = false;
     activeTab.value = "orders";
     await loadData();
   } catch (error) {
