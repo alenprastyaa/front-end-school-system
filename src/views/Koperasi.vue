@@ -892,15 +892,15 @@
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="showProductModal"
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+        class="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-black/60 p-3 backdrop-blur-sm sm:items-center sm:p-4"
         @click.self="closeProductModal">
-          <div class="w-full max-w-2xl rounded-sm bg-white shadow-2xl dark:bg-gray-900">
-          <div class="border-b px-6 py-4">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+          <div class="mt-6 w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-gray-900 sm:mt-0 sm:max-h-[90vh]">
+          <div class="border-b px-5 py-4 sm:px-6">
+            <h2 class="text-lg font-bold text-gray-900 sm:text-xl dark:text-white">
               {{ editingProductId ? "Ubah Detail Produk" : "Tambah Produk Baru" }}
             </h2>
           </div>
-          <form class="grid gap-5 px-6 py-6 md:grid-cols-2" @submit.prevent="saveProduct">
+          <form class="grid max-h-[calc(90vh-73px)] gap-4 overflow-y-auto px-5 py-5 md:grid-cols-2 sm:px-6" @submit.prevent="saveProduct">
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200">Nama Produk</label>
               <input
@@ -961,7 +961,7 @@
 
             <div class="md:col-span-2 mt-1">
               <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">Foto Produk</label>
-              <div class="flex items-start gap-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
+              <div class="flex flex-col items-start gap-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40 sm:flex-row">
                 <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
                   <img v-if="productImagePreview" :src="productImagePreview" class="h-full w-full object-cover" />
                   <Icon v-else icon="ph:image" class="h-full w-full p-4 text-slate-300" />
@@ -995,7 +995,7 @@
               />
               Tampilkan produk ini di etalase
             </label>
-            <div class="flex items-center justify-end gap-3 border-t pt-4 md:col-span-2">
+            <div class="flex flex-col-reverse items-stretch gap-3 border-t pt-4 md:col-span-2 sm:flex-row sm:items-center sm:justify-end">
               <button type="button"
                 class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
                 @click="closeProductModal">
