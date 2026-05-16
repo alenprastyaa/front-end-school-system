@@ -425,18 +425,30 @@
         </section>
 
         <section class="rounded-sm bg-white shadow-sm ring-1 ring-gray-100 dark:bg-gray-900">
-          <div class="border-b px-6 py-4">
-            <div class="flex flex-wrap items-center gap-3">
-              <h2 class="text-lg font-bold text-gray-900 dark:text-white">Riwayat Pesanan</h2>
-              <span
-                class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider"
-                :class="isRealtimeConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'"
-              >
-                {{ isRealtimeConnected ? "Live" : "Offline" }}
-              </span>
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b px-6 py-4">
+            <div>
+              <div class="flex flex-wrap items-center gap-3">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ orderHistoryTitle }}</h2>
+                <span
+                  class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider"
+                  :class="isRealtimeConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'"
+                >
+                  {{ isRealtimeConnected ? "Live" : "Offline" }}
+                </span>
+                <span
+                  v-if="isKoperasiStaff"
+                  class="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-orange-700"
+                >
+                  Admin Koperasi
+                </span>
+              </div>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {{ orderHistorySubtitle }}
+              </p>
             </div>
           </div>
-          <div class="overflow-x-auto">
+
+          <div v-if="canManage" class="overflow-x-auto">
             <table class="min-w-full text-left text-sm">
               <thead class="bg-gray-50 text-gray-600 dark:bg-gray-800">
                 <tr>
@@ -526,14 +538,7 @@
                         >
                           Simulasi bayar
                         </button>
-                        <button
-                          v-if="!canManage && order.status === 'PENDING'"
-                          class="block w-full rounded-lg px-3 py-2 text-left text-sm text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-500/10"
-                          @click="updateOrderStatus(order, 'CANCELED')"
-                        >
-                          Batalkan pesanan
-                        </button>
-                        <template v-if="canManage">
+                        <template v-if="isKoperasiStaff">
                           <button
                             v-for="nextStatus in nextStatuses(order.status)"
                             :key="`${order.id}-${nextStatus}`"
@@ -554,6 +559,77 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <div v-else class="grid gap-4 p-4 md:grid-cols-2 lg:grid-cols-3">
+            <article
+              v-for="order in orders"
+              :key="order.id"
+              class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+            >
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Pesanan</p>
+                  <h3 class="mt-1 text-base font-black text-slate-900 dark:text-white">{{ order.order_number }}</h3>
+                  <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ formatDateTime(order.created_at) }}</p>
+                </div>
+                <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider" :class="statusClass(order.status)">
+                  {{ order.status }}
+                </span>
+              </div>
+
+              <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/60">
+                  <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Pembayaran</p>
+                  <p class="mt-1 font-semibold text-slate-900 dark:text-white">{{ paymentMethodLabel(order.payment_method) }}</p>
+                  <p class="mt-1 text-xs font-medium" :class="paymentStatusClassForOrder(order)">
+                    {{ order.payment_status_label || paymentStatusLabelForOrder(order) }}
+                  </p>
+                </div>
+                <div class="rounded-2xl bg-slate-50 p-3 text-right dark:bg-slate-800/60">
+                  <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Total</p>
+                  <p class="mt-1 font-black text-orange-600">{{ formatCurrency(order.total_amount) }}</p>
+                  <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ Array.isArray(order.items) ? `${order.items.length} item` : "0 item" }}</p>
+                </div>
+              </div>
+
+              <div class="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-sm dark:border-slate-800 dark:bg-slate-800/50">
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Catatan</p>
+                <p class="mt-1 line-clamp-2 text-slate-600 dark:text-slate-300">{{ order.note || "-" }}</p>
+              </div>
+
+              <div class="mt-4 flex flex-wrap gap-2">
+                <button
+                  class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                  @click="openOrderDetail(order.id)"
+                >
+                  Detail pesanan
+                </button>
+                <button
+                  v-if="order.payment_qr_string && String(order.payment_method || '').toUpperCase() === 'NON_TUNAI'"
+                  class="rounded-xl border border-emerald-500 px-4 py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 dark:text-emerald-300"
+                  @click="openPaymentQrModal(order.order_number, order.payment_qr_string, {
+                    orderId: order.id,
+                    sandboxEnabled: Boolean(order.payment_sandbox),
+                    paymentStatus: effectivePaymentStatus(order),
+                    paymentExpiresAt: order.payment_expires_at,
+                  })"
+                >
+                  Buka QRIS
+                </button>
+                <button
+                  v-if="String(order.payment_method || '').toUpperCase() === 'NON_TUNAI' && String(effectivePaymentStatus(order)).toUpperCase() === 'EXPIRED'"
+                  class="rounded-xl border border-orange-500 px-4 py-2 text-sm font-semibold text-orange-600 hover:bg-orange-50"
+                  @click="reissuePayment(order)"
+                >
+                  Bayar ulang
+                </button>
+              </div>
+            </article>
+
+            <div v-if="orders.length === 0" class="col-span-full rounded-3xl border border-dashed border-slate-300 px-6 py-12 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400">
+              Belum ada riwayat pesanan.
+            </div>
           </div>
         </section>
       </div>
@@ -1026,6 +1102,7 @@ import { normalizePublicUrl } from "@/utils/url";
 
 const role = String(getStoredRole() || "");
 const canManage = computed(() => ["ADMIN", "KOPERASI"].includes(role));
+const isKoperasiStaff = computed(() => role === "KOPERASI");
 const realtimeStore = useRealtimeStore();
 
 // New State for Tabs
@@ -1222,14 +1299,51 @@ const setMessage = (text, error = false) => {
 };
 
 const summaryCards = computed(() => {
-  const overview = dashboard.value?.overview || {};
+  if (isKoperasiStaff.value) {
+    const overview = dashboard.value?.overview || {};
+    return [
+      { label: "Pesanan Masuk", value: numberValue(overview.pending_orders) },
+      { label: "Menunggu Proses", value: numberValue(overview.processing_orders) },
+      { label: "Selesai", value: numberValue(overview.completed_orders) },
+      { label: "Total Pendapatan", value: formatCurrency(overview.revenue_total) },
+    ];
+  }
+
+  if (canManage.value) {
+    const overview = dashboard.value?.overview || {};
+    return [
+      { label: "Produk Etalase", value: numberValue(overview.products_active) },
+      { label: "Total Stok", value: numberValue(overview.stock_total) },
+      { label: "Pesanan Masuk", value: numberValue(overview.pending_orders) },
+      { label: "Total Pendapatan", value: formatCurrency(overview.revenue_total) },
+    ];
+  }
+
+  const customerOrders = Array.isArray(orders.value) ? orders.value : [];
+  const paidCount = customerOrders.filter((order) => String(order.payment_status || "").toUpperCase() === "PAID").length;
+  const pendingCount = customerOrders.filter((order) => {
+    const status = String(order.payment_status || "").toUpperCase();
+    return status === "PENDING" || status === "CASH_DUE" || status === "EXPIRED";
+  }).length;
+  const totalSpent = customerOrders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
+
   return [
-    { label: "Produk Etalase", value: numberValue(overview.products_active) },
-    { label: "Total Stok", value: numberValue(overview.stock_total) },
-    { label: "Pesanan Masuk", value: numberValue(overview.pending_orders) },
-    { label: "Total Pendapatan", value: formatCurrency(overview.revenue_total) },
+    { label: "Pesanan Saya", value: customerOrders.length },
+    { label: "Menunggu Bayar", value: pendingCount },
+    { label: "Sudah Dibayar", value: paidCount },
+    { label: "Total Belanja", value: formatCurrency(totalSpent) },
   ];
 });
+
+const orderHistoryTitle = computed(() => (canManage.value
+  ? (isKoperasiStaff.value ? "Riwayat & Antrian Koperasi" : "Riwayat & Kelola Pesanan")
+  : "Riwayat Belanja Saya"));
+
+const orderHistorySubtitle = computed(() => (canManage.value
+  ? (isKoperasiStaff.value
+    ? "Kelola pesanan yang masuk ke koperasi, ubah status, dan pantau pembayaran."
+    : "Pantau pesanan koperasi dan tindak lanjuti status pembayaran.")
+  : "Lihat pesanan Anda, status pembayaran, dan detail transaksi."));
 
 const reportCards = computed(() => {
   const overview = report.value?.overview || {};
