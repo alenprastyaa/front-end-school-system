@@ -63,6 +63,8 @@ const ensureEventSource = (url) => {
     "private-chat:new-message",
     "private-chat:read-updated",
     "learning-notification:new",
+    "koperasi:order-created",
+    "koperasi:order-updated",
   ];
 
   eventNames.forEach((eventName) => {

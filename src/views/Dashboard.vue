@@ -448,6 +448,7 @@ let dashboardClockTimer = null;
 const endpointByRole = {
   SUPER_ADMIN: "/dashboard/superadmin",
   ADMIN: "/dashboard/admin",
+  KOPERASI: "/dashboard/koperasi",
   SARPRAS: "/dashboard/sarpras",
   GURU: "/dashboard/guru",
   SISWA: "/dashboard/siswa",
@@ -534,6 +535,7 @@ const createSummaryCard = ({
 const heroTitle = computed(() => {
   if (role === "SUPER_ADMIN") return "Dashboard Super Admin Sekolah";
   if (role === "ADMIN") return `Dashboard Admin ${dashboardData.value?.school?.name || user?.school_name || ""}`.trim();
+  if (role === "KOPERASI") return `Dashboard Koperasi ${dashboardData.value?.school?.name || user?.school_name || ""}`.trim();
   if (role === "SARPRAS") return `Dashboard Sarpras ${dashboardData.value?.school?.name || user?.school_name || ""}`.trim();
   if (role === "GURU") return `Wali Kelas ${dashboardData.value?.homeroom?.class_name || ""}`.trim();
   if (role === "SISWA") return `Halo, ${dashboardData.value?.student?.full_name || user?.full_name || user?.username || "Siswa"}`;
@@ -543,6 +545,7 @@ const heroTitle = computed(() => {
 const heroDescription = computed(() => {
   if (role === "SUPER_ADMIN") return "Pantau kesiapan setiap sekolah, admin sekolah, struktur kelas, dan aktivitas operasional dari satu panel pusat.";
   if (role === "ADMIN") return "Metrik operasional sekolah, status absensi, dan data kelas secara real-time.";
+  if (role === "KOPERASI") return "Pantau produk aktif, stok rendah, pesanan masuk, dan omzet koperasi sekolah.";
   if (role === "SARPRAS") return "Pantau stok barang, peminjaman aktif, dan barang yang perlu ditindaklanjuti dari satu panel sarpras.";
   if (role === "GURU") return "Pantau wali kelas, jadwal mengajar mingguan, dan status sesi mengajar hari ini dari satu dashboard.";
   if (role === "SISWA") return "Pantau riwayat absensi, status administrasi, dan tugas akademik Anda.";
@@ -568,6 +571,13 @@ const summaryCards = computed(() => {
         createSummaryCard({ label: "Total Siswa", value: numberValue(overview.students), caption: "Siswa terdaftar", icon: "ph:student", cardClass: "bg-emerald-600" }),
         createSummaryCard({ label: "Check-in Hari Ini", value: numberValue(overview.attendance_today), caption: "Tercatat hadir", icon: "mdi:calendar-check-outline", cardClass: "bg-rose-600" }),
       ]
+      : role === "KOPERASI"
+        ? [
+          createSummaryCard({ label: "Produk Aktif", value: numberValue(overview.products_active), caption: "Siap dibeli", icon: "ph:shopping-cart", cardClass: "bg-emerald-600" }),
+          createSummaryCard({ label: "Stok Total", value: numberValue(overview.stock_total), caption: "Seluruh item koperasi", icon: "ph:package", cardClass: "bg-sky-600" }),
+          createSummaryCard({ label: "Pesanan Pending", value: numberValue(overview.pending_orders), caption: "Menunggu diproses", icon: "ph:clock-counter-clockwise", cardClass: "bg-amber-600" }),
+          createSummaryCard({ label: "Omzet", value: numberValue(overview.revenue_total), caption: `Rp ${Number(numberValue(overview.revenue_total)).toLocaleString("id-ID")}`, icon: "ph:cash-register", cardClass: "bg-rose-600" }),
+        ]
       : role === "SARPRAS"
         ? [
           createSummaryCard({ label: "Total Barang", value: numberValue(overview.items_total), caption: "Semua inventaris", icon: "ph:archive-box", cardClass: "bg-amber-600" }),
@@ -749,6 +759,21 @@ const primaryPanel = computed(() => {
     };
   }
 
+  if (role === "KOPERASI") {
+    return {
+      title: "Produk Stok Rendah",
+      description: "Produk yang perlu restock dan perhatian koperasi.",
+      columns: [
+        { key: "name", label: "Produk" },
+        { key: "category", label: "Kategori" },
+        { key: "price", label: "Harga", format: (value) => `Rp ${Number(value || 0).toLocaleString("id-ID")}` },
+        { key: "stock", label: "Stok" },
+      ],
+      rows: dashboardData.value?.lowStockItems || [],
+      emptyMessage: "Belum ada produk yang terdaftar.",
+    };
+  }
+
   if (role === "SARPRAS") {
     return {
       title: "Barang dengan Stok Rendah",
@@ -840,6 +865,19 @@ const secondaryPanel = computed(() => {
     };
   }
 
+  if (role === "KOPERASI") {
+    return {
+      title: "Pesanan Terbaru",
+      description: "Aktivitas pembelian terakhir dari warga sekolah.",
+      items: (dashboardData.value?.recentOrders || []).map((item) => ({
+        title: `${item.order_number || "-"} • ${item.buyer_name || "-"}`,
+        subtitle: `${item.status || "-"} • ${item.item_count || 0} item • ${item.total_amount ? `Rp ${Number(item.total_amount).toLocaleString("id-ID")}` : "-"}`,
+        meta: formatDateTime(item.created_at),
+      })),
+      emptyMessage: "Belum ada pesanan masuk.",
+    };
+  }
+
   if (role === "SARPRAS") {
     return {
       title: "Riwayat Peminjaman Terbaru",
@@ -878,6 +916,12 @@ const spotlight = computed(() => {
       { label: "Volume Receipt", value: numberValue(dashboardData.value?.overview?.receipts_this_month), caption: "Bulan Berjalan", icon: "ph:receipt", cardClass: "bg-fuchsia-700" },
     ]
   };
+  if (role === "KOPERASI") return {
+    cards: [
+      { label: "Pesanan Hari Ini", value: numberValue(dashboardData.value?.overview?.orders_today), caption: "Masuk hari ini", icon: "ph:receipt", cardClass: "bg-emerald-700" },
+      { label: "Stok Rendah", value: numberValue(dashboardData.value?.overview?.low_stock_products), caption: "Perlu restock", icon: "ph:warning-circle", cardClass: "bg-amber-600" },
+    ]
+  };
   if (role === "SARPRAS") return {
     cards: [
       { label: "Barang Aktif", value: numberValue(dashboardData.value?.overview?.items_active), caption: "Inventaris siap pakai", icon: "ph:archive-box", cardClass: "bg-amber-700" },
@@ -913,6 +957,23 @@ const visualPanel = computed(() => {
     chartType: "bar",
     labels: (dashboardData.value?.classes || []).slice(0, 8).map((item) => item.class_name),
     series: [{ name: "Siswa", data: (dashboardData.value?.classes || []).slice(0, 8).map((item) => numberValue(item.student_count)) }],
+  };
+
+  if (role === "KOPERASI") return {
+    title: "Status Pesanan",
+    description: "Distribusi pesanan berdasarkan status proses.",
+    chartType: "bar",
+    labels: ["Pending", "Processing", "Ready", "Completed", "Canceled"],
+    series: [{
+      name: "Pesanan",
+      data: [
+        numberValue(dashboardData.value?.overview?.pending_orders),
+        numberValue(dashboardData.value?.overview?.processing_orders),
+        numberValue(dashboardData.value?.overview?.ready_orders),
+        numberValue(dashboardData.value?.overview?.completed_orders),
+        numberValue(dashboardData.value?.overview?.canceled_orders),
+      ],
+    }],
   };
 
   if (role === "SARPRAS") return {

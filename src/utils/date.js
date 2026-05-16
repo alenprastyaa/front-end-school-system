@@ -23,26 +23,27 @@ const timeFormatter = new Intl.DateTimeFormat("id-ID", {
 
 const parseJakartaDateTime = (value) => {
   const match = String(value).trim().match(
-    /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?$/,
+    /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?)?$/,
   );
 
   if (!match) {
     return null;
   }
 
-  const [, yearRaw, monthRaw, dayRaw, hourRaw = "00", minuteRaw = "00", secondRaw = "00"] = match;
+  const [, yearRaw, monthRaw, dayRaw, hourRaw = "00", minuteRaw = "00", secondRaw = "00", milliRaw = "000"] = match;
   const year = Number(yearRaw);
   const month = Number(monthRaw);
   const day = Number(dayRaw);
   const hour = Number(hourRaw);
   const minute = Number(minuteRaw);
   const second = Number(secondRaw);
+  const millisecond = Number(String(milliRaw).padEnd(3, "0"));
 
-  if ([year, month, day, hour, minute, second].some((item) => Number.isNaN(item))) {
+  if ([year, month, day, hour, minute, second, millisecond].some((item) => Number.isNaN(item))) {
     return null;
   }
 
-  return new Date(Date.UTC(year, month - 1, day, hour - 7, minute, second));
+  return new Date(Date.UTC(year, month - 1, day, hour - 7, minute, second, millisecond));
 };
 
 const parseDateValue = (value) => {

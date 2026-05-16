@@ -97,6 +97,36 @@
                 </div>
               </div>
             </div>
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+              <p class="text-sm font-semibold text-slate-900 dark:text-white">Status Modul Sekolah</p>
+              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Aktifkan modul sesuai kebutuhan sekolah yang sedang dikelola.</p>
+              <div class="mt-3 grid gap-3">
+                <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <input
+                    v-model="form.inventory_module_enabled"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                  />
+                  Sarpras
+                </label>
+                <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <input
+                    v-model="form.koperasi_module_enabled"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                  />
+                  Koperasi
+                </label>
+                <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <input
+                    v-model="form.official_exam_module_enabled"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                  />
+                  Ujian Resmi
+                </label>
+              </div>
+            </div>
           </div>
 
           <div class="mt-6 flex flex-wrap gap-3">
@@ -392,6 +422,7 @@ const form = reactive({
   name: "",
   inventory_module_enabled: true,
   official_exam_module_enabled: true,
+  koperasi_module_enabled: true,
 });
 const schoolLogoFile = ref(null);
 const schoolLogoPreview = ref("");
@@ -431,6 +462,7 @@ const resetForm = () => {
   form.name = "";
   form.inventory_module_enabled = true;
   form.official_exam_module_enabled = true;
+  form.koperasi_module_enabled = true;
   schoolLogoFile.value = null;
   schoolLogoPreview.value = "";
   removeSchoolLogo.value = false;
@@ -459,7 +491,14 @@ const loadSchools = async () => {
   isLoadingSchools.value = true;
   try {
     const response = await api.get("/school");
-    schools.value = Array.isArray(response?.data?.items) ? response.data.items : [];
+    schools.value = Array.isArray(response?.data?.items)
+      ? response.data.items.map((item) => ({
+          ...item,
+          inventory_module_enabled: item.inventory_module_enabled !== false,
+          official_exam_module_enabled: item.official_exam_module_enabled !== false,
+          koperasi_module_enabled: item.koperasi_module_enabled !== false,
+        }))
+      : [];
   } catch (error) {
     isError.value = true;
     message.value = error.message || "Gagal memuat data sekolah.";
@@ -477,6 +516,7 @@ const submitSchool = async () => {
     const payload = new FormData();
     payload.append("name", form.name);
     payload.append("inventory_module_enabled", String(Boolean(form.inventory_module_enabled)));
+    payload.append("koperasi_module_enabled", String(Boolean(form.koperasi_module_enabled)));
     payload.append("official_exam_module_enabled", String(Boolean(form.official_exam_module_enabled)));
     if (schoolLogoFile.value) {
       payload.append("logo", schoolLogoFile.value);
@@ -503,6 +543,7 @@ const editSchool = (item) => {
   editingId.value = item.id;
   form.name = item.name || "";
   form.inventory_module_enabled = item.inventory_module_enabled !== false;
+  form.koperasi_module_enabled = item.koperasi_module_enabled !== false;
   form.official_exam_module_enabled = item.official_exam_module_enabled !== false;
   schoolLogoFile.value = null;
   schoolLogoPreview.value = normalizePublicUrl(item.logo_url) || "";

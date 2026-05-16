@@ -32,7 +32,7 @@
               Daftar User Sekolah
             </h2>
             <p class="text-sm text-gray-500 dark:text-gray-400">
-              Role yang dikelola di sini: admin, guru, dan sarpras.
+              Role yang dikelola di sini: admin, guru, sarpras, dan koperasi.
             </p>
           </div>
           <button @click="loadUsers" class="px-4 py-2 rounded-md border dark:border-gray-600 dark:text-white">
@@ -170,6 +170,7 @@
               <option value="ADMIN">ADMIN</option>
               <option value="GURU">GURU</option>
               <option value="SARPRAS">SARPRAS</option>
+              <option value="KOPERASI">KOPERASI</option>
             </select>
           </div>
 
@@ -422,7 +423,7 @@ const loadUsers = async () => {
       },
     });
     users.value = (response?.data?.data || []).filter((item) =>
-      ["ADMIN", "GURU", "SARPRAS"].includes(item.role),
+      ["ADMIN", "GURU", "SARPRAS", "KOPERASI"].includes(item.role),
     );
     totalUsers.value = Number(response?.data?.total || 0);
   } catch (error) {

@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { cancelPendingApiRequests } from "@/api";
-import { getStoredRole, isAuthenticated } from "@/utils/auth";
+import { getStoredRole, getStoredUser, isAuthenticated } from "@/utils/auth";
 import { lazyRoute } from "./lazyRoute";
 import PublicLanding from "../views/PublicLanding.vue";
 import Dashboard from "../views/Dashboard.vue";
@@ -26,7 +26,7 @@ const routes = [
     meta: {
       title: "Dashboard" + appName,
       requiresAuth: true,
-      roles: ["SUPER_ADMIN", "ADMIN", "SARPRAS", "GURU", "SISWA"],
+      roles: ["SUPER_ADMIN", "ADMIN", "KOPERASI", "SARPRAS", "GURU", "SISWA"],
     },
   },
   {
@@ -37,6 +37,18 @@ const routes = [
       title: "Inventaris" + appName,
       requiresAuth: true,
       roles: ["ADMIN", "SARPRAS", "SISWA"],
+      moduleKey: "inventory",
+    },
+  },
+  {
+    path: "/koperasi",
+    name: "Koperasi",
+    component: lazyRoute(() => import("../views/Koperasi.vue")),
+    meta: {
+      title: "Koperasi" + appName,
+      requiresAuth: true,
+      roles: ["ADMIN", "KOPERASI", "SARPRAS", "GURU", "SISWA"],
+      moduleKey: "koperasi",
     },
   },
   {
@@ -127,7 +139,7 @@ const routes = [
     meta: {
       title: "Chat Pribadi" + appName,
       requiresAuth: true,
-      roles: ["ADMIN", "GURU", "SISWA"],
+      roles: ["ADMIN", "KOPERASI", "GURU", "SISWA"],
     },
   },
   {
@@ -193,6 +205,7 @@ const routes = [
       title: "Ujian Resmi Admin" + appName,
       requiresAuth: true,
       roles: ["ADMIN"],
+      moduleKey: "official_exam",
     },
   },
   {
@@ -303,6 +316,7 @@ const routes = [
       title: "Ujian Resmi Guru" + appName,
       requiresAuth: true,
       roles: ["GURU"],
+      moduleKey: "official_exam",
     },
   },
   {
@@ -344,6 +358,7 @@ const routes = [
       title: "Ujian Resmi Siswa" + appName,
       requiresAuth: true,
       roles: ["SISWA"],
+      moduleKey: "official_exam",
     },
   },
   {
@@ -461,6 +476,22 @@ router.beforeEach((to, from, next) => {
   if (to.meta.roles?.length) {
     const role = getStoredRole();
     if (!to.meta.roles.includes(role)) {
+      next({ name: "Dashboard" });
+      return;
+    }
+  }
+
+  if (to.meta.moduleKey) {
+    const storedUser = getStoredUser() || {};
+    const moduleEnabled =
+      to.meta.moduleKey === "inventory"
+        ? storedUser.inventory_module_enabled !== false
+        : to.meta.moduleKey === "official_exam"
+          ? storedUser.official_exam_module_enabled !== false
+          : to.meta.moduleKey === "koperasi"
+            ? storedUser.koperasi_module_enabled !== false
+            : true;
+    if (!moduleEnabled) {
       next({ name: "Dashboard" });
       return;
     }

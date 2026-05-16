@@ -23,12 +23,20 @@
           <router-link to="/dashboard" class="min-w-0 flex-1 pr-2">
             <h2 class="truncate text-xl font-semibold text-gray-800 dark:text-gray-200">{{ schoolNameLabel }}</h2>
             <p class="text-xs text-gray-400">{{ role || "Guest" }}</p>
-            <p
-              v-if="isSarprasRole"
-              class="mt-1 inline-flex rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-600 dark:text-amber-300"
-            >
-              CMS Sarpras
-            </p>
+            <div class="mt-1 flex flex-wrap gap-1.5">
+              <p
+                v-if="isSarprasRole"
+                class="inline-flex rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-600 dark:text-amber-300"
+              >
+                CMS Sarpras
+              </p>
+              <p
+                v-if="isKoperasiRole"
+                class="inline-flex rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-300"
+              >
+                CMS Koperasi
+              </p>
+            </div>
           </router-link>
           <button
             class="lg:hidden inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-500 transition hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-slate-700"
@@ -271,10 +279,13 @@ let toastIdCounter = 0;
 
 const isAdminRole = role === "ADMIN";
 const isSarprasRole = role === "SARPRAS";
+const isKoperasiRole = role === "KOPERASI";
 const schoolNameLabel = computed(() => storedProfile.value?.school_name || "School System");
 const schoolLogoSrc = computed(() => normalizePublicUrl(storedProfile.value?.school_logo) || "");
 const isInventoryEnabled = computed(() => storedProfile.value?.inventory_module_enabled !== false);
 const isOfficialExamEnabled = computed(() => storedProfile.value?.official_exam_module_enabled !== false);
+const isKoperasiEnabled = computed(() => storedProfile.value?.koperasi_module_enabled !== false);
+const shouldTrackKoperasi = computed(() => isKoperasiEnabled.value && (isAdminRole || isKoperasiRole));
 
 const getCurrentUserId = () => {
   try {
@@ -423,6 +434,7 @@ const menuByRole = {
     { key: "students", to: "/students", dataTour: "students-admin", label: "Siswa", icon: "mdi:account-school-outline" },
     { key: "academic-periods", to: "/academic-periods", label: "Tahun Ajaran", icon: "ph:calendar-blank" },
     { key: "inventory", to: "/inventory", label: "Sarpras", icon: "ph:archive-box" },
+    { key: "koperasi", to: "/koperasi", label: "Koperasi", icon: "ph:shopping-cart" },
     {
       key: "curriculum-module",
       label: "Kurikulum",
@@ -461,6 +473,7 @@ const menuByRole = {
   SARPRAS: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     { key: "inventory", to: "/inventory", label: "Daftar Barang", icon: "ph:archive-box" },
+    { key: "koperasi", to: "/koperasi", label: "Koperasi", icon: "ph:shopping-cart" },
   ],
   SISWA: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
@@ -481,6 +494,12 @@ const menuByRole = {
     { key: "face-enrollment", to: "/face-enrollment", label: "Enrol Wajah", icon: "mdi:face-recognition" },
     { key: "receipts", to: "/receipts", label: "Bukti Pembayaran", icon: "ph:receipt" },
     { key: "inventory", to: "/inventory", label: "Peminjaman Barang", icon: "ph:archive-box" },
+    { key: "koperasi", to: "/koperasi", label: "Koperasi", icon: "ph:shopping-cart" },
+  ],
+  KOPERASI: [
+    { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
+    { key: "koperasi", to: "/koperasi", label: "Koperasi", icon: "ph:shopping-cart" },
+    { key: "private-chat", to: "/private-chat", label: "Chat Pribadi", icon: "ph:chat-circle-dots" },
   ],
 };
 
@@ -488,6 +507,9 @@ const filterMenuItems = (items = []) =>
   items
     .map((item) => {
       if (item.key === "inventory" && !isInventoryEnabled.value) {
+        return null;
+      }
+      if (item.key === "koperasi" && !isKoperasiEnabled.value) {
         return null;
       }
       if (item.key === "learning-exams-admin" && !isOfficialExamEnabled.value) {
@@ -511,7 +533,7 @@ const filterMenuItems = (items = []) =>
 
 const visibleMenu = computed(() => filterMenuItems(menuByRole[role] || []));
 const shouldTrackLiveChat = ["GURU", "SISWA"].includes(role);
-const shouldTrackPrivateChat = ["ADMIN", "GURU", "SISWA"].includes(role);
+const shouldTrackPrivateChat = ["ADMIN", "KOPERASI", "GURU", "SISWA"].includes(role);
 
 const isRouteActive = (path) => route.path === path;
 
@@ -762,8 +784,35 @@ const maybeShowPrivateChatBrowserNotification = (payload) => {
   };
 };
 
+const pushKoperasiToast = (payload) => {
+  const orderNumber = payload?.order_number || payload?.orderNumber || payload?.order_no || "-";
+  const paymentStatus = String(payload?.payment_status || "").toUpperCase();
+  const action = String(payload?.action || "").toUpperCase();
+  const isCreated = payload?.event === "koperasi:order-created" || action === "CREATED";
+  const isPaid = paymentStatus === "PAID";
+  const isFailed = ["FAILED", "EXPIRED", "CANCELED", "CANCELLED", "REJECTED"].includes(paymentStatus);
+  const title = isCreated
+    ? "Pesanan Koperasi Baru"
+    : `Pesanan ${orderNumber}`;
+  const message = isCreated
+    ? `Pesanan ${orderNumber} baru masuk.`
+    : isPaid
+      ? `Pesanan ${orderNumber} berhasil dibayar.`
+      : isFailed
+        ? `Pesanan ${orderNumber} gagal atau kedaluwarsa.`
+        : `Pesanan ${orderNumber} diperbarui.`;
+  const type = isPaid ? "success" : isFailed ? "error" : "info";
+
+  pushToast({
+    title,
+    message,
+    type,
+    duration: 5000,
+  });
+};
+
 const bindRealtimeStream = () => {
-  if (!shouldTrackLiveChat && !shouldTrackPrivateChat) {
+  if (!shouldTrackLiveChat && !shouldTrackPrivateChat && !shouldTrackKoperasi.value) {
     return;
   }
 
@@ -811,6 +860,20 @@ const bindRealtimeStream = () => {
     }),
     realtimeStore.on("private-chat:read-updated", async () => {
       await sidebarStore.refreshPrivateChatSummary({ force: true });
+    }),
+    realtimeStore.on("koperasi:order-created", (payload) => {
+      if (!shouldTrackKoperasi.value) {
+        return;
+      }
+
+      pushKoperasiToast(payload);
+    }),
+    realtimeStore.on("koperasi:order-updated", async (payload) => {
+      if (!shouldTrackKoperasi.value) {
+        return;
+      }
+
+      pushKoperasiToast(payload);
     }),
   ];
 };

@@ -20,6 +20,7 @@ export const isAuthenticated = () => Boolean(localStorage.getItem("token"));
 export const persistSession = (payload) => {
   const data = payload?.data || payload;
   const role = normalizeRole(data.role);
+  const schoolFeatures = data.school_features || {};
 
   localStorage.setItem("token", data.token);
   localStorage.setItem("role", role);
@@ -32,6 +33,9 @@ export const persistSession = (payload) => {
       school_id: data.school_id,
       school_name: data.school_name,
       school_logo: normalizePublicUrl(data.school_logo) || null,
+      inventory_module_enabled: schoolFeatures.inventory_module_enabled !== false,
+      official_exam_module_enabled: schoolFeatures.official_exam_module_enabled !== false,
+      koperasi_module_enabled: schoolFeatures.koperasi_module_enabled !== false,
       profile_image: normalizePublicUrl(data.profile_image) || null,
       face_reference_image: normalizePublicUrl(data.face_reference_image) || null,
       face_reference_descriptor: data.face_reference_descriptor || null,

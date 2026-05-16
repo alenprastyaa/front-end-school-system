@@ -29,6 +29,7 @@
             class="mt-1 w-full px-3 py-2 rounded-md border dark:border-gray-600 dark:bg-gray-900 dark:text-white">
             <option value="SUPER_ADMIN">SUPER_ADMIN</option>
             <option value="ADMIN">ADMIN</option>
+            <option value="KOPERASI">KOPERASI</option>
             <option value="GURU">GURU</option>
             <option value="SISWA">SISWA</option>
           </select>
