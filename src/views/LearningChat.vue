@@ -147,7 +147,7 @@
                           entry.message.sender_id === currentUserId ? 'own bg-[#d9fdd3] text-[#111b21] dark:bg-[#005c4b] dark:text-[#e9edef]' : 'other bg-white text-[#111b21] dark:bg-[#202c33] dark:text-[#e9edef]',
                           replyHighlightMessageId === Number(entry.message.id) ? 'ring-2 ring-amber-400 dark:ring-amber-300' : '',
                         ]" :data-message-id="entry.message.id" @touchstart.passive="handleMessagePressStart(entry.message)"
-                        @touchend="handleMessagePressEnd" @touchcancel="handleMessagePressEnd">
+                        @touchend="handleMessagePressEnd(entry.message)" @touchcancel="handleMessagePressEnd">
                         <div v-if="entry.message.sender_id !== currentUserId"
                           class="mb-1 flex items-center gap-2 text-xs font-semibold text-[#00a884]">
                           <span>{{ entry.message.sender_name || "Pengguna" }}</span>
@@ -174,20 +174,26 @@
                             <img :src="normalizePublicUrl(entry.message.attachment_url)"
                               :alt="entry.message.attachment_name || 'Lampiran gambar'" class="max-h-72 w-full object-cover" />
                           </button>
-                          <a v-else-if="entry.message.message_type === 'PDF'" :href="normalizePublicUrl(entry.message.attachment_url)"
-                            target="_blank" rel="noreferrer"
-                            class="flex items-center gap-3 rounded-md bg-black/5 px-3 py-2 text-sm font-semibold hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15">
-                            <Icon icon="ph:file-pdf" class="h-6 w-6 shrink-0" />
-                            <span class="truncate">{{ entry.message.attachment_name || "Buka PDF" }}</span>
-                          </a>
+                          <button v-else-if="isPdfPreviewMessage(entry.message)" type="button"
+                            class="block w-full overflow-hidden rounded-md border border-black/10 bg-white text-left shadow-sm dark:border-white/10 dark:bg-[#202c33]"
+                            @click="openPdfPreview(entry.message)">
+                            <img :src="normalizePublicUrl(entry.message.attachment_preview_url)"
+                              :alt="entry.message.attachment_name || 'Pratinjau PDF'"
+                              class="max-h-60 w-full object-contain bg-white" />
+                            <div class="flex items-center gap-3 border-t border-black/5 px-3 py-2 text-sm font-semibold text-[#111b21] dark:border-white/10 dark:text-[#e9edef]">
+                              <Icon icon="ph:file-pdf" class="h-5 w-5 shrink-0 text-[#ef4444]" />
+                              <span class="truncate">{{ entry.message.attachment_name || "Buka PDF" }}</span>
+                            </div>
+                          </button>
                           <a v-else :href="normalizePublicUrl(entry.message.attachment_url)" target="_blank" rel="noreferrer"
                             class="flex items-center gap-3 rounded-md bg-black/5 px-3 py-2 text-sm font-semibold hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15">
                             <Icon icon="ph:paperclip" class="h-5 w-5 shrink-0" />
                             <span class="truncate">{{ entry.message.attachment_name || "Buka file" }}</span>
                           </a>
                         </div>
-                        <div class="-mb-0.5 mt-0.5 flex justify-end gap-1 pl-8 text-[11px] leading-none text-[#667781] dark:text-[#8696a0]">
+                        <div class="-mb-0.5 mt-0.5 flex items-center justify-end gap-1 pl-8 text-[11px] leading-none text-[#667781] dark:text-[#8696a0]">
                           <time>{{ formatChatTime(entry.message.created_at) }}</time>
+                          <span v-if="entry.message.edited_at" class="text-[10px] font-medium uppercase tracking-wide opacity-80">Diedit</span>
                           <Icon v-if="entry.message.sender_id === currentUserId" :icon="ownMessageReadIcon(entry.message)"
                             class="h-4 w-4" :class="ownMessageReadIconClass(entry.message)" />
                         </div>
@@ -200,6 +206,19 @@
               <form ref="composerBarRef" @submit.prevent="sendMessage"
                 class="fixed inset-x-0 z-20 shrink-0 bg-[#f0f2f5] px-3 py-2 dark:bg-[#202c33] md:sticky md:inset-auto md:px-4"
                 :style="composerBarStyle">
+                <div v-if="editTarget"
+                  class="mb-2 rounded-lg border-l-4 border-amber-400 bg-amber-50 px-3 py-2 text-[11px] shadow-sm dark:bg-amber-500/10">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="font-semibold text-amber-700 dark:text-amber-300">Mengedit pesan</p>
+                      <p class="truncate text-[#54656f] dark:text-[#aebac1]">{{ getMessagePreview(editTarget) }}</p>
+                    </div>
+                    <button type="button" @click="clearEditTarget"
+                      class="rounded-full p-1 text-[#667781] hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10">
+                      <Icon icon="mdi:close" class="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
                 <div v-if="replyTarget"
                   class="mb-2 rounded-lg border-l-4 border-[#00a884] bg-white px-3 py-2 text-[11px] shadow-sm dark:bg-[#2a3942]">
                   <div class="flex items-start justify-between gap-3">
@@ -274,7 +293,7 @@
                   <div class="mb-1 flex shrink-0 items-center gap-1">
                     <button type="button"
                       class="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
-                      :disabled="isSendingMessage || isRecordingVoice" @click="openAttachmentPicker">
+                      :disabled="isSendingMessage || isRecordingVoice || Boolean(editTarget)" @click="openAttachmentPicker">
                       <Icon icon="mdi:paperclip" class="h-6 w-6" />
                     </button>
                   </div>
@@ -283,7 +302,7 @@
                       @keydown="handleComposerKeydown" @focus="ensureComposerVisible"
                       class="block max-h-28 min-h-[24px] w-full resize-none overflow-y-auto border-0 bg-transparent py-2 text-[15px] leading-6 text-[#111b21] outline-none placeholder:text-[#667781] focus:outline-none focus:ring-0 dark:text-[#e9edef] dark:placeholder:text-[#8696a0]" />
                   </div>
-                  <button type="button" v-if="!composer.trim() && !attachmentFile" :disabled="isSendingMessage"
+                  <button type="button" v-if="!composer.trim() && !attachmentFile && !editTarget" :disabled="isSendingMessage"
                     class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 disabled:opacity-50 dark:text-[#aebac1] dark:hover:bg-white/10"
                     :class="isRecordingVoice ? 'bg-rose-500 text-white hover:bg-rose-400 dark:text-white' : ''"
                     @click="toggleVoiceRecording">
@@ -291,7 +310,7 @@
                   </button>
                   <button v-else :disabled="isSendingMessage"
                     class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#00a884] text-white transition hover:bg-[#008f72] disabled:opacity-50">
-                    <Icon icon="mdi:send" class="h-5 w-5" />
+                    <Icon :icon="editTarget ? 'mdi:check' : 'mdi:send'" class="h-5 w-5" />
                   </button>
                 </div>
               </form>
@@ -379,6 +398,35 @@
       </div>
     </div>
 
+    <div v-if="showPdfPreview" class="fixed inset-0 z-[81] bg-black/90" @click="closePdfPreview">
+      <div class="absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-3">
+        <p class="truncate text-xs font-semibold text-white/80">{{ previewPdfName || "Preview PDF" }}</p>
+        <div class="flex items-center gap-2">
+          <a
+            v-if="previewPdfUrl"
+            :href="previewPdfUrl"
+            :download="previewPdfName || 'preview.pdf'"
+            class="rounded-full bg-white/15 px-3 py-2 text-xs font-semibold text-white hover:bg-white/25"
+            @click.stop
+          >
+            Unduh
+          </a>
+          <button type="button" @click.stop="closePdfPreview"
+            class="rounded-full bg-white/15 p-2 text-white hover:bg-white/25">
+            <Icon icon="mdi:close" class="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+      <div class="flex h-full w-full items-center justify-center overflow-auto p-4 pt-16">
+        <iframe
+          v-if="previewPdfUrl"
+          :src="previewPdfUrl"
+          class="h-[85vh] w-full max-w-5xl rounded-2xl bg-white shadow-2xl"
+          title="Preview PDF"
+        />
+      </div>
+    </div>
+
     <div v-if="showMessageActionSheet" class="fixed inset-0 z-[75] bg-black/45" @click="closeMessageActionSheet">
       <div class="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white p-4 shadow-2xl dark:bg-slate-900" @click.stop>
         <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Aksi Pesan</p>
@@ -386,6 +434,11 @@
           class="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-semibold text-slate-800 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800">
           Balas Chat
           <Icon icon="mdi:reply-outline" class="h-5 w-5" />
+        </button>
+        <button v-if="actionSheetMessage && Number(actionSheetMessage.sender_id || 0) === Number(currentUserId)" type="button" @click="editFromActionSheet"
+          class="mt-2 flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-semibold text-slate-800 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800">
+          Edit Pesan
+          <Icon icon="mdi:pencil-outline" class="h-5 w-5" />
         </button>
         <button type="button" @click="closeMessageActionSheet"
           class="mt-2 flex w-full items-center justify-center rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300">
@@ -404,6 +457,7 @@ import { useRoute, useRouter } from "vue-router";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { convertHeicToJpegIfPossible } from "@/utils/fileImage";
+import { formatChatDateKey, formatChatDateSeparator, formatChatShortDate, formatChatTime as formatJakartaChatTime, parseDateValue } from "@/utils/date";
 import { getStoredRole } from "@/utils/auth";
 import { normalizePublicUrl } from "@/utils/url";
 import { useSidebar } from "@/store/sidebar";
@@ -450,8 +504,12 @@ const showImagePreview = ref(false);
 const previewImageUrl = ref("");
 const previewImageName = ref("");
 const previewImageZoom = ref(1);
+const showPdfPreview = ref(false);
+const previewPdfUrl = ref("");
+const previewPdfName = ref("");
 const showMessageActionSheet = ref(false);
 const actionSheetMessage = ref(null);
+const editTarget = ref(null);
 const longPressTimer = ref(null);
 const emojiPanelOpen = ref(false);
 const messagesBySubject = ref({});
@@ -592,41 +650,34 @@ const currentMessages = computed(() =>
   selectedSubject.value ? messagesBySubject.value[selectedSubject.value.id] || [] : [],
 );
 
-const isSameDay = (left, right) =>
-  left.getFullYear() === right.getFullYear()
-  && left.getMonth() === right.getMonth()
-  && left.getDate() === right.getDate();
-
-const formatChatTime = (value) => {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+const formatChatTime = (value) => formatJakartaChatTime(value);
+const truncatePreview = (value, limit = 46) => {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (!text) return "";
+  if (text.length <= limit) return text;
+  return `${text.slice(0, Math.max(0, limit - 1)).trimEnd()}…`;
 };
 
 const formatSubjectTime = (subjectId) => {
   const messages = messagesBySubject.value[subjectId] || [];
   const lastMessage = messages[messages.length - 1];
   if (!lastMessage?.created_at) return "";
-  const date = new Date(lastMessage.created_at);
-  if (Number.isNaN(date.getTime())) return "";
-  const today = new Date();
+
+  const dateKey = formatChatDateKey(lastMessage.created_at);
+  if (!dateKey) return "";
+
+  const todayKey = formatChatDateKey(new Date());
   const yesterday = new Date();
-  yesterday.setDate(today.getDate() - 1);
-  if (isSameDay(date, today)) return formatChatTime(date);
-  if (isSameDay(date, yesterday)) return "Kemarin";
-  return date.toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "2-digit" });
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayKey = formatChatDateKey(yesterday);
+
+  if (dateKey === todayKey) return formatJakartaChatTime(lastMessage.created_at);
+  if (dateKey === yesterdayKey) return "Kemarin";
+  return formatChatShortDate(lastMessage.created_at);
 };
 
 const formatDateSeparator = (value) => {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  const today = new Date();
-  const yesterday = new Date();
-  yesterday.setDate(today.getDate() - 1);
-  if (isSameDay(date, today)) return "Hari ini";
-  if (isSameDay(date, yesterday)) return "Kemarin";
-  return date.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  return formatChatDateSeparator(value);
 };
 
 const renderedMessages = computed(() => {
@@ -634,8 +685,7 @@ const renderedMessages = computed(() => {
   let lastDateKey = "";
 
   currentMessages.value.forEach((message) => {
-    const date = new Date(message?.created_at || Date.now());
-    const dateKey = Number.isNaN(date.getTime()) ? "unknown" : date.toISOString().slice(0, 10);
+    const dateKey = formatChatDateKey(message?.created_at || Date.now()) || "unknown";
     if (dateKey !== lastDateKey) {
       entries.push({
         key: `date-${dateKey}`,
@@ -660,8 +710,8 @@ const orderedSubjects = computed(() => {
   return subjectItems.sort((left, right) => {
     const leftLastMessage = messagesBySubject.value[left.id]?.slice(-1)[0];
     const rightLastMessage = messagesBySubject.value[right.id]?.slice(-1)[0];
-    const leftTime = leftLastMessage ? new Date(leftLastMessage.created_at).getTime() : 0;
-    const rightTime = rightLastMessage ? new Date(rightLastMessage.created_at).getTime() : 0;
+    const leftTime = parseDateValue(leftLastMessage?.created_at)?.getTime() || 0;
+    const rightTime = parseDateValue(rightLastMessage?.created_at)?.getTime() || 0;
 
     if (leftTime !== rightTime) {
       return rightTime - leftTime;
@@ -764,7 +814,7 @@ const latestMessagePreview = (subjectId) => {
     return `${lastMessage.sender_name}: File`;
   }
 
-  return `${lastMessage.sender_name}: ${lastMessage.message}`;
+  return truncatePreview(`${lastMessage.sender_name}: ${lastMessage.message}`);
 };
 
 const roleLabel = (userRole) => {
@@ -831,21 +881,23 @@ const getMessagePreview = (message) => {
 
 const parseReplyPayload = (rawMessage) => {
   const text = String(rawMessage || "");
-  const matched = text.match(/^\[Balas(?:#(\d+))?\s+(.+?): (.+?)\]\n([\s\S]*)$/);
+  const matched = text.match(/^(\[Balas(?:#(\d+))?\s+(.+?): (.+?)\])\n([\s\S]*)$/);
   if (!matched) {
     return {
       replyId: null,
       replyName: "",
       replyPreview: "",
+      replyPrefix: "",
       body: text,
     };
   }
 
   return {
-    replyId: matched[1] ? Number(matched[1]) : null,
-    replyName: matched[2] || "",
-    replyPreview: matched[3] || "",
-    body: matched[4] || "",
+    replyPrefix: matched[1] || "",
+    replyId: matched[2] ? Number(matched[2]) : null,
+    replyName: matched[3] || "",
+    replyPreview: matched[4] || "",
+    body: matched[5] || "",
   };
 };
 
@@ -915,6 +967,24 @@ const isRenderableImageMessage = (message) => {
   return true;
 };
 
+const isPdfPreviewMessage = (message) => {
+  return Boolean(message?.attachment_preview_url);
+};
+
+const openPdfPreview = (message) => {
+  const url = normalizePublicUrl(message?.attachment_url);
+  if (!url) return;
+  previewPdfUrl.value = url;
+  previewPdfName.value = message?.attachment_name || "Preview PDF";
+  showPdfPreview.value = true;
+};
+
+const closePdfPreview = () => {
+  showPdfPreview.value = false;
+  previewPdfUrl.value = "";
+  previewPdfName.value = "";
+};
+
 const scrollToBottom = async () => {
   await nextTick();
   if (messageListRef.value) {
@@ -958,7 +1028,7 @@ const sortMessages = (messages = []) =>
       return Number(left.id) - Number(right.id);
     }
 
-    return new Date(left.created_at).getTime() - new Date(right.created_at).getTime();
+    return (parseDateValue(left.created_at)?.getTime() || 0) - (parseDateValue(right.created_at)?.getTime() || 0);
   });
 
 const upsertMessage = async (chatMessage) => {
@@ -1177,6 +1247,7 @@ const selectSubject = async (subject) => {
   selectedSubject.value = subject;
   composer.value = "";
   replyTarget.value = null;
+  editTarget.value = null;
   chatError.value = "";
   mobileChatOpen.value = true;
 
@@ -1195,6 +1266,23 @@ const setReplyTarget = (message) => {
 
 const clearReplyTarget = () => {
   replyTarget.value = null;
+};
+
+const clearEditTarget = () => {
+  editTarget.value = null;
+};
+
+const setEditTarget = (message) => {
+  if (!message) return;
+  const parsed = parseReplyPayload(message?.message);
+  editTarget.value = message;
+  composer.value = parsed.body || "";
+  replyTarget.value = null;
+  clearAttachment();
+  emojiPanelOpen.value = false;
+  nextTick().then(() => {
+    handleComposerInput();
+  });
 };
 
 const toggleEmojiPanel = () => {
@@ -1269,9 +1357,17 @@ const replyFromActionSheet = () => {
   closeMessageActionSheet();
 };
 
+const editFromActionSheet = () => {
+  if (actionSheetMessage.value && Number(actionSheetMessage.value.sender_id || 0) === Number(currentUserId)) {
+    setEditTarget(actionSheetMessage.value);
+  }
+  closeMessageActionSheet();
+};
+
 const backToGroupList = () => {
   mobileChatOpen.value = false;
   emojiPanelOpen.value = false;
+  clearEditTarget();
 };
 
 const handleComposerKeydown = (event) => {
@@ -1613,10 +1709,12 @@ const sendMessage = async () => {
     const replyPrefix = replyTarget.value
       ? `[Balas#${Number(replyTarget.value.id || 0)} ${replyTarget.value.sender_name || "Pengguna"}: ${getMessagePreview(replyTarget.value)}]`
       : "";
-    const finalMessage = [replyPrefix, baseMessage].filter(Boolean).join("\n");
+    const editPrefix = editTarget.value ? parseReplyPayload(editTarget.value.message).replyPrefix || "" : "";
+    const finalMessage = [editPrefix || replyPrefix, baseMessage].filter(Boolean).join("\n");
+    const shouldEdit = Boolean(editTarget.value);
     let payload = { message: finalMessage };
 
-    if (hasAttachment) {
+    if (!shouldEdit && hasAttachment) {
       const formData = new FormData();
       formData.append("message", finalMessage);
       formData.append("attachment", attachmentFile.value);
@@ -1629,15 +1727,31 @@ const sendMessage = async () => {
       payload = formData;
     }
 
-    const response = await api.post(`/learning/subjects/${selectedSubject.value.id}/chat`, payload);
+    const response = shouldEdit
+      ? await api.put(`/learning/subjects/${selectedSubject.value.id}/chat/${editTarget.value.id}`, payload)
+      : await api.post(`/learning/subjects/${selectedSubject.value.id}/chat`, payload);
     await sendTypingEvent(false);
     composer.value = "";
     emojiPanelOpen.value = false;
     clearReplyTarget();
+    clearEditTarget();
     clearAttachment();
 
     if (response?.data) {
-      await upsertMessage(response.data);
+      const editedMessage = response.data;
+      const existingIndex = (messagesBySubject.value[selectedSubject.value.id] || []).findIndex(
+        (item) => Number(item.id) === Number(editedMessage.id),
+      );
+      if (existingIndex >= 0) {
+        const nextMessages = [...(messagesBySubject.value[selectedSubject.value.id] || [])];
+        nextMessages.splice(existingIndex, 1, editedMessage);
+        messagesBySubject.value = {
+          ...messagesBySubject.value,
+          [selectedSubject.value.id]: sortMessages(nextMessages),
+        };
+      } else {
+        await upsertMessage(editedMessage);
+      }
       await markCurrentSubjectAsRead();
       await refreshChatSummary();
     }
@@ -1688,6 +1802,24 @@ onMounted(async () => {
         };
       } else {
         await refreshChatSummary();
+      }
+    }),
+    realtimeStore.on("learning-chat:message-updated", async (chatMessage) => {
+      const subjectId = Number(chatMessage?.subject_id || 0);
+      const activeSubjectId = Number(selectedSubject.value?.id || 0);
+      await refreshChatSummary();
+      if (!subjectId || subjectId !== activeSubjectId) {
+        return;
+      }
+
+      const existingIndex = (messagesBySubject.value[subjectId] || []).findIndex((item) => Number(item.id) === Number(chatMessage?.id || 0));
+      if (existingIndex >= 0) {
+        const nextMessages = [...(messagesBySubject.value[subjectId] || [])];
+        nextMessages.splice(existingIndex, 1, chatMessage);
+        messagesBySubject.value = {
+          ...messagesBySubject.value,
+          [subjectId]: sortMessages(nextMessages),
+        };
       }
     }),
     realtimeStore.on("learning-chat:read-updated", async (payload) => {

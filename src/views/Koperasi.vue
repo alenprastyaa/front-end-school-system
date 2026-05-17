@@ -22,7 +22,7 @@
       </div>
     </header>
 
-    <main class="mx-auto p-4 pb-28 md:p-8">
+    <main class="mx-auto p-2 pb-28 sm:p-4 md:p-8">
       <!-- NOTIFICATIONS -->
       <section v-if="message" class="mb-6 rounded-sm px-4 py-3 text-sm font-medium shadow-sm"
         :class="isError ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'">
@@ -50,13 +50,12 @@
       </nav>
 
       <!-- TAB CONTENT: SHOP -->
-      <div v-show="activeTab === 'shop'" class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div v-show="activeTab === 'shop'" class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div class="space-y-4">
           <!-- Categories Banner/Pills -->
           <div
             class="flex flex-col gap-3 rounded-sm bg-white p-3 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800 sm:p-4 lg:flex-row lg:items-center lg:justify-between">
-            <div
-              class="grid grid-cols-[minmax(0,1fr)_96px] gap-2 sm:hidden">
+            <div class="grid gap-2 sm:hidden">
               <select v-model="selectedCategory" @change="applyProductFilters"
                 class="min-w-0 rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
                 <option value="">Semua kategori</option>
@@ -122,18 +121,18 @@
               <!-- Content Card: Diubah paddingnya supaya nggak bantet -->
               <div class="flex flex-1 flex-col p-2.5 sm:p-4">
                 <h3
-                  class="line-clamp-2 min-h-[32px] sm:min-h-[40px] text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200"
+                  class="line-clamp-2 min-h-[30px] sm:min-h-[40px] text-sm sm:text-base font-semibold text-gray-800 dark:text-gray-200"
                   :title="product.name">
                   {{ product.name }}
                 </h3>
                 <div class="mt-1 flex flex-col gap-1 sm:mt-2 sm:flex-row sm:items-end sm:justify-between">
                   <div class="min-w-0">
-                    <p class="text-base font-semibold text-orange-600 sm:text-xl">{{ formatCurrency(product.price) }}</p>
+                    <p class="text-sm font-semibold text-orange-600 sm:text-xl">{{ formatCurrency(product.price) }}</p>
                     <p class="mt-0.5 text-[10px] sm:text-[11px] text-gray-500">Sisa {{ product.stock || 0 }}</p>
                   </div>
                   <!-- Tombol Cart: Dikecilin pas di mobile -->
                   <button :disabled="!product.is_active || Number(product.stock || 0) <= 0"
-                    class="mt-1 flex h-7 sm:h-9 w-full sm:w-9 items-center justify-center rounded-md bg-orange-500 text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-gray-300 sm:mt-0 sm:rounded-sm"
+                    class="mt-1 flex h-8 w-full items-center justify-center rounded-md bg-orange-500 text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-gray-300 sm:mt-0 sm:h-9 sm:w-9 sm:rounded-sm"
                     @click="addToCart(product)">
                     <Icon icon="ph:shopping-cart-bold" class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </button>
@@ -149,7 +148,7 @@
           </div>
 
           <div
-            class="flex flex-col gap-3 rounded-sm bg-white px-4 py-3 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800 sm:flex-row sm:items-center sm:justify-between">
+            class="flex flex-col gap-3 rounded-sm bg-white px-3 py-3 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800 sm:flex-row sm:items-center sm:justify-between sm:px-4">
             <span class="text-center text-sm text-gray-500 sm:text-left">{{ paginationLabel(productsMeta) }}</span>
             <div class="flex items-center gap-2">
               <button
@@ -256,7 +255,7 @@
         enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-150"
         leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-4">
         <button v-if="activeTab === 'shop'" type="button"
-          class="fixed bottom-4 right-4 z-[120] inline-flex h-14 w-14 items-center justify-center rounded-full bg-orange-600 text-white shadow-2xl ring-1 ring-orange-400/30 md:hidden"
+          class="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-[calc(1rem+env(safe-area-inset-right))] z-[120] inline-flex h-14 w-14 items-center justify-center rounded-full bg-orange-600 text-white shadow-2xl ring-1 ring-orange-400/30 md:hidden"
           @click="mobileCartOpen = true">
           <span class="relative flex items-center justify-center">
             <Icon icon="ph:shopping-cart-simple-bold" class="h-6 w-6" />
@@ -1069,7 +1068,7 @@ import { Icon } from "@iconify/vue";
 import QRCode from "qrcode";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { formatDateTime } from "@/utils/date";
+import { formatDateTime, parseDateValue } from "@/utils/date";
 import { getStoredRole } from "@/utils/auth";
 import { useRealtimeStore } from "@/store/realtime";
 import { normalizePublicUrl } from "@/utils/url";
@@ -1203,32 +1202,8 @@ const paymentStatusLabel = (status, method) => {
 
 const parseKoperasiDateMillis = (value) => {
   if (!value) return null;
-  const trimmed = String(value).trim();
-  const hasExplicitTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(trimmed);
-  if (hasExplicitTimezone) {
-    const parsed = new Date(trimmed);
-    return Number.isNaN(parsed.getTime()) ? null : parsed.getTime();
-  }
-
-  const match = trimmed.match(
-    /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?)?$/,
-  );
-  if (!match) {
-    const fallback = new Date(trimmed);
-    return Number.isNaN(fallback.getTime()) ? null : fallback.getTime();
-  }
-  const [, yearRaw, monthRaw, dayRaw, hourRaw = "00", minuteRaw = "00", secondRaw = "00", milliRaw = "000"] = match;
-  const year = Number(yearRaw);
-  const month = Number(monthRaw);
-  const day = Number(dayRaw);
-  const hour = Number(hourRaw);
-  const minute = Number(minuteRaw);
-  const second = Number(secondRaw);
-  const millisecond = Number(String(milliRaw).padEnd(3, "0"));
-  if ([year, month, day, hour, minute, second, millisecond].some((item) => Number.isNaN(item))) {
-    return null;
-  }
-  return Date.UTC(year, month - 1, day, hour - 7, minute, second, millisecond);
+  const parsed = parseDateValue(value);
+  return parsed ? parsed.getTime() : null;
 };
 
 const isPaymentExpired = (order) => {
@@ -2104,7 +2079,7 @@ const printOrderReceipt = (order) => {
             <div class="muted">Total</div>
             <div class="total">${escapeHtml(formatCurrency(order.total_amount))}</div>
           </div>
-          <div class="muted" style="margin-top: 18px;">Dicetak pada ${escapeHtml(formatDateTime(new Date().toISOString()))}</div>
+          <div class="muted" style="margin-top: 18px;">Dicetak pada ${escapeHtml(formatDateTime(new Date()))}</div>
         </div>
       </body>
     </html>

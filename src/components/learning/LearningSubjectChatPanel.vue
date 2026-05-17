@@ -130,7 +130,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { formatDateTime } from "@/utils/date";
+import { formatDateTime, parseDateValue } from "@/utils/date";
 import { useRealtimeStore } from "@/store/realtime";
 
 const props = defineProps({
@@ -241,7 +241,7 @@ const upsertMessage = async (chatMessage) => {
       return Number(left.id) - Number(right.id);
     }
 
-    return new Date(left.created_at).getTime() - new Date(right.created_at).getTime();
+    return (parseDateValue(left.created_at)?.getTime() || 0) - (parseDateValue(right.created_at)?.getTime() || 0);
   });
 
   await scrollToBottom();

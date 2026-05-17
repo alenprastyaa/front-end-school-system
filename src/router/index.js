@@ -110,6 +110,7 @@ const routes = [
       title: "Absensi" + appName,
       requiresAuth: true,
       roles: ["SISWA"],
+      moduleKey: "attendance",
     },
   },
   {
@@ -120,6 +121,7 @@ const routes = [
       title: "Enrol Wajah" + appName,
       requiresAuth: true,
       roles: ["SISWA"],
+      moduleKey: "attendance",
     },
   },
   {
@@ -214,6 +216,16 @@ const routes = [
     component: lazyRoute(() => import("../views/AdminSettings.vue")),
     meta: {
       title: "Setting Admin" + appName,
+      requiresAuth: true,
+      roles: ["ADMIN"],
+    },
+  },
+  {
+    path: "/announcements",
+    name: "Announcements",
+    component: lazyRoute(() => import("../views/Announcements.vue")),
+    meta: {
+      title: "Pengumuman" + appName,
       requiresAuth: true,
       roles: ["ADMIN"],
     },
@@ -486,6 +498,8 @@ router.beforeEach((to, from, next) => {
     const moduleEnabled =
       to.meta.moduleKey === "inventory"
         ? storedUser.inventory_module_enabled !== false
+        : to.meta.moduleKey === "attendance"
+          ? storedUser.attendance_module_enabled !== false
         : to.meta.moduleKey === "official_exam"
           ? storedUser.official_exam_module_enabled !== false
           : to.meta.moduleKey === "koperasi"

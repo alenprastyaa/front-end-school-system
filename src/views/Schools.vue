@@ -111,6 +111,14 @@
                 </label>
                 <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
                   <input
+                    v-model="form.attendance_module_enabled"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                  />
+                  Absensi
+                </label>
+                <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <input
                     v-model="form.koperasi_module_enabled"
                     type="checkbox"
                     class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
@@ -421,6 +429,7 @@ const isError = ref(false);
 const form = reactive({
   name: "",
   inventory_module_enabled: true,
+  attendance_module_enabled: true,
   official_exam_module_enabled: true,
   koperasi_module_enabled: true,
 });
@@ -461,6 +470,7 @@ const resetForm = () => {
   editingId.value = null;
   form.name = "";
   form.inventory_module_enabled = true;
+  form.attendance_module_enabled = true;
   form.official_exam_module_enabled = true;
   form.koperasi_module_enabled = true;
   schoolLogoFile.value = null;
@@ -495,6 +505,7 @@ const loadSchools = async () => {
       ? response.data.items.map((item) => ({
           ...item,
           inventory_module_enabled: item.inventory_module_enabled !== false,
+          attendance_module_enabled: item.attendance_module_enabled !== false,
           official_exam_module_enabled: item.official_exam_module_enabled !== false,
           koperasi_module_enabled: item.koperasi_module_enabled !== false,
         }))
@@ -516,6 +527,7 @@ const submitSchool = async () => {
     const payload = new FormData();
     payload.append("name", form.name);
     payload.append("inventory_module_enabled", String(Boolean(form.inventory_module_enabled)));
+    payload.append("attendance_module_enabled", String(Boolean(form.attendance_module_enabled)));
     payload.append("koperasi_module_enabled", String(Boolean(form.koperasi_module_enabled)));
     payload.append("official_exam_module_enabled", String(Boolean(form.official_exam_module_enabled)));
     if (schoolLogoFile.value) {
@@ -543,6 +555,7 @@ const editSchool = (item) => {
   editingId.value = item.id;
   form.name = item.name || "";
   form.inventory_module_enabled = item.inventory_module_enabled !== false;
+  form.attendance_module_enabled = item.attendance_module_enabled !== false;
   form.koperasi_module_enabled = item.koperasi_module_enabled !== false;
   form.official_exam_module_enabled = item.official_exam_module_enabled !== false;
   schoolLogoFile.value = null;

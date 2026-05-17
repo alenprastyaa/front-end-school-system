@@ -266,7 +266,7 @@
 import { onMounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { formatDateTime, formatDateTimeLocalInput } from "@/utils/date";
+import { formatDateTime, formatDateTimeLocalInput, parseDateValue } from "@/utils/date";
 import { useMasterDataStore } from "@/store/masterData";
 
 const subjects = ref([]);
@@ -410,7 +410,7 @@ const loadExamAssignments = async () => {
   examAssignments.value = subjectResponses
     .flat()
     .filter((item) => item.is_exam)
-    .sort((left, right) => new Date(right.created_at || 0).getTime() - new Date(left.created_at || 0).getTime());
+    .sort((left, right) => (parseDateValue(right.created_at)?.getTime() || 0) - (parseDateValue(left.created_at)?.getTime() || 0));
 };
 
 const loadBlockedExamSubmissions = async () => {
@@ -441,7 +441,7 @@ const loadBlockedExamSubmissions = async () => {
 
   blockedExamRows.value = responses
     .flat()
-    .sort((left, right) => new Date(right.started_at || right.created_at || 0).getTime() - new Date(left.started_at || left.created_at || 0).getTime());
+    .sort((left, right) => (parseDateValue(right.started_at || right.created_at)?.getTime() || 0) - (parseDateValue(left.started_at || left.created_at)?.getTime() || 0));
 };
 
 const refreshExamAdminData = async () => {

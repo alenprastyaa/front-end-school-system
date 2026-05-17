@@ -672,7 +672,7 @@
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { formatDateTime } from "@/utils/date";
+import { formatDateTime, formatDateTimeLocalInput as formatJakartaDateTimeLocalInput, parseDateValue } from "@/utils/date";
 import { normalizePublicUrl } from "@/utils/url";
 import { useMasterDataStore } from "@/store/masterData";
 
@@ -764,10 +764,10 @@ const filteredAssignments = computed(() => {
 
   next.sort((a, b) => {
     if (assignmentSort.value === "DUE_ASC") {
-      return new Date(a?.due_date || 0).getTime() - new Date(b?.due_date || 0).getTime();
+      return (parseDateValue(a?.due_date)?.getTime() || 0) - (parseDateValue(b?.due_date)?.getTime() || 0);
     }
     if (assignmentSort.value === "DUE_DESC") {
-      return new Date(b?.due_date || 0).getTime() - new Date(a?.due_date || 0).getTime();
+      return (parseDateValue(b?.due_date)?.getTime() || 0) - (parseDateValue(a?.due_date)?.getTime() || 0);
     }
     return Number(b?.id || 0) - Number(a?.id || 0);
   });
@@ -867,7 +867,7 @@ const openAssignmentEditModal = (item) => {
   editingAssignmentId.value = item.id;
   assignmentForm.title = item.title || "";
   assignmentForm.description = item.description || "";
-  assignmentForm.due_date = item.due_date ? formatDateTimeLocalInput(item.due_date) : "";
+  assignmentForm.due_date = item.due_date ? formatJakartaDateTimeLocalInput(item.due_date) : "";
   assignmentForm.assignment_type = item.assignment_type || "FILE";
   currentAssignmentAttachmentUrl.value = item.attachment_url || "";
   assignmentModalOpen.value = true;
@@ -1118,14 +1118,6 @@ const confirmDelete = async () => {
   } finally {
     isDeletingItem.value = false;
   }
-};
-
-const formatDateTimeLocalInput = (value) => {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  const pad = (item) => String(item).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
 const loadSubmissions = async (assignment) => {

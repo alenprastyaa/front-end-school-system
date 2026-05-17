@@ -975,7 +975,7 @@
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { formatDateTime } from "@/utils/date";
+import { formatDateTime, parseDateValue } from "@/utils/date";
 import { useMasterDataStore } from "@/store/masterData";
 import { uploadFileDirect } from "@/api/upload";
 
@@ -1237,8 +1237,8 @@ const questionPreviewModalNumberLabel = computed(() =>
 );
 const runningAssignments = computed(() =>
   [...assignments.value].sort((left, right) => {
-    const leftTime = left?.due_date ? new Date(left.due_date).getTime() : 0;
-    const rightTime = right?.due_date ? new Date(right.due_date).getTime() : 0;
+    const leftTime = parseDateValue(left?.due_date)?.getTime() || 0;
+    const rightTime = parseDateValue(right?.due_date)?.getTime() || 0;
     return rightTime - leftTime;
   }),
 );

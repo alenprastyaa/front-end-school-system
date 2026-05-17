@@ -374,6 +374,7 @@ import QRCode from "qrcode";
 import { api } from "@/api";
 import { getStoredRole } from "@/utils/auth";
 import { pushToast } from "@/composables/useToast";
+import { formatDate as formatJakartaDate, formatDateInputValue } from "@/utils/date";
 
 const route = useRoute();
 const role = getStoredRole();
@@ -426,20 +427,11 @@ const formatCurrency = (value) => {
 };
 
 const formatDate = (value) => {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(date);
+  return formatJakartaDate(value);
 };
 
 const formatDateInput = (value) => {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  return formatDateInputValue(value);
 };
 
 const statusClass = (status) => {

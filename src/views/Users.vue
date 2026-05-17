@@ -1015,6 +1015,7 @@
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
+import { formatDateInputValue } from "@/utils/date";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 import SuccessModal from "@/components/SuccessModal.vue";
 import { useMasterDataStore } from "@/store/masterData";
@@ -1510,11 +1511,7 @@ const uploadStudentTemplate = async () => {
 };
 
 const localDateString = () => {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  return formatDateInputValue(new Date());
 };
 
 const resetPromotionForm = () => {

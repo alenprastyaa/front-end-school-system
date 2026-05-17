@@ -193,7 +193,7 @@
                   <div class="text-sm leading-5">{{ row.assignment_type === 'MANUAL' ? '-' :
                     formatDateTime(row.submitted_at) }}</div>
                   <div
-                    v-if="row.assignment_type !== 'MANUAL' && row.due_date && row.submitted_at && new Date(row.submitted_at) > new Date(row.due_date)"
+                    v-if="row.assignment_type !== 'MANUAL' && row.due_date && row.submitted_at && (parseDateValue(row.submitted_at)?.getTime() || 0) > (parseDateValue(row.due_date)?.getTime() || 0)"
                     class="mt-1 inline-flex rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-600 dark:bg-red-500/10 dark:text-red-300">
                     Terlambat</div>
                 </td>
@@ -353,7 +353,7 @@
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { formatDateTime } from "@/utils/date";
+import { formatDateKey, formatDateTime, parseDateValue } from "@/utils/date";
 import { normalizePublicUrl } from "@/utils/url";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 import { downloadExcelWorksheet } from "@/utils/excelExport";
@@ -571,8 +571,8 @@ const formatExcelDateTime = (value) => {
     return "-";
   }
 
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
+  const date = parseDateValue(value);
+  if (!date) {
     return "-";
   }
 
@@ -582,7 +582,7 @@ const formatExcelDateTime = (value) => {
 
 const buildExportFilename = () => {
   const subject = subjects.value.find((item) => String(item.id) === filters.subjectId);
-  const date = new Date().toISOString().slice(0, 10);
+  const date = formatDateKey(new Date());
   const subjectPart = `${subject?.name || "penilaian"}-${subject?.class_name || "kelas"}`
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -599,7 +599,7 @@ const downloadExcel = async () => {
     filename: buildExportFilename(),
     sheetName: "Penilaian Guru",
     title: "Rekap Penilaian Pembelajaran",
-    subtitle: `Diunduh pada ${now.toLocaleString("id-ID")} | ${subject?.name || "Semua Mapel"}${subject?.class_name ? ` - ${subject.class_name}` : ""}`,
+    subtitle: `Diunduh pada ${formatDateTime(now)} | ${subject?.name || "Semua Mapel"}${subject?.class_name ? ` - ${subject.class_name}` : ""}`,
     summary: [
       { label: "Mapel", value: subject?.name || "Semua Mapel" },
       { label: "Kelas", value: subject?.class_name || "-" },

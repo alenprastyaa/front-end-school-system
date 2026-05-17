@@ -1,74 +1,19 @@
 <template>
   <div class="px-3 py-4 md:p-6 space-y-4 md:space-y-6">
-
-    <section class="grid gap-4 md:gap-6 xl:grid-cols-[420px,1fr]">
-
-      <!-- Form Kirim Bukti -->
-      <div class="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-        <div class="border-b border-slate-200 px-5 py-4 dark:border-slate-700">
-          <h2 class="text-base font-semibold text-slate-900 dark:text-white">Kirim Bukti Pembayaran</h2>
-          <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Isi form di bawah untuk mengirim bukti.</p>
-        </div>
-        <form @submit.prevent="submitReceipt" class="space-y-4 p-5">
-          <div>
-            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Tanggal Pembayaran</label>
-            <input
-              v-model="form.payment_date"
-              type="date"
-              required
-              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Upload Bukti</label>
-            <input
-              type="file"
-              accept="image/*"
-              required
-              @change="handleFileChange"
-              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1 file:text-sm file:font-medium file:text-slate-700 dark:file:bg-slate-800 dark:file:text-slate-300"
-            />
-          </div>
-
-          <div>
-            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Deskripsi</label>
-            <textarea
-              v-model="form.description"
-              rows="4"
-              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-            />
-          </div>
-
-          <button
-            type="submit"
-            :disabled="isSubmitting"
-            class="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
-          >
-            {{ isSubmitting ? "Menyimpan..." : "Kirim Bukti" }}
-          </button>
-        </form>
-      </div>
-
-      <!-- Tabel Riwayat -->
-      <div class="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+    <section class="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4 dark:border-slate-700">
           <div>
             <h2 class="text-base font-semibold text-slate-900 dark:text-white">Riwayat bukti pembayaran</h2>
             <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Data milik user login.</p>
           </div>
-          <button
-            @click="loadReceipts"
-            class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 sm:w-auto dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-              <path d="M21 3v5h-5" />
-              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-              <path d="M8 16H3v5" />
-            </svg>
-            Refresh
-          </button>
+          <div class="flex flex-wrap gap-2">
+            <button
+              @click="openCreateModal"
+              class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:opacity-90 sm:w-auto"
+            >
+              + Tambah Bukti
+            </button>
+          </div>
         </div>
 
         <div class="p-5">
@@ -83,50 +28,59 @@
             <div
               v-for="item in sortedReceipts"
               :key="`mobile-${item.id}`"
-              class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-700 dark:bg-slate-800/50"
+              class="relative rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-700 dark:bg-slate-800/50"
             >
-              <div class="flex items-start justify-between gap-3">
+              <div class="flex items-start justify-between gap-3 pr-9">
                 <div>
                   <p class="text-xs text-slate-500 dark:text-slate-400">Tanggal Bayar</p>
                   <p class="mt-0.5 font-semibold text-slate-900 dark:text-white">{{ formatDate(item.payment_date) }}</p>
                 </div>
-                <a
-                  v-if="item.image_path"
-                  :href="item.image_path"
-                  target="_blank"
-                  rel="noreferrer"
-                  class="rounded-lg border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700 dark:border-sky-800 dark:bg-sky-900/30 dark:text-sky-300"
-                >
-                  Lihat
-                </a>
               </div>
               <div class="mt-3">
                 <p class="text-xs text-slate-500 dark:text-slate-400">Deskripsi</p>
                 <p class="mt-0.5 text-slate-800 dark:text-slate-200">{{ item.description || "-" }}</p>
               </div>
               <p class="mt-3 text-xs text-slate-400 dark:text-slate-500">Dibuat {{ formatDateTime(item.created_at) }}</p>
-              <div class="mt-3 flex items-center justify-end gap-2">
+              <div class="absolute right-3 top-3">
                 <button
-                  @click="openEditModal(item)"
-                  class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  type="button"
+                  @click="toggleActionMenu(item)"
+                  class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 hover:text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
+                  aria-label="Aksi bukti pembayaran"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                    <path d="m15 5 4 4" />
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <circle cx="12" cy="5" r="1.8" />
+                    <circle cx="12" cy="12" r="1.8" />
+                    <circle cx="12" cy="19" r="1.8" />
                   </svg>
-                  Edit
                 </button>
-                <button
-                  @click="openDeleteModal(item)"
-                  class="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 dark:bg-red-500/20 dark:text-red-300 dark:hover:bg-red-500/30"
+                <div
+                  v-if="activeActionId === item.id"
+                  class="absolute right-0 top-10 z-20 w-36 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 6h18" />
-                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                  </svg>
-                  Hapus
-                </button>
+                  <button
+                    v-if="item.image_path"
+                    type="button"
+                    @click="handlePreviewAction(item)"
+                    class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                  >
+                    Lihat
+                  </button>
+                  <button
+                    type="button"
+                    @click="handleEditAction(item)"
+                    class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    @click="handleDeleteAction(item)"
+                    class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-700 transition hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-500/10"
+                  >
+                    Hapus
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -165,40 +119,55 @@
                   <td class="py-3 pr-4 max-w-[200px] truncate">{{ item.description || "-" }}</td>
                   <td class="py-3 pr-4 text-slate-500 dark:text-slate-400">{{ formatDateTime(item.created_at) }}</td>
                   <td class="py-3 pr-4">
-                    <a
+                    <span
                       v-if="item.image_path"
-                      :href="item.image_path"
-                      target="_blank"
-                      rel="noreferrer"
-                      class="font-medium text-sky-600 underline-offset-2 hover:underline dark:text-sky-400"
-                    >
-                      Lihat
-                    </a>
+                      class="inline-flex h-2.5 w-2.5 rounded-full bg-sky-500"
+                      title="Ada bukti pembayaran"
+                      aria-label="Ada bukti pembayaran"
+                    />
                     <span v-else class="text-slate-400">-</span>
                   </td>
                   <td class="py-3 pr-4">
-                    <div class="flex items-center justify-end gap-2">
+                    <div class="relative flex items-center justify-end">
                       <button
-                        @click="openEditModal(item)"
-                        class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                        type="button"
+                        @click="toggleActionMenu(item)"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 hover:text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
+                        aria-label="Aksi bukti pembayaran"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                          <path d="m15 5 4 4" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                          <circle cx="12" cy="5" r="1.8" />
+                          <circle cx="12" cy="12" r="1.8" />
+                          <circle cx="12" cy="19" r="1.8" />
                         </svg>
-                        Edit
                       </button>
-                      <button
-                        @click="openDeleteModal(item)"
-                        class="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100 dark:bg-red-500/20 dark:text-red-300 dark:hover:bg-red-500/30"
+                      <div
+                        v-if="activeActionId === item.id"
+                        class="absolute right-0 top-10 z-20 w-36 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M3 6h18" />
-                          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                        </svg>
-                        Hapus
-                      </button>
+                        <button
+                          v-if="item.image_path"
+                          type="button"
+                          @click="handlePreviewAction(item)"
+                          class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                        >
+                          Lihat
+                        </button>
+                        <button
+                          type="button"
+                          @click="handleEditAction(item)"
+                          class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          @click="handleDeleteAction(item)"
+                          class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-700 transition hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-500/10"
+                        >
+                          Hapus
+                        </button>
+                      </div>
                     </div>
                   </td>
                 </tr>
@@ -211,8 +180,127 @@
             </table>
           </div>
         </div>
-      </div>
     </section>
+
+    <!-- Create Modal -->
+    <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
+      <div class="w-full max-w-lg rounded-2xl bg-white shadow-xl dark:bg-slate-900">
+        <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-700">
+          <h3 class="text-base font-semibold text-slate-900 dark:text-white">Kirim Bukti Pembayaran</h3>
+          <button
+            @click="closeCreateModal"
+            class="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+        <form @submit.prevent="submitReceipt" class="space-y-4 p-6">
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Tanggal Pembayaran</label>
+            <input
+              v-model="form.payment_date"
+              type="date"
+              required
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Upload Bukti</label>
+            <input
+              type="file"
+              accept="image/*"
+              required
+              @change="handleFileChange"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1 file:text-sm file:font-medium file:text-slate-700 dark:file:bg-slate-800 dark:file:text-slate-300"
+            />
+          </div>
+
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Deskripsi</label>
+            <textarea
+              v-model="form.description"
+              rows="4"
+              class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+            />
+          </div>
+
+          <div class="flex justify-end gap-2 pt-1">
+            <button
+              type="button"
+              @click="closeCreateModal"
+              class="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              :disabled="isSubmitting"
+              class="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+            >
+              {{ isSubmitting ? "Menyimpan..." : "Kirim Bukti" }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div v-if="showPreviewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
+      <div class="w-full max-w-3xl rounded-2xl bg-white shadow-xl dark:bg-slate-900">
+        <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-700">
+          <div>
+            <h3 class="text-base font-semibold text-slate-900 dark:text-white">Preview Bukti Pembayaran</h3>
+            <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+              {{ formatDate(previewReceipt?.payment_date) || "-" }}
+            </p>
+          </div>
+          <button
+            @click="closePreviewModal"
+            class="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-6">
+          <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
+            <img
+              v-if="previewReceipt?.image_path && !isPreviewHeicLike"
+              :src="previewReceipt.image_path"
+              alt="Preview bukti pembayaran"
+              class="max-h-[75vh] w-full object-contain"
+            />
+            <div v-else class="p-10 text-center text-sm text-slate-500 dark:text-slate-400">
+              Gambar tidak tersedia.
+              <p v-if="isPreviewHeicLike" class="mt-2 text-xs leading-6 text-amber-600 dark:text-amber-300">
+                Format HEIC/HEIF tidak bisa dipreview langsung di Chrome. Silakan unduh file asli atau unggah ulang
+                sebagai JPG/PNG agar tampil di semua browser.
+              </p>
+            </div>
+          </div>
+          <div class="mt-4 flex flex-wrap items-center justify-end gap-2">
+            <a
+              v-if="previewReceipt?.image_path"
+              :href="previewReceipt.image_path"
+              :download="previewDownloadName"
+              class="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              Unduh Asli
+            </a>
+            <button
+              @click="closePreviewModal"
+              class="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Edit Modal -->
     <div v-if="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
@@ -317,6 +405,7 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatDate, formatDateTime } from "@/utils/date";
+import { convertHeicToJpegIfPossible, isHeicLikeFile } from "@/utils/fileImage";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 
 const baseForm = () => ({
@@ -330,19 +419,33 @@ const receipts = ref([]);
 const isSubmitting = ref(false);
 const isUpdating = ref(false);
 const isDeleting = ref(false);
+const showCreateModal = ref(false);
+const showPreviewModal = ref(false);
 const showEditModal = ref(false);
 const showDeleteModal = ref(false);
 const selectedReceipt = ref(null);
+const previewReceipt = ref(null);
 const receiptToDelete = ref(null);
 const editForm = reactive(baseForm());
 const editFile = ref(null);
 const tableSort = createSortState("created_at", "desc");
+const activeActionId = ref(null);
 
 const sortedReceipts = computed(() =>
   sortItems(receipts.value, tableSort, {
     description: (item) => item.description || "",
   }),
 );
+
+const isPreviewHeicLike = computed(() => {
+  const value = String(previewReceipt.value?.image_path || "").toLowerCase();
+  return /\.(heic|heif)(?:[?#].*)?$/i.test(value);
+});
+
+const previewDownloadName = computed(() => {
+  const paymentDate = previewReceipt.value?.payment_date ? String(previewReceipt.value.payment_date).slice(0, 10) : "receipt";
+  return `bukti-pembayaran-${paymentDate}.jpg`;
+});
 
 const handleSort = (key) => {
   toggleSort(tableSort, key);
@@ -369,8 +472,74 @@ const loadReceipts = async () => {
   }
 };
 
-const handleFileChange = (event) => {
-  selectedFile.value = event.target.files?.[0] || null;
+const handleFileChange = async (event) => {
+  const file = event.target.files?.[0] || null;
+  if (!file) {
+    selectedFile.value = null;
+    return;
+  }
+
+  try {
+    selectedFile.value = await convertHeicToJpegIfPossible(file);
+    if (isHeicLikeFile(file)) {
+      pushToast({
+        title: "HEIC Dikonversi",
+        message: "File HEIC diubah ke JPG agar bisa dipreview di Chrome.",
+        type: "success",
+      });
+    }
+  } catch (error) {
+    selectedFile.value = file;
+    pushToast({
+      title: "HEIC Tidak Bisa Dikonversi",
+      message: "Gunakan JPG/PNG agar preview tampil di Chrome.",
+      type: "error",
+    });
+  }
+};
+
+const openCreateModal = () => {
+  showCreateModal.value = true;
+};
+
+const closeCreateModal = () => {
+  showCreateModal.value = false;
+  Object.assign(form, baseForm());
+  selectedFile.value = null;
+};
+
+const openPreviewModal = (item) => {
+  previewReceipt.value = item;
+  showPreviewModal.value = true;
+};
+
+const closePreviewModal = () => {
+  showPreviewModal.value = false;
+  previewReceipt.value = null;
+};
+
+const toggleActionMenu = (item) => {
+  selectedReceipt.value = item;
+  activeActionId.value = activeActionId.value === item.id ? null : item.id;
+};
+
+const closeActionMenu = () => {
+  activeActionId.value = null;
+};
+
+const handlePreviewAction = (item) => {
+  closeActionMenu();
+  openPreviewModal(item);
+};
+
+const handleEditAction = (item) => {
+  closeActionMenu();
+  openEditModal(item);
+};
+
+const handleDeleteAction = (item) => {
+  closeActionMenu();
+  openDeleteModal(item);
 };
 
 const openEditModal = (item) => {
@@ -388,8 +557,30 @@ const closeEditModal = () => {
   editFile.value = null;
 };
 
-const handleEditFileChange = (event) => {
-  editFile.value = event.target.files?.[0] || null;
+const handleEditFileChange = async (event) => {
+  const file = event.target.files?.[0] || null;
+  if (!file) {
+    editFile.value = null;
+    return;
+  }
+
+  try {
+    editFile.value = await convertHeicToJpegIfPossible(file);
+    if (isHeicLikeFile(file)) {
+      pushToast({
+        title: "HEIC Dikonversi",
+        message: "File HEIC diubah ke JPG agar bisa dipreview di Chrome.",
+        type: "success",
+      });
+    }
+  } catch (error) {
+    editFile.value = file;
+    pushToast({
+      title: "HEIC Tidak Bisa Dikonversi",
+      message: "Gunakan JPG/PNG agar preview tampil di Chrome.",
+      type: "error",
+    });
+  }
 };
 
 const submitUpdateReceipt = async () => {
@@ -485,8 +676,7 @@ const submitReceipt = async () => {
       message: response?.message || "Bukti pembayaran berhasil dikirim",
       type: "success",
     });
-    Object.assign(form, baseForm());
-    selectedFile.value = null;
+    closeCreateModal();
     await loadReceipts();
   } catch (error) {
     pushToast({

@@ -34,6 +34,7 @@ export const persistSession = (payload) => {
       school_name: data.school_name,
       school_logo: normalizePublicUrl(data.school_logo) || null,
       inventory_module_enabled: schoolFeatures.inventory_module_enabled !== false,
+      attendance_module_enabled: schoolFeatures.attendance_module_enabled !== false,
       official_exam_module_enabled: schoolFeatures.official_exam_module_enabled !== false,
       koperasi_module_enabled: schoolFeatures.koperasi_module_enabled !== false,
       profile_image: normalizePublicUrl(data.profile_image) || null,

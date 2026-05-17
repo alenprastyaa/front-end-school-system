@@ -94,20 +94,26 @@
                   @click="backToPeerList">
                   <Icon icon="mdi:arrow-left" class="h-6 w-6" />
                 </button>
-                <div
-                  class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#dfe5e7] text-sm font-semibold text-[#54656f] dark:bg-[#2a3942] dark:text-[#d1d7db]">
-                  <img v-if="selectedPeer.profile_image" :src="normalizePublicUrl(selectedPeer.profile_image)"
-                    :alt="displayPeerName(selectedPeer)" class="h-full w-full object-cover" />
-                  <span v-else>{{ peerInitial(selectedPeer) }}</span>
-                </div>
-                <div class="min-w-0 flex-1">
-                  <h2 class="truncate text-[15px] font-medium text-[#111b21] dark:text-[#e9edef]">
-                    {{ displayPeerName(selectedPeer) }}
-                  </h2>
-                  <p class="truncate text-xs text-[#667781] dark:text-[#8696a0]">
-                    {{ peerMeta(selectedPeer) }}
-                  </p>
-                </div>
+                <button
+                  type="button"
+                  @click="openPeerProfile"
+                  class="flex min-w-0 flex-1 items-center gap-3 text-left"
+                >
+                  <div
+                    class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#dfe5e7] text-sm font-semibold text-[#54656f] dark:bg-[#2a3942] dark:text-[#d1d7db]">
+                    <img v-if="selectedPeer.profile_image" :src="normalizePublicUrl(selectedPeer.profile_image)"
+                      :alt="displayPeerName(selectedPeer)" class="h-full w-full object-cover" />
+                    <span v-else>{{ peerInitial(selectedPeer) }}</span>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h2 class="truncate text-[15px] font-medium text-[#111b21] dark:text-[#e9edef]">
+                      {{ displayPeerName(selectedPeer) }}
+                    </h2>
+                    <p class="truncate text-xs text-[#667781] dark:text-[#8696a0]">
+                      {{ peerMeta(selectedPeer) }}
+                    </p>
+                  </div>
+                </button>
               </header>
 
               <div ref="messageListRef" :style="messageListStyle"
@@ -136,11 +142,29 @@
                     </div>
 
                     <div v-else class="flex" :class="isOwnMessage(entry.message) ? 'justify-end' : 'justify-start'">
-                      <article class="message-bubble relative px-2.5 py-1.5 text-sm leading-5 shadow-sm"
-                        :class="isOwnMessage(entry.message)
-                          ? 'own bg-[#d9fdd3] text-[#111b21] dark:bg-[#005c4b] dark:text-[#e9edef]'
-                          : 'other bg-white text-[#111b21] dark:bg-[#202c33] dark:text-[#e9edef]'">
-                        <p v-if="entry.message.message" class="whitespace-pre-wrap break-words pr-12">{{ entry.message.message }}</p>
+                      <article
+                        class="message-bubble relative px-2.5 py-1.5 text-sm leading-5 shadow-sm transition-transform duration-150"
+                        :data-message-id="entry.message.id"
+                        :class="[
+                          isOwnMessage(entry.message)
+                            ? 'own bg-[#d9fdd3] text-[#111b21] dark:bg-[#005c4b] dark:text-[#e9edef]'
+                            : 'other bg-white text-[#111b21] dark:bg-[#202c33] dark:text-[#e9edef]',
+                          replyHighlightMessageId === entry.message.id ? 'ring-2 ring-sky-400 ring-offset-2 ring-offset-transparent' : '',
+                        ]"
+                        @touchstart.passive="handleMessagePressStart(entry.message, $event)"
+                        @touchmove.passive="handleMessagePressMove(entry.message, $event)"
+                        @touchend="handleMessagePressEnd(entry.message)"
+                        @touchcancel="handleMessagePressEnd"
+                      >
+                        <div v-if="entry.parsedReply.replyName"
+                          class="mb-2 cursor-pointer rounded-lg border-l-4 border-sky-400/80 bg-black/5 px-3 py-2 text-[12px] leading-5 dark:bg-white/10"
+                          @click="jumpToReplyTarget(entry.message)">
+                          <p class="font-semibold text-sky-700 dark:text-sky-300">{{ entry.parsedReply.replyName }}</p>
+                          <p class="line-clamp-2 text-[#54656f] dark:text-[#aebac1]">
+                            {{ entry.parsedReply.replyPreview }}
+                          </p>
+                        </div>
+                        <p v-if="entry.parsedReply.body" class="whitespace-pre-wrap break-words pr-12">{{ entry.parsedReply.body }}</p>
                         <div v-if="entry.message.attachment_url" class="mt-2">
                           <audio v-if="isVoiceMessage(entry.message)" :src="normalizePublicUrl(entry.message.attachment_url)" controls
                             class="w-full max-w-sm" />
@@ -149,15 +173,27 @@
                             <img :src="normalizePublicUrl(entry.message.attachment_url)"
                               :alt="entry.message.attachment_name || 'Lampiran gambar'" class="max-h-72 w-full object-cover" />
                           </button>
+                          <button v-else-if="isPdfPreviewMessage(entry.message)" type="button"
+                            class="block w-full overflow-hidden rounded-md border border-black/10 bg-white text-left shadow-sm dark:border-white/10 dark:bg-[#202c33]"
+                            @click="openAttachment(entry.message)">
+                            <img :src="normalizePublicUrl(entry.message.attachment_preview_url)"
+                              :alt="entry.message.attachment_name || 'Pratinjau PDF'"
+                              class="max-h-60 w-full object-contain bg-white" />
+                            <div class="flex items-center gap-3 border-t border-black/5 px-3 py-2 text-sm font-semibold text-[#111b21] dark:border-white/10 dark:text-[#e9edef]">
+                              <Icon icon="ph:file-pdf" class="h-5 w-5 shrink-0 text-[#ef4444]" />
+                              <span class="truncate">{{ entry.message.attachment_name || "Buka PDF" }}</span>
+                            </div>
+                          </button>
                           <a v-else :href="normalizePublicUrl(entry.message.attachment_url)" target="_blank" rel="noreferrer"
                             class="flex items-center gap-3 rounded-md bg-black/5 px-3 py-2 text-sm font-semibold hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15">
                             <Icon :icon="entry.message.message_type === 'PDF' ? 'ph:file-pdf' : 'ph:paperclip'" class="h-5 w-5 shrink-0" />
                             <span class="truncate">{{ entry.message.attachment_name || "Buka file" }}</span>
                           </a>
                         </div>
-                        <div class="-mb-0.5 mt-0.5 flex justify-end gap-1 pl-8 text-[11px] leading-none"
+                        <div class="-mb-0.5 mt-0.5 flex items-center justify-end gap-1 pl-8 text-[11px] leading-none"
                           :class="isOwnMessage(entry.message) ? 'text-[#667781] dark:text-[#aebac1]' : 'text-[#667781] dark:text-[#8696a0]'">
                           <time>{{ formatMessageTime(entry.message.created_at) }}</time>
+                          <span v-if="entry.message.edited_at" class="text-[10px] font-medium uppercase tracking-wide opacity-80">Diedit</span>
                           <Icon v-if="isOwnMessage(entry.message)" :icon="ownReadIcon(entry.message)"
                             class="h-4 w-4" :class="ownReadIconClass(entry.message)" />
                         </div>
@@ -170,6 +206,44 @@
               <form ref="composerBarRef" @submit.prevent="sendMessage"
                 class="fixed inset-x-0 z-20 shrink-0 bg-[#f0f2f5] px-3 py-2 dark:bg-[#202c33] md:sticky md:inset-auto md:px-4"
                 :style="composerBarStyle">
+                <div v-if="editTarget" class="mb-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm shadow-sm dark:border-amber-900/50 dark:bg-amber-500/10">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0 flex-1">
+                      <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">Mengedit</p>
+                      <p class="mt-1 truncate font-semibold text-[#111b21] dark:text-[#e9edef]">
+                        {{ editTarget.sender_name || "Pengguna" }}
+                      </p>
+                      <p class="mt-1 line-clamp-2 text-[#54656f] dark:text-[#aebac1]">
+                        {{ getMessagePreview(editTarget) }}
+                      </p>
+                    </div>
+                    <button type="button"
+                      class="rounded-full p-1 text-[#667781] hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
+                      @click="clearEditTarget">
+                      <Icon icon="mdi:close" class="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+                <div v-if="replyTarget" class="mb-2 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm shadow-sm dark:border-sky-900/50 dark:bg-sky-500/10">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0 flex-1">
+                      <p class="text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300">Membalas</p>
+                      <button type="button" class="mt-1 block w-full text-left" @click="scrollToMessageId(replyTarget.id)">
+                        <p class="truncate font-semibold text-[#111b21] dark:text-[#e9edef]">
+                          {{ replyTarget.sender_name || "Pengguna" }}
+                        </p>
+                        <p class="mt-1 line-clamp-2 text-[#54656f] dark:text-[#aebac1]">
+                          {{ getMessagePreview(replyTarget) }}
+                        </p>
+                      </button>
+                    </div>
+                    <button type="button"
+                      class="rounded-full p-1 text-[#667781] hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
+                      @click="clearReplyTarget">
+                      <Icon icon="mdi:close" class="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
                 <div v-if="attachmentPreviewName || recordedVoiceUrl || isRecordingVoice"
                   class="mb-2 rounded-lg bg-white px-4 py-3 text-sm shadow-sm dark:bg-[#2a3942]">
                   <div v-if="recordedVoiceUrl" class="flex items-center justify-between gap-3">
@@ -224,7 +298,7 @@
                   </div>
                   <button type="button"
                     class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
-                    :disabled="isSendingMessage || isRecordingVoice" @click="openAttachmentPicker">
+                    :disabled="isSendingMessage || isRecordingVoice || Boolean(editTarget)" @click="openAttachmentPicker">
                     <Icon icon="mdi:paperclip" class="h-6 w-6" />
                   </button>
                   <div class="mb-1 flex min-h-10 flex-1 items-center rounded-lg bg-white px-3 dark:bg-[#2a3942]">
@@ -233,7 +307,7 @@
                       @keydown="handleComposerKeydown"
                       class="block max-h-28 min-h-[24px] w-full resize-none overflow-y-auto border-0 bg-transparent py-2 text-[15px] leading-6 text-[#111b21] outline-none placeholder:text-[#667781] dark:text-[#e9edef] dark:placeholder:text-[#8696a0]" />
                   </div>
-                  <button v-if="!composer.trim() && !attachmentFile" type="button" :disabled="isSendingMessage"
+                  <button v-if="!composer.trim() && !attachmentFile && !editTarget" type="button" :disabled="isSendingMessage"
                     class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition text-[#54656f] hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
                     :class="isRecordingVoice ? 'bg-rose-500 text-white hover:bg-rose-400 dark:text-white' : ''"
                     @click="toggleVoiceRecording">
@@ -241,7 +315,7 @@
                   </button>
                   <button v-else type="submit" :disabled="isSendingMessage"
                     class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#00a884] text-white transition hover:bg-[#008f72] disabled:opacity-50">
-                    <Icon icon="mdi:send" class="h-5 w-5" />
+                    <Icon :icon="editTarget ? 'mdi:check' : 'mdi:send'" class="h-5 w-5" />
                   </button>
                 </div>
               </form>
@@ -265,6 +339,98 @@
         </div>
       </div>
     </main>
+    <div v-if="showPdfPreview" class="fixed inset-0 z-[85] bg-black/90" @click="closePdfPreview">
+      <div class="absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-3">
+        <p class="truncate text-xs font-semibold text-white/80">{{ previewPdfName || "Preview PDF" }}</p>
+        <div class="flex items-center gap-2">
+          <a
+            v-if="previewPdfUrl"
+            :href="previewPdfUrl"
+            :download="previewPdfName || 'preview.pdf'"
+            class="rounded-full bg-white/15 px-3 py-2 text-xs font-semibold text-white hover:bg-white/25"
+            @click.stop
+          >
+            Unduh
+          </a>
+          <button type="button" @click.stop="closePdfPreview"
+            class="rounded-full bg-white/15 p-2 text-white hover:bg-white/25">
+            <Icon icon="mdi:close" class="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+      <div class="flex h-full w-full items-center justify-center overflow-auto p-4 pt-16">
+        <iframe
+          v-if="previewPdfUrl"
+          :src="previewPdfUrl"
+          class="h-[85vh] w-full max-w-5xl rounded-2xl bg-white shadow-2xl"
+          title="Preview PDF"
+        />
+      </div>
+    </div>
+
+    <div v-if="showProfileModal" class="fixed inset-0 z-[86] bg-black/45" @click="closePeerProfile">
+      <div
+        class="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white p-4 shadow-2xl dark:bg-slate-900 sm:mx-auto sm:my-16 sm:inset-auto sm:w-full sm:max-w-md sm:rounded-2xl"
+        @click.stop>
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h3 class="text-base font-semibold text-slate-900 dark:text-white">Profil Warga</h3>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Informasi akun yang sedang dibuka.</p>
+          </div>
+          <button type="button" @click="closePeerProfile"
+            class="rounded-full p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+            <Icon icon="mdi:close" class="h-5 w-5" />
+          </button>
+        </div>
+
+        <div class="mt-4 flex items-center gap-4">
+          <div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#dfe5e7] text-xl font-semibold text-[#54656f] dark:bg-[#2a3942] dark:text-[#d1d7db]">
+            <img v-if="selectedPeer?.profile_image" :src="normalizePublicUrl(selectedPeer.profile_image)"
+              :alt="displayPeerName(selectedPeer)" class="h-full w-full object-cover" />
+            <span v-else>{{ peerInitial(selectedPeer) }}</span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <h4 class="truncate text-lg font-semibold text-slate-900 dark:text-white">{{ displayPeerName(selectedPeer) }}</h4>
+            <p class="truncate text-sm text-slate-500 dark:text-slate-400">@{{ selectedPeer?.username || "-" }}</p>
+          </div>
+        </div>
+
+        <div class="mt-4 space-y-3">
+          <div class="rounded-xl bg-slate-50 px-4 py-3 dark:bg-slate-800">
+            <p class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Role</p>
+            <p class="mt-1 text-sm font-medium text-slate-900 dark:text-white">{{ selectedPeer?.role || "-" }}</p>
+          </div>
+          <div class="rounded-xl bg-slate-50 px-4 py-3 dark:bg-slate-800">
+            <p class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Kelas</p>
+            <p class="mt-1 text-sm font-medium text-slate-900 dark:text-white">{{ selectedPeer?.class_name || "-" }}</p>
+          </div>
+          <div class="rounded-xl bg-slate-50 px-4 py-3 dark:bg-slate-800">
+            <p class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Nama Lengkap</p>
+            <p class="mt-1 text-sm font-medium text-slate-900 dark:text-white">{{ displayPeerName(selectedPeer) }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showMessageActionSheet" class="fixed inset-0 z-[87] bg-black/45" @click="closeMessageActionSheet">
+      <div class="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white p-4 shadow-2xl dark:bg-slate-900" @click.stop>
+        <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Aksi Pesan</p>
+        <button type="button" @click="replyFromActionSheet"
+          class="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-semibold text-slate-800 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800">
+          Balas Chat
+          <Icon icon="mdi:reply-outline" class="h-5 w-5" />
+        </button>
+        <button v-if="actionSheetMessage && isOwnMessage(actionSheetMessage)" type="button" @click="editFromActionSheet"
+          class="mt-2 flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-semibold text-slate-800 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800">
+          Edit Pesan
+          <Icon icon="mdi:pencil-outline" class="h-5 w-5" />
+        </button>
+        <button type="button" @click="closeMessageActionSheet"
+          class="mt-2 flex w-full items-center justify-center rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300">
+          Batal
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -276,6 +442,7 @@ import { storeToRefs } from "pinia";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { convertHeicToJpegIfPossible } from "@/utils/fileImage";
+import { formatChatDateKey, formatChatDateSeparator, formatChatShortDate, formatChatTime, parseDateValue } from "@/utils/date";
 import { normalizePublicUrl } from "@/utils/url";
 import { useRealtimeStore } from "@/store/realtime";
 import { useSidebar } from "@/store/sidebar";
@@ -302,6 +469,20 @@ const attachmentInputRef = ref(null);
 const attachmentFile = ref(null);
 const attachmentPreviewName = ref("");
 const recordedVoiceUrl = ref("");
+const showPdfPreview = ref(false);
+const previewPdfUrl = ref("");
+const previewPdfName = ref("");
+const showProfileModal = ref(false);
+const replyTarget = ref(null);
+const replyHighlightMessageId = ref(null);
+const showMessageActionSheet = ref(false);
+const actionSheetMessage = ref(null);
+const editTarget = ref(null);
+const longPressTimer = ref(null);
+const touchStartPoint = ref({ x: 0, y: 0 });
+const touchCanReply = ref(false);
+const touchedMessageId = ref(null);
+const touchActionHandled = ref(false);
 const isRecordingVoice = ref(false);
 const recordingSeconds = ref(0);
 const recordingTimer = ref(null);
@@ -352,63 +533,138 @@ const getCurrentUserId = () => {
 const currentUserId = getCurrentUserId();
 const visiblePeers = computed(() => (search.value.trim() ? searchedPeers.value : peers.value));
 
-const isSameDay = (left, right) =>
-  left.getFullYear() === right.getFullYear()
-  && left.getMonth() === right.getMonth()
-  && left.getDate() === right.getDate();
-
 const displayPeerName = (peer) => String(peer?.full_name || peer?.username || "Pengguna");
 const peerInitial = (peer) => displayPeerName(peer).trim().charAt(0).toUpperCase() || "?";
 const peerMeta = (peer) => [peer?.role, peer?.class_name].filter(Boolean).join(" • ") || "Warga sekolah";
+const truncatePreview = (value, limit = 46) => {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (!text) return "";
+  if (text.length <= limit) return text;
+  return `${text.slice(0, Math.max(0, limit - 1)).trimEnd()}…`;
+};
 
 const formatMessageTime = (value) => {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+  return formatChatTime(value);
 };
 
 const formatPeerTime = (value) => {
   if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  const today = new Date();
-  const yesterday = new Date();
-  yesterday.setDate(today.getDate() - 1);
 
-  if (isSameDay(date, today)) {
-    return formatMessageTime(date);
+  const dateKey = formatChatDateKey(value);
+  if (!dateKey) return "";
+
+  const todayKey = formatChatDateKey(new Date());
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayKey = formatChatDateKey(yesterday);
+
+  if (dateKey === todayKey) {
+    return formatMessageTime(value);
   }
-  if (isSameDay(date, yesterday)) {
+  if (dateKey === yesterdayKey) {
     return "Kemarin";
   }
-  return date.toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "2-digit" });
+  return formatChatShortDate(value);
 };
 
 const formatDateSeparator = (value) => {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  const today = new Date();
-  const yesterday = new Date();
-  yesterday.setDate(today.getDate() - 1);
-
-  if (isSameDay(date, today)) return "Hari ini";
-  if (isSameDay(date, yesterday)) return "Kemarin";
-  return date.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  return formatChatDateSeparator(value);
 };
 
 const latestPeerPreview = (peer) => {
-  const preview = String(peer?.last_message || "").trim();
+  let preview = String(peer?.last_message || "").trim();
   if (preview) {
+    const parsed = parseReplyPayload(preview);
+    preview = parsed.body || preview;
     if (Number(peer?.last_sender_id || 0) === Number(currentUserId)) {
-      return `Anda: ${preview}`;
+      return truncatePreview(`Anda: ${preview}`);
     }
-    return preview;
+    return truncatePreview(preview);
   }
   return search.value.trim() ? "Mulai chat pribadi" : "Belum ada pesan";
 };
 
+const parseReplyPayload = (rawMessage) => {
+  const text = String(rawMessage || "");
+  const matched = text.match(/^(\[Balas(?:#(\d+))?\s+(.+?): (.+?)\])\n([\s\S]*)$/);
+  if (!matched) {
+    return {
+      replyId: null,
+      replyName: "",
+      replyPreview: "",
+      replyPrefix: "",
+      body: text,
+    };
+  }
+
+  return {
+    replyPrefix: matched[1] || "",
+    replyId: matched[2] ? Number(matched[2]) : null,
+    replyName: matched[3] || "",
+    replyPreview: matched[4] || "",
+    body: matched[5] || "",
+  };
+};
+
 const isOwnMessage = (message) => Number(message?.sender_id || 0) === Number(currentUserId);
+
+const getMessagePreview = (message) => {
+  if (!message) return "-";
+  const parsed = parseReplyPayload(message?.message);
+  if (parsed.body) {
+    return String(parsed.body).replace(/\s+/g, " ").slice(0, 120);
+  }
+  if (String(message?.message_type || "").toUpperCase() === "VOICE") return "Voice note";
+  if (String(message?.message_type || "").toUpperCase() === "IMAGE") return "Gambar";
+  if (message?.attachment_preview_url) return "PDF";
+  if (message?.attachment_name) return message.attachment_name;
+  return "Pesan";
+};
+
+const scrollToMessageId = async (messageId) => {
+  const normalizedMessageId = Number(messageId || 0);
+  if (!normalizedMessageId) {
+    return false;
+  }
+
+  await nextTick();
+  const target = messageListRef.value?.querySelector?.(`[data-message-id="${normalizedMessageId}"]`);
+  if (!target) {
+    return false;
+  }
+
+  target.scrollIntoView({ behavior: "smooth", block: "center" });
+  replyHighlightMessageId.value = normalizedMessageId;
+  window.setTimeout(() => {
+    if (replyHighlightMessageId.value === normalizedMessageId) {
+      replyHighlightMessageId.value = null;
+    }
+  }, 1600);
+  return true;
+};
+
+const jumpToReplyTarget = async (messageItem) => {
+  const parsed = parseReplyPayload(messageItem?.message);
+  const replyId = Number(parsed?.replyId || 0);
+  if (!replyId) {
+    pushToast({
+      title: "Pesan Asal Tidak Ditemukan",
+      message: "Balasan ini belum menyimpan referensi pesan asal.",
+      type: "info",
+    });
+    return;
+  }
+
+  const found = await scrollToMessageId(replyId);
+  if (!found) {
+    pushToast({
+      title: "Pesan Asal Tidak Tersedia",
+      message: "Pesan asal kemungkinan di luar riwayat yang sedang dimuat.",
+      type: "info",
+    });
+    return;
+  }
+};
 
 const ownReadLabel = (message) => {
   const currentPeer = peers.value.find((item) => Number(item.user_id) === Number(selectedPeer.value?.user_id || 0));
@@ -440,8 +696,7 @@ const renderedMessages = computed(() => {
   let lastDateKey = "";
 
   messages.value.forEach((message) => {
-    const date = new Date(message?.created_at || Date.now());
-    const dateKey = Number.isNaN(date.getTime()) ? "unknown" : date.toISOString().slice(0, 10);
+    const dateKey = formatChatDateKey(message?.created_at || Date.now()) || "unknown";
     if (dateKey !== lastDateKey) {
       entries.push({
         key: `date-${dateKey}`,
@@ -454,6 +709,7 @@ const renderedMessages = computed(() => {
       key: `message-${message.id}`,
       type: "message",
       message,
+      parsedReply: parseReplyPayload(message?.message),
     });
   });
 
@@ -462,8 +718,8 @@ const renderedMessages = computed(() => {
 
 const sortPeers = (items = []) =>
   [...items].sort((left, right) => {
-    const leftTime = left?.last_message_at ? new Date(left.last_message_at).getTime() : 0;
-    const rightTime = right?.last_message_at ? new Date(right.last_message_at).getTime() : 0;
+    const leftTime = parseDateValue(left?.last_message_at)?.getTime() || 0;
+    const rightTime = parseDateValue(right?.last_message_at)?.getTime() || 0;
     if (leftTime !== rightTime) return rightTime - leftTime;
     return displayPeerName(left).localeCompare(displayPeerName(right), "id");
   });
@@ -541,10 +797,142 @@ const isRenderableImageMessage = (message) => {
   return true;
 };
 
+const isPdfPreviewMessage = (message) => {
+  return Boolean(message?.attachment_preview_url);
+};
+
 const openImagePreview = (message) => {
   const url = normalizePublicUrl(message?.attachment_url);
   if (!url) return;
   window.open(url, "_blank", "noopener,noreferrer");
+};
+
+const openAttachment = (message) => {
+  const url = normalizePublicUrl(message?.attachment_url);
+  if (!url) return;
+  previewPdfUrl.value = url;
+  previewPdfName.value = message?.attachment_name || "Preview PDF";
+  showPdfPreview.value = true;
+};
+
+const closePdfPreview = () => {
+  showPdfPreview.value = false;
+  previewPdfUrl.value = "";
+  previewPdfName.value = "";
+};
+
+const openPeerProfile = () => {
+  if (!selectedPeer.value) {
+    return;
+  }
+  showProfileModal.value = true;
+};
+
+const closePeerProfile = () => {
+  showProfileModal.value = false;
+};
+
+const clearReplyTarget = () => {
+  replyTarget.value = null;
+};
+
+const setReplyTarget = (message) => {
+  replyTarget.value = message || null;
+};
+
+const clearEditTarget = () => {
+  editTarget.value = null;
+};
+
+const setEditTarget = (message) => {
+  if (!message) return;
+  const parsed = parseReplyPayload(message?.message);
+  editTarget.value = message;
+  composer.value = parsed.body || "";
+  replyTarget.value = null;
+  clearAttachment();
+  emojiPanelOpen.value = false;
+  nextTick().then(() => {
+    resizeComposer({ target: composerBarRef.value?.querySelector?.("textarea") });
+  });
+};
+
+const clearLongPressTimer = () => {
+  if (longPressTimer.value) {
+    window.clearTimeout(longPressTimer.value);
+    longPressTimer.value = null;
+  }
+};
+
+const handleMessagePressStart = (message, event) => {
+  clearLongPressTimer();
+  touchedMessageId.value = Number(message?.id || 0);
+  touchCanReply.value = false;
+  touchActionHandled.value = false;
+
+  const touch = event?.touches?.[0];
+  touchStartPoint.value = {
+    x: Number(touch?.clientX || 0),
+    y: Number(touch?.clientY || 0),
+  };
+
+  longPressTimer.value = window.setTimeout(() => {
+    touchCanReply.value = true;
+  }, 180);
+};
+
+const handleMessagePressMove = (message, event) => {
+  if (!touchCanReply.value || Number(message?.id || 0) !== Number(touchedMessageId.value || 0)) {
+    return;
+  }
+
+  const touch = event?.touches?.[0];
+  if (!touch) return;
+
+  const deltaX = Number(touch.clientX || 0) - Number(touchStartPoint.value.x || 0);
+  const deltaY = Number(touch.clientY || 0) - Number(touchStartPoint.value.y || 0);
+
+  if (deltaX > 36 && Math.abs(deltaY) < 48) {
+    setReplyTarget(message);
+    clearLongPressTimer();
+    touchCanReply.value = false;
+    touchedMessageId.value = null;
+    touchActionHandled.value = true;
+  }
+};
+
+const handleMessagePressEnd = (message) => {
+  if (touchCanReply.value && !touchActionHandled.value && Number(message?.id || 0) === Number(touchedMessageId.value || 0)) {
+    openMessageActionSheet(message);
+  }
+  clearLongPressTimer();
+  touchCanReply.value = false;
+  touchedMessageId.value = null;
+  touchActionHandled.value = false;
+};
+
+const openMessageActionSheet = (message) => {
+  actionSheetMessage.value = message || null;
+  showMessageActionSheet.value = Boolean(actionSheetMessage.value);
+};
+
+const closeMessageActionSheet = () => {
+  showMessageActionSheet.value = false;
+  actionSheetMessage.value = null;
+};
+
+const replyFromActionSheet = () => {
+  if (actionSheetMessage.value) {
+    setReplyTarget(actionSheetMessage.value);
+  }
+  closeMessageActionSheet();
+};
+
+const editFromActionSheet = () => {
+  if (actionSheetMessage.value && isOwnMessage(actionSheetMessage.value)) {
+    setEditTarget(actionSheetMessage.value);
+  }
+  closeMessageActionSheet();
 };
 
 const refreshSummary = async (force = false) => {
@@ -621,6 +1009,8 @@ const loadMessages = async (peerUserId) => {
 const selectPeer = async (peer) => {
   selectedPeer.value = peer;
   mobileChatOpen.value = true;
+  clearReplyTarget();
+  clearEditTarget();
   await loadMessages(peer.user_id);
 };
 
@@ -645,13 +1035,24 @@ const sendMessage = async () => {
   isSendingMessage.value = true;
   const messageText = composer.value.trim();
   try {
+    const replyPrefix = replyTarget.value
+      ? `[Balas#${Number(replyTarget.value.id || 0)} ${replyTarget.value.sender_name || "Pengguna"}: ${getMessagePreview(replyTarget.value)}]`
+      : "";
+    const editPrefix = editTarget.value ? parseReplyPayload(editTarget.value.message).replyPrefix || "" : "";
+    const finalMessage = [editPrefix || replyPrefix, messageText].filter(Boolean).join("\n");
+
+    const shouldEdit = Boolean(editTarget.value);
+    const endpoint = shouldEdit
+      ? `/private-chat/${selectedPeer.value.user_id}/messages/${editTarget.value.id}`
+      : `/private-chat/${selectedPeer.value.user_id}/messages`;
+
     let payload = {
-      message: messageText,
+      message: finalMessage,
       client_id: localClientId.value,
     };
-    if (attachmentFile.value) {
+    if (!shouldEdit && attachmentFile.value) {
       const formData = new FormData();
-      formData.append("message", messageText);
+      formData.append("message", finalMessage);
       formData.append("client_id", localClientId.value);
       formData.append("attachment", attachmentFile.value);
       formData.append("attachment_name", attachmentFile.value.name || "");
@@ -662,12 +1063,25 @@ const sendMessage = async () => {
       }
       payload = formData;
     }
-    const response = await api.post(`/private-chat/${selectedPeer.value.user_id}/messages`, payload);
+
+    const response = shouldEdit
+      ? await api.put(endpoint, payload)
+      : await api.post(endpoint, payload);
     composer.value = "";
     emojiPanelOpen.value = false;
+    clearReplyTarget();
+    clearEditTarget();
     clearAttachment();
     if (response?.data) {
-      messages.value = [...messages.value, response.data];
+      const nextMessage = response.data;
+      const existingIndex = messages.value.findIndex((item) => Number(item.id) === Number(nextMessage.id));
+      if (existingIndex >= 0) {
+        const nextMessages = [...messages.value];
+        nextMessages.splice(existingIndex, 1, nextMessage);
+        messages.value = nextMessages;
+      } else {
+        messages.value = [...messages.value, nextMessage];
+      }
       await scrollToBottom();
     }
     await refreshSummary(true);
@@ -822,6 +1236,8 @@ const handleComposerKeydown = (event) => {
 const backToPeerList = () => {
   mobileChatOpen.value = false;
   emojiPanelOpen.value = false;
+  clearReplyTarget();
+  clearEditTarget();
 };
 
 const bindRealtime = () => {
@@ -843,6 +1259,25 @@ const bindRealtime = () => {
         messages.value = [...messages.value, payload];
         await scrollToBottom();
         await markAsRead(activePeerId);
+      }
+    }),
+    realtimeStore.on("private-chat:message-updated", async (payload) => {
+      const senderId = Number(payload?.sender_id || 0);
+      const recipientId = Number(payload?.recipient_id || 0);
+      const activePeerId = Number(selectedPeer.value?.user_id || 0);
+      const peerId = senderId === Number(currentUserId) ? recipientId : senderId;
+
+      await refreshSummary(true);
+
+      if (activePeerId && peerId === activePeerId) {
+        const updatedId = Number(payload?.id || 0);
+        if (!updatedId) return;
+        const existingIndex = messages.value.findIndex((item) => Number(item.id) === updatedId);
+        if (existingIndex >= 0) {
+          const nextMessages = [...messages.value];
+          nextMessages.splice(existingIndex, 1, payload);
+          messages.value = nextMessages;
+        }
       }
     }),
     realtimeStore.on("private-chat:read-updated", async (payload) => {

@@ -212,7 +212,7 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { formatDate, formatTime } from "@/utils/date";
+import { formatDateKey, formatLongDate, formatTime } from "@/utils/date";
 import { useProfileStore } from "@/store/profile";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 
@@ -229,8 +229,8 @@ const FACE_MATCH_THRESHOLD = 0.5;
 
 const updateClock = () => {
   const now = new Date();
-  currentTime.value = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  currentDate.value = now.toLocaleDateString("id-ID", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  currentTime.value = formatTime(now);
+  currentDate.value = formatLongDate(now);
 };
 
 // --- Attendance State ---
@@ -254,11 +254,7 @@ const profileStore = useProfileStore();
 
 // Computed properti untuk mendeteksi status kehadiran hari ini
 const formatLocalDate = (value) => {
-  const current = new Date(value);
-  const year = current.getFullYear();
-  const month = String(current.getMonth() + 1).padStart(2, "0");
-  const day = String(current.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  return formatDateKey(value);
 };
 
 const todayStr = formatLocalDate(new Date());

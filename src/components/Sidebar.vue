@@ -283,6 +283,7 @@ const isKoperasiRole = role === "KOPERASI";
 const schoolNameLabel = computed(() => storedProfile.value?.school_name || "School System");
 const schoolLogoSrc = computed(() => normalizePublicUrl(storedProfile.value?.school_logo) || "");
 const isInventoryEnabled = computed(() => storedProfile.value?.inventory_module_enabled !== false);
+const isAttendanceEnabled = computed(() => storedProfile.value?.attendance_module_enabled !== false);
 const isOfficialExamEnabled = computed(() => storedProfile.value?.official_exam_module_enabled !== false);
 const isKoperasiEnabled = computed(() => storedProfile.value?.koperasi_module_enabled !== false);
 const shouldTrackKoperasi = computed(() => isKoperasiEnabled.value && (isAdminRole || isKoperasiRole));
@@ -448,6 +449,7 @@ const menuByRole = {
       ],
     },
     { key: "learning-exams-admin", to: "/learning-exams-admin", label: "Ujian Resmi", icon: "ph:exam" },
+    { key: "announcements", to: "/announcements", label: "Pengumuman", icon: "ph:megaphone-simple" },
     { key: "billing", to: "/billing", label: "Billing", icon: "ph:credit-card" },
     { key: "admin-settings", to: "/admin-settings", dataTour: "settings", label: "Setting", icon: "ph:gear-six" },
   ],
@@ -506,6 +508,9 @@ const filterMenuItems = (items = []) =>
   items
     .map((item) => {
       if (item.key === "inventory" && !isInventoryEnabled.value) {
+        return null;
+      }
+      if ((item.key === "attendance" || item.key === "face-enrollment") && !isAttendanceEnabled.value) {
         return null;
       }
       if (item.key === "koperasi" && !isKoperasiEnabled.value) {

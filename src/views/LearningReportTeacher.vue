@@ -152,7 +152,7 @@ import { computed, onMounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { downloadExcelWorksheet } from "@/utils/excelExport";
-import { formatDate } from "@/utils/date";
+import { formatDate, formatDateKey } from "@/utils/date";
 import { useMasterDataStore } from "@/store/masterData";
 
 const subjects = ref([]);
@@ -319,7 +319,7 @@ const handlePageSizeChange = async () => {
 const buildExportFilename = () => {
   const subject = subjects.value.find((item) => String(item.id) === filters.subjectId);
   const period = report.value?.selected_period;
-  const date = new Date().toISOString().slice(0, 10);
+  const date = formatDateKey(new Date());
   const subjectPart = `${subject?.name || "rapor"}-${subject?.class_name || "kelas"}`
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")

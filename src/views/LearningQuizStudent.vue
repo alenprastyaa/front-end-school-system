@@ -189,10 +189,10 @@
     </div>
 
     <div v-if="!submissionTarget"
-      class="min-h-screen bg-slate-50/50 p-4 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
+      class="min-h-screen bg-white p-4 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
 
 
-      <main class="mx-auto mt-8 ">
+      <main class="mx-auto mt-8">
 
         <section class="mb-8">
           <div class="mb-4 flex items-center justify-between">
@@ -203,12 +203,12 @@
           <div
             class="flex flex-nowrap gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <button v-for="item in subjects" :key="item.id" @click="selectSubject(item)"
-              class="group relative flex min-w-[260px] flex-none snap-start flex-col items-start overflow-hidden rounded-2xl p-5 text-left transition-all"
+              class="group relative flex min-w-[220px] flex-none snap-start flex-col items-start overflow-hidden rounded-2xl p-4 text-left transition-all"
               :class="selectedSubject?.id === item.id
                 ? 'bg-rose-600 shadow-md ring-1 ring-rose-600 dark:bg-rose-700'
                 : 'bg-white shadow-sm ring-1 ring-slate-900/5 hover:bg-slate-50 dark:bg-slate-900 dark:ring-white/10 dark:hover:bg-slate-800/80'">
               <span :class="selectedSubject?.id === item.id ? 'text-white' : 'text-slate-900 dark:text-white'"
-                class="font-bold tracking-tight text-lg">{{ item.name }}</span>
+                class="font-bold tracking-tight text-base">{{ item.name }}</span>
               <span :class="selectedSubject?.id === item.id ? 'text-rose-100' : 'text-slate-500 dark:text-slate-400'"
                 class="mt-2 text-xs font-medium">
                 Guru: {{ item.teacher_name }}
@@ -227,165 +227,164 @@
 
         <div>
           <div v-if="selectedSubject" class="space-y-6">
-            <section
-              class="overflow-hidden rounded-[32px] bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
-              <div class="border-b border-slate-100 px-6 py-5 dark:border-slate-800 md:px-8">
-                <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <section class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+              <div class="border-b border-slate-100 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-900">
+                <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <h3 class="text-xl font-black tracking-tight text-slate-900 dark:text-white">
+                    <h3 class="text-lg font-black tracking-tight text-slate-900 dark:text-white">
                       {{ isExamPage ? "Jadwal dan Sesi Ujian" : "Daftar Tugas Quiz" }}
                     </h3>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">
                       {{ isExamPage
-                        ? "Periksa jadwal buka, tenggat, dan status pengerjaan sebelum masuk ke sesi ujian."
-                        : `Pilih quiz yang masih aktif. Setiap kartu menampilkan status, tenggat, dan hasil jika sudah
-                      dinilai.` }}
+                        ? "Periksa jadwal buka, tenggat, dan status sebelum masuk."
+                        : "Pilih quiz aktif. Status dan aksi dibuat ringkas agar mudah dibaca." }}
                     </p>
                   </div>
-                  <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                    {{ assignments.length }} item
-                  </p>
+                  <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">{{ assignments.length }} item</p>
                 </div>
               </div>
 
-              <div class="p-6 md:p-8">
-                <div class="grid gap-5 xl:grid-cols-2">
-                  <article v-for="item in assignments" :key="item.id"
-                    class="group relative overflow-hidden rounded-[28px] border p-5 shadow-sm transition-all dark:bg-slate-900"
-                    :class="item.is_submitted
-                      ? 'border-emerald-100 bg-emerald-50/50 hover:border-emerald-200 dark:border-emerald-500/20 dark:bg-emerald-500/5'
-                      : item.access_blocked
-                        ? 'border-amber-200 bg-amber-50/70 dark:border-amber-500/20 dark:bg-amber-500/10'
-                        : isExamUnavailable(item)
-                          ? 'border-slate-200 bg-slate-50/60 dark:border-slate-700 dark:bg-slate-800/50'
-                          : 'border-rose-100 bg-white hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md dark:border-rose-500/20 dark:bg-slate-950 dark:hover:border-rose-500/40'">
-                    <div
-                      class="absolute right-0 top-0 h-24 w-24 rounded-full bg-rose-100/70 blur-2xl transition dark:bg-rose-500/10"
-                      :class="item.submission_id ? 'bg-emerald-100/70 dark:bg-emerald-500/10' : ''"></div>
+              <div class="bg-white p-4 dark:bg-slate-900">
+                <div class="hidden md:block overflow-x-auto">
+                  <table class="min-w-full text-sm">
+                    <thead class="bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/60">
+                      <tr>
+                        <th class="px-3 py-2">Quiz</th>
+                        <th class="px-3 py-2">Info</th>
+                        <th class="px-3 py-2">Status</th>
+                        <th class="px-3 py-2 text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                      <tr v-for="item in assignments" :key="item.id" class="align-top">
+                        <td class="px-3 py-3">
+                          <div class="flex flex-wrap gap-1.5">
+                            <span v-if="item.is_exam" class="inline-flex rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-sky-700 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">
+                              {{ examCategoryLabel(item.exam_category) }}
+                            </span>
+                            <span class="inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-rose-700 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
+                              {{ assignmentTypeLabel(item.assignment_type) }}
+                            </span>
+                          </div>
+                          <div class="mt-2 font-semibold text-slate-900 dark:text-white">{{ item.title }}</div>
+                          <div class="mt-1 line-clamp-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
+                            {{ item.description || "Tidak ada instruksi tambahan." }}
+                          </div>
+                        </td>
+                        <td class="px-3 py-3 text-xs text-slate-500 dark:text-slate-400">
+                          <div>{{ item.is_exam ? `Mulai ${formatDateTime(item.start_at)}` : assignmentDurationSummary(item) }}</div>
+                          <div class="mt-1">{{ formatDateTime(item.due_date) }}</div>
+                          <div v-if="item.score !== null" class="mt-2 font-semibold text-emerald-600 dark:text-emerald-300">
+                            Nilai {{ item.score }} / 100
+                          </div>
+                        </td>
+                        <td class="px-3 py-3">
+                          <span class="inline-flex rounded-full px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.08em] ring-1 ring-inset"
+                            :class="item.score !== null
+                            ? 'bg-white text-emerald-700 ring-emerald-200 dark:bg-slate-900 dark:text-emerald-300 dark:ring-emerald-500/20'
+                              : item.access_blocked
+                                ? 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20'
+                                : item.is_submitted
+                                  ? 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20'
+                                  : isExamUnavailable(item)
+                                    ? 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700'
+                                    : 'bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20'">
+                            {{ item.score !== null ? "Dinilai" : item.access_blocked ? "Kode Baru" : item.is_submitted ? "Selesai" : isExamUnavailable(item) ? "Belum Tersedia" : "Siap" }}
+                          </span>
+                        </td>
+                        <td class="px-3 py-3 text-right">
+                          <button @click="item.is_submitted ? openAssignmentReview(item) : startSubmission(item)"
+                            :disabled="!item.is_submitted && isExamUnavailable(item)"
+                            class="inline-flex items-center justify-center rounded-md px-2 py-1 text-[10px] font-medium transition disabled:cursor-not-allowed disabled:opacity-60"
+                            :class="item.is_submitted
+                              ? 'bg-slate-50 text-slate-500 ring-1 ring-inset ring-slate-200 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700'
+                              : 'bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-slate-100'">
+                            {{ item.is_submitted ? "Review" : startButtonLabel(item) }}
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
 
-                    <div class="relative flex h-full flex-col gap-5">
-                      <div class="flex flex-wrap items-start justify-between gap-3">
-                        <div class="flex flex-wrap items-center gap-2">
-                          <span v-if="item.is_exam"
-                            class="inline-flex rounded-full bg-sky-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-sky-700 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">
+                <div class="space-y-2 md:hidden">
+                  <article v-for="item in assignments" :key="`m-${item.id}`"
+                    class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition-all dark:bg-slate-900"
+                    :class="item.is_submitted
+                      ? 'border-emerald-100 bg-white dark:border-emerald-500/20 dark:bg-slate-900'
+                      : item.access_blocked
+                        ? 'border-amber-200 bg-amber-50/50 dark:border-amber-500/20 dark:bg-amber-500/10'
+                        : isExamUnavailable(item)
+                          ? 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800/50'
+                          : 'border-rose-100 bg-white dark:border-rose-500/20 dark:bg-slate-950'">
+                    <div class="flex items-start justify-between gap-2">
+                      <div class="min-w-0">
+                        <div class="flex flex-wrap gap-1.5">
+                          <span v-if="item.is_exam" class="inline-flex rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-sky-700 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">
                             {{ examCategoryLabel(item.exam_category) }}
                           </span>
-                          <span
-                            class="inline-flex rounded-full bg-rose-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-rose-700 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
+                          <span class="inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-rose-700 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
                             {{ assignmentTypeLabel(item.assignment_type) }}
                           </span>
                         </div>
-
-                        <span
-                          class="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] ring-1 ring-inset"
-                          :class="item.score !== null
-                            ? 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20'
-                            : item.access_blocked
-                              ? 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20'
-                              : item.is_submitted
-                                ? 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20'
-                                : isExamUnavailable(item)
-                                  ? 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700'
-                                  : 'bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20'">
-                          {{ item.score !== null ? "Sudah Dinilai" : item.access_blocked ? "Butuh Kode Baru" :
-                            item.is_submitted ? "Selesai" :
-                              isExamUnavailable(item) ? "Belum Tersedia" : "Siap Dikerjakan" }}
-                        </span>
-                      </div>
-
-                      <div>
-                        <h4 class="text-xl font-black tracking-tight text-slate-900 dark:text-white">{{ item.title }}
-                        </h4>
-                        <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">
+                        <h4 class="mt-1 text-sm font-bold text-slate-900 dark:text-white">{{ item.title }}</h4>
+                        <p class="mt-1 line-clamp-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
                           {{ item.description || "Tidak ada instruksi tambahan." }}
                         </p>
                       </div>
-
-                      <div class="grid gap-3 sm:grid-cols-2">
-                        <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/70">
-                          <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Tenggat</p>
-                          <p class="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{{
-                            formatDateTime(item.due_date) }}</p>
-                        </div>
-                        <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/70">
-                          <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
-                            {{ item.is_exam ? "Jadwal Mulai" : "Durasi" }}
-                          </p>
-                          <p class="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">
-                            {{ item.is_exam
-                              ? formatDateTime(item.start_at)
-                              : assignmentDurationSummary(item) }}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div v-if="item.score !== null || item.feedback"
-                        class="rounded-2xl border border-slate-200/70 bg-white/80 p-4 dark:border-slate-700 dark:bg-slate-900/80">
-                        <div class="flex flex-wrap items-center gap-3">
-                          <p v-if="item.score !== null"
-                            class="text-sm font-bold text-emerald-700 dark:text-emerald-300">
-                            Nilai: {{ item.score }} / 100
-                          </p>
-                          <p v-if="item.feedback" class="text-sm text-slate-600 dark:text-slate-300">
-                            <span class="font-bold text-slate-900 dark:text-white">Catatan Guru:</span> {{ item.feedback
-                            }}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div class="mt-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div class="text-sm text-slate-500 dark:text-slate-400">
-                          {{
-                            item.access_blocked ? `Sesi dihentikan karena batas pelanggaran tercapai. Minta admin membuat
-                          kode ujian baru untuk melanjutkan.`
-                              :
-                              item.attempt_started_at && !item.is_submitted ? `${item.is_exam ? "Sesi ujian" : "Sesi quiz"}
-                          masih aktif di perangkat ini.`
-                                :
-                                item.is_submitted ? `${item.is_exam ? "Ujian" : "Quiz"} sudah dikirim.`
-                                  : isExamUnavailable(item)
-                                    ? `Belum bisa dibuka sesuai jadwal.`
-                                    : `${item.is_exam ? "Ujian" : "Quiz"} siap dikerjakan sekarang.` }}
-                        </div>
-
-                        <button @click="item.is_submitted ? openAssignmentReview(item) : startSubmission(item)"
-                          :disabled="!item.is_submitted && isExamUnavailable(item)"
-                          class="inline-flex w-full items-center justify-center rounded-2xl px-6 py-3 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-                          :class="item.is_submitted
-                            ? 'bg-white text-slate-700 ring-1 ring-inset ring-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-700'
-                            : 'bg-slate-900 text-white shadow-lg shadow-slate-900/10 hover:bg-rose-600 dark:bg-white dark:text-slate-900 dark:hover:bg-rose-200'">
-                          {{ item.is_submitted ? "Review Jawaban" : startButtonLabel(item) }}
-                        </button>
-                      </div>
+                      <span class="inline-flex shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.08em] ring-1 ring-inset"
+                        :class="item.score !== null
+                          ? 'bg-white text-emerald-700 ring-emerald-200 dark:bg-slate-900 dark:text-emerald-300 dark:ring-emerald-500/20'
+                          : item.access_blocked
+                            ? 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20'
+                            : item.is_submitted
+                              ? 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20'
+                              : isExamUnavailable(item)
+                                ? 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700'
+                                : 'bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20'">
+                        {{ item.score !== null ? "Dinilai" : item.access_blocked ? "Kode Baru" : item.is_submitted ? "Selesai" : isExamUnavailable(item) ? "Belum Tersedia" : "Siap" }}
+                      </span>
+                    </div>
+                    <div class="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+                      <span>{{ item.is_exam ? `Mulai ${formatDateTime(item.start_at)}` : assignmentDurationSummary(item) }}</span>
+                      <span>•</span>
+                      <span>{{ formatDateTime(item.due_date) }}</span>
+                    </div>
+                    <div class="mt-3 flex items-center justify-between gap-2">
+                      <span v-if="item.score !== null" class="text-xs font-semibold text-emerald-600 dark:text-emerald-300">
+                        Nilai {{ item.score }} / 100
+                      </span>
+                      <span v-else class="text-xs text-slate-400"></span>
+                      <button @click="item.is_submitted ? openAssignmentReview(item) : startSubmission(item)"
+                        :disabled="!item.is_submitted && isExamUnavailable(item)"
+                        class="inline-flex items-center justify-center rounded-md px-2 py-1 text-[10px] font-medium transition disabled:cursor-not-allowed disabled:opacity-60"
+                        :class="item.is_submitted
+                          ? 'bg-slate-50 text-slate-500 ring-1 ring-inset ring-slate-200 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700'
+                          : 'bg-slate-800 text-white hover:bg-slate-700 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-slate-100'">
+                        {{ item.is_submitted ? "Review" : startButtonLabel(item) }}
+                      </button>
                     </div>
                   </article>
-                </div>
 
-                <div v-if="assignments.length === 0"
-                  class="rounded-[28px] border-2 border-dashed border-slate-200 bg-slate-50/60 py-20 text-center text-sm font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-900/60">
-                  {{ emptyAssignmentsLabel }}
+                  <div v-if="assignments.length === 0"
+                    class="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/60 py-8 text-center text-sm font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-900/60">
+                    {{ emptyAssignmentsLabel }}
+                  </div>
                 </div>
               </div>
             </section>
           </div>
 
           <div v-else
-            class="flex min-h-[500px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white/50 px-6 py-12 text-center dark:border-slate-800 dark:bg-slate-900/50">
-            <div class="rounded-full bg-rose-50 p-5 dark:bg-rose-500/10">
-              <svg class="h-10 w-10 text-rose-600 dark:text-rose-400" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-              </svg>
-            </div>
-            <h3 class="mt-5 text-xl font-bold text-slate-900 dark:text-white">{{ workspaceTitle }}</h3>
-            <p class="mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">{{ workspaceDescription }}</p>
+            class="rounded-2xl border-2 border-dashed border-slate-200 bg-white/50 px-6 py-10 text-center dark:border-slate-800 dark:bg-slate-900/50">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ workspaceTitle }}</h3>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">{{ workspaceDescription }}</p>
           </div>
         </div>
       </main>
     </div>
 
-    <div v-else class="bg-slate-50/50 p-4 pb-32 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100"
+    <div v-else class="bg-white p-4 pb-32 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100"
       :class="activeSessionContainerClass" :style="activeSessionContainerStyle">
 
       <main class="mx-auto " :class="pseudoFullscreenActive ? 'mt-0' : 'mt-8'">
@@ -706,7 +705,7 @@
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { onBeforeRouteLeave } from "vue-router";
 import { api } from "@/api";
-import { formatDateTime } from "@/utils/date";
+import { formatDateTime, parseDateValue } from "@/utils/date";
 import { pushToast } from "@/composables/useToast";
 import { setLayoutChromeHidden } from "@/composables/useLayoutChrome";
 import { useMasterDataStore } from "@/store/masterData";
@@ -1030,21 +1029,21 @@ function normalizeTimedDurationSeconds(item) {
 }
 
 const isExamNotStarted = (assignment) =>
-  Boolean(assignment?.is_exam && assignment?.start_at && new Date(assignment.start_at).getTime() > Date.now());
+  Boolean(assignment?.is_exam && assignment?.start_at && (parseDateValue(assignment.start_at)?.getTime() || 0) > Date.now());
 
 const isExamClosed = (assignment) =>
-  Boolean(assignment?.due_date && new Date(assignment.due_date).getTime() < Date.now());
+  Boolean(assignment?.due_date && (parseDateValue(assignment.due_date)?.getTime() || 0) < Date.now());
 
 const isExamUnavailable = (assignment) =>
   isExamNotStarted(assignment) || (!assignment?.attempt_started_at && !assignment?.is_submitted && isExamClosed(assignment));
 
 const startButtonLabel = (assignment) => {
-  if (assignment?.is_submitted) return "Selesai Dikerjakan";
-  if (assignment?.access_blocked) return "Masuk dengan Kode Baru";
+  if (assignment?.is_submitted) return "Review";
+  if (assignment?.access_blocked) return "Kode Baru";
   if (isExamNotStarted(assignment)) return "Menunggu Jadwal";
-  if (assignment?.attempt_started_at) return assignment?.is_exam ? "Lanjutkan Ujian" : "Lanjutkan Quiz";
-  if (isExamClosed(assignment)) return assignment?.is_exam ? "Ujian Ditutup" : "Quiz Ditutup";
-  return assignment?.is_exam ? "Masuk Ujian" : "Mulai Kerjakan Quiz";
+  if (assignment?.attempt_started_at) return assignment?.is_exam ? "Lanjut" : "Lanjut";
+  if (isExamClosed(assignment)) return "Tutup";
+  return "Mulai";
 };
 
 const openAssignmentReview = (assignment) => {
@@ -1086,7 +1085,7 @@ const isGlobalTimedQuiz = (assignment) =>
 const isSessionTimedAssignment = (assignment) => Boolean(assignment?.is_exam || isGlobalTimedQuiz(assignment));
 
 const buildSessionExpiresAt = (startedAt, durationSeconds) => {
-  const startMs = new Date(startedAt).getTime();
+  const startMs = parseDateValue(startedAt)?.getTime() || 0;
   const seconds = Number(durationSeconds || 0);
   if (!Number.isFinite(startMs) || seconds <= 0) {
     return null;
@@ -1473,7 +1472,7 @@ const syncAttemptProgressWithClock = () => {
   while (
     submissionTarget.value.current_question_started_at
     && activeQuestionIndex.value < totalQuestions.value
-    && new Date(submissionTarget.value.current_question_started_at).getTime() + questionDurationMs.value <= Date.now()
+    && (parseDateValue(submissionTarget.value.current_question_started_at)?.getTime() || 0) + questionDurationMs.value <= Date.now()
   ) {
     if (activeQuestionIndex.value >= totalQuestions.value - 1) {
       finished = true;
@@ -1482,7 +1481,7 @@ const syncAttemptProgressWithClock = () => {
 
     activeQuestionIndex.value += 1;
     submissionTarget.value.current_question_started_at = new Date(
-      new Date(submissionTarget.value.current_question_started_at).getTime() + questionDurationMs.value,
+      (parseDateValue(submissionTarget.value.current_question_started_at)?.getTime() || Date.now()) + questionDurationMs.value,
     ).toISOString();
   }
 
@@ -1505,7 +1504,7 @@ const refreshQuestionTimer = () => {
     return;
   }
 
-  const endTime = new Date(referenceTime).getTime() + questionDurationMs.value;
+  const endTime = (parseDateValue(referenceTime)?.getTime() || 0) + questionDurationMs.value;
   questionTimeLeftMs.value = Math.max(0, endTime - Date.now());
 };
 

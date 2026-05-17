@@ -45,6 +45,7 @@
 
 <script setup>
 import { computed } from "vue";
+import { formatDateTime } from "@/utils/date";
 
 const props = defineProps({
   open: {
@@ -64,15 +65,6 @@ const formattedLoginAt = computed(() => {
   if (!raw) {
     return "";
   }
-
-  const date = new Date(raw);
-  if (Number.isNaN(date.getTime())) {
-    return String(raw);
-  }
-
-  return new Intl.DateTimeFormat("id-ID", {
-    dateStyle: "full",
-    timeStyle: "short",
-  }).format(date);
+  return formatDateTime(raw);
 });
 </script>
