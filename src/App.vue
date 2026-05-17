@@ -1,19 +1,11 @@
 <template>
   <!-- App -->
   <div class="flex h-screen overflow-hidden bg-slate-100 font-lexend dark:bg-slate-950">
-    <div
-      v-if="!shouldHideChrome"
+    <div v-if="!shouldHideChrome"
       class="pointer-events-none fixed inset-y-0 left-0 z-[60] w-sidebar max-w-[86vw] transition-transform duration-300 ease-out lg:pointer-events-auto lg:static lg:max-w-none"
-      :class="sidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-    >
-      <button
-        v-if="sidebar && !isDesktopViewport"
-        type="button"
-        class="fixed inset-0 z-50 backdrop-blur-[2px]"
-        style="background-color: rgba(0, 0, 0, 0.45);"
-        aria-label="Tutup sidebar"
-        @click="close"
-      ></button>
+      :class="sidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
+      <button v-if="sidebar && !isDesktopViewport" type="button" class="fixed inset-0 z-50 backdrop-blur-[2px]"
+        style="background-color: rgba(0, 0, 0, 0.45);" aria-label="Tutup sidebar" @click="close"></button>
       <div
         class="mobile-sidebar-offset pointer-events-auto relative z-[60] h-full w-sidebar overflow-hidden border-r border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900 lg:shadow-none">
         <div class="h-full overflow-y-auto overscroll-contain">
@@ -40,23 +32,11 @@
     </div>
   </div>
   <ToastHost />
-  <PwaInstallModal
-    :open="isPwaInstallModalOpen"
-    :is-installable="Boolean(deferredPwaPrompt)"
-    :instruction-title="pwaInstructionTitle"
-    :instruction-steps="pwaInstructionSteps"
-    @close="closePwaInstallModal"
-    @install="installPwa"
-  />
-  <ForcedLogoutModal
-    :open="isForcedLogoutModalOpen"
-    :notice="forcedLogoutNotice"
-    @close="closeForcedLogoutModal"
-  />
-  <GlobalLoadingOverlay
-    :visible="globalLoading.visible"
-    :message="globalLoading.message"
-  />
+  <PwaInstallModal :open="isPwaInstallModalOpen" :is-installable="Boolean(deferredPwaPrompt)"
+    :instruction-title="pwaInstructionTitle" :instruction-steps="pwaInstructionSteps" @close="closePwaInstallModal"
+    @install="installPwa" />
+  <ForcedLogoutModal :open="isForcedLogoutModalOpen" :notice="forcedLogoutNotice" @close="closeForcedLogoutModal" />
+  <GlobalLoadingOverlay :visible="globalLoading.visible" :message="globalLoading.message" />
   <FloatingSystemAssistant />
   <!-- End app -->
 </template>
@@ -86,6 +66,7 @@ const PWA_PROMPT_SUPPRESS_DAYS = 180;
 const PwaInstallModal = defineAsyncComponent(() => import("@/components/PwaInstallModal.vue"));
 const ForcedLogoutModal = defineAsyncComponent(() => import("@/components/ForcedLogoutModal.vue"));
 const FloatingSystemAssistant = defineAsyncComponent(() => import("@/components/FloatingSystemAssistant.vue"));
+// commen
 
 export default {
   name: "App",
