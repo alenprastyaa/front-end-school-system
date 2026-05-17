@@ -703,7 +703,7 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
-import { onBeforeRouteLeave } from "vue-router";
+import { onBeforeRouteLeave, useRoute } from "vue-router";
 import { api } from "@/api";
 import { formatDateTime, parseDateValue } from "@/utils/date";
 import { pushToast } from "@/composables/useToast";
@@ -717,6 +717,7 @@ const props = defineProps({
   },
 });
 
+const route = useRoute();
 const subjects = ref([]);
 const masterDataStore = useMasterDataStore();
 const selectedSubject = ref(null);
@@ -748,6 +749,9 @@ let hiddenTransitionAt = 0;
 let blurTransitionAt = 0;
 let submitLockAssignmentId = null;
 let examCodeModalResolver = null;
+
+const routeSubjectId = () => Number(route.query?.subject || route.query?.subject_id || 0);
+const routeAssignmentId = () => Number(route.query?.assignment || route.query?.assignment_id || 0);
 
 const resolveViolationType = (reason) => {
   const normalizedReason = String(reason || "").toLowerCase();
@@ -1588,7 +1592,10 @@ const loadSubjects = async () => {
   subjectError.value = "";
   try {
     subjects.value = await masterDataStore.getStudentSubjects();
-    if (!selectedSubject.value && subjects.value.length > 0) {
+    const requestedSubject = subjects.value.find((item) => Number(item.id) === routeSubjectId());
+    if (requestedSubject) {
+      await selectSubject(requestedSubject);
+    } else if (!selectedSubject.value && subjects.value.length > 0) {
       await selectSubject(subjects.value[0]);
     }
   } catch (error) {
@@ -1606,6 +1613,14 @@ const loadSubjectData = async () => {
 
     return isExamPage.value ? Boolean(item.is_exam) : !item.is_exam;
   });
+
+  const requestedAssignmentId = routeAssignmentId();
+  if (requestedAssignmentId) {
+    const requestedAssignment = assignments.value.find((item) => Number(item.id) === requestedAssignmentId);
+    if (requestedAssignment && requestedAssignment.is_submitted) {
+      openAssignmentReview(requestedAssignment);
+    }
+  }
 };
 
 const selectSubject = async (subject) => {
@@ -1931,4 +1946,11 @@ watch(
 );
 
 onMounted(loadSubjects);
+
+watch(
+  () => [route.query?.subject, route.query?.subject_id, route.query?.assignment, route.query?.assignment_id],
+  () => {
+    loadSubjects();
+  },
+);
 </script>

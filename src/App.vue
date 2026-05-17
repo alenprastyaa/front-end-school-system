@@ -70,12 +70,15 @@ import Footer from "@/components/Footer";
 import GlobalLoadingOverlay from "@/components/GlobalLoadingOverlay.vue";
 import ToastHost from "@/components/ToastHost.vue";
 import { pushToast } from "@/composables/useToast";
+import { useWebPush } from "@/composables/useWebPush";
 import { useGlobalLoading } from "@/composables/useGlobalLoading";
 import { useLayoutChrome } from "@/composables/useLayoutChrome";
 import { clearForcedLogoutNotice, getForcedLogoutNotice } from "@/utils/auth";
+import { playNotificationSound } from "@/utils/notificationSound";
 
 const layoutChromeState = useLayoutChrome();
 const globalLoadingState = useGlobalLoading();
+const webPush = useWebPush();
 const SHOW_PWA_INSTALL_AFTER_LOGIN_KEY = "show-pwa-install-after-login";
 const PWA_INSTALLED_KEY = "school-system-pwa-installed";
 const PWA_PROMPT_SUPPRESSED_UNTIL_KEY = "school-system-pwa-prompt-suppressed-until";
@@ -241,6 +244,14 @@ export default {
         type: "success",
       });
     },
+    handleServiceWorkerMessage(event) {
+      const payload = event?.data || {};
+      if (payload?.type !== "push-notification") {
+        return;
+      }
+
+      playNotificationSound(payload?.sound || payload?.kind || "default");
+    },
     async installPwa() {
       if (!this.deferredPwaPrompt) {
         return;
@@ -286,6 +297,10 @@ export default {
     window.addEventListener("beforeinstallprompt", this.handleBeforeInstallPrompt);
     window.addEventListener("appinstalled", this.handleAppInstalled);
     window.addEventListener("resize", this.handleViewportResize);
+    if (navigator?.serviceWorker?.addEventListener) {
+      navigator.serviceWorker.addEventListener("message", this.handleServiceWorkerMessage);
+    }
+    webPush.refreshState().catch(() => undefined);
     this.maybeOpenPwaInstallModal();
     this.$nextTick(() => {
       this.handleViewportResize();
@@ -295,6 +310,9 @@ export default {
     window.removeEventListener("beforeinstallprompt", this.handleBeforeInstallPrompt);
     window.removeEventListener("appinstalled", this.handleAppInstalled);
     window.removeEventListener("resize", this.handleViewportResize);
+    if (navigator?.serviceWorker?.removeEventListener) {
+      navigator.serviceWorker.removeEventListener("message", this.handleServiceWorkerMessage);
+    }
   },
 };
 </script>

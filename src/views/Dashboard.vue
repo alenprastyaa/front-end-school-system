@@ -515,6 +515,7 @@
 
 <script setup>
 import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
 import { Icon } from "@iconify/vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
@@ -524,6 +525,7 @@ import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 
 const role = getStoredRole();
 const user = getStoredUser();
+const route = useRoute();
 const isLoading = ref(false);
 const dashboardData = ref({});
 const selectedTeacherDayOrder = ref(0);
@@ -544,8 +546,19 @@ const endpointByRole = {
 };
 const lockedSchools = computed(() => dashboardData.value?.lockedSchools || []);
 const dashboardAnnouncements = computed(() => Array.isArray(dashboardData.value?.announcements) ? dashboardData.value.announcements : []);
-const featuredAnnouncement = computed(() => dashboardAnnouncements.value[0] || null);
-const additionalAnnouncements = computed(() => dashboardAnnouncements.value.slice(1, 4));
+const routeAnnouncementId = computed(() => Number(route.query?.announcement || route.query?.announcement_id || 0));
+const featuredAnnouncement = computed(() => {
+  const announcements = dashboardAnnouncements.value;
+  if (announcements.length === 0) return null;
+  const targetId = routeAnnouncementId.value;
+  if (!targetId) return announcements[0];
+  return announcements.find((item) => Number(item.id) === targetId) || announcements[0];
+});
+const additionalAnnouncements = computed(() => {
+  const announcements = dashboardAnnouncements.value;
+  const featuredId = Number(featuredAnnouncement.value?.id || 0);
+  return announcements.filter((item) => Number(item.id) !== featuredId).slice(0, 3);
+});
 
 // Palet warna yang lebih modern, bersih, dan enterprise-look
 const chartPalette = ["#3b82f6", "#10b981", "#f59e0b", "#6366f1", "#ef4444", "#64748b"];

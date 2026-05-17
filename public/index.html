@@ -31,7 +31,19 @@
     />
     <meta
       name="theme-color"
-      content="#ffffff"
+      content="#4f46e5"
+    />
+    <meta
+      name="apple-mobile-web-app-capable"
+      content="yes"
+    />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="default"
+    />
+    <meta
+      name="apple-mobile-web-app-title"
+      content="School System"
     />
     <meta
       property="og:type"
@@ -77,6 +89,10 @@
       rel="icon"
       href="<%= BASE_URL %>logo.png"
     />
+    <link
+      rel="manifest"
+      href="<%= BASE_URL %>manifest.webmanifest"
+    />
     <title>School System | LMS, Learning Management System, dan Platform Sekolah Digital</title>
     <link
       rel="preconnect"
@@ -91,25 +107,6 @@
       href="https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
-    <!-- PushAlert -->
-    <script type="text/javascript">
-      window.addEventListener("load", function () {
-        var loadPushAlert = function () {
-          var script = document.createElement("script");
-          script.src = "https://cdn.pushalert.co/integrate_edd0210271a2e1db931f73144cc846da.js";
-          script.async = true;
-          document.body.appendChild(script);
-        };
-
-        if ("requestIdleCallback" in window) {
-          window.requestIdleCallback(loadPushAlert, { timeout: 3000 });
-          return;
-        }
-
-        window.setTimeout(loadPushAlert, 1500);
-      });
-    </script>
-    <!-- End PushAlert -->
   </head>
   <body>
     <noscript>

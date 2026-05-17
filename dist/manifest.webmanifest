@@ -1,0 +1,25 @@
+{
+  "name": "School System",
+  "short_name": "School System",
+  "description": "Platform LMS dan manajemen sekolah yang bisa diinstall sebagai PWA.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "pwa-icon.svg",
+      "sizes": "293x288",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x341",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

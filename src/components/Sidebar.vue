@@ -246,6 +246,7 @@ import { Icon } from "@iconify/vue";
 import { api } from "@/api";
 import { getStoredRole } from "@/utils/auth";
 import { pushToast } from "@/composables/useToast";
+import { playNotificationSound } from "@/utils/notificationSound";
 import { useProfileStore } from "@/store/profile";
 import { useSidebar } from "@/store/sidebar";
 import { useRealtimeStore } from "@/store/realtime";
@@ -592,39 +593,6 @@ const isAllowedSubjectNotification = (subjectId) => {
   return liveChatSubjects.value.some((item) => Number(item.id) === normalized);
 };
 
-const playChatNotificationSound = () => {
-  try {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) {
-      return;
-    }
-
-    const audioContext = new AudioContextClass();
-    if (!audioContext) {
-      return;
-    }
-
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
-    gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.08, audioContext.currentTime + 0.02);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.25);
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    oscillator.start();
-    oscillator.stop(audioContext.currentTime + 0.26);
-    oscillator.onended = () => {
-      audioContext.close();
-    };
-  } catch (error) {
-    // Ignore notification sound errors.
-  }
-};
-
 const pushChatToast = (chatMessage) => {
   if (!isAllowedSubjectNotification(chatMessage?.subject_id)) {
     return;
@@ -834,7 +802,7 @@ const bindRealtimeStream = () => {
       }
 
       sidebarStore.bumpLiveChatUnread(chatMessage?.subject_id);
-      playChatNotificationSound();
+      playNotificationSound("chat");
       pushChatToast(chatMessage);
       maybeShowBrowserNotification(chatMessage);
     }),
@@ -842,7 +810,7 @@ const bindRealtimeStream = () => {
       await refreshLiveChatSummary(true);
     }),
     realtimeStore.on("learning-notification:new", (payload) => {
-      playChatNotificationSound();
+      playNotificationSound("announcement");
       pushLearningToast(payload);
       maybeShowLearningBrowserNotification(payload);
     }),
@@ -852,7 +820,7 @@ const bindRealtimeStream = () => {
       }
 
       sidebarStore.bumpPrivateChatUnread(payload?.sender_id);
-      playChatNotificationSound();
+      playNotificationSound("chat");
       pushToast({
         title: payload?.sender_full_name || payload?.sender_name || "Chat Pribadi",
         message: payload?.message || "Pesan baru masuk",

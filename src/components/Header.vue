@@ -31,6 +31,21 @@
           <Icon :icon="fullscreenMode ? 'ic:outline-fullscreen-exit' : 'ic:outline-fullscreen'" />
         </button>
 
+        <button
+          v-if="pushNotificationSupported"
+          type="button"
+          class="inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition"
+          :class="pushNotificationEnabled
+            ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300'
+            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'"
+          :disabled="pushNotificationBusy"
+          :title="pushNotificationTitle"
+          @click="togglePushNotifications"
+        >
+          <Icon :icon="pushNotificationIcon" class="text-lg" />
+          <span class="hidden sm:inline">{{ pushNotificationLabel }}</span>
+        </button>
+
         <div class="relative">
           <button @click="menu = !menu" data-tour="profile" class="flex items-center gap-3 rounded-md p-1">
             <img :src="avatarSrc" class="rounded-full w-10 h-10 p-1 ring-1 ring-gray-300 dark:ring-gray-500"
@@ -191,11 +206,13 @@ import defaultAvatar from "@/assets/img/user.jpg";
 import { useProfileStore } from "@/store/profile";
 import { useRealtimeStore } from "@/store/realtime";
 import { pushToast } from "@/composables/useToast";
+import { useWebPush } from "@/composables/useWebPush";
 
 const router = useRouter();
 const route = useRoute();
 const profileStore = useProfileStore();
 const realtimeStore = useRealtimeStore();
+const webPush = useWebPush();
 const { profile: storedProfile } = storeToRefs(profileStore);
 
 defineEmits(["sidebarToggle"]);
@@ -232,6 +249,20 @@ const profileForm = ref({
 });
 
 const avatarSrc = computed(() => normalizePublicUrl(userProfile.value.profile_image) || defaultAvatar);
+const pushNotificationSupported = computed(() => webPush.isSupported.value);
+const pushNotificationEnabled = computed(() => webPush.isEnabled.value);
+const pushNotificationBusy = computed(() => webPush.busy.value);
+const pushNotificationIcon = computed(() =>
+  pushNotificationEnabled.value ? "mdi:bell-check-outline" : "mdi:bell-outline",
+);
+const pushNotificationLabel = computed(() =>
+  pushNotificationEnabled.value ? "Notifikasi Aktif" : "Aktifkan Notifikasi",
+);
+const pushNotificationTitle = computed(() =>
+  pushNotificationEnabled.value
+    ? "Matikan push notification browser ini"
+    : "Aktifkan push notification browser ini",
+);
 
 const normalizeProfileImageOrientation = async (file) => {
   if (!file || !file.type?.startsWith("image/")) {
@@ -266,6 +297,10 @@ const normalizeProfileImageOrientation = async (file) => {
     type: normalizedBlob.type || file.type || "image/jpeg",
     lastModified: Date.now(),
   });
+};
+
+const togglePushNotifications = async () => {
+  await webPush.toggleNotifications();
 };
 
 watch(

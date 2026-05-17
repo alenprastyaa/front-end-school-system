@@ -282,6 +282,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatDateTime } from "@/utils/date";
@@ -289,6 +290,7 @@ import { normalizePublicUrl } from "@/utils/url";
 import { useMasterDataStore } from "@/store/masterData";
 
 const activeTab = ref("materials");
+const route = useRoute();
 const subjects = ref([]);
 const masterDataStore = useMasterDataStore();
 const selectedSubject = ref(null);
@@ -308,12 +310,18 @@ const submissionForm = reactive({
 const gradedAssignments = computed(() => assignments.value.filter((item) => item.score !== null && item.score !== undefined).length);
 const pendingAssignments = computed(() => assignments.value.filter((item) => !item.submission_id).length);
 
+const routeSubjectId = () => Number(route.query?.subject || route.query?.subject_id || 0);
+const routeAssignmentId = () => Number(route.query?.assignment || route.query?.assignment_id || 0);
+
 const loadSubjects = async () => {
   subjectError.value = "";
 
   try {
     subjects.value = await masterDataStore.getStudentSubjects();
-    if (!selectedSubject.value && subjects.value.length > 0) {
+    const requestedSubject = subjects.value.find((item) => Number(item.id) === routeSubjectId());
+    if (requestedSubject) {
+      await selectSubject(requestedSubject);
+    } else if (!selectedSubject.value && subjects.value.length > 0) {
       await selectSubject(subjects.value[0]);
     }
   } catch (error) {
@@ -331,6 +339,14 @@ const loadSubjectData = async () => {
 
   materials.value = materialResponse?.data || [];
   assignments.value = (assignmentResponse?.data || []).filter((item) => item.assignment_type === "FILE");
+
+  const requestedAssignmentId = routeAssignmentId();
+  if (requestedAssignmentId) {
+    const requestedAssignment = assignments.value.find((item) => Number(item.id) === requestedAssignmentId);
+    if (requestedAssignment) {
+      startSubmission(requestedAssignment);
+    }
+  }
 };
 
 const selectSubject = async (subject) => {
@@ -401,6 +417,13 @@ const submitAssignment = async () => {
 };
 
 onMounted(loadSubjects);
+
+watch(
+  () => [route.query?.subject, route.query?.subject_id, route.query?.assignment, route.query?.assignment_id],
+  () => {
+    loadSubjects();
+  },
+);
 
 watch(subjectError, (value) => {
   if (!value) return;

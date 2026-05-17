@@ -278,7 +278,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatDateTime } from "@/utils/date";
@@ -291,6 +292,7 @@ const targetOptions = [
   { value: "SARPRAS", label: "Sarpras" },
   { value: "KOPERASI", label: "Koperasi" },
 ];
+const route = useRoute();
 
 const statusFilters = [
   { value: "ALL", label: "Semua" },
@@ -322,6 +324,18 @@ const summary = reactive({
   inactive: 0,
 });
 const form = reactive(emptyForm());
+
+const syncRouteSelection = () => {
+  const targetId = Number(route.query?.announcement || route.query?.announcement_id || 0);
+  if (!targetId) {
+    return;
+  }
+
+  const match = announcements.value.find((item) => Number(item.id) === targetId);
+  if (match) {
+    selectedAnnouncement.value = match;
+  }
+};
 
 const summaryCards = computed(() => [
   { label: "Total", value: summary.total, caption: "Semua pengumuman sekolah" },
@@ -419,6 +433,8 @@ const loadAnnouncements = async () => {
       const latest = announcements.value.find((item) => item.id === selectedAnnouncement.value.id);
       selectedAnnouncement.value = latest || selectedAnnouncement.value;
     }
+
+    syncRouteSelection();
   } catch (error) {
     pushToast({
       title: "Gagal Memuat Pengumuman",
@@ -577,6 +593,13 @@ const onFormBackdropClick = () => {
 };
 
 onMounted(loadAnnouncements);
+
+watch(
+  () => route.query?.announcement || route.query?.announcement_id,
+  () => {
+    syncRouteSelection();
+  },
+);
 </script>
 
 <style scoped>
