@@ -32,9 +32,6 @@
     </div>
   </div>
   <ToastHost />
-  <PwaInstallModal :open="isPwaInstallModalOpen" :is-installable="Boolean(deferredPwaPrompt)"
-    :instruction-title="pwaInstructionTitle" :instruction-steps="pwaInstructionSteps" @close="closePwaInstallModal"
-    @install="installPwa" />
   <ForcedLogoutModal :open="isForcedLogoutModalOpen" :notice="forcedLogoutNotice" @close="closeForcedLogoutModal" />
   <GlobalLoadingOverlay :visible="globalLoading.visible" :message="globalLoading.message" />
   <FloatingSystemAssistant />
@@ -53,19 +50,16 @@ import { pushToast } from "@/composables/useToast";
 import { useWebPush } from "@/composables/useWebPush";
 import { useGlobalLoading } from "@/composables/useGlobalLoading";
 import { useLayoutChrome } from "@/composables/useLayoutChrome";
+import { usePwaInstall } from "@/composables/usePwaInstall";
 import { clearForcedLogoutNotice, getForcedLogoutNotice } from "@/utils/auth";
 import { playNotificationSound } from "@/utils/notificationSound";
 
 const layoutChromeState = useLayoutChrome();
 const globalLoadingState = useGlobalLoading();
 const webPush = useWebPush();
-const SHOW_PWA_INSTALL_AFTER_LOGIN_KEY = "show-pwa-install-after-login";
-const PWA_INSTALLED_KEY = "school-system-pwa-installed";
-const PWA_PROMPT_SUPPRESSED_UNTIL_KEY = "school-system-pwa-prompt-suppressed-until";
-const PWA_PROMPT_SUPPRESS_DAYS = 180;
-const PwaInstallModal = defineAsyncComponent(() => import("@/components/PwaInstallModal.vue"));
 const ForcedLogoutModal = defineAsyncComponent(() => import("@/components/ForcedLogoutModal.vue"));
 const FloatingSystemAssistant = defineAsyncComponent(() => import("@/components/FloatingSystemAssistant.vue"));
+const pwaInstall = usePwaInstall();
 
 export default {
   name: "App",
@@ -75,9 +69,6 @@ export default {
       sidebarDark: false,
       sidebar: true,
       viewportWidth: typeof window !== "undefined" ? window.innerWidth : 1440,
-      deferredPwaPrompt: null,
-      isPwaInstallModalOpen: false,
-      isPwaInstalled: false,
       isForcedLogoutModalOpen: false,
       forcedLogoutNotice: null,
     };
@@ -99,35 +90,12 @@ export default {
     globalLoading() {
       return globalLoadingState;
     },
-    pwaInstructionTitle() {
-      if (typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent)) {
-        return "Install manual di Safari";
-      }
-
-      return "Install manual dari menu browser";
-    },
-    pwaInstructionSteps() {
-      if (typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent)) {
-        return [
-          "Ketuk tombol Share di Safari.",
-          "Pilih Add to Home Screen.",
-          "Konfirmasi instalasi lalu buka aplikasi dari Home Screen.",
-        ];
-      }
-
-      return [
-        "Buka menu browser.",
-        "Pilih Install App atau Add to Home Screen jika tersedia.",
-        "Setelah terpasang, login berikutnya tidak akan menampilkan modal ini lagi.",
-      ];
-    },
   },
 
   components: {
     Header,
     Footer,
     GlobalLoadingOverlay,
-    PwaInstallModal,
     ForcedLogoutModal,
     FloatingSystemAssistant,
     Sidebar,
@@ -150,48 +118,6 @@ export default {
 
       this.viewportWidth = window.innerWidth;
     },
-    isStandaloneDisplay() {
-      if (typeof window === "undefined") {
-        return false;
-      }
-
-      return window.matchMedia("(display-mode: standalone)").matches
-        || window.navigator.standalone === true
-        || localStorage.getItem(PWA_INSTALLED_KEY) === "1";
-    },
-    refreshPwaInstalledState() {
-      this.isPwaInstalled = this.isStandaloneDisplay();
-      if (this.isPwaInstalled) {
-        localStorage.setItem(PWA_INSTALLED_KEY, "1");
-        sessionStorage.removeItem(SHOW_PWA_INSTALL_AFTER_LOGIN_KEY);
-        this.isPwaInstallModalOpen = false;
-      }
-    },
-    maybeOpenPwaInstallModal() {
-      this.refreshPwaInstalledState();
-
-      if (this.isPwaInstalled || this.$route.meta.hideNav) {
-        return;
-      }
-
-      const suppressedUntil = Number(localStorage.getItem(PWA_PROMPT_SUPPRESSED_UNTIL_KEY) || 0);
-      if (suppressedUntil && Date.now() < suppressedUntil) {
-        return;
-      }
-
-      if (sessionStorage.getItem(SHOW_PWA_INSTALL_AFTER_LOGIN_KEY) !== "1") {
-        return;
-      }
-
-      this.isPwaInstallModalOpen = true;
-      sessionStorage.removeItem(SHOW_PWA_INSTALL_AFTER_LOGIN_KEY);
-    },
-    closePwaInstallModal() {
-      this.isPwaInstallModalOpen = false;
-      const suppressUntil = Date.now() + (PWA_PROMPT_SUPPRESS_DAYS * 24 * 60 * 60 * 1000);
-      localStorage.setItem(PWA_PROMPT_SUPPRESSED_UNTIL_KEY, String(suppressUntil));
-      sessionStorage.removeItem(SHOW_PWA_INSTALL_AFTER_LOGIN_KEY);
-    },
     checkForcedLogoutNotice() {
       const notice = getForcedLogoutNotice();
       if (!notice) {
@@ -209,15 +135,10 @@ export default {
       clearForcedLogoutNotice();
     },
     handleBeforeInstallPrompt(event) {
-      event.preventDefault();
-      this.deferredPwaPrompt = event;
-      this.maybeOpenPwaInstallModal();
+      pwaInstall.setDeferredPrompt(event);
     },
     handleAppInstalled() {
-      localStorage.setItem(PWA_INSTALLED_KEY, "1");
-      localStorage.removeItem(PWA_PROMPT_SUPPRESSED_UNTIL_KEY);
-      this.deferredPwaPrompt = null;
-      this.refreshPwaInstalledState();
+      pwaInstall.markInstalled();
       pushToast({
         title: "Aplikasi Berhasil Diinstall",
         message: "School System sekarang sudah tersedia sebagai aplikasi di perangkat ini.",
@@ -233,32 +154,12 @@ export default {
       playNotificationSound(payload?.sound || payload?.kind || "default");
     },
     async installPwa() {
-      if (!this.deferredPwaPrompt) {
-        return;
-      }
-
-      const promptEvent = this.deferredPwaPrompt;
-      this.deferredPwaPrompt = null;
-
-      try {
-        await promptEvent.prompt();
-        const choiceResult = await promptEvent.userChoice;
-        if (choiceResult?.outcome === "accepted") {
-          this.isPwaInstallModalOpen = false;
-          localStorage.removeItem(PWA_PROMPT_SUPPRESSED_UNTIL_KEY);
-          return;
-        }
-
+      const result = await pwaInstall.installPwa();
+      if (result?.outcome !== "accepted") {
         pushToast({
           title: "Install Dibatalkan",
-          message: "Aplikasi belum dipasang. Modal akan muncul lagi setelah login berikutnya.",
+          message: "Aplikasi belum dipasang. Anda bisa coba lagi dari tombol Install di dashboard.",
           type: "info",
-        });
-      } catch (error) {
-        pushToast({
-          title: "Install Gagal",
-          message: "Browser tidak dapat memulai instalasi aplikasi saat ini.",
-          type: "error",
         });
       }
     },
@@ -268,11 +169,10 @@ export default {
       if (!this.isDesktopViewport) {
         this.sidebar = false;
       }
-      this.maybeOpenPwaInstallModal();
     },
   },
   mounted() {
-    this.refreshPwaInstalledState();
+    pwaInstall.refreshInstalledState();
     this.checkForcedLogoutNotice();
     window.addEventListener("beforeinstallprompt", this.handleBeforeInstallPrompt);
     window.addEventListener("appinstalled", this.handleAppInstalled);
@@ -281,7 +181,6 @@ export default {
       navigator.serviceWorker.addEventListener("message", this.handleServiceWorkerMessage);
     }
     webPush.refreshState().catch(() => undefined);
-    this.maybeOpenPwaInstallModal();
     this.$nextTick(() => {
       this.handleViewportResize();
     });

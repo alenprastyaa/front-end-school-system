@@ -23,6 +23,32 @@
         </div>
       </header>
 
+      <section v-if="showInstallBanner"
+        class="rounded-3xl border border-emerald-200 bg-gradient-to-r from-emerald-600 to-teal-600 p-5 text-white shadow-sm">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="min-w-0">
+            <p class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-100">Install App</p>
+            <h2 class="mt-2 text-lg font-black tracking-tight sm:text-xl">Pasang School System ke layar utama</h2>
+            <p class="mt-2 max-w-2xl text-sm leading-6 text-emerald-50">
+              Lebih cepat dibuka, terasa seperti aplikasi, dan tidak perlu buka Chrome lagi setiap kali masuk.
+            </p>
+          </div>
+          <div class="flex shrink-0 flex-col gap-2 sm:items-end">
+            <button
+              type="button"
+              class="inline-flex items-center justify-center rounded-2xl bg-white px-4 py-2.5 text-sm font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50"
+              :disabled="installButtonBusy"
+              @click="handleInstallClick"
+            >
+              {{ installButtonLabel }}
+            </button>
+            <p class="text-xs text-emerald-100/90">
+              {{ installHintText }}
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section v-if="dashboardAnnouncements.length"
         class="rounded-3xl border border-sky-200 bg-white p-5 shadow-sm dark:border-sky-500/20 dark:bg-slate-900 sm:p-6">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -519,6 +545,7 @@ import { useRoute } from "vue-router";
 import { Icon } from "@iconify/vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
+import { usePwaInstall } from "@/composables/usePwaInstall";
 import { formatDate, formatDateKey, formatDateTime, formatTime } from "@/utils/date";
 import { getStoredRole, getStoredUser } from "@/utils/auth";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
@@ -526,6 +553,7 @@ import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 const role = getStoredRole();
 const user = getStoredUser();
 const route = useRoute();
+const pwaInstall = usePwaInstall();
 const isLoading = ref(false);
 const dashboardData = ref({});
 const selectedTeacherDayOrder = ref(0);
@@ -559,6 +587,14 @@ const additionalAnnouncements = computed(() => {
   const featuredId = Number(featuredAnnouncement.value?.id || 0);
   return announcements.filter((item) => Number(item.id) !== featuredId).slice(0, 3);
 });
+const showInstallBanner = computed(() => pwaInstall.showInstallButton.value && !pwaInstall.isInstalled.value);
+const installButtonBusy = ref(false);
+const installButtonLabel = computed(() => (pwaInstall.canInstall.value ? "Install Sekarang" : "Buka Menu Browser"));
+const installHintText = computed(() =>
+  pwaInstall.canInstall.value
+    ? "Chrome sudah siap menampilkan dialog install."
+    : "Kalau tombol belum aktif, buka menu Chrome lalu pilih Install app.",
+);
 
 // Palet warna yang lebih modern, bersih, dan enterprise-look
 const chartPalette = ["#3b82f6", "#10b981", "#f59e0b", "#6366f1", "#ef4444", "#64748b"];
@@ -632,6 +668,44 @@ const announcementStatusClass = (status) => {
       return "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300";
     default:
       return "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300";
+  }
+};
+
+const handleInstallClick = async () => {
+  installButtonBusy.value = true;
+  try {
+    const result = await pwaInstall.installPwa();
+    if (result?.outcome === "accepted") {
+      pushToast({
+        title: "Aplikasi Diinstall",
+        message: "School System berhasil dipasang ke layar utama.",
+        type: "success",
+      });
+      return;
+    }
+
+    if (!pwaInstall.canInstall.value) {
+      pushToast({
+        title: "Install Manual",
+        message: "Buka menu Chrome lalu pilih Install app atau Add to Home screen.",
+        type: "info",
+      });
+      return;
+    }
+
+    pushToast({
+      title: "Install Dibatalkan",
+      message: "Aplikasi belum dipasang.",
+      type: "info",
+    });
+  } catch (error) {
+    pushToast({
+      title: "Install Gagal",
+      message: error?.message || "Browser tidak dapat memulai instalasi saat ini.",
+      type: "error",
+    });
+  } finally {
+    installButtonBusy.value = false;
   }
 };
 
