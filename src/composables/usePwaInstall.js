@@ -61,7 +61,7 @@ const installPwa = async () => {
 export const usePwaInstall = () => {
   const isInstalled = computed(() => installed.value);
   const canInstall = computed(() => Boolean(deferredPrompt.value));
-  const showInstallButton = computed(() => isAndroidDevice() && !isInstalled.value);
+  const showInstallButton = computed(() => isAndroidDevice() && canInstall.value && !isInstalled.value);
 
   return {
     canInstall,

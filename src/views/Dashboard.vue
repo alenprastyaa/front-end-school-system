@@ -589,12 +589,8 @@ const additionalAnnouncements = computed(() => {
 });
 const showInstallBanner = computed(() => pwaInstall.showInstallButton.value && !pwaInstall.isInstalled.value);
 const installButtonBusy = ref(false);
-const installButtonLabel = computed(() => (pwaInstall.canInstall.value ? "Install Sekarang" : "Buka Menu Browser"));
-const installHintText = computed(() =>
-  pwaInstall.canInstall.value
-    ? "Chrome sudah siap menampilkan dialog install."
-    : "Kalau tombol belum aktif, buka menu Chrome lalu pilih Install app.",
-);
+const installButtonLabel = computed(() => "Install Sekarang");
+const installHintText = computed(() => "Chrome sudah siap menampilkan dialog install PWA.");
 
 // Palet warna yang lebih modern, bersih, dan enterprise-look
 const chartPalette = ["#3b82f6", "#10b981", "#f59e0b", "#6366f1", "#ef4444", "#64748b"];
@@ -680,15 +676,6 @@ const handleInstallClick = async () => {
         title: "Aplikasi Diinstall",
         message: "School System berhasil dipasang ke layar utama.",
         type: "success",
-      });
-      return;
-    }
-
-    if (!pwaInstall.canInstall.value) {
-      pushToast({
-        title: "Install Manual",
-        message: "Buka menu Chrome lalu pilih Install app atau Add to Home screen.",
-        type: "info",
       });
       return;
     }
