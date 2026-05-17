@@ -1,7 +1,5 @@
 import { computed, ref } from "vue";
 
-const PWA_INSTALLED_KEY = "school-system-pwa-installed";
-
 const deferredPrompt = ref(null);
 const installed = ref(false);
 
@@ -16,15 +14,11 @@ const isStandaloneDisplay = () => {
   }
 
   return window.matchMedia("(display-mode: standalone)").matches
-    || window.navigator.standalone === true
-    || localStorage.getItem(PWA_INSTALLED_KEY) === "1";
+    || window.navigator.standalone === true;
 };
 
 const refreshInstalledState = () => {
   installed.value = isStandaloneDisplay();
-  if (installed.value) {
-    localStorage.setItem(PWA_INSTALLED_KEY, "1");
-  }
   return installed.value;
 };
 
@@ -45,7 +39,6 @@ const clearDeferredPrompt = () => {
 
 const markInstalled = () => {
   installed.value = true;
-  localStorage.setItem(PWA_INSTALLED_KEY, "1");
   clearDeferredPrompt();
 };
 
