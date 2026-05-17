@@ -66,7 +66,6 @@ const PWA_PROMPT_SUPPRESS_DAYS = 180;
 const PwaInstallModal = defineAsyncComponent(() => import("@/components/PwaInstallModal.vue"));
 const ForcedLogoutModal = defineAsyncComponent(() => import("@/components/ForcedLogoutModal.vue"));
 const FloatingSystemAssistant = defineAsyncComponent(() => import("@/components/FloatingSystemAssistant.vue"));
-// commen
 
 export default {
   name: "App",
