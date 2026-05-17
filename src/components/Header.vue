@@ -32,13 +32,15 @@
         </button>
 
         <button
-          v-if="pushNotificationSupported"
+          v-if="pushNotificationVisible"
           type="button"
           class="inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition"
           :class="pushNotificationEnabled
             ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300'
-            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'"
-          :disabled="pushNotificationBusy"
+            : pushNotificationIosHint
+              ? 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200'
+              : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'"
+          :disabled="pushNotificationBusy && !pushNotificationIosHint"
           :title="pushNotificationTitle"
           @click="togglePushNotifications"
         >
@@ -250,18 +252,26 @@ const profileForm = ref({
 
 const avatarSrc = computed(() => normalizePublicUrl(userProfile.value.profile_image) || defaultAvatar);
 const pushNotificationSupported = computed(() => webPush.isSupported.value);
+const pushNotificationIosHint = computed(() => !pushNotificationSupported.value && /iPad|iPhone|iPod/.test(typeof navigator !== "undefined" ? navigator.userAgent : ""));
+const pushNotificationVisible = computed(() => pushNotificationSupported.value || pushNotificationIosHint.value);
 const pushNotificationEnabled = computed(() => webPush.isEnabled.value);
 const pushNotificationBusy = computed(() => webPush.busy.value);
 const pushNotificationIcon = computed(() =>
-  pushNotificationEnabled.value ? "mdi:bell-check-outline" : "mdi:bell-outline",
+  pushNotificationEnabled.value ? "mdi:bell-check-outline" : pushNotificationIosHint.value ? "mdi:bell-alert-outline" : "mdi:bell-outline",
 );
 const pushNotificationLabel = computed(() =>
-  pushNotificationEnabled.value ? "Notifikasi Aktif" : "Aktifkan Notifikasi",
+  pushNotificationEnabled.value
+    ? "Notifikasi Aktif"
+    : pushNotificationIosHint.value
+      ? "Install App"
+      : "Aktifkan Notifikasi",
 );
 const pushNotificationTitle = computed(() =>
   pushNotificationEnabled.value
     ? "Matikan push notification browser ini"
-    : "Aktifkan push notification browser ini",
+    : pushNotificationIosHint.value
+      ? "Di iPhone, install Home Screen dulu agar notifikasi bisa aktif"
+      : "Aktifkan push notification browser ini",
 );
 
 const normalizeProfileImageOrientation = async (file) => {
@@ -300,6 +310,15 @@ const normalizeProfileImageOrientation = async (file) => {
 };
 
 const togglePushNotifications = async () => {
+  if (pushNotificationIosHint.value) {
+    pushToast({
+      title: "Install Dulu di iPhone",
+      message: "Di iPhone, web push biasanya baru aktif setelah app dipasang ke Home Screen dari Safari.",
+      type: "info",
+    });
+    return;
+  }
+
   await webPush.toggleNotifications();
 };
 
