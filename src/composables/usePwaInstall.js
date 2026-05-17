@@ -8,6 +8,9 @@ const isBrowser = () => typeof window !== "undefined";
 const isAndroidDevice = () =>
   typeof navigator !== "undefined" && /Android/i.test(navigator.userAgent || "");
 
+const isIosDevice = () =>
+  typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent || "");
+
 const isStandaloneDisplay = () => {
   if (!isBrowser()) {
     return false;
@@ -61,17 +64,20 @@ const installPwa = async () => {
 export const usePwaInstall = () => {
   const isInstalled = computed(() => installed.value);
   const canInstall = computed(() => Boolean(deferredPrompt.value));
-  const showInstallButton = computed(() => isAndroidDevice() && canInstall.value && !isInstalled.value);
+  const showInstallButton = computed(() => canInstall.value && !isInstalled.value);
+  const showIosInstallHint = computed(() => isIosDevice() && !isInstalled.value && !canInstall.value);
 
   return {
     canInstall,
     clearDeferredPrompt,
     installPwa,
     isAndroidDevice,
+    isIosDevice,
     isInstalled,
     markInstalled,
     refreshInstalledState,
     setDeferredPrompt,
+    showIosInstallHint,
     showInstallButton,
   };
 };

@@ -31,6 +31,13 @@
           <Icon :icon="fullscreenMode ? 'ic:outline-fullscreen-exit' : 'ic:outline-fullscreen'" />
         </button>
 
+        <button v-if="pwaInstallVisible" type="button"
+          class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
+          :disabled="pwaInstallBusy" :title="pwaInstallTitle" @click="handlePwaInstall">
+          <Icon icon="mdi:download-circle-outline" class="text-lg" />
+          <span class="hidden sm:inline">{{ pwaInstallLabel }}</span>
+        </button>
+
         <button
           v-if="pushNotificationVisible"
           type="button"
@@ -208,12 +215,14 @@ import defaultAvatar from "@/assets/img/user.jpg";
 import { useProfileStore } from "@/store/profile";
 import { useRealtimeStore } from "@/store/realtime";
 import { pushToast } from "@/composables/useToast";
+import { usePwaInstall } from "@/composables/usePwaInstall";
 import { useWebPush } from "@/composables/useWebPush";
 
 const router = useRouter();
 const route = useRoute();
 const profileStore = useProfileStore();
 const realtimeStore = useRealtimeStore();
+const pwaInstall = usePwaInstall();
 const webPush = useWebPush();
 const { profile: storedProfile } = storeToRefs(profileStore);
 
@@ -221,6 +230,7 @@ defineEmits(["sidebarToggle"]);
 
 const menu = ref(false);
 const fullscreenMode = ref(false);
+const pwaInstallBusy = ref(false);
 const showProfileModal = ref(false);
 const isSavingProfile = ref(false);
 const showPasswordFields = ref(false);
@@ -251,6 +261,13 @@ const profileForm = ref({
 });
 
 const avatarSrc = computed(() => normalizePublicUrl(userProfile.value.profile_image) || defaultAvatar);
+const pwaInstallVisible = computed(() => pwaInstall.showInstallButton.value || pwaInstall.showIosInstallHint.value);
+const pwaInstallLabel = computed(() => pwaInstall.canInstall.value ? "Install App" : "Cara Install");
+const pwaInstallTitle = computed(() =>
+  pwaInstall.canInstall.value
+    ? "Pasang School System sebagai aplikasi PWA"
+    : "Lihat cara install School System di perangkat ini",
+);
 const pushNotificationSupported = computed(() => webPush.isSupported.value);
 const pushNotificationIosHint = computed(() => !pushNotificationSupported.value && /iPad|iPhone|iPod/.test(typeof navigator !== "undefined" ? navigator.userAgent : ""));
 const pushNotificationVisible = computed(() => pushNotificationSupported.value || pushNotificationIosHint.value);
@@ -320,6 +337,46 @@ const togglePushNotifications = async () => {
   }
 
   await webPush.toggleNotifications();
+};
+
+const handlePwaInstall = async () => {
+  if (pwaInstall.showIosInstallHint.value) {
+    pushToast({
+      title: "Install dari Safari",
+      message: "Tap tombol Bagikan, lalu pilih Tambahkan ke Layar Utama.",
+      type: "info",
+    });
+    return;
+  }
+
+  if (!pwaInstall.canInstall.value) {
+    pushToast({
+      title: "Install Belum Tersedia",
+      message: "Browser belum menampilkan izin install. Coba refresh atau buka dari Chrome/Edge.",
+      type: "info",
+    });
+    return;
+  }
+
+  pwaInstallBusy.value = true;
+  try {
+    const result = await pwaInstall.installPwa();
+    pushToast({
+      title: result?.outcome === "accepted" ? "Aplikasi Diinstall" : "Install Dibatalkan",
+      message: result?.outcome === "accepted"
+        ? "School System berhasil dipasang ke perangkat."
+        : "Aplikasi belum dipasang.",
+      type: result?.outcome === "accepted" ? "success" : "info",
+    });
+  } catch (error) {
+    pushToast({
+      title: "Install Gagal",
+      message: error?.message || "Browser belum bisa memulai instalasi PWA saat ini.",
+      type: "error",
+    });
+  } finally {
+    pwaInstallBusy.value = false;
+  }
 };
 
 watch(

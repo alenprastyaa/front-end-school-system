@@ -1,6 +1,7 @@
 import { computed, ref } from "vue";
 import { apiRequest } from "@/api";
 import { pushToast } from "@/composables/useToast";
+import { registerPwaServiceWorker } from "@/utils/serviceWorker";
 
 const supported = typeof window !== "undefined"
   && "Notification" in window
@@ -20,11 +21,6 @@ const isAuthenticated = () => {
   }
 
   return Boolean(String(localStorage.getItem("token") || "").trim());
-};
-
-const getBaseUrl = () => {
-  const baseUrl = String(process.env.BASE_URL || "/").trim();
-  return baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
 };
 
 const resolveVapidPublicKey = async () => {
@@ -93,9 +89,7 @@ const ensureRegistration = async () => {
   }
 
   try {
-    registration.value = await navigator.serviceWorker.register(`${getBaseUrl()}sw.js`, {
-      scope: getBaseUrl(),
-    });
+    registration.value = await registerPwaServiceWorker();
     lastError.value = "";
     return registration.value;
   } catch (error) {

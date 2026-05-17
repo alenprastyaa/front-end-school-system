@@ -24,6 +24,11 @@
             class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-cyan-400/40 hover:bg-white/10">
             {{ item.label }}
           </a>
+          <button v-if="showLandingInstallButton" type="button"
+            class="rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-200/60 hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-60"
+            :disabled="installButtonBusy" @click="handlePwaInstallClick">
+            {{ installButtonLabel }}
+          </button>
           <router-link to="/auth/login"
             class="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-100">
             Login CMS
@@ -59,6 +64,11 @@
                 class="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-bold text-slate-100 transition hover:bg-white/10">
                 Registrasi Publik
               </router-link>
+              <button v-if="showLandingInstallButton" type="button"
+                class="inline-flex items-center justify-center rounded-2xl border border-emerald-300/30 bg-emerald-400/10 px-6 py-3.5 text-sm font-bold text-emerald-100 transition hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-60"
+                :disabled="installButtonBusy" @click="handlePwaInstallClick">
+                {{ installButtonLabel }}
+              </button>
             </div>
 
             <div class="mt-10 grid gap-4 sm:grid-cols-3">
@@ -450,13 +460,22 @@
         </div>
       </section>
     </main>
+    <PwaInstallModal :open="installModalOpen" :is-installable="pwaInstall.canInstall.value"
+      :instruction-title="installInstructionTitle" :instruction-steps="installInstructionSteps"
+      @close="installModalOpen = false" @install="handlePwaInstallClick" />
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from "vue";
+import PwaInstallModal from "@/components/PwaInstallModal.vue";
+import { pushToast } from "@/composables/useToast";
+import { usePwaInstall } from "@/composables/usePwaInstall";
 
 const parallaxScrollY = ref(0);
+const installModalOpen = ref(false);
+const installButtonBusy = ref(false);
+const pwaInstall = usePwaInstall();
 let parallaxFrame = null;
 let revealObserver = null;
 
@@ -478,6 +497,7 @@ const handleParallaxScroll = () => {
 };
 
 onMounted(() => {
+  pwaInstall.refreshInstalledState();
   updateParallax();
   window.addEventListener("scroll", handleParallaxScroll, { passive: true });
 
@@ -537,6 +557,69 @@ const heroPanelStyle = computed(() => ({
 const shellParallaxStyle = computed(() => ({
   backgroundPosition: `center ${Math.min(parallaxScrollY.value * 0.06, 40)}px`,
 }));
+
+const showLandingInstallButton = computed(() =>
+  pwaInstall.showInstallButton.value || pwaInstall.showIosInstallHint.value,
+);
+
+const installButtonLabel = computed(() =>
+  pwaInstall.canInstall.value ? "Install App" : "Cara Install",
+);
+
+const installInstructionTitle = computed(() =>
+  pwaInstall.showIosInstallHint.value
+    ? "Install manual di Safari iPhone"
+    : "Install manual dari menu browser",
+);
+
+const installInstructionSteps = computed(() =>
+  pwaInstall.showIosInstallHint.value
+    ? [
+      "Buka halaman ini memakai Safari.",
+      "Tap tombol Bagikan.",
+      "Pilih Tambahkan ke Layar Utama.",
+    ]
+    : [
+      "Buka menu browser.",
+      "Pilih Install app atau Tambahkan ke layar utama.",
+      "Ikuti dialog konfirmasi dari browser.",
+    ],
+);
+
+const handlePwaInstallClick = async () => {
+  if (!pwaInstall.canInstall.value) {
+    installModalOpen.value = true;
+    return;
+  }
+
+  installButtonBusy.value = true;
+  try {
+    const result = await pwaInstall.installPwa();
+    if (result?.outcome === "accepted") {
+      installModalOpen.value = false;
+      pushToast({
+        title: "Aplikasi Diinstall",
+        message: "School System berhasil dipasang ke perangkat.",
+        type: "success",
+      });
+      return;
+    }
+
+    pushToast({
+      title: "Install Dibatalkan",
+      message: "Aplikasi belum dipasang. Tombol install akan tetap tersedia selama browser mengizinkan.",
+      type: "info",
+    });
+  } catch (error) {
+    pushToast({
+      title: "Install Gagal",
+      message: error?.message || "Browser belum bisa memulai instalasi PWA saat ini.",
+      type: "error",
+    });
+  } finally {
+    installButtonBusy.value = false;
+  }
+};
 
 const navItems = [
   { href: "#ringkasan", label: "Ringkasan" },

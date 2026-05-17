@@ -1,4 +1,5 @@
 const CACHE_NAME = "school-system-pwa-v1";
+const RUNTIME_CACHE_NAME = "school-system-runtime-v1";
 
 const getAssetUrl = (path) => {
   try {
@@ -46,6 +47,8 @@ self.addEventListener("install", (event) => {
     getAssetUrl("./"),
     getAssetUrl("manifest.webmanifest"),
     getAssetUrl("logo.png"),
+    getAssetUrl("pwa-icon-192.png"),
+    getAssetUrl("pwa-icon-512.png"),
     getAssetUrl("pwa-icon.svg"),
   ];
 
@@ -60,7 +63,7 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys.map((key) => {
-          if (key === CACHE_NAME) {
+          if (key === CACHE_NAME || key === RUNTIME_CACHE_NAME) {
             return undefined;
           }
 
@@ -68,6 +71,60 @@ self.addEventListener("activate", (event) => {
         }),
       ),
     ).then(() => self.clients.claim()),
+  );
+});
+
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+
+  if (request.method !== "GET") {
+    return;
+  }
+
+  const requestUrl = new URL(request.url);
+  if (requestUrl.origin !== self.location.origin) {
+    return;
+  }
+
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const responseCopy = response.clone();
+          caches.open(RUNTIME_CACHE_NAME)
+            .then((cache) => cache.put(request, responseCopy))
+            .catch(() => undefined);
+          return response;
+        })
+        .catch(() =>
+          caches.match(request)
+            .then((cachedResponse) => cachedResponse || caches.match(getAssetUrl("./"))),
+        ),
+    );
+    return;
+  }
+
+  const cacheableDestinations = ["document", "script", "style", "image", "font", "manifest"];
+  if (!cacheableDestinations.includes(request.destination)) {
+    return;
+  }
+
+  event.respondWith(
+    caches.match(request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      return fetch(request).then((response) => {
+        if (response && response.ok) {
+          const responseCopy = response.clone();
+          caches.open(RUNTIME_CACHE_NAME)
+            .then((cache) => cache.put(request, responseCopy))
+            .catch(() => undefined);
+        }
+        return response;
+      });
+    }),
   );
 });
 
