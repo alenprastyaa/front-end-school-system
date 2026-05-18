@@ -53,6 +53,7 @@ import { useLayoutChrome } from "@/composables/useLayoutChrome";
 import { usePwaInstall } from "@/composables/usePwaInstall";
 import { clearForcedLogoutNotice, getForcedLogoutNotice } from "@/utils/auth";
 import { playNotificationSound } from "@/utils/notificationSound";
+import { clearChunkReloadAttempt } from "@/router/lazyRoute";
 
 const layoutChromeState = useLayoutChrome();
 const globalLoadingState = useGlobalLoading();
@@ -172,6 +173,7 @@ export default {
     },
   },
   mounted() {
+    clearChunkReloadAttempt();
     pwaInstall.refreshInstalledState();
     this.checkForcedLogoutNotice();
     window.addEventListener("beforeinstallprompt", this.handleBeforeInstallPrompt);

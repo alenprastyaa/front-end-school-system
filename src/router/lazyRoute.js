@@ -1,6 +1,54 @@
 import { defineAsyncComponent, defineComponent, h } from "vue";
 
 const dotCount = 18;
+const chunkReloadKey = "school-system:chunk-reload-attempted";
+
+export const isChunkLoadError = (error) => {
+  const message = String(error?.message || "");
+  return error?.name === "ChunkLoadError" || /Loading (?:CSS )?chunk \d+ failed/i.test(message);
+};
+
+const hasReloadAttempted = () => {
+  try {
+    return typeof window !== "undefined" && window.sessionStorage.getItem(chunkReloadKey) === "1";
+  } catch (error) {
+    return false;
+  }
+};
+
+const markReloadAttempted = () => {
+  try {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem(chunkReloadKey, "1");
+    }
+  } catch (error) {
+    // sessionStorage can be unavailable in hardened browsers; ignore and continue.
+  }
+};
+
+export const recoverFromChunkLoadError = () => {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  if (hasReloadAttempted()) {
+    return false;
+  }
+
+  markReloadAttempted();
+  window.location.reload();
+  return true;
+};
+
+export const clearChunkReloadAttempt = () => {
+  try {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.removeItem(chunkReloadKey);
+    }
+  } catch (error) {
+    // Ignore storage failures.
+  }
+};
 
 const createDot = (index) => h("span", {
   class: "absolute left-1/2 top-1/2 h-2.5 w-2.5 -ml-1 -mt-1 rounded-full bg-sky-500",
@@ -53,6 +101,13 @@ export const lazyRoute = (loader) => {
     delay: 0,
     timeout: 30000,
     suspensible: false,
+    onError(error, retry, fail) {
+      if (isChunkLoadError(error) && recoverFromChunkLoadError()) {
+        return;
+      }
+
+      fail(error);
+    },
   });
 
   return defineComponent({
