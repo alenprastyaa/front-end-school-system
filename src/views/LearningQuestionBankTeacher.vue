@@ -389,11 +389,11 @@
                   </div>
 
                   <section v-if="generatedAiQuestions.length" ref="aiPreviewSectionRef"
-                    class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5 dark:border-slate-700 dark:bg-slate-800/30">
-                    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    class="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-700 dark:bg-slate-800/30 sm:p-5">
+                    <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                       <div>
-                        <h3 class="font-semibold text-slate-900 dark:text-white">Preview Soal AI</h3>
-                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                        <h3 class="text-sm font-semibold text-slate-900 dark:text-white sm:text-base">Preview Soal AI</h3>
+                        <p class="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400 sm:text-sm">
                           Pilih soal yang ingin disimpan ke bank soal. Saat ini terpilih {{ selectedGeneratedAiQuestions.length }} dari {{ generatedAiQuestions.length }} soal.
                         </p>
                       </div>
@@ -413,7 +413,7 @@
                       <article v-for="(item, index) in generatedAiQuestions" :key="item.temp_id"
                         class="rounded-2xl border bg-white p-4 shadow-sm dark:bg-slate-900"
                         :class="selectedGeneratedAiQuestionIds.includes(item.temp_id) ? 'border-sky-300 dark:border-sky-500/40' : 'border-slate-200 dark:border-slate-700'">
-                        <div class="flex items-start gap-4">
+                        <div class="flex items-start gap-3">
                           <input v-model="selectedGeneratedAiQuestionIds" :value="item.temp_id" type="checkbox"
                             class="mt-1 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-600 dark:border-slate-600 dark:bg-slate-800" />
                           <div class="min-w-0 flex-1">
@@ -427,7 +427,7 @@
                                 {{ item.question_type === "MCQ" ? "Pilihan Ganda" : "Essay" }}
                               </span>
                             </div>
-                            <p class="mt-3 text-sm font-semibold leading-6 text-slate-900 dark:text-white">
+                            <p class="mt-3 text-xs font-medium leading-5 text-slate-900 dark:text-white sm:text-sm sm:font-semibold sm:leading-6">
                               {{ parseQuestionContent(item.question_text).question_text }}
                             </p>
                             <img v-if="parseQuestionContent(item.question_text).question_image_url"
@@ -436,7 +436,7 @@
 
                             <div v-if="item.question_type === 'MCQ'" class="mt-4 grid gap-2">
                               <div v-for="(option, optionIndex) in item.options || []"
-                                :key="`${item.temp_id}-option-${optionIndex}`" class="rounded-xl border px-3 py-2 text-sm"
+                                :key="`${item.temp_id}-option-${optionIndex}`" class="rounded-xl border px-3 py-2 text-xs leading-5 sm:text-sm"
                                 :class="optionIndex === item.correct_option
                                   ? 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300'
                                   : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300'">
@@ -445,7 +445,7 @@
                             </div>
 
                             <div v-else
-                              class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
+                              class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300 sm:text-sm">
                               <span class="font-semibold">Rubrik:</span> {{ item.rubric }}
                             </div>
                           </div>
@@ -456,19 +456,19 @@
                 </div>
               </div>
 
-              <div class="flex flex-none items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/80 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/50">
+              <div class="flex flex-none flex-col gap-2 border-t border-slate-100 bg-slate-50/80 px-4 py-4 dark:border-slate-800 dark:bg-slate-800/50 sm:flex-row sm:items-center sm:justify-end sm:gap-3 sm:px-6">
                 <button @click="aiGeneratorModalOpen = false" type="button"
-                  class="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+                  class="w-full rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 sm:w-auto sm:text-sm">
                   Batal
                 </button>
                 <button v-if="generatedAiQuestions.length" type="button" @click="saveGeneratedAiQuestions"
                   :disabled="isSavingGeneratedAiQuestions || selectedGeneratedAiQuestions.length === 0"
-                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
-                  {{ isSavingGeneratedAiQuestions ? "Menyimpan..." : `Simpan ${selectedGeneratedAiQuestions.length} Soal Terpilih` }}
+                  class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:text-sm">
+                  {{ isSavingGeneratedAiQuestions ? "Menyimpan..." : `Simpan ${selectedGeneratedAiQuestions.length} Terpilih` }}
                 </button>
                 <button type="submit" :disabled="isGeneratingAiQuestions"
-                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60">
-                  {{ isGeneratingAiQuestions ? "Generating..." : generatedAiQuestions.length ? "Generate Ulang Preview" : "Generate Preview" }}
+                  class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:text-sm">
+                  {{ isGeneratingAiQuestions ? "Generating..." : generatedAiQuestions.length ? "Generate Ulang" : "Generate" }}
                 </button>
               </div>
             </fieldset>
