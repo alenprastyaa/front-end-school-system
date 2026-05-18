@@ -8,6 +8,12 @@
             :class="{ hidden: mobileChatOpen, 'lg:flex': true }">
             <header class="flex h-[59px] shrink-0 items-center justify-between bg-[#f0f2f5] px-4 dark:bg-[#202c33]">
               <div class="flex min-w-0 items-center gap-3">
+                <button type="button"
+                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
+                  aria-label="Kembali ke dashboard"
+                  @click="backToDashboard">
+                  <Icon icon="mdi:arrow-left" class="h-5 w-5" />
+                </button>
                 <div
                   class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#00a884] text-sm font-bold text-white">
                   <Icon icon="ph:chat-circle-dots-fill" class="h-5 w-5" />
@@ -19,8 +25,8 @@
               </div>
               <button type="button"
                 class="flex h-10 w-10 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
-                @click="isMobileViewport ? goBack() : refreshSummary(true)">
-                <Icon :icon="isMobileViewport ? 'mdi:arrow-left' : 'mdi:refresh'" class="h-5 w-5" />
+                @click="refreshSummary(true)">
+                <Icon icon="mdi:refresh" class="h-5 w-5" />
               </button>
             </header>
 
@@ -517,7 +523,7 @@ const AUDIO_MIME_EXTENSION_MAP = {
   "audio/mp4a-latm": ".m4a",
 };
 
-const goBack = () => router.back();
+const backToDashboard = () => router.replace("/dashboard");
 
 const getCurrentUserId = () => {
   try {

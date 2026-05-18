@@ -152,7 +152,7 @@ export default {
         return;
       }
 
-      playNotificationSound(payload?.sound || payload?.kind || "default");
+      playNotificationSound(payload?.soundUrl || payload?.sound_url || payload?.sound || payload?.kind || "default");
     },
     async installPwa() {
       const result = await pwaInstall.installPwa();

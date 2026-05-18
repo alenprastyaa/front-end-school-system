@@ -802,7 +802,7 @@ const bindRealtimeStream = () => {
       }
 
       sidebarStore.bumpLiveChatUnread(chatMessage?.subject_id);
-      playNotificationSound("chat");
+      playNotificationSound(chatMessage?.soundUrl || chatMessage?.sound_url || "chat");
       pushChatToast(chatMessage);
       maybeShowBrowserNotification(chatMessage);
     }),
@@ -810,7 +810,7 @@ const bindRealtimeStream = () => {
       await refreshLiveChatSummary(true);
     }),
     realtimeStore.on("learning-notification:new", (payload) => {
-      playNotificationSound("announcement");
+      playNotificationSound(payload?.soundUrl || payload?.sound_url || "announcement");
       pushLearningToast(payload);
       maybeShowLearningBrowserNotification(payload);
     }),
@@ -820,7 +820,7 @@ const bindRealtimeStream = () => {
       }
 
       sidebarStore.bumpPrivateChatUnread(payload?.sender_id);
-      playNotificationSound("chat");
+      playNotificationSound(payload?.soundUrl || payload?.sound_url || "chat");
       pushToast({
         title: payload?.sender_full_name || payload?.sender_name || "Chat Pribadi",
         message: payload?.message || "Pesan baru masuk",

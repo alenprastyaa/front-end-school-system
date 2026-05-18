@@ -136,6 +136,7 @@ self.addEventListener("push", (event) => {
   const icon = payload.icon || getAssetUrl("pwa-icon.svg");
   const badge = payload.badge || getAssetUrl("logo.png");
   const kind = payload.kind || "default";
+  const soundUrl = payload.sound_url || payload.soundUrl || null;
 
   event.waitUntil(
     Promise.all([
@@ -158,6 +159,7 @@ self.addEventListener("push", (event) => {
             type: "push-notification",
             kind,
             sound: kind,
+            soundUrl,
             payload: {
               title,
               body,

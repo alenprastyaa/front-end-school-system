@@ -6,18 +6,77 @@ const SOUND_PRESETS = {
   error: { frequency: 523, duration: 0.28, volume: 0.1 },
 };
 
-export const playNotificationSound = (kind = "default") => {
+const customNotificationSoundUrl = String(process.env.VUE_APP_NOTIFICATION_SOUND_URL || "/notif.mp3").trim();
+
+const isAudioUrl = (value) => {
+  const text = String(value || "").trim();
+  if (!text) {
+    return false;
+  }
+
+  return (
+    /^https?:\/\//i.test(text) ||
+    text.startsWith("/") ||
+    text.startsWith("data:audio/") ||
+    /\.(mp3|wav|ogg)(\?.*)?$/i.test(text)
+  );
+};
+
+const getAudioSource = (kindOrSource) => {
+  if (kindOrSource && typeof kindOrSource === "object") {
+    const source = String(kindOrSource.src || kindOrSource.soundUrl || kindOrSource.url || "").trim();
+    if (isAudioUrl(source)) {
+      return {
+        src: source,
+        volume: Number(kindOrSource.volume ?? 1),
+      };
+    }
+    return null;
+  }
+
+  const source = String(kindOrSource || "").trim();
+  if (isAudioUrl(source)) {
+    return {
+      src: source,
+      volume: 1,
+    };
+  }
+
+  if (isAudioUrl(customNotificationSoundUrl)) {
+    return {
+      src: customNotificationSoundUrl,
+      volume: 1,
+    };
+  }
+
+  return null;
+};
+
+const playAudioFile = async (src, volume = 1) => {
+  const audio = new Audio(src);
+  audio.preload = "auto";
+  audio.volume = Math.min(1, Math.max(0, Number.isFinite(volume) ? volume : 1));
+  await audio.play();
+};
+
+export const playNotificationSound = async (kindOrSource = "default") => {
   if (typeof window === "undefined") {
     return;
   }
 
   try {
+    const audioSource = getAudioSource(kindOrSource);
+    if (audioSource) {
+      await playAudioFile(audioSource.src, audioSource.volume);
+      return;
+    }
+
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) {
       return;
     }
 
-    const preset = SOUND_PRESETS[String(kind || "default").toLowerCase()] || SOUND_PRESETS.default;
+    const preset = SOUND_PRESETS[String(kindOrSource || "default").toLowerCase()] || SOUND_PRESETS.default;
     const audioContext = new AudioContextClass();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
