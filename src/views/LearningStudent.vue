@@ -1,283 +1,346 @@
 <template>
-  <div class="min-h-screen bg-slate-50/50 p-4 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
+  <div
+    class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.08),_transparent_36%),linear-gradient(180deg,_rgba(248,250,252,1)_0%,_rgba(241,245,249,0.9)_100%)] px-4 py-4 font-sans text-slate-900 md:px-8 md:py-8 dark:bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.08),_transparent_36%),linear-gradient(180deg,_rgba(2,6,23,1)_0%,_rgba(15,23,42,0.96)_100%)] dark:text-slate-100">
+    <main class="mx-auto flex max-w-7xl flex-col gap-6">
 
-    <main class="mx-auto mt-8 max-w-6xl">
-
-      <section class="mb-8">
-        <div class="mb-4 flex items-center justify-between gap-3">
-          <h2 class="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">
-            Pilih Mata Pelajaran
-          </h2>
+      <section
+        class="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <p class="text-[10px] font-medium uppercase tracking-[0.24em] text-emerald-600 dark:text-emerald-400">
+              Pilihan Mapel
+            </p>
+            <h3 class="mt-1 text-base font-semibold text-slate-900 dark:text-white">
+              Pilih mata pelajaran
+            </h3>
+          </div>
+          <span
+            class="hidden rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300 sm:inline-flex">
+            {{ subjects.length }} mapel
+          </span>
         </div>
 
-        <div class="mb-3 md:hidden">
-          <select
-            :value="selectedSubject?.id || ''"
-            @change="handleSubjectChange"
-            class="block w-full rounded-2xl border-0 bg-white px-4 py-3 text-sm font-semibold text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700">
-            <option value="" disabled>Pilih mata pelajaran</option>
-            <option v-for="item in subjects" :key="item.id" :value="item.id">
-              {{ item.name }} - {{ item.class_name }}
-            </option>
-          </select>
-        </div>
-
-        <div
-          class="hidden flex-nowrap gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:flex">
-          <button v-for="item in subjects" :key="item.id" @click="selectSubject(item)"
-            class="group relative flex min-w-[260px] flex-none snap-start flex-col items-start overflow-hidden rounded-2xl p-5 text-left transition-all"
-            :class="selectedSubject?.id === item.id
-              ? 'bg-emerald-600 shadow-md ring-1 ring-emerald-600 dark:bg-emerald-700'
-              : 'bg-white shadow-sm ring-1 ring-slate-900/5 hover:bg-slate-50 dark:bg-slate-900 dark:ring-white/10 dark:hover:bg-slate-800/80'">
-            <span :class="selectedSubject?.id === item.id ? 'text-white' : 'text-slate-900 dark:text-white'"
-              class="font-bold tracking-tight text-lg">{{ item.name }}</span>
-            <span :class="selectedSubject?.id === item.id ? 'text-emerald-100' : 'text-slate-500 dark:text-slate-400'"
-              class="mt-2 text-xs font-medium">
-              Guru: {{ item.teacher_name }}
+        <div class="mt-4 md:hidden">
+          <div class="mb-3 flex items-center justify-between">
+            <p class="text-xs font-medium text-slate-500 dark:text-slate-400">
+              Geser untuk memilih mapel
+            </p>
+            <span class="text-[11px] font-medium text-slate-400">
+              {{ subjects.length }} mapel
             </span>
-            <div v-if="selectedSubject?.id === item.id"
-              class="absolute right-5 top-5 h-2 w-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
-          </button>
+          </div>
 
-          <div v-if="subjects.length === 0"
-            class="flex w-full items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 py-8 dark:border-slate-800">
-            <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Belum ada kelas terdaftar.</span>
+          <div
+            class="flex gap-3 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
+            <button
+              v-for="item in subjects"
+              :key="item.id"
+              @click="selectSubject(item)"
+              type="button"
+              class="group relative flex min-w-[220px] max-w-[78vw] flex-none snap-start flex-col items-start overflow-hidden rounded-2xl border p-4 text-left transition-all"
+              :class="selectedSubject?.id === item.id
+                ? 'border-emerald-500 bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                : 'border-slate-200 bg-white text-slate-900 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:hover:border-slate-700 dark:hover:bg-slate-900'">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="line-clamp-2 text-sm font-medium tracking-tight sm:text-base sm:font-semibold">
+                    {{ item.name }}
+                  </p>
+                  <p
+                    class="mt-2 text-[11px] font-normal sm:text-xs sm:font-medium"
+                    :class="selectedSubject?.id === item.id ? 'text-emerald-50/80' : 'text-slate-500 dark:text-slate-400'">
+                    {{ item.class_name }}
+                  </p>
+                </div>
+                <span
+                  class="rounded-full px-3 py-1 text-[10px] font-medium uppercase tracking-[0.16em]"
+                  :class="selectedSubject?.id === item.id ? 'bg-white/15 text-white' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300'">
+                  {{ selectedSubject?.id === item.id ? "Aktif" : "Pilih" }}
+                </span>
+              </div>
+              <p
+                class="mt-4 line-clamp-2 text-[11px] font-normal leading-5 sm:text-xs"
+                :class="selectedSubject?.id === item.id ? 'text-emerald-50/80' : 'text-slate-500 dark:text-slate-400'">
+                {{ item.teacher_name || "Guru belum tercantum." }}
+              </p>
+            </button>
+
+            <div v-if="subjects.length === 0"
+              class="flex min-w-[220px] flex-none items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white px-4 py-8 text-center dark:border-slate-800 dark:bg-slate-950">
+              <span class="text-sm font-normal text-slate-500 dark:text-slate-400">Belum ada kelas terdaftar.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 hidden gap-3 md:grid md:grid-cols-2 xl:grid-cols-3">
+          <button v-for="item in subjects" :key="item.id" @click="selectSubject(item)" type="button"
+            class="group relative overflow-hidden rounded-2xl border p-4 text-left transition-all"
+            :class="selectedSubject?.id === item.id
+              ? 'border-emerald-500 bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+              : 'border-slate-200 bg-white text-slate-900 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:hover:border-slate-700 dark:hover:bg-slate-900'">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="line-clamp-2 text-sm font-semibold tracking-tight sm:text-base sm:font-bold">
+                  {{ item.name }}
+                </p>
+                <p class="mt-2 text-[11px] font-normal sm:text-xs sm:font-medium"
+                  :class="selectedSubject?.id === item.id ? 'text-emerald-50/80' : 'text-slate-500 dark:text-slate-400'">
+                  {{ item.class_name }}
+                </p>
+              </div>
+              <span class="rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]"
+                :class="selectedSubject?.id === item.id ? 'bg-white/15 text-white' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300'">
+                {{ selectedSubject?.id === item.id ? "Aktif" : "Pilih" }}
+              </span>
+            </div>
+            <p class="mt-4 line-clamp-2 text-[11px] font-normal leading-5 sm:text-xs"
+              :class="selectedSubject?.id === item.id ? 'text-emerald-50/80' : 'text-slate-500 dark:text-slate-400'">
+              {{ item.teacher_name || "Guru belum tercantum." }}
+            </p>
+          </button>
+        </div>
+
+        <div v-if="subjects.length === 0"
+          class="mt-4 rounded-2xl border-2 border-dashed border-slate-200 py-10 text-center dark:border-slate-800">
+          <span class="text-sm font-normal text-slate-500 dark:text-slate-400">Belum ada kelas terdaftar.</span>
+        </div>
+      </section>
+
+      <section v-if="subjectError"
+        class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+        {{ subjectError }}
+      </section>
+
+      <section v-if="message" class="rounded-2xl border p-4 text-sm font-medium"
+        :class="isError ? 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300' : 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300'">
+        {{ message }}
+      </section>
+
+      <section v-if="selectedSubject" class="space-y-4">
+        <div class="flex items-end justify-between gap-3">
+          <div>
+            <p class="text-[10px] font-medium uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
+              Workspace
+            </p>
+            <h3 class="mt-1 text-base font-medium tracking-tight text-slate-900 dark:text-white sm:text-xl sm:font-black">
+              {{ isAssignmentsMode ? "Daftar Tugas File" : "Daftar Materi" }}
+            </h3>
+          </div>
+          <span v-if="isAssignmentsMode"
+            class="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
+            <span class="h-2 w-2 rounded-full bg-rose-500"></span>
+            {{ pendingAssignments }} pending
+          </span>
+        </div>
+
+        <div v-if="isMaterialsMode" class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <article v-for="item in materials" :key="item.id"
+            class="flex h-full flex-col justify-between rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm transition-transform hover:-translate-y-0.5 hover:border-emerald-200 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-500/30">
+            <div>
+              <div class="flex items-start justify-between gap-4">
+                <h4 class="line-clamp-2 text-sm font-medium tracking-tight text-slate-900 dark:text-white sm:text-base sm:font-black">
+                  {{ item.title }}
+                </h4>
+                <span
+                  class="inline-flex shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                  Materi
+                </span>
+              </div>
+              <p class="mt-2 text-[11px] font-normal text-slate-500 dark:text-slate-400 sm:text-xs">
+                Dipublikasikan: {{ formatDateTime(item.created_at) }}
+              </p>
+              <p class="mt-4 line-clamp-4 text-[13px] font-normal leading-6 text-slate-600 dark:text-slate-400 sm:text-sm">
+                {{ item.content || "Tidak ada deskripsi materi." }}
+              </p>
+            </div>
+
+            <div class="mt-5 border-t border-slate-200/80 pt-4 dark:border-slate-800">
+              <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
+                rel="noreferrer"
+                class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-500">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                Buka Lampiran
+              </a>
+              <span v-else class="block text-center text-xs font-normal text-slate-400">Tanpa lampiran</span>
+            </div>
+          </article>
+
+          <div v-if="materials.length === 0"
+            class="col-span-full rounded-[1.5rem] border-2 border-dashed border-slate-200 bg-white py-16 text-center dark:border-slate-800 dark:bg-slate-900">
+            <span class="text-sm font-normal text-slate-500 dark:text-slate-400">
+              Belum ada materi pembelajaran dipublikasikan.
+            </span>
+          </div>
+        </div>
+
+        <div v-else class="grid gap-5 xl:grid-cols-2">
+          <article v-for="item in assignments" :key="item.id"
+            class="rounded-[1.5rem] border bg-white p-5 shadow-sm transition-transform hover:-translate-y-0.5 dark:bg-slate-900"
+            :class="submissionTarget?.id === item.id ? 'border-emerald-500 ring-1 ring-emerald-500 dark:border-emerald-500' : 'border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700'">
+            <div class="flex flex-col gap-5">
+              <div class="flex items-start justify-between gap-4">
+                <div class="min-w-0">
+                <h4 class="line-clamp-2 text-sm font-medium tracking-tight text-slate-900 dark:text-white sm:text-base sm:font-black">
+                  {{ item.title }}
+                </h4>
+                  <div class="mt-3 flex flex-wrap items-center gap-2">
+                    <span
+                      class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                      <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Tenggat: {{ formatDateTime(item.due_date) }}
+                    </span>
+                    <span v-if="item.score !== null"
+                      class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20">
+                      Nilai: {{ item.score }} / 100
+                    </span>
+                    <span v-else-if="item.submission_id"
+                      class="inline-flex items-center rounded-full bg-sky-50 px-3 py-1 text-[11px] font-medium text-sky-700 ring-1 ring-inset ring-sky-600/20 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">
+                      Terkumpul
+                    </span>
+                    <span v-else
+                      class="inline-flex items-center rounded-full bg-rose-50 px-3 py-1 text-[11px] font-medium text-rose-700 ring-1 ring-inset ring-rose-600/20 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
+                      Belum Dikerjakan
+                    </span>
+                  </div>
+                </div>
+                <span
+                  class="inline-flex shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                  File
+                </span>
+              </div>
+
+              <p class="text-[13px] font-normal leading-6 text-slate-600 dark:text-slate-400 sm:text-sm">
+                {{ item.description || "Tidak ada instruksi tambahan." }}
+              </p>
+
+              <div v-if="item.feedback"
+                class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-normal text-slate-700 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-300">
+                <span class="font-medium text-slate-900 dark:text-white">Catatan guru:</span> {{ item.feedback }}
+              </div>
+
+              <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
+                rel="noreferrer"
+                class="inline-flex items-center gap-2 text-sm font-medium text-emerald-600 transition hover:text-emerald-500 dark:text-emerald-400">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                Unduh Lampiran Soal
+              </a>
+
+              <div class="pt-1">
+                <button @click="startSubmission(item)"
+                  class="inline-flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-medium shadow-sm transition focus:outline-none"
+                  :class="submissionTarget?.id === item.id
+                    ? 'bg-emerald-600 text-white ring-1 ring-emerald-600 hover:bg-emerald-500'
+                    : item.submission_id
+                      ? 'bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700'
+                      : 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200'">
+                  {{ submissionTarget?.id === item.id ? "Form Terbuka" : item.submission_id ? "Lihat Jawaban" :
+                    "Kerjakan Tugas" }}
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <div v-if="assignments.length === 0"
+            class="col-span-full rounded-[1.5rem] border-2 border-dashed border-slate-200 bg-white py-16 text-center text-sm font-normal text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+            Belum ada tugas file.
           </div>
         </div>
       </section>
 
-      <div>
-        <div v-if="selectedSubject"
-          class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
-
-          <div class="border-b border-slate-100 bg-slate-50/50 px-6 pt-6 dark:border-slate-800 dark:bg-slate-800/20">
-            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ selectedSubject.name }}</h2>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              {{ selectedSubject.class_name }} &bull; {{ selectedSubject.description || "Tidak ada deskripsi mapel." }}
-            </p>
-
-
-            <nav class="-mb-px mt-6 flex gap-6 overflow-x-auto">
-              <button @click="activeTab = 'materials'"
-                class="border-b-2 py-3 text-sm font-bold transition-colors focus:outline-none" :class="activeTab === 'materials'
-                  ? 'border-emerald-600 text-emerald-700 dark:border-emerald-400 dark:text-emerald-400'
-                  : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
-                  ">
-                Materi Pembelajaran
-              </button>
-              <button @click="activeTab = 'assignments'"
-                class="flex items-center gap-2 border-b-2 py-3 text-sm font-bold transition-colors focus:outline-none"
-                :class="activeTab === 'assignments'
-                  ? 'border-emerald-600 text-emerald-700 dark:border-emerald-400 dark:text-emerald-400'
-                  : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
-                  ">
-                Tugas File
-                <span v-if="pendingAssignments > 0"
-                  class="inline-flex items-center justify-center rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-700 dark:bg-rose-500/20 dark:text-rose-400">
-                  {{ pendingAssignments }} Pending
-                </span>
-              </button>
-            </nav>
-          </div>
-
-          <div v-show="activeTab === 'materials'" class="p-6">
-            <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              <article v-for="item in materials" :key="item.id"
-                class="flex flex-col justify-between rounded-2xl border border-slate-100 bg-slate-50/50 p-5 transition-all hover:border-slate-300 dark:border-slate-800 dark:bg-slate-800/30 dark:hover:border-slate-700">
-                <div>
-                  <div class="flex items-start justify-between gap-4">
-                    <h3 class="line-clamp-2 font-bold text-slate-900 dark:text-white">{{ item.title }}</h3>
-                  </div>
-                  <span class="mt-1 block text-xs font-medium text-slate-400">
-                    Dipublikasikan: {{ formatDateTime(item.created_at) }}
-                  </span>
-                  <p class="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                    {{ item.content || "Tidak ada deskripsi materi." }}
-                  </p>
-                </div>
-
-                <div class="mt-5 border-t border-slate-200/60 pt-4 dark:border-slate-700/60">
-                  <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
-                    rel="noreferrer"
-                    class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-3 py-2.5 text-xs font-bold text-emerald-700 shadow-sm ring-1 ring-inset ring-slate-200 transition hover:bg-emerald-50 hover:ring-emerald-200 dark:bg-slate-900 dark:text-emerald-400 dark:ring-slate-700 dark:hover:bg-emerald-500/10 dark:hover:ring-emerald-500/30">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                    </svg>
-                    Buka File Materi
-                  </a>
-                  <span v-else class="block text-center text-xs italic text-slate-400">Tanpa lampiran</span>
-                </div>
-              </article>
-
-              <div v-if="materials.length === 0"
-                class="col-span-full flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 py-16 text-center dark:border-slate-800">
-                <span class="text-xs font-medium text-slate-500 dark:text-slate-400 sm:text-sm">Belum ada materi pembelajaran
-                  dipublikasikan.</span>
-              </div>
-            </div>
-          </div>
-
-          <div v-show="activeTab === 'assignments'" class="p-6">
-            <div class="grid items-start gap-8">
-
-              <div class="flex flex-col gap-5">
-                <article v-for="item in assignments" :key="item.id"
-                  class="rounded-2xl border bg-white p-5 shadow-sm transition-all dark:bg-slate-900"
-                  :class="submissionTarget?.id === item.id ? 'border-emerald-500 ring-1 ring-emerald-500 dark:border-emerald-500' : 'border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700'">
-                  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div class="flex-1">
-                      <h4 class="text-base font-semibold text-slate-900 dark:text-white sm:text-lg sm:font-bold">{{ item.title }}</h4>
-
-                      <div class="mt-2.5 flex flex-wrap items-center gap-2">
-                        <span
-                        class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300 sm:text-xs sm:font-semibold">
-                          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          Tenggat: {{ formatDateTime(item.due_date) }}
-                        </span>
-
-                        <span v-if="item.score !== null"
-                          class="inline-flex items-center rounded-md bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20 sm:text-xs sm:font-bold">
-                          Nilai: {{ item.score }} / 100
-                        </span>
-                        <span v-else-if="item.submission_id"
-                          class="inline-flex items-center rounded-md bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700 ring-1 ring-inset ring-sky-600/20 dark:bg-sky-500/10 dark:text-sky-400 dark:ring-sky-500/20 sm:text-xs sm:font-bold">
-                          Terkumpul (Menunggu Dinilai)
-                        </span>
-                        <span v-else
-                          class="inline-flex items-center rounded-md bg-rose-50 px-2.5 py-1 text-[11px] font-semibold text-rose-700 ring-1 ring-inset ring-rose-600/20 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20 sm:text-xs sm:font-bold">
-                          Belum Dikerjakan
-                        </span>
-                      </div>
-
-                      <p class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                        {{ item.description || "Tidak ada instruksi tambahan." }}
-                      </p>
-
-                      <div v-if="item.feedback"
-                        class="mt-4 rounded-xl border border-slate-100 bg-slate-50/80 p-3.5 text-xs font-normal text-slate-700 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-300 sm:text-sm">
-                        <span class="font-semibold text-slate-900 dark:text-white">📝 Catatan Guru:</span> {{ item.feedback
-                        }}
-                      </div>
-
-                      <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
-                        rel="noreferrer"
-                        class="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 transition hover:text-emerald-500 dark:text-emerald-400 sm:text-sm sm:font-bold">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                        </svg>
-                        Unduh Lampiran Soal
-                      </a>
-                    </div>
-
-                    <div class="mt-4 sm:mt-0">
-                      <button @click="startSubmission(item)"
-                        class="w-full sm:w-auto rounded-xl px-5 py-2.5 text-xs font-semibold shadow-sm transition focus:outline-none sm:text-sm sm:font-bold"
-                        :class="submissionTarget?.id === item.id
-                          ? 'bg-emerald-600 text-white ring-1 ring-emerald-600 hover:bg-emerald-500'
-                          : item.submission_id
-                            ? 'bg-white text-slate-700 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700'
-                            : 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200'
-                          ">
-                        {{ submissionTarget?.id === item.id ? "Form Terbuka" : item.submission_id ? "Lihat Jawaban" :
-                          "Kerjakan Tugas" }}
-                      </button>
-                    </div>
-                  </div>
-                </article>
-
-                <div v-if="assignments.length === 0"
-                  class="rounded-2xl border-2 border-dashed border-slate-200 py-16 text-center text-sm font-medium text-slate-500 dark:border-slate-800">
-                  Belum ada tugas file.
-                </div>
-              </div>
-            </div>
-          </div>
+      <section v-else
+        class="flex min-h-[420px] flex-col items-center justify-center rounded-[2rem] border-2 border-dashed border-slate-200 bg-white/70 px-6 py-12 text-center dark:border-slate-800 dark:bg-slate-900/60">
+        <div class="rounded-full bg-emerald-50 p-5 dark:bg-emerald-500/10">
+          <svg class="h-10 w-10 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0A50.57 50.57 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15h.008v.008H6.75V15zm0-2.25h.008v.008H6.75v-.008zm0-2.25h.008v.008H6.75V10.5zm0-2.25h.008v.008H6.75V8.25zm10.5 6.75h.008v.008h-.008V15zm0-2.25h.008v.008h-.008v-.008zm0-2.25h.008v.008h-.008V10.5zm0-2.25h.008v.008h-.008V8.25z" />
+          </svg>
         </div>
-
-        <div v-else
-          class="flex min-h-[500px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white/50 px-6 py-12 text-center dark:border-slate-800 dark:bg-slate-900/50">
-          <div class="rounded-full bg-emerald-50 p-5 dark:bg-emerald-500/10">
-            <svg class="h-10 w-10 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0A50.57 50.57 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15h.008v.008H6.75V15zm0-2.25h.008v.008H6.75v-.008zm0-2.25h.008v.008H6.75V10.5zm0-2.25h.008v.008H6.75V8.25zm10.5 6.75h.008v.008h-.008V15zm0-2.25h.008v.008h-.008v-.008zm0-2.25h.008v.008h-.008V10.5zm0-2.25h.008v.008h-.008V8.25z" />
-            </svg>
-          </div>
-          <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white sm:text-xl sm:font-bold">Workspace Kosong</h3>
-          <p class="mt-2 max-w-md text-xs font-normal text-slate-500 dark:text-slate-400 sm:text-sm">Silakan pilih salah satu mata pelajaran
-            dari panel geser di atas untuk mulai melihat materi dan mengerjakan tugas.</p>
-        </div>
-      </div>
+        <h3 class="mt-5 text-lg font-semibold tracking-tight text-slate-900 dark:text-white sm:text-xl sm:font-black">
+          Workspace Kosong
+        </h3>
+        <p class="mt-2 max-w-md text-sm font-normal leading-6 text-slate-500 dark:text-slate-400">
+          Silakan pilih salah satu mata pelajaran di atas untuk mulai melihat isi pembelajaran.
+        </p>
+      </section>
     </main>
-  </div>
 
-  <transition name="fade">
-    <div v-if="submissionTarget" class="fixed inset-0 z-[70] bg-slate-950/70 p-4 backdrop-blur-sm"
-      @click.self="closeSubmissionModal">
-      <div class="mx-auto mt-8 w-full max-w-2xl rounded-2xl bg-white shadow-2xl dark:bg-slate-900">
-        <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 dark:border-slate-800">
-          <div>
-            <h3 class="font-extrabold text-slate-900 dark:text-white">Meja Pengumpulan</h3>
-            <p class="mt-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">{{ submissionTarget?.title }}
-            </p>
-          </div>
-          <button type="button"
-            class="rounded-lg p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            :disabled="isSubmitting" @click="closeSubmissionModal">
-            ✕
-          </button>
-        </div>
-
-        <form class="flex flex-col gap-5 p-5" @submit.prevent="submitAssignment">
-          <div>
-            <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Teks Jawaban /
-              Catatan</label>
-            <textarea v-model="submissionForm.submission_text" rows="8"
-              placeholder="Ketik jawaban Anda di sini atau tambahkan catatan untuk guru..."
-              class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 focus:bg-white focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700 dark:focus:bg-slate-900" />
-          </div>
-
-          <div>
-            <label class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-300">Unggah File (Jika
-              diminta)</label>
-            <input type="file" :disabled="isSubmitting" @change="handleSubmissionFile"
-              class="block w-full text-sm text-slate-500 file:mr-4 file:cursor-pointer file:rounded-xl file:border-0 file:bg-emerald-50 file:px-4 file:py-2.5 file:text-sm file:font-bold file:text-emerald-700 hover:file:bg-emerald-100 dark:text-slate-400 dark:file:bg-emerald-500/10 dark:file:text-emerald-400 dark:hover:file:bg-emerald-500/20" />
-            <div v-if="submissionTarget?.submission_attachment_url"
-              class="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
-              <span class="font-semibold">File saat ini:</span>
-              <a :href="normalizePublicUrl(submissionTarget.submission_attachment_url)" target="_blank" rel="noreferrer"
-                class="ml-1 font-bold text-emerald-600 hover:text-emerald-500 dark:text-emerald-400">
-                Lihat file jawaban
-              </a>
+    <transition name="fade">
+      <div v-if="isAssignmentsMode && submissionTarget"
+        class="fixed inset-0 z-[70] bg-slate-950/70 p-4 backdrop-blur-sm" @click.self="closeSubmissionModal">
+        <div class="mx-auto mt-8 w-full max-w-2xl overflow-hidden rounded-[2rem] bg-white shadow-2xl dark:bg-slate-900">
+          <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+            <div>
+              <h3 class="text-lg font-semibold tracking-tight text-slate-900 dark:text-white sm:font-black">Meja Pengumpulan</h3>
+              <p class="mt-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                {{ submissionTarget?.title }}
+              </p>
             </div>
+            <button type="button"
+              class="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              :disabled="isSubmitting" @click="closeSubmissionModal">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
           </div>
 
-          <div class="mt-1 flex items-center justify-end gap-3">
-            <button type="button" :disabled="isSubmitting"
-              class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 disabled:opacity-60 dark:border-slate-700 dark:text-slate-200"
-              @click="closeSubmissionModal">
-              Batal
-            </button>
-            <button :disabled="isSubmitting"
-              class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-500 disabled:opacity-60">
-              <svg v-if="isSubmitting" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-              </svg>
-              {{ isSubmitting ? "Mengirim Data..." : "Kirim / Perbarui Jawaban" }}
-            </button>
-          </div>
-        </form>
+          <form class="flex flex-col gap-5 p-5" @submit.prevent="submitAssignment">
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                Teks Jawaban / Catatan
+              </label>
+              <textarea v-model="submissionForm.submission_text" rows="8"
+                placeholder="Ketik jawaban Anda di sini atau tambahkan catatan untuk guru..."
+                class="block w-full rounded-2xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 focus:bg-white focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700 dark:focus:bg-slate-900" />
+            </div>
+
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                Unggah File (Jika diminta)
+              </label>
+              <input type="file" :disabled="isSubmitting" @change="handleSubmissionFile"
+                class="block w-full text-sm text-slate-500 file:mr-4 file:cursor-pointer file:rounded-xl file:border-0 file:bg-emerald-50 file:px-4 file:py-2.5 file:text-sm file:font-bold file:text-emerald-700 hover:file:bg-emerald-100 dark:text-slate-400 dark:file:bg-emerald-500/10 dark:file:text-emerald-400 dark:hover:file:bg-emerald-500/20" />
+              <div v-if="submissionTarget?.submission_attachment_url"
+                class="mt-3 rounded-2xl bg-slate-50 px-3 py-2 text-xs text-slate-600 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
+                <span class="font-medium">File saat ini:</span>
+                <a :href="normalizePublicUrl(submissionTarget.submission_attachment_url)" target="_blank"
+                  rel="noreferrer" class="ml-1 font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400">
+                  Lihat file jawaban
+                </a>
+              </div>
+            </div>
+
+            <div class="mt-1 flex items-center justify-end gap-3">
+              <button type="button" :disabled="isSubmitting"
+                class="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-normal text-slate-700 disabled:opacity-60 dark:border-slate-700 dark:text-slate-200"
+                @click="closeSubmissionModal">
+                Batal
+              </button>
+              <button :disabled="isSubmitting"
+                class="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-500 disabled:opacity-60">
+                <svg v-if="isSubmitting" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+                {{ isSubmitting ? "Mengirim Data..." : "Kirim / Perbarui Jawaban" }}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
-  </transition>
+    </transition>
+  </div>
 </template>
 
 <script setup>
@@ -289,7 +352,13 @@ import { formatDateTime } from "@/utils/date";
 import { normalizePublicUrl } from "@/utils/url";
 import { useMasterDataStore } from "@/store/masterData";
 
-const activeTab = ref("materials");
+const props = defineProps({
+  mode: {
+    type: String,
+    default: "materials",
+  },
+});
+
 const route = useRoute();
 const subjects = ref([]);
 const masterDataStore = useMasterDataStore();
@@ -307,8 +376,34 @@ const submissionForm = reactive({
   submission_text: "",
 });
 
+const isMaterialsMode = computed(() => props.mode !== "assignments");
+const isAssignmentsMode = computed(() => props.mode === "assignments");
+const pageTitle = computed(() => (isAssignmentsMode.value ? "Tugas File" : "Materi Pembelajaran"));
+const pageSubtitle = computed(() => (
+  isAssignmentsMode.value
+    ? "Pilih mata pelajaran untuk melihat tugas file, status pengumpulan, dan kirim jawaban dalam satu halaman."
+    : "Pilih mata pelajaran untuk membuka materi, membaca isi pembelajaran, dan mengunduh lampiran jika tersedia."
+));
+const pageEyebrow = computed(() => (isAssignmentsMode.value ? "Modul Siswa • Tugas File" : "Modul Siswa • Materi"));
+
 const gradedAssignments = computed(() => assignments.value.filter((item) => item.score !== null && item.score !== undefined).length);
 const pendingAssignments = computed(() => assignments.value.filter((item) => !item.submission_id).length);
+const submittedAssignments = computed(() => assignments.value.filter((item) => item.submission_id).length);
+const pageStats = computed(() => {
+  if (isAssignmentsMode.value) {
+    return [
+      { label: "Tugas", value: assignments.value.length, caption: "Daftar tugas aktif", icon: "ph:file-text" },
+      { label: "Pending", value: pendingAssignments.value, caption: "Belum dikerjakan", icon: "ph:clock-counter-clockwise" },
+      { label: "Terkumpul", value: submittedAssignments.value, caption: "Sudah dikirim", icon: "ph:check-circle" },
+    ];
+  }
+
+  return [
+    { label: "Materi", value: materials.value.length, caption: "Dokumen tersedia", icon: "ph:books" },
+    { label: "Lampiran", value: materials.value.filter((item) => Boolean(item.attachment_url)).length, caption: "Siap diunduh", icon: "ph:paperclip" },
+    { label: "Mapel", value: subjects.value.length, caption: "Pilihan kelas", icon: "ph:student" },
+  ];
+});
 
 const routeSubjectId = () => Number(route.query?.subject || route.query?.subject_id || 0);
 const routeAssignmentId = () => Number(route.query?.assignment || route.query?.assignment_id || 0);
@@ -332,19 +427,39 @@ const loadSubjects = async () => {
 const loadSubjectData = async () => {
   if (!selectedSubject.value) return;
 
-  const [materialResponse, assignmentResponse] = await Promise.all([
-    api.get(`/learning/subjects/${selectedSubject.value.id}/materials`),
-    api.get(`/learning/subjects/${selectedSubject.value.id}/assignments`),
-  ]);
+  const requests = [];
 
-  materials.value = materialResponse?.data || [];
-  assignments.value = (assignmentResponse?.data || []).filter((item) => item.assignment_type === "FILE");
+  if (isMaterialsMode.value) {
+    requests.push(api.get(`/learning/subjects/${selectedSubject.value.id}/materials`));
+  } else {
+    materials.value = [];
+  }
 
-  const requestedAssignmentId = routeAssignmentId();
-  if (requestedAssignmentId) {
-    const requestedAssignment = assignments.value.find((item) => Number(item.id) === requestedAssignmentId);
-    if (requestedAssignment) {
-      startSubmission(requestedAssignment);
+  if (isAssignmentsMode.value) {
+    requests.push(api.get(`/learning/subjects/${selectedSubject.value.id}/assignments`));
+  } else {
+    assignments.value = [];
+  }
+
+  const responses = await Promise.all(requests);
+  let responseIndex = 0;
+
+  if (isMaterialsMode.value) {
+    const materialResponse = responses[responseIndex];
+    materials.value = materialResponse?.data || [];
+    responseIndex += 1;
+  }
+
+  if (isAssignmentsMode.value) {
+    const assignmentResponse = responses[responseIndex];
+    assignments.value = (assignmentResponse?.data || []).filter((item) => item.assignment_type === "FILE");
+
+    const requestedAssignmentId = routeAssignmentId();
+    if (requestedAssignmentId) {
+      const requestedAssignment = assignments.value.find((item) => Number(item.id) === requestedAssignmentId);
+      if (requestedAssignment) {
+        startSubmission(requestedAssignment);
+      }
     }
   }
 };
@@ -355,7 +470,6 @@ const selectSubject = async (subject) => {
   submissionForm.submission_text = "";
   submissionFile.value = null;
   message.value = "";
-  activeTab.value = "materials";
   await loadSubjectData();
 };
 

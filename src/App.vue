@@ -19,7 +19,7 @@
     </div>
 
     <div class="flex h-screen min-h-0 flex-auto w-full flex-col overflow-hidden transition-colors">
-      <Header v-if="!shouldHideChrome && !hideHeaderOnMobileChat" @sidebarToggle="toggleSidebar" />
+      <Header v-if="!shouldHideChrome && !shouldHideHeader && !hideHeaderOnMobileChat" @sidebarToggle="toggleSidebar" />
 
       <div class="flex-1 min-h-0" :class="isChatLayoutRoute ? 'overflow-hidden' : 'overflow-y-auto'">
         <transition name="slide-up">
@@ -53,7 +53,6 @@ import { useLayoutChrome } from "@/composables/useLayoutChrome";
 import { usePwaInstall } from "@/composables/usePwaInstall";
 import { clearForcedLogoutNotice, getForcedLogoutNotice } from "@/utils/auth";
 import { playNotificationSound } from "@/utils/notificationSound";
-import { clearChunkReloadAttempt } from "@/router/lazyRoute";
 
 const layoutChromeState = useLayoutChrome();
 const globalLoadingState = useGlobalLoading();
@@ -78,6 +77,9 @@ export default {
   computed: {
     shouldHideChrome() {
       return Boolean(this.$route.meta.hideNav || layoutChromeState.hidden);
+    },
+    shouldHideHeader() {
+      return Boolean(this.$route.meta.hideHeader || (this.$route.meta.hideHeaderOnMobile && !this.isDesktopViewport));
     },
     isChatLayoutRoute() {
       return ["LearningChatTeacher", "LearningChatStudent", "PrivateChat"].includes(this.$route.name);
@@ -173,7 +175,6 @@ export default {
     },
   },
   mounted() {
-    clearChunkReloadAttempt();
     pwaInstall.refreshInstalledState();
     this.checkForcedLogoutNotice();
     window.addEventListener("beforeinstallprompt", this.handleBeforeInstallPrompt);

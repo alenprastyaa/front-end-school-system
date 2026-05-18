@@ -287,7 +287,9 @@ const isInventoryEnabled = computed(() => storedProfile.value?.inventory_module_
 const isAttendanceEnabled = computed(() => storedProfile.value?.attendance_module_enabled !== false);
 const isOfficialExamEnabled = computed(() => storedProfile.value?.official_exam_module_enabled !== false);
 const isKoperasiEnabled = computed(() => storedProfile.value?.koperasi_module_enabled !== false);
+const isPrivateChatEnabled = computed(() => storedProfile.value?.private_chat_module_enabled !== false);
 const shouldTrackKoperasi = computed(() => isKoperasiEnabled.value && (isAdminRole || isKoperasiRole));
+const shouldTrackPrivateChat = computed(() => isPrivateChatEnabled.value && ["ADMIN", "KOPERASI", "GURU", "SISWA"].includes(role));
 
 const getCurrentUserId = () => {
   try {
@@ -485,7 +487,8 @@ const menuByRole = {
       label: "Modul Pembelajaran",
       icon: "ph:books",
       children: [
-        { to: "/learning-student", dataTour: "learning", label: "Pembelajaran", icon: "ph:book-open-text" },
+        { to: "/learning-student/materials", dataTour: "learning-materials", label: "Materi", icon: "ph:book-open-text" },
+        { to: "/learning-student/assignments", dataTour: "learning-assignments", label: "Tugas File", icon: "ph:file-text" },
         { to: "/learning-chat-student", label: "Live Chat", icon: "ph:chats-circle" },
         { to: "/learning-quiz-student", label: "Quiz", icon: "ph:brain" },
         { to: "/learning-exams-student", label: "Ujian Resmi", icon: "ph:exam" },
@@ -517,6 +520,9 @@ const filterMenuItems = (items = []) =>
       if (item.key === "koperasi" && !isKoperasiEnabled.value) {
         return null;
       }
+      if (item.key === "private-chat" && !isPrivateChatEnabled.value) {
+        return null;
+      }
       if (item.key === "learning-exams-admin" && !isOfficialExamEnabled.value) {
         return null;
       }
@@ -538,7 +544,6 @@ const filterMenuItems = (items = []) =>
 
 const visibleMenu = computed(() => filterMenuItems(menuByRole[role] || []));
 const shouldTrackLiveChat = ["GURU", "SISWA"].includes(role);
-const shouldTrackPrivateChat = ["ADMIN", "KOPERASI", "GURU", "SISWA"].includes(role);
 
 const isRouteActive = (path) => route.path === path;
 
@@ -815,6 +820,9 @@ const bindRealtimeStream = () => {
       maybeShowLearningBrowserNotification(payload);
     }),
     realtimeStore.on("private-chat:new-message", async (payload) => {
+      if (!shouldTrackPrivateChat.value) {
+        return;
+      }
       if (Number(payload?.sender_id || 0) === Number(currentUserId)) {
         return;
       }
@@ -831,6 +839,9 @@ const bindRealtimeStream = () => {
       await sidebarStore.refreshPrivateChatSummary({ force: true });
     }),
     realtimeStore.on("private-chat:read-updated", async () => {
+      if (!shouldTrackPrivateChat.value) {
+        return;
+      }
       await sidebarStore.refreshPrivateChatSummary({ force: true });
     }),
     realtimeStore.on("koperasi:order-created", (payload) => {

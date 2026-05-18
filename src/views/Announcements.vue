@@ -65,6 +65,10 @@
                 {{ selectedAnnouncement?.updated_at ? `Diperbarui ${formatDateTime(selectedAnnouncement.updated_at)}`
                   : "Belum disimpan" }}
               </span>
+              <span
+                class="inline-flex rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-900/70 dark:text-slate-200 dark:ring-slate-700">
+                {{ announcementExpiryLabel(selectedAnnouncement || previewAnnouncement) }}
+              </span>
             </div>
           </div>
 
@@ -144,6 +148,9 @@
                   </span>
                 </td>
                 <td class="px-4 py-4 text-slate-600 dark:text-slate-300 sm:px-6">{{ formatDateTime(item.updated_at) }}
+                  <div class="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
+                    {{ announcementExpiryLabel(item) }}
+                  </div>
                 </td>
                 <td class="px-4 py-4 sm:px-6">
                   <div class="flex flex-wrap justify-end gap-2">
@@ -244,6 +251,16 @@
                         placeholder="Tulis informasi pengumuman secara jelas, singkat, dan operasional."
                         class="block w-full rounded-2xl border-0 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                     </div>
+
+                    <div>
+                      <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Berakhir
+                        Pada</label>
+                      <input v-model="form.deactivated_at" type="datetime-local"
+                        class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                      <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        Kosongkan jika pengumuman tidak punya batas akhir.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -305,6 +322,7 @@ const emptyForm = () => ({
   title: "",
   content: "",
   target_audience: "ALL",
+  deactivated_at: "",
 });
 
 const announcements = ref([]);
@@ -381,6 +399,22 @@ const targetLabel = (value) => {
   return found?.label || "Semua Warga Sekolah";
 };
 
+const formatDateTimeLocal = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (num) => String(num).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+const announcementExpiryLabel = (item) => {
+  const value = item?.deactivated_at || "";
+  if (!value) return "Tanpa batas akhir";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Tanpa batas akhir";
+  return `Berakhir ${formatDateTime(value)}`;
+};
+
 const statusToneClass = (status) => {
   switch (String(status || "").toUpperCase()) {
     case "ACTIVE":
@@ -414,6 +448,7 @@ const openEditModal = (item) => {
   form.title = item.title || "";
   form.content = item.content || "";
   form.target_audience = item.target_audience || "ALL";
+  form.deactivated_at = formatDateTimeLocal(item.deactivated_at || "");
   selectedAnnouncement.value = item;
   isFormModalOpen.value = true;
 };
@@ -471,6 +506,7 @@ const submitAnnouncement = async () => {
       title: form.title,
       content: form.content,
       target_audience: form.target_audience,
+      deactivated_at: form.deactivated_at || null,
     };
 
     const response = editingId.value

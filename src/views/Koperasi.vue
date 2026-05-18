@@ -3,6 +3,12 @@
     <!-- TOP NAVIGATION BARR -->
     <header class="sticky top-0 z-10 bg-gradient-to-r from-orange-500 to-orange-600 shadow-md">
       <div class="mx-auto flex max-w-7xl flex-nowrap items-center gap-2 px-4 py-3 md:gap-3 md:px-8 md:py-4">
+        <button type="button" @click="goBack"
+          class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-white transition hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/60 md:h-11 md:w-11"
+          aria-label="Kembali">
+          <Icon icon="ph:arrow-left" class="h-5 w-5 md:h-6 md:w-6" />
+        </button>
+
         <!-- Brand -->
         <div class="hidden flex-none items-center gap-2 md:flex">
           <Icon icon="ph:storefront-duotone" class="h-8 w-8 text-white" />
@@ -1074,6 +1080,7 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
+import { useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
 import QRCode from "qrcode";
 import { api } from "@/api";
@@ -1084,6 +1091,7 @@ import { useRealtimeStore } from "@/store/realtime";
 import { normalizePublicUrl } from "@/utils/url";
 
 const role = String(getStoredRole() || "");
+const router = useRouter();
 const canManage = computed(() => ["ADMIN", "KOPERASI"].includes(role));
 const isKoperasiStaff = computed(() => role === "KOPERASI");
 const realtimeStore = useRealtimeStore();
@@ -1108,6 +1116,15 @@ const categoryOptions = [
   { value: "LAINNYA", label: "Lainnya" },
 ];
 const categoryValues = new Set(categoryOptions.map((option) => option.value));
+
+const goBack = () => {
+  if (window.history.length > 1) {
+    router.back();
+    return;
+  }
+
+  router.push("/dashboard");
+};
 
 const isLoading = ref(false);
 const isSavingProduct = ref(false);

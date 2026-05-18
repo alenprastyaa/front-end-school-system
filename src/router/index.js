@@ -49,6 +49,7 @@ const routes = [
       requiresAuth: true,
       roles: ["ADMIN", "KOPERASI", "SARPRAS", "GURU", "SISWA"],
       moduleKey: "koperasi",
+      hideHeaderOnMobile: true,
     },
   },
   {
@@ -142,6 +143,7 @@ const routes = [
       title: "Chat Pribadi" + appName,
       requiresAuth: true,
       roles: ["ADMIN", "KOPERASI", "GURU", "SISWA"],
+      moduleKey: "private_chat",
     },
   },
   {
@@ -333,10 +335,26 @@ const routes = [
   },
   {
     path: "/learning-student",
-    name: "LearningStudent",
+    redirect: "/learning-student/materials",
+  },
+  {
+    path: "/learning-student/materials",
+    name: "LearningStudentMaterials",
     component: lazyRoute(() => import("../views/LearningStudent.vue")),
+    props: { mode: "materials" },
     meta: {
-      title: "Pembelajaran Siswa" + appName,
+      title: "Materi Siswa" + appName,
+      requiresAuth: true,
+      roles: ["SISWA"],
+    },
+  },
+  {
+    path: "/learning-student/assignments",
+    name: "LearningStudentAssignments",
+    component: lazyRoute(() => import("../views/LearningStudent.vue")),
+    props: { mode: "assignments" },
+    meta: {
+      title: "Tugas File Siswa" + appName,
       requiresAuth: true,
       roles: ["SISWA"],
     },
@@ -504,6 +522,8 @@ router.beforeEach((to, from, next) => {
           ? storedUser.official_exam_module_enabled !== false
           : to.meta.moduleKey === "koperasi"
             ? storedUser.koperasi_module_enabled !== false
+            : to.meta.moduleKey === "private_chat"
+              ? storedUser.private_chat_module_enabled !== false
             : true;
     if (!moduleEnabled) {
       next({ name: "Dashboard" });

@@ -291,6 +291,15 @@ const pushNotificationTitle = computed(() =>
       : "Aktifkan push notification browser ini",
 );
 
+const resolveOnlineCount = (payload) => {
+  const count = Number(payload?.online_count || 0);
+  if (!Number.isFinite(count) || count < 0) {
+    return 1;
+  }
+
+  return Math.max(count, 1);
+};
+
 const normalizeProfileImageOrientation = async (file) => {
   if (!file || !file.type?.startsWith("image/")) {
     return file;
@@ -564,12 +573,10 @@ onMounted(() => {
   if (token) {
     realtimeStore.connect(token);
     const unsubConnected = realtimeStore.on("realtime:connected", (payload) => {
-      const count = Number(payload?.online_count || 0);
-      onlineLmsCount.value = Number.isFinite(count) && count >= 0 ? count : 0;
+      onlineLmsCount.value = resolveOnlineCount(payload);
     });
     const unsubPresence = realtimeStore.on("learning-presence:updated", (payload) => {
-      const count = Number(payload?.online_count || 0);
-      onlineLmsCount.value = Number.isFinite(count) && count >= 0 ? count : 0;
+      onlineLmsCount.value = resolveOnlineCount(payload);
     });
     realtimeUnsubscribers.value = [unsubConnected, unsubPresence];
   }

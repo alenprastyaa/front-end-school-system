@@ -26,19 +26,7 @@ const markReloadAttempted = () => {
   }
 };
 
-export const recoverFromChunkLoadError = () => {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
-  if (hasReloadAttempted()) {
-    return false;
-  }
-
-  markReloadAttempted();
-  window.location.reload();
-  return true;
-};
+export const recoverFromChunkLoadError = () => false;
 
 export const clearChunkReloadAttempt = () => {
   try {

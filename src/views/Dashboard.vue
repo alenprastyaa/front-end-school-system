@@ -1,7 +1,7 @@
 <template>
   <div
     class="min-h-screen bg-slate-50/50 px-3 pb-10 pt-3 font-sans text-slate-900 sm:px-4 sm:pt-4 md:px-8 md:pb-12 md:pt-8 dark:bg-slate-950 dark:text-slate-100">
-    <div class="mx-auto space-y-5 sm:space-y-6">
+    <div class="mx-auto max-w-[1440px] space-y-5 sm:space-y-6">
 
       <header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <div>
@@ -17,81 +17,25 @@
           <div class="hidden flex-col items-end sm:flex">
             <span class="text-xs font-medium text-slate-500">Terakhir diperbarui</span>
             <span class="text-sm font-semibold text-slate-900 dark:text-white">{{
-              liveDashboardClock }}</span>
+              formatDateTime(dashboardData.generatedAt) }}</span>
           </div>
           <div class="h-8 w-px bg-slate-200 hidden sm:block dark:bg-slate-800"></div>
+          <button @click="handleAnnouncementButton"
+            class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 disabled:opacity-50 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-800">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M11.25 4.5h1.5m0 15h-1.5m6.364-13.364l1.061-1.06m-11.31 11.31l-1.06 1.06m13.364 0l-1.06-1.06m-11.31-11.31l1.06 1.06M4.5 11.25v1.5m15-1.5v1.5" />
+            </svg>
+            Pengumuman
+          </button>
         </div>
       </header>
 
-      <section v-if="showInstallBanner"
-        class="rounded-3xl border border-emerald-200 bg-gradient-to-r from-emerald-600 to-teal-600 p-5 text-white shadow-sm">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div class="min-w-0">
-            <p class="text-xs font-bold uppercase tracking-[0.22em] text-emerald-100">Install App</p>
-            <h2 class="mt-2 text-lg font-black tracking-tight sm:text-xl">Pasang School System ke layar utama</h2>
-            <p class="mt-2 max-w-2xl text-sm leading-6 text-emerald-50">
-              Lebih cepat dibuka, terasa seperti aplikasi, dan tidak perlu buka Chrome lagi setiap kali masuk.
-            </p>
-          </div>
-          <div class="flex shrink-0 flex-col gap-2 sm:items-end">
-            <button
-              type="button"
-              class="inline-flex items-center justify-center rounded-2xl bg-white px-4 py-2.5 text-sm font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-50"
-              :disabled="installButtonBusy"
-              @click="handleInstallClick"
-            >
-              {{ installButtonLabel }}
-            </button>
-            <p class="text-xs text-emerald-100/90">
-              {{ installHintText }}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section v-if="dashboardAnnouncements.length"
-        class="rounded-3xl border border-sky-200 bg-white p-5 shadow-sm dark:border-sky-500/20 dark:bg-slate-900 sm:p-6">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div class="min-w-0 flex-1">
-            <div class="flex flex-wrap items-center gap-2">
-              <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-600 dark:text-sky-300">Pengumuman Penting</p>
-              <span class="inline-flex rounded-full bg-sky-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
-                Aktif
-              </span>
-            </div>
-
-            <h2 class="mt-3 text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">
-              {{ featuredAnnouncement.title }}
-            </h2>
-
-            <p class="mt-3 max-w-3xl whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-slate-300">
-              {{ featuredAnnouncement.content }}
-            </p>
-
-            <div class="mt-4 flex flex-wrap gap-2">
-              <span class="inline-flex rounded-full bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
-                {{ featuredAnnouncement.target_label || featuredAnnouncement.target_audience }}
-              </span>
-              <span class="inline-flex rounded-full bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
-                {{ featuredAnnouncement.published_at ? `Dipost ${formatDateTime(featuredAnnouncement.published_at)}` : `Diperbarui ${formatDateTime(featuredAnnouncement.updated_at)}` }}
-              </span>
-            </div>
-          </div>
-
-          <div class="flex shrink-0 flex-col items-start gap-3 lg:items-end">
-            <router-link
-              v-if="role === 'ADMIN'"
-              to="/announcements"
-              class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-            >
-              Kelola Pengumuman
-            </router-link>
-            <p v-if="dashboardAnnouncements.length > 1" class="text-xs text-slate-500 dark:text-slate-400">
-              +{{ dashboardAnnouncements.length - 1 }} pengumuman lain
-            </p>
-          </div>
-        </div>
-      </section>
+      <div v-if="announcementNoticeMessage"
+        class="rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm font-medium text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300">
+        {{ announcementNoticeMessage }}
+      </div>
 
       <div v-if="studentAssignmentAlert"
         class="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/20 dark:bg-amber-500/10">
@@ -114,274 +58,103 @@
         </div>
       </div>
 
-      <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div v-for="item in summaryCards" :key="item.label" class="relative overflow-hidden rounded-2xl p-4"
+      <div v-if="errorMessage"
+        class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
+        {{ errorMessage }}
+      </div>
+
+      <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div v-for="item in summaryCards" :key="item.label" class="relative overflow-hidden rounded-2xl p-5"
           :class="item.cardClass">
           <div class="flex items-start justify-between gap-4">
             <div>
-              <dt class="text-xs font-semibold uppercase tracking-[0.14em]" :class="item.labelClass">{{ item.label }}
-              </dt>
-              <dd class="mt-2 text-2xl font-bold tracking-tight sm:text-[2rem]" :class="item.valueClass">{{ item.value
-              }}</dd>
-              <dd class="mt-2 text-[11px]" :class="item.captionClass">{{ item.caption }}</dd>
+              <dt class="text-sm font-medium" :class="item.labelClass">{{ item.label }}</dt>
+              <dd class="mt-2 text-3xl font-bold tracking-tight" :class="item.valueClass">{{ item.value }}</dd>
+              <dd class="mt-3 text-xs" :class="item.captionClass">{{ item.caption }}</dd>
             </div>
-            <div class="flex h-12 w-12 shrink-0 items-center justify-center sm:h-14 sm:w-14">
-              <Icon :icon="item.icon" class="h-8 w-8 opacity-75 sm:h-9 sm:w-9" :class="item.iconClass" />
+            <div class="flex h-16 w-16 shrink-0 items-center justify-center">
+              <Icon :icon="item.icon" class="h-10 w-10 opacity-75" :class="item.iconClass" />
             </div>
           </div>
         </div>
-      </section>
-
-      <section v-if="role === 'GURU'" class="space-y-4">
-        <div v-if="teacherTeachingAlert"
-          class="rounded-2xl border border-emerald-200 bg-white px-4 py-4 shadow-sm sm:px-5 dark:border-emerald-500/20 dark:bg-slate-900">
-          <div class="flex items-start gap-3">
-            <div
-              class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white">
-              <Icon icon="mdi:teach" class="h-5 w-5" />
-            </div>
-            <div class="min-w-0">
-              <p class="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
-                {{ teacherTeachingAlert.title }}
-              </p>
-              <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                {{ teacherTeachingAlert.message }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <section
-          class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div class="border-b border-slate-200 bg-white px-4 py-4 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
-            <h2 class="text-base font-semibold text-slate-900 dark:text-white">Jadwal Mengajar</h2>
-            <p class="mt-1 text-sm text-slate-500">Ringkasan jadwal mingguan guru yang ditampilkan sederhana per hari.
-            </p>
-          </div>
-
-          <div v-if="teacherScheduleDays.length" class="p-4 sm:p-5">
-            <div class="space-y-3">
-              <div v-for="day in teacherScheduleDays" :key="day.day_order"
-                class="rounded-xl border border-slate-200 dark:border-slate-800">
-                <div
-                  class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/60">
-                  <div class="flex items-center gap-3">
-                    <span class="inline-flex rounded-lg bg-sky-500 px-2.5 py-1 text-xs font-semibold text-white">
-                      {{ day.day_name }}
-                    </span>
-                    <span class="text-xs text-slate-500 dark:text-slate-400">{{ day.groupedEntries.length }} blok
-                      jadwal</span>
-                  </div>
-                  <span v-if="day.day_order === teacherScheduleTodayOrder"
-                    class="rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
-                    Hari Ini
-                  </span>
-                </div>
-
-                <div class="divide-y divide-slate-100 dark:divide-slate-800">
-                  <div v-for="entry in day.groupedEntries" :key="entry.group_key"
-                    class="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div class="min-w-0">
-                      <p class="text-sm font-semibold text-slate-900 dark:text-white">
-                        {{ entry.subject_name }} <span class="font-normal text-slate-500 dark:text-slate-400">di {{
-                          entry.class_name }}</span>
-                      </p>
-                      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                        {{ entry.total_sessions }} jam • {{ formatScheduleRange(entry.start_time, entry.end_time) }}
-                      </p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span v-if="entry.subject_code"
-                        class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                        {{ entry.subject_code }}
-                      </span>
-                      <span v-if="entry.is_active"
-                        class="rounded-full bg-emerald-500 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
-                        Aktif
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div v-if="teacherTeachingAssignments.length"
-                class="rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
-                <p class="text-sm font-semibold text-slate-900 dark:text-white">Mapel Diampu</p>
-                <div class="mt-3 flex flex-wrap gap-2">
-                  <span v-for="item in teacherTeachingAssignments"
-                    :key="`${item.class_name}-${item.subject_name}-${item.id}`"
-                    class="inline-flex rounded-full bg-white px-3 py-1.5 text-xs text-slate-700 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700">
-                    {{ item.subject_name }} • {{ item.class_name }}{{ item.weekly_hours ? ` • ${item.weekly_hours} jam`
-                      : "" }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div v-else-if="teacherTeachingAssignments.length" class="p-4 sm:p-6">
-            <div
-              class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
-              Slot hari dan jam belum tergenerate, tetapi guru sudah terdistribusi mengajar pada kelas berikut.
-            </div>
-
-            <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              <article v-for="item in teacherTeachingAssignments"
-                :key="`${item.class_name}-${item.subject_name}-${item.id}`"
-                class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950/40">
-                <div class="flex items-start justify-between gap-3">
-                  <div>
-                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
-                      Kelas Diampu
-                    </p>
-                    <h3 class="mt-1 text-base font-bold text-slate-900 dark:text-white">{{ item.class_name }}</h3>
-                  </div>
-                  <span
-                    class="rounded-full bg-sky-100 px-2.5 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
-                    {{ item.weekly_hours ? `${item.weekly_hours} jam` : "Mapel aktif" }}
-                  </span>
-                </div>
-                <p class="mt-3 text-sm font-semibold text-slate-800 dark:text-slate-100">{{ item.subject_name }}</p>
-                <p v-if="item.subject_code" class="mt-1 text-xs text-slate-500 dark:text-slate-400">Kode: {{
-                  item.subject_code }}</p>
-                <p v-if="item.notes" class="mt-3 text-sm text-slate-600 dark:text-slate-300">{{ item.notes }}</p>
-              </article>
-            </div>
-          </div>
-
-          <div v-else class="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
-            Guru belum memiliki data distribusi kelas atau jadwal mengajar.
-          </div>
-        </section>
       </section>
 
       <section v-if="role === 'ADMIN'"
         class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
-        <div v-if="lockedSchools.length"
-          class="mb-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/20 dark:bg-amber-500/10">
-          <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <p class="text-xs font-bold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">Peringatan
-                Akun</p>
-              <h2 class="mt-2 text-base font-semibold text-amber-900 dark:text-amber-100">
-                {{ lockedSchools.length }} sekolah memiliki akun yang terkunci
-              </h2>
-              <p class="mt-1 text-sm leading-6 text-amber-800 dark:text-amber-200">
-                Ada akun yang belum bisa digunakan sementara. Silakan buka akses dari panel admin setelah status
-                sekolah dibenahi.
-              </p>
-            </div>
-          </div>
-          <div class="mt-4 overflow-x-auto">
-            <table class="min-w-full text-left text-sm">
-              <thead class="text-amber-800/80 dark:text-amber-200/80">
-                <tr>
-                  <th class="px-4 py-2 font-semibold">Sekolah</th>
-                  <th class="px-4 py-2 font-semibold">Invoice Tertua</th>
-                  <th class="px-4 py-2 font-semibold text-right">Jumlah Tertunda</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-amber-200/60 dark:divide-amber-500/20">
-                <tr v-for="item in lockedSchools" :key="item.id">
-                  <td class="px-4 py-2 font-medium text-amber-950 dark:text-amber-50">{{ item.name || "-" }}</td>
-                  <td class="px-4 py-2 text-amber-900 dark:text-amber-100">{{ formatDate(item.oldest_due_date) }}</td>
-                  <td class="px-4 py-2 text-right font-semibold text-amber-900 dark:text-amber-100">
-                    {{ item.overdue_invoice_count || 0 }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 class="text-base font-semibold text-slate-900 dark:text-white">Kirim Rekap WhatsApp Wali Kelas</h2>
-            <p class="mt-1 text-sm text-slate-500">Admin memilih kelas terlebih dahulu, lalu kirim WhatsApp hanya ke
-              wali kelas tersebut.
+            <h2 class="text-base font-semibold text-slate-900 dark:text-white">Kirim Laporan Email Wali Kelas</h2>
+            <p class="mt-1 text-sm text-slate-500">Kirim rekap kehadiran harian ke email wali kelas dengan lampiran PDF.
             </p>
           </div>
 
           <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div>
-              <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Tanggal Rekap</label>
-              <input v-model="attendanceWhatsappReportDate" type="date"
+              <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Tanggal Laporan</label>
+              <input v-model="attendanceEmailReportDate" type="date"
                 class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-sky-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200" />
             </div>
+            <button @click="sendAttendanceEmailReport" :disabled="isSendingAttendanceEmailReport"
+              class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
+              <svg v-if="isSendingAttendanceEmailReport" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"
+                stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+              {{ isSendingAttendanceEmailReport ? "Mengirim..." : "Kirim Email Sekarang" }}
+            </button>
           </div>
         </div>
 
-        <div class="mt-5 overflow-x-auto">
+        <div v-if="attendanceEmailReportMessage" class="mt-4 rounded-xl px-4 py-3 text-sm font-medium"
+          :class="attendanceEmailReportError ? 'border border-red-200 bg-red-50 text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300' : 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300'">
+          {{ attendanceEmailReportMessage }}
+        </div>
+
+        <div v-if="attendanceEmailReportSummary" class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div class="rounded-xl bg-slate-50 p-4 dark:bg-slate-800/70">
+            <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Total Kelas</p>
+            <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{{
+              attendanceEmailReportSummary.total_classes || 0 }}</p>
+          </div>
+          <div class="rounded-xl bg-emerald-50 p-4 dark:bg-emerald-500/10">
+            <p class="text-xs font-medium uppercase tracking-wide text-emerald-600 dark:text-emerald-300">Berhasil</p>
+            <p class="mt-2 text-2xl font-bold text-emerald-700 dark:text-emerald-200">{{
+              attendanceEmailReportSummary.success_count || 0 }}</p>
+          </div>
+          <div class="rounded-xl bg-rose-50 p-4 dark:bg-rose-500/10">
+            <p class="text-xs font-medium uppercase tracking-wide text-rose-600 dark:text-rose-300">Gagal</p>
+            <p class="mt-2 text-2xl font-bold text-rose-700 dark:text-rose-200">{{
+              attendanceEmailReportSummary.failed_count || 0 }}</p>
+          </div>
+        </div>
+
+        <div v-if="attendanceEmailReportSummary?.results?.length" class="mt-5 overflow-x-auto">
           <table class="min-w-full text-left text-sm">
             <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
               <tr>
                 <th class="px-4 py-3 font-medium">Kelas</th>
                 <th class="px-4 py-3 font-medium">Wali Kelas</th>
-                <th class="px-4 py-3 font-medium">WhatsApp</th>
-                <th class="px-4 py-3 font-medium text-right">Aksi</th>
+                <th class="px-4 py-3 font-medium">Email</th>
+                <th class="px-4 py-3 font-medium">Status</th>
+                <th class="px-4 py-3 font-medium">Catatan</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-              <tr v-for="item in (dashboardData?.classes || [])" :key="`${item.id}-${item.class_name}`">
+              <tr v-for="item in attendanceEmailReportSummary.results" :key="`${item.class_id}-${item.target}`">
                 <td class="px-4 py-3 font-medium text-slate-900 dark:text-white">{{ item.class_name || "-" }}</td>
                 <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.wali_guru_name || "-" }}</td>
-                <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.wali_guru_phone_number || "-" }}</td>
-                <td class="px-4 py-3 text-right">
-                  <button @click="sendAttendanceWhatsappReport(item)" :disabled="sendingWhatsappClassId === item.id"
-                    class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
-                    <svg v-if="sendingWhatsappClassId === item.id" class="h-4 w-4 animate-spin" fill="none"
-                      viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                    </svg>
-                    {{ sendingWhatsappClassId === item.id ? "Mengirim..." : "Kirim WhatsApp" }}
-                  </button>
+                <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.target || "-" }}</td>
+                <td class="px-4 py-3">
+                  <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold"
+                    :class="item.success ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300'">
+                    {{ item.success ? "Berhasil" : "Gagal" }}
+                  </span>
                 </td>
+                <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.error || "-" }}</td>
               </tr>
             </tbody>
           </table>
-        </div>
-
-        <div v-if="attendanceWhatsappReportSummary"
-          class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/50">
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Hasil Pengiriman Terakhir</p>
-              <h3 class="mt-2 text-lg font-bold text-slate-900 dark:text-white">
-                {{ attendanceWhatsappReportSummary.class_name || "-" }} • {{
-                  attendanceWhatsappReportSummary.wali_guru_name || "-" }}
-              </h3>
-              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                WhatsApp tujuan: {{ attendanceWhatsappReportSummary.target || "-" }} • Tanggal rekap: {{
-                  attendanceWhatsappReportSummary.attendance_date || "-" }}
-              </p>
-            </div>
-            <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold"
-              :class="attendanceWhatsappReportSummary.success ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300'">
-              {{ attendanceWhatsappReportSummary.success ? "Berhasil" : "Gagal" }}
-            </span>
-          </div>
-
-          <div class="mt-4 grid gap-4 sm:grid-cols-2">
-            <div class="rounded-xl bg-white p-4 dark:bg-slate-900">
-              <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Sudah Hadir</p>
-              <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{{
-                attendanceWhatsappReportSummary.present_count || 0 }}</p>
-              <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                {{ attendanceWhatsappReportSummary.present_names?.length ?
-                  attendanceWhatsappReportSummary.present_names.join(", ") : "Belum ada siswa hadir." }}
-              </p>
-            </div>
-            <div class="rounded-xl bg-white p-4 dark:bg-slate-900">
-              <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Belum Hadir</p>
-              <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{{
-                attendanceWhatsappReportSummary.absent_count || 0 }}</p>
-              <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                {{ attendanceWhatsappReportSummary.absent_names?.length ?
-                  attendanceWhatsappReportSummary.absent_names.join(", ") : "Semua siswa sudah hadir." }}
-              </p>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -398,7 +171,7 @@
               </div>
             </div>
             <div class="mt-5 w-full sm:mt-6">
-              <ApexChart :type="visualPanel.chartType" height="320" :options="visualChartOptions"
+              <apexchart :type="visualPanel.chartType" height="320" :options="visualChartOptions"
                 :series="visualChartSeries" />
             </div>
           </section>
@@ -409,50 +182,7 @@
               <h2 class="text-base font-semibold text-slate-900 dark:text-white">{{ primaryPanel.title }}</h2>
               <p class="mt-1 text-sm text-slate-500">{{ primaryPanel.description }}</p>
             </div>
-            <div v-if="role === 'SISWA'" class="p-4 md:hidden">
-              <div v-if="sortedPrimaryRows.length" class="space-y-3">
-                <article v-for="row in sortedPrimaryRows" :key="`${row.attendance_date}-${row.clock_in || ''}-${row.clock_out || ''}`"
-                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/30">
-                  <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
-                      <p class="text-sm font-semibold text-slate-900 dark:text-white">
-                        {{ formatDate(row.attendance_date) }}
-                      </p>
-                      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                        Riwayat absensi harian
-                      </p>
-                    </div>
-                    <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                      :class="row.status === 'HADIR'
-                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300'
-                        : row.status === 'TERLAMBAT'
-                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300'
-                          : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'">
-                      {{ row.status || "-" }}
-                    </span>
-                  </div>
-
-                  <dl class="mt-3 grid grid-cols-2 gap-3 text-xs text-slate-500 dark:text-slate-400">
-                    <div>
-                      <dt class="font-medium text-slate-400 dark:text-slate-500">Masuk</dt>
-                      <dd class="mt-1 font-semibold text-slate-900 dark:text-white">
-                        {{ formatTime(row.clock_in) }}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt class="font-medium text-slate-400 dark:text-slate-500">Pulang</dt>
-                      <dd class="mt-1 font-semibold text-slate-900 dark:text-white">
-                        {{ formatTime(row.clock_out) }}
-                      </dd>
-                    </div>
-                  </dl>
-                </article>
-              </div>
-              <div v-else class="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-                Belum ada riwayat absensi.
-              </div>
-            </div>
-            <div class="hidden overflow-x-auto md:block">
+            <div class="overflow-x-auto">
               <table class="min-w-full text-left text-sm">
                 <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
                   <tr>
@@ -491,7 +221,7 @@
             class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
             <h2 class="text-base font-semibold text-slate-900 dark:text-white">Ringkasan Distribusi</h2>
             <div class="mt-5 flex items-center justify-center sm:mt-6">
-              <ApexChart type="donut" height="280" :options="compositionChartOptions"
+              <apexchart type="donut" height="280" :options="compositionChartOptions"
                 :series="compositionChartSeries" />
             </div>
           </section>
@@ -513,21 +243,19 @@
           <section
             class="flex-1 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
             <h2 class="text-base font-semibold text-slate-900 dark:text-white">{{ secondaryPanel.title }}</h2>
-            <div class="mt-5 space-y-3 sm:mt-6 sm:space-y-4">
-              <div v-for="(item, index) in secondaryPanel.items" :key="index"
-                class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-950/30 sm:px-5 sm:py-4">
-                <div class="min-w-0">
-                  <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
-                    <p class="min-w-0 flex-1 text-sm font-medium leading-5 text-slate-900 dark:text-white">
-                      {{ item.title }}
-                    </p>
+            <div class="mt-5 space-y-4 sm:mt-6 sm:space-y-5">
+              <div v-for="(item, index) in secondaryPanel.items" :key="index" class="flex gap-4">
+                <div class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-blue-500 ring-4 ring-blue-50 dark:ring-blue-500/10">
+                </div>
+                <div class="flex-1">
+                  <div class="flex items-start justify-between gap-2">
+                    <p class="text-sm font-medium text-slate-900 dark:text-white">{{ item.title }}</p>
                     <span class="text-xs text-slate-500 whitespace-nowrap">{{ item.meta }}</span>
                   </div>
-                  <p class="mt-1 text-sm leading-5 text-slate-600 dark:text-slate-400">{{ item.subtitle }}</p>
+                  <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ item.subtitle }}</p>
                 </div>
               </div>
-              <div v-if="secondaryPanel.items.length === 0"
-                class="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500 dark:border-slate-800">
+              <div v-if="secondaryPanel.items.length === 0" class="py-6 text-center text-sm text-slate-500">
                 {{ secondaryPanel.emptyMessage }}
               </div>
             </div>
@@ -535,166 +263,243 @@
         </div>
 
       </div>
+
+      <teleport to="body">
+        <transition name="fade-scale">
+          <div
+            v-if="announcementModalOpen && currentAnnouncement"
+            class="fixed inset-0 z-[140] flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm"
+            @click.self="closeAnnouncementModal"
+          >
+            <div class="relative w-full max-w-3xl overflow-visible rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
+              <div class="border-b border-slate-100 px-5 py-4 dark:border-slate-800 sm:px-6">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="min-w-0 flex-1">
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-600 dark:text-sky-300">
+                      Pengumuman Sekolah
+                    </p>
+                    <div class="mt-1 flex items-start justify-between gap-3">
+                      <h2 class="min-w-0 text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                        {{ currentAnnouncement.title }}
+                      </h2>
+                      <span class="inline-flex shrink-0 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                        {{ currentAnnouncementIndex + 1 }} / {{ dashboardAnnouncements.length }}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                    @click="closeAnnouncementModal"
+                  >
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="px-5 py-5 sm:px-6">
+                <transition :name="announcementTransitionName" mode="out-in">
+                  <div
+                    :key="currentAnnouncement.id"
+                    class="flex items-center justify-between gap-2 sm:gap-4"
+                  >
+                    <button
+                      v-if="dashboardAnnouncements.length > 1"
+                      type="button"
+                      @click="prevAnnouncement"
+                      class="shrink-0 rounded-full border border-slate-200 bg-white/95 p-3 text-slate-700 shadow-lg transition hover:bg-white dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-200 dark:hover:bg-slate-800"
+                      aria-label="Pengumuman sebelumnya"
+                    >
+                      <Icon icon="mdi:chevron-left" class="h-5 w-5" />
+                    </button>
+
+                    <div class="mx-auto flex min-w-0 flex-1 max-w-2xl flex-col items-center space-y-2 text-center">
+                      <p class="mt-0 whitespace-pre-line text-center text-[14px] leading-5 tracking-normal text-slate-700 dark:text-slate-300">
+                        {{ currentAnnouncement.content }}
+                      </p>
+
+                      <div class="mt-1 flex justify-center">
+                        <span class="inline-flex rounded-full bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
+                          {{ currentAnnouncement.published_at ? `Dipost ${formatDateTime(currentAnnouncement.published_at).replace(/ pukul /g, " ")}` : `Diperbarui ${formatDateTime(currentAnnouncement.updated_at).replace(/ pukul /g, " ")}` }}
+                        </span>
+                      </div>
+
+                      <div v-if="dashboardAnnouncements.length > 1" class="mt-6 flex justify-center">
+                        <div class="flex gap-2">
+                          <button
+                            v-for="(item, index) in dashboardAnnouncements"
+                            :key="item.id"
+                            type="button"
+                            class="h-2.5 rounded-full transition"
+                            :class="index === currentAnnouncementIndex ? 'w-8 bg-sky-600 dark:bg-sky-400' : 'w-2.5 bg-slate-300 dark:bg-slate-600'"
+                            @click="setCurrentAnnouncementIndex(index, index > currentAnnouncementIndex ? 'next' : 'prev')"
+                            :aria-label="`Lihat pengumuman ${index + 1}`"
+                          />
+                        </div>
+                      </div>
+
+                      <div v-else class="mt-6 flex justify-end">
+                        <button
+                          type="button"
+                          @click="closeAnnouncementModal"
+                          class="inline-flex items-center justify-center rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500"
+                        >
+                          Tutup
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      v-if="dashboardAnnouncements.length > 1"
+                      type="button"
+                      @click="nextAnnouncement"
+                      class="shrink-0 rounded-full border border-slate-200 bg-white/95 p-3 text-slate-700 shadow-lg transition hover:bg-white dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-200 dark:hover:bg-slate-800"
+                      aria-label="Pengumuman berikutnya"
+                    >
+                      <Icon icon="mdi:chevron-right" class="h-5 w-5" />
+                    </button>
+                  </div>
+                </transition>
+              </div>
+            </div>
+          </div>
+        </transition>
+      </teleport>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { Icon } from "@iconify/vue";
 import { api } from "@/api";
-import { pushToast } from "@/composables/useToast";
-import { usePwaInstall } from "@/composables/usePwaInstall";
-import { formatDate, formatDateKey, formatDateTime, formatTime } from "@/utils/date";
+import { formatDate, formatDateTime, formatTime } from "@/utils/date";
 import { getStoredRole, getStoredUser } from "@/utils/auth";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 
 const role = getStoredRole();
 const user = getStoredUser();
-const route = useRoute();
-const pwaInstall = usePwaInstall();
 const isLoading = ref(false);
+const errorMessage = ref("");
 const dashboardData = ref({});
-const selectedTeacherDayOrder = ref(0);
 const primaryTableSort = createSortState("");
-const attendanceWhatsappReportDate = ref(formatDateKey(new Date()));
-const sendingWhatsappClassId = ref(null);
-const attendanceWhatsappReportSummary = ref(null);
-const currentTime = ref(new Date());
-let dashboardClockTimer = null;
+const attendanceEmailReportDate = ref(new Date().toISOString().slice(0, 10));
+const isSendingAttendanceEmailReport = ref(false);
+const attendanceEmailReportMessage = ref("");
+const attendanceEmailReportError = ref(false);
+const attendanceEmailReportSummary = ref(null);
+const announcementModalOpen = ref(false);
+const currentAnnouncementIndex = ref(0);
+const announcementAutoAdvanceTimer = ref(null);
+const announcementTransitionName = ref("announcement-slide-next");
+const announcementNoticeMessage = ref("");
+let announcementNoticeTimer = null;
 
 const endpointByRole = {
   SUPER_ADMIN: "/dashboard/superadmin",
   ADMIN: "/dashboard/admin",
-  KOPERASI: "/dashboard/koperasi",
-  SARPRAS: "/dashboard/sarpras",
+  KOPERASI: "/koperasi/dashboard",
   GURU: "/dashboard/guru",
   SISWA: "/dashboard/siswa",
 };
-const lockedSchools = computed(() => dashboardData.value?.lockedSchools || []);
-const dashboardAnnouncements = computed(() => Array.isArray(dashboardData.value?.announcements) ? dashboardData.value.announcements : []);
-const routeAnnouncementId = computed(() => Number(route.query?.announcement || route.query?.announcement_id || 0));
-const featuredAnnouncement = computed(() => {
-  const announcements = dashboardAnnouncements.value;
-  if (announcements.length === 0) return null;
-  const targetId = routeAnnouncementId.value;
-  if (!targetId) return announcements[0];
-  return announcements.find((item) => Number(item.id) === targetId) || announcements[0];
+
+const isAnnouncementExpired = (item) => {
+  if (!item?.deactivated_at) return false;
+  const expiresAt = new Date(item.deactivated_at);
+  return Number.isNaN(expiresAt.getTime()) ? false : expiresAt.getTime() <= Date.now();
+};
+
+const dashboardAnnouncements = computed(() =>
+  (Array.isArray(dashboardData.value?.announcements) ? dashboardData.value.announcements : []).filter((item) => !isAnnouncementExpired(item)),
+);
+
+const currentAnnouncement = computed(() => dashboardAnnouncements.value[currentAnnouncementIndex.value] || null);
+
+const setCurrentAnnouncementIndex = (index, direction) => {
+  const total = dashboardAnnouncements.value.length;
+  if (!total) {
+    currentAnnouncementIndex.value = 0;
+    return;
+  }
+  const next = Math.min(Math.max(Number(index) || 0, 0), total - 1);
+  const current = currentAnnouncementIndex.value;
+  const resolvedDirection =
+    direction || (next === current ? "next" : next > current ? "next" : "prev");
+  announcementTransitionName.value =
+    resolvedDirection === "prev" ? "announcement-slide-prev" : "announcement-slide-next";
+  currentAnnouncementIndex.value = next;
+  scheduleAnnouncementAutoAdvance();
+};
+
+const clearAnnouncementAutoAdvance = () => {
+  if (announcementAutoAdvanceTimer.value) {
+    clearTimeout(announcementAutoAdvanceTimer.value);
+    announcementAutoAdvanceTimer.value = null;
+  }
+};
+
+const scheduleAnnouncementAutoAdvance = () => {
+  clearAnnouncementAutoAdvance();
+  if (!announcementModalOpen.value || dashboardAnnouncements.value.length <= 1) return;
+  announcementAutoAdvanceTimer.value = setTimeout(() => {
+    if (!announcementModalOpen.value || dashboardAnnouncements.value.length <= 1) return;
+    nextAnnouncement();
+  }, 5000);
+};
+
+const openAnnouncementModal = (index = 0) => {
+  if (!dashboardAnnouncements.value.length) return;
+  setCurrentAnnouncementIndex(index);
+  announcementModalOpen.value = true;
+  scheduleAnnouncementAutoAdvance();
+};
+
+const closeAnnouncementModal = () => {
+  announcementModalOpen.value = false;
+  clearAnnouncementAutoAdvance();
+};
+
+const showAnnouncementNotice = (message) => {
+  announcementNoticeMessage.value = message;
+  if (announcementNoticeTimer) {
+    clearTimeout(announcementNoticeTimer);
+  }
+  announcementNoticeTimer = setTimeout(() => {
+    announcementNoticeMessage.value = "";
+    announcementNoticeTimer = null;
+  }, 3000);
+};
+
+const handleAnnouncementButton = () => {
+  if (!dashboardAnnouncements.value.length) {
+    showAnnouncementNotice("Belum ada pengumuman untuk ditampilkan.");
+    return;
+  }
+  openAnnouncementModal(0);
+};
+
+const nextAnnouncement = () => {
+  const total = dashboardAnnouncements.value.length;
+  if (total <= 1) return;
+  setCurrentAnnouncementIndex((currentAnnouncementIndex.value + 1) % total, "next");
+};
+
+const prevAnnouncement = () => {
+  const total = dashboardAnnouncements.value.length;
+  if (total <= 1) return;
+  setCurrentAnnouncementIndex((currentAnnouncementIndex.value - 1 + total) % total, "prev");
+};
+
+onUnmounted(() => {
+  clearAnnouncementAutoAdvance();
 });
-const additionalAnnouncements = computed(() => {
-  const announcements = dashboardAnnouncements.value;
-  const featuredId = Number(featuredAnnouncement.value?.id || 0);
-  return announcements.filter((item) => Number(item.id) !== featuredId).slice(0, 3);
-});
-const showInstallBanner = computed(() => pwaInstall.showInstallButton.value && !pwaInstall.isInstalled.value);
-const installButtonBusy = ref(false);
-const installButtonLabel = computed(() => "Install Sekarang");
-const installHintText = computed(() => "Chrome sudah siap menampilkan dialog install PWA.");
 
 // Palet warna yang lebih modern, bersih, dan enterprise-look
 const chartPalette = ["#3b82f6", "#10b981", "#f59e0b", "#6366f1", "#ef4444", "#64748b"];
-const scheduleTonePalette = [
-  "border-sky-200 bg-white dark:border-sky-500/20 dark:bg-slate-900",
-  "border-emerald-200 bg-white dark:border-emerald-500/20 dark:bg-slate-900",
-  "border-amber-200 bg-white dark:border-amber-500/20 dark:bg-slate-900",
-  "border-violet-200 bg-white dark:border-violet-500/20 dark:bg-slate-900",
-  "border-rose-200 bg-white dark:border-rose-500/20 dark:bg-slate-900",
-  "border-cyan-200 bg-white dark:border-cyan-500/20 dark:bg-slate-900",
-];
-const scheduleAccentPalette = [
-  "bg-sky-500",
-  "bg-emerald-500",
-  "bg-amber-500",
-  "bg-violet-500",
-  "bg-rose-500",
-  "bg-cyan-500",
-];
-
-const defaultScheduleDays = [
-  { day_order: 1, day_name: "Senin" },
-  { day_order: 2, day_name: "Selasa" },
-  { day_order: 3, day_name: "Rabu" },
-  { day_order: 4, day_name: "Kamis" },
-  { day_order: 5, day_name: "Jumat" },
-  { day_order: 6, day_name: "Sabtu" },
-  { day_order: 7, day_name: "Minggu" },
-];
 
 const numberValue = (value) => Number(value || 0);
-const formatScheduleClock = (value) => String(value || "").trim().slice(0, 5) || "-";
-const formatScheduleRange = (start, end) => `${formatScheduleClock(start)} - ${formatScheduleClock(end)}`;
-const scheduleEntryTone = (sessionOrder) => scheduleTonePalette[(Number(sessionOrder || 0) - 1 + scheduleTonePalette.length) % scheduleTonePalette.length];
-const scheduleAccentTone = (sessionOrder) => scheduleAccentPalette[(Number(sessionOrder || 0) - 1 + scheduleAccentPalette.length) % scheduleAccentPalette.length];
-const entryCardClass = (entry) =>
-  entry?.is_active
-    ? "border-emerald-300 bg-white shadow-sm dark:border-emerald-500/30 dark:bg-slate-900"
-    : scheduleEntryTone(entry?.first_session_order || entry?.last_session_order || 0);
-const entryAccentClass = (entry) =>
-  entry?.is_active ? "bg-emerald-500" : scheduleAccentTone(entry?.first_session_order || entry?.last_session_order || 0);
-const dayBadgeClass = (dayOrder) => {
-  if (dayOrder === teacherScheduleTodayOrder.value) {
-    return "bg-rose-600 text-white";
-  }
-  const tones = [
-    "bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300",
-    "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
-    "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
-    "bg-violet-100 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300",
-    "bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
-    "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-300",
-  ];
-  return tones[(Number(dayOrder || 0) - 1 + tones.length) % tones.length];
-};
-const announcementCardClass = (status) => {
-  switch (String(status || "").toUpperCase()) {
-    case "ACTIVE":
-      return "border-emerald-200 dark:border-emerald-500/20";
-    case "DRAFT":
-      return "border-amber-200 dark:border-amber-500/20";
-    default:
-      return "border-slate-200 dark:border-slate-700";
-  }
-};
-const announcementStatusClass = (status) => {
-  switch (String(status || "").toUpperCase()) {
-    case "ACTIVE":
-      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300";
-    case "DRAFT":
-      return "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300";
-    default:
-      return "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300";
-  }
-};
-
-const handleInstallClick = async () => {
-  installButtonBusy.value = true;
-  try {
-    const result = await pwaInstall.installPwa();
-    if (result?.outcome === "accepted") {
-      pushToast({
-        title: "Aplikasi Diinstall",
-        message: "School System berhasil dipasang ke layar utama.",
-        type: "success",
-      });
-      return;
-    }
-
-    pushToast({
-      title: "Install Dibatalkan",
-      message: "Aplikasi belum dipasang.",
-      type: "info",
-    });
-  } catch (error) {
-    pushToast({
-      title: "Install Gagal",
-      message: error?.message || "Browser tidak dapat memulai instalasi saat ini.",
-      type: "error",
-    });
-  } finally {
-    installButtonBusy.value = false;
-  }
-};
 
 const createSummaryCard = ({
   label,
@@ -719,36 +524,30 @@ const createSummaryCard = ({
 });
 
 const heroTitle = computed(() => {
-  if (role === "SUPER_ADMIN") return "Dashboard Super Admin Sekolah";
+  if (role === "SUPER_ADMIN") return "Ikhtisar Sistem Terpadu";
   if (role === "ADMIN") return `Dashboard Admin ${dashboardData.value?.school?.name || user?.school_name || ""}`.trim();
-  if (role === "KOPERASI") return `Dashboard Koperasi ${dashboardData.value?.school?.name || user?.school_name || ""}`.trim();
-  if (role === "SARPRAS") return `Dashboard Sarpras ${dashboardData.value?.school?.name || user?.school_name || ""}`.trim();
-  if (role === "GURU") return `Wali Kelas ${dashboardData.value?.homeroom?.class_name || ""}`.trim();
-  if (role === "SISWA") return `Halo, ${dashboardData.value?.student?.full_name || user?.full_name || user?.username || "Siswa"}`;
+  if (role === "GURU") return `Kelas Wali: ${dashboardData.value?.homeroom?.class_name || ""}`.trim();
+  if (role === "SISWA") return `Halo, ${dashboardData.value?.student?.username || user?.username || "Siswa"}`;
   return "Dashboard Overview";
 });
 
 const heroDescription = computed(() => {
-  if (role === "SUPER_ADMIN") return "Pantau kesiapan setiap sekolah, admin sekolah, struktur kelas, dan aktivitas operasional dari satu panel pusat.";
+  if (role === "SUPER_ADMIN") return "Pemantauan komprehensif metrik sekolah dan aktivitas pengguna sistem.";
   if (role === "ADMIN") return "Metrik operasional sekolah, status absensi, dan data kelas secara real-time.";
-  if (role === "KOPERASI") return "Pantau produk aktif, stok rendah, pesanan masuk, dan omzet koperasi sekolah.";
-  if (role === "SARPRAS") return "Pantau stok barang, peminjaman aktif, dan barang yang perlu ditindaklanjuti dari satu panel sarpras.";
-  if (role === "GURU") return "Pantau wali kelas, jadwal mengajar mingguan, dan status sesi mengajar hari ini dari satu dashboard.";
+  if (role === "GURU") return "Ringkasan data absensi siswa dan administrasi untuk kelas perwalian Anda.";
   if (role === "SISWA") return "Pantau riwayat absensi, status administrasi, dan tugas akademik Anda.";
   return "Ringkasan sistem berdasarkan akses pengguna.";
 });
-
-const liveDashboardClock = computed(() => formatDateTime(currentTime.value));
 
 const summaryCards = computed(() => {
   const overview = dashboardData.value?.overview || {};
 
   return role === "SUPER_ADMIN"
     ? [
-      createSummaryCard({ label: "Total Sekolah", value: numberValue(overview.schools), caption: "Unit sekolah terdaftar", icon: "ph:buildings", cardClass: "bg-sky-600" }),
-      createSummaryCard({ label: "Admin Sekolah", value: numberValue(overview.admins), caption: `${numberValue(overview.schools_with_admin)} sekolah sudah punya admin`, icon: "ph:user-gear", cardClass: "bg-indigo-600" }),
-      createSummaryCard({ label: "Sekolah Tanpa Admin", value: numberValue(overview.schools_without_admin), caption: "Perlu onboarding admin sekolah", icon: "ph:warning-circle", cardClass: "bg-rose-600" }),
-      createSummaryCard({ label: "Total Siswa", value: numberValue(overview.students), caption: `${numberValue(overview.schools_with_classes)} sekolah sudah punya kelas`, icon: "ph:student", cardClass: "bg-emerald-600" }),
+      createSummaryCard({ label: "Total Sekolah", value: numberValue(overview.schools), caption: "Unit aktif terdaftar", icon: "ph:buildings", cardClass: "bg-sky-600" }),
+      createSummaryCard({ label: "Total Pengguna", value: numberValue(overview.users), caption: "Seluruh entitas user", icon: "ph:users-three", cardClass: "bg-indigo-600" }),
+      createSummaryCard({ label: "Total Guru", value: numberValue(overview.teachers), caption: "Pengajar terdaftar", icon: "ph:chalkboard-teacher", cardClass: "bg-emerald-600" }),
+      createSummaryCard({ label: "Total Siswa", value: numberValue(overview.students), caption: "Siswa terdaftar", icon: "ph:student", cardClass: "bg-amber-500" }),
     ]
     : role === "ADMIN"
       ? [
@@ -757,26 +556,12 @@ const summaryCards = computed(() => {
         createSummaryCard({ label: "Total Siswa", value: numberValue(overview.students), caption: "Siswa terdaftar", icon: "ph:student", cardClass: "bg-emerald-600" }),
         createSummaryCard({ label: "Check-in Hari Ini", value: numberValue(overview.attendance_today), caption: "Tercatat hadir", icon: "mdi:calendar-check-outline", cardClass: "bg-rose-600" }),
       ]
-      : role === "KOPERASI"
-        ? [
-          createSummaryCard({ label: "Produk Aktif", value: numberValue(overview.products_active), caption: "Siap dibeli", icon: "ph:shopping-cart", cardClass: "bg-emerald-600" }),
-          createSummaryCard({ label: "Stok Total", value: numberValue(overview.stock_total), caption: "Seluruh item koperasi", icon: "ph:package", cardClass: "bg-sky-600" }),
-          createSummaryCard({ label: "Pesanan Pending", value: numberValue(overview.pending_orders), caption: "Menunggu diproses", icon: "ph:clock-counter-clockwise", cardClass: "bg-amber-600" }),
-          createSummaryCard({ label: "Omzet", value: numberValue(overview.revenue_total), caption: `Rp ${Number(numberValue(overview.revenue_total)).toLocaleString("id-ID")}`, icon: "ph:cash-register", cardClass: "bg-rose-600" }),
-        ]
-      : role === "SARPRAS"
-        ? [
-          createSummaryCard({ label: "Total Barang", value: numberValue(overview.items_total), caption: "Semua inventaris", icon: "ph:archive-box", cardClass: "bg-amber-600" }),
-          createSummaryCard({ label: "Stok Tersedia", value: numberValue(overview.stock_available), caption: "Siap dipinjam", icon: "ph:package", cardClass: "bg-emerald-600" }),
-          createSummaryCard({ label: "Pinjaman Aktif", value: numberValue(overview.active_loans), caption: "Belum dikembalikan", icon: "ph:hand-coins", cardClass: "bg-sky-600" }),
-          createSummaryCard({ label: "Terlambat", value: numberValue(overview.overdue_loans), caption: "Perlu ditindaklanjuti", icon: "ph:warning-circle", cardClass: "bg-rose-600" }),
-        ]
       : role === "GURU"
         ? [
-          createSummaryCard({ label: "Siswa Wali Kelas", value: numberValue(overview.students), caption: "Total siswa dibimbing", icon: "mdi:account-school-outline", cardClass: "bg-indigo-600" }),
-          createSummaryCard({ label: "Jam Mengajar Hari Ini", value: numberValue(overview.teaching_today), caption: "Sesi mengajar terjadwal", icon: "mdi:calendar-clock", cardClass: "bg-sky-600" }),
+          createSummaryCard({ label: "Siswa Kelas Wali", value: numberValue(overview.students), caption: "Total siswa dibimbing", icon: "mdi:account-school-outline", cardClass: "bg-indigo-600" }),
           createSummaryCard({ label: "Hadir Hari Ini", value: numberValue(overview.attendance_today), caption: "Siswa sudah absen", icon: "mdi:calendar-check-outline", cardClass: "bg-emerald-600" }),
-          createSummaryCard({ label: "Sedang Mengajar", value: numberValue(overview.active_teaching_now) ? "Ya" : "Tidak", caption: numberValue(overview.weekly_teaching_sessions) ? `${numberValue(overview.weekly_teaching_sessions)} sesi per minggu` : "Belum ada jadwal mingguan", icon: "ph:chalkboard-teacher", cardClass: "bg-amber-500" }),
+          createSummaryCard({ label: "Belum Hadir", value: numberValue(overview.absent_today), caption: "Perlu konfirmasi", icon: "ph:warning-circle", cardClass: "bg-amber-500" }),
+          createSummaryCard({ label: "Receipt Terkumpul", value: numberValue(overview.receipts_this_month), caption: "Bulan berjalan", icon: "ph:receipt", cardClass: "bg-sky-600" }),
         ]
         : [
           createSummaryCard({ label: "Total Kehadiran", value: numberValue(overview.attendance_total), caption: "Riwayat absen", icon: "mdi:calendar-check-outline", cardClass: "bg-blue-600" }),
@@ -802,129 +587,20 @@ const studentAssignmentAlert = computed(() => {
   };
 });
 
-const teacherSchedulePayload = computed(() => (role === "GURU" ? dashboardData.value?.teachingSchedule || {} : {}));
-const teacherScheduleEntries = computed(() =>
-  Array.isArray(teacherSchedulePayload.value?.entries) ? teacherSchedulePayload.value.entries : [],
-);
-const activeTeachingEntryId = computed(() => Number(teacherSchedulePayload.value?.active_now?.id || 0));
-const teacherTeachingAssignments = computed(() =>
-  Array.isArray(teacherSchedulePayload.value?.teaching_assignments) ? teacherSchedulePayload.value.teaching_assignments : [],
-);
-const teacherScheduleTodayOrder = computed(() => Number(teacherSchedulePayload.value?.today_day_order || 0));
-const teacherScheduleDays = computed(() => {
-  if (role !== "GURU") return [];
-
-  const dayMap = new Map(
-    defaultScheduleDays.map((item) => [item.day_order, { ...item, entries: [] }]),
-  );
-
-  for (const entry of teacherScheduleEntries.value) {
-    const dayOrder = Number(entry?.day_order || 0);
-    if (!dayMap.has(dayOrder)) {
-      dayMap.set(dayOrder, {
-        day_order: dayOrder,
-        day_name: entry?.day_name || `Hari ${dayOrder}`,
-        entries: [],
-      });
-    }
-    dayMap.get(dayOrder).entries.push(entry);
-  }
-
-  return Array.from(dayMap.values())
-    .sort((a, b) => a.day_order - b.day_order)
-    .map((day) => ({
-      ...day,
-      entries: [...day.entries].sort((a, b) => Number(a.session_order || 0) - Number(b.session_order || 0)),
-      groupedEntries: groupScheduleEntries(day.entries),
-    }))
-    .filter((day) => day.entries.length > 0);
-});
-const selectedTeacherScheduleDay = computed(() => {
-  if (role !== "GURU") return null;
-  const days = teacherScheduleDays.value;
-  if (!days.length) return null;
-  return (
-    days.find((day) => day.day_order === selectedTeacherDayOrder.value) ||
-    days.find((day) => day.day_order === teacherScheduleTodayOrder.value) ||
-    days[0]
-  );
-});
-
-const teacherTeachingAlert = computed(() => {
-  if (role !== "GURU") return null;
-
-  const active = teacherSchedulePayload.value?.active_now;
-  if (active && Object.keys(active).length) {
-    return {
-      title: "Guru sedang ada jam mengajar",
-      message: `${active.subject_name || "-"} • ${active.class_name || "-"} • ${formatScheduleRange(active.start_time, active.end_time)}`,
-    };
-  }
-
-  return null;
-});
-
-const isActiveScheduleEntry = (entry) => Number(entry?.id || 0) === activeTeachingEntryId.value;
-
-const groupScheduleEntries = (entries) => {
-  const sorted = [...entries].sort((a, b) => Number(a.session_order || 0) - Number(b.session_order || 0));
-  const groups = [];
-
-  for (const entry of sorted) {
-    const last = groups[groups.length - 1];
-    const currentSession = Number(entry?.session_order || 0);
-
-    if (
-      last &&
-      last.class_name === entry?.class_name &&
-      last.subject_name === entry?.subject_name &&
-      last.subject_code === entry?.subject_code &&
-      currentSession === last.last_session_order + 1
-    ) {
-      last.end_time = entry?.end_time;
-      last.last_session_order = currentSession;
-      last.total_sessions += 1;
-      last.ids.push(Number(entry?.id || 0));
-      last.is_active = last.is_active || isActiveScheduleEntry(entry);
-      continue;
-    }
-
-    groups.push({
-      group_key: `${entry?.day_order || 0}-${entry?.class_name || ""}-${entry?.subject_name || ""}-${currentSession}`,
-      class_name: entry?.class_name || "-",
-      subject_name: entry?.subject_name || "-",
-      subject_code: entry?.subject_code || "",
-      start_time: entry?.start_time || "",
-      end_time: entry?.end_time || "",
-      total_sessions: 1,
-      first_session_order: currentSession,
-      last_session_order: currentSession,
-      ids: [Number(entry?.id || 0)],
-      is_active: isActiveScheduleEntry(entry),
-    });
-  }
-
-  return groups;
-};
-
 const primarySortAccessors = computed(() => ({
-  full_name: (item) => item.full_name || item.username || "",
   checked_in_today: (item) => (item.checked_in_today ? 1 : 0),
 }));
 
 const primaryPanel = computed(() => {
   if (role === "SUPER_ADMIN") {
     return {
-      title: "Portofolio Sekolah",
-      description: "Pantau kesiapan sekolah dari admin, kelas, siswa, kurikulum, dan aktivitas bulan berjalan.",
+      title: "Distribusi Sekolah",
+      description: "Data sekolah berdasarkan volume pengguna.",
       columns: [
         { key: "name", label: "Sekolah" },
-        { key: "total_admins", label: "Admin" },
-        { key: "total_classes", label: "Kelas" },
-        { key: "curriculum_subjects", label: "Mapel Kurikulum" },
+        { key: "total_users", label: "Users" },
         { key: "total_teachers", label: "Guru" },
         { key: "total_students", label: "Siswa" },
-        { key: "receipts_this_month", label: "Receipt Bulan Ini" },
       ],
       rows: dashboardData.value?.schools || [],
       emptyMessage: "Data sekolah kosong.",
@@ -945,43 +621,12 @@ const primaryPanel = computed(() => {
     };
   }
 
-  if (role === "KOPERASI") {
-    return {
-      title: "Produk Stok Rendah",
-      description: "Produk yang perlu restock dan perhatian koperasi.",
-      columns: [
-        { key: "name", label: "Produk" },
-        { key: "category", label: "Kategori" },
-        { key: "price", label: "Harga", format: (value) => `Rp ${Number(value || 0).toLocaleString("id-ID")}` },
-        { key: "stock", label: "Stok" },
-      ],
-      rows: dashboardData.value?.lowStockItems || [],
-      emptyMessage: "Belum ada produk yang terdaftar.",
-    };
-  }
-
-  if (role === "SARPRAS") {
-    return {
-      title: "Barang dengan Stok Rendah",
-      description: "Daftar inventaris yang perlu perhatian atau penambahan stok.",
-      columns: [
-        { key: "name", label: "Barang" },
-        { key: "category", label: "Kategori" },
-        { key: "available_quantity", label: "Tersedia" },
-        { key: "borrowed_quantity", label: "Dipinjam" },
-        { key: "condition_status", label: "Kondisi" },
-      ],
-      rows: dashboardData.value?.lowStockItems || [],
-      emptyMessage: "Belum ada barang yang terdaftar.",
-    };
-  }
-
   if (role === "GURU") {
     return {
-      title: "Monitoring Kehadiran Wali Kelas",
+      title: "Monitoring Kehadiran Kelas Wali",
       description: "Status check-in harian siswa.",
       columns: [
-        { key: "full_name", label: "Nama Siswa" },
+        { key: "username", label: "Nama Siswa" },
         { key: "phone_number", label: "Kontak" },
         {
           key: "checked_in_today",
@@ -1026,54 +671,15 @@ const primarySortIndicator = (key) => {
 
 const secondaryPanel = computed(() => {
   if (role === "SUPER_ADMIN" || role === "ADMIN" || role === "GURU") {
-    if (role === "SUPER_ADMIN") {
-      return {
-        title: "Sekolah Perlu Perhatian",
-        description: "Sekolah yang belum lengkap secara operasional dan perlu ditindaklanjuti.",
-        items: (dashboardData.value?.schoolAlerts || []).map((item) => ({
-          title: item.name || "-",
-          subtitle: `${item.issue || "-"} • Admin ${numberValue(item.total_admins)} • Kelas ${numberValue(item.total_classes)} • Siswa ${numberValue(item.total_students)}`,
-          meta: `Mapel ${numberValue(item.curriculum_subjects)}`,
-        })),
-        emptyMessage: "Semua sekolah sudah memiliki struktur dasar yang baik.",
-      };
-    }
-
     return {
       title: "Log Kehadiran Terbaru",
       description: "Rekam jejak check-in terakhir.",
       items: (dashboardData.value?.recentAttendance || []).map((item) => ({
-        title: item.full_name || item.username || "-",
+        title: item.username || "-",
         subtitle: `${item.school_name || item.class_name || "Data"} • ${item.status || "-"}`,
         meta: formatTime(item.clock_in),
       })),
       emptyMessage: "Log kosong.",
-    };
-  }
-
-  if (role === "KOPERASI") {
-    return {
-      title: "Pesanan Terbaru",
-      description: "Aktivitas pembelian terakhir dari warga sekolah.",
-      items: (dashboardData.value?.recentOrders || []).map((item) => ({
-        title: item.buyer_name || "-",
-        subtitle: `${item.buyer_class_name && item.buyer_class_name !== "-" ? `Kelas ${item.buyer_class_name} • ` : ""}${item.status || "-"} • ${item.item_count || 0} item • ${item.total_amount ? `Rp ${Number(item.total_amount).toLocaleString("id-ID")}` : "-"}`,
-        meta: formatDateTime(item.created_at),
-      })),
-      emptyMessage: "Belum ada pesanan masuk.",
-    };
-  }
-
-  if (role === "SARPRAS") {
-    return {
-      title: "Riwayat Peminjaman Terbaru",
-      description: "Aktivitas peminjaman dan pengembalian terakhir.",
-      items: (dashboardData.value?.recentLoans || []).map((item) => ({
-        title: item.item_name || "-",
-        subtitle: `${item.borrower_class_name && item.borrower_class_name !== "-" ? `Kelas ${item.borrower_class_name} • ` : ""}${item.borrower_name || "-"} • ${item.quantity || 0} unit • ${item.status || "-"}`,
-        meta: formatDateTime(item.borrowed_at),
-      })),
-      emptyMessage: "Belum ada riwayat peminjaman.",
     };
   }
 
@@ -1092,26 +698,14 @@ const secondaryPanel = computed(() => {
 const spotlight = computed(() => {
   if (role === "SUPER_ADMIN") return {
     cards: [
-      { label: "Sekolah Terbesar", value: dashboardData.value?.schools?.[0]?.name || "-", caption: `${numberValue(dashboardData.value?.schools?.[0]?.total_students)} siswa`, icon: "ph:buildings", cardClass: "bg-sky-700" },
-      { label: "Kurikulum Aktif", value: numberValue(dashboardData.value?.overview?.schools_with_curriculum), caption: "Sekolah sudah isi mapel kurikulum", icon: "ph:books", cardClass: "bg-indigo-700" },
+      { label: "Top School", value: dashboardData.value?.schools?.[0]?.name || "-", caption: "Siswa Terbanyak", icon: "ph:buildings", cardClass: "bg-sky-700" },
+      { label: "Top Activity", value: dashboardData.value?.recentReceipts?.[0]?.username || "-", caption: "Receipt Terakhir", icon: "ph:activity", cardClass: "bg-indigo-700" },
     ]
   };
   if (role === "ADMIN") return {
     cards: [
       { label: "Unit Aktif", value: dashboardData.value?.school?.name || "-", caption: "Nama Sekolah", icon: "ph:buildings", cardClass: "bg-cyan-700" },
       { label: "Volume Receipt", value: numberValue(dashboardData.value?.overview?.receipts_this_month), caption: "Bulan Berjalan", icon: "ph:receipt", cardClass: "bg-fuchsia-700" },
-    ]
-  };
-  if (role === "KOPERASI") return {
-    cards: [
-      { label: "Pesanan Hari Ini", value: numberValue(dashboardData.value?.overview?.orders_today), caption: "Masuk hari ini", icon: "ph:receipt", cardClass: "bg-emerald-700" },
-      { label: "Stok Rendah", value: numberValue(dashboardData.value?.overview?.low_stock_products), caption: "Perlu restock", icon: "ph:warning-circle", cardClass: "bg-amber-600" },
-    ]
-  };
-  if (role === "SARPRAS") return {
-    cards: [
-      { label: "Barang Aktif", value: numberValue(dashboardData.value?.overview?.items_active), caption: "Inventaris siap pakai", icon: "ph:archive-box", cardClass: "bg-amber-700" },
-      { label: "Stok Tersedia", value: numberValue(dashboardData.value?.overview?.stock_available), caption: "Belum dipinjam", icon: "ph:package", cardClass: "bg-emerald-700" },
     ]
   };
   if (role === "GURU") return {
@@ -1130,8 +724,8 @@ const spotlight = computed(() => {
 
 const visualPanel = computed(() => {
   if (role === "SUPER_ADMIN") return {
-    title: "Siswa per Sekolah",
-    description: "Bandingkan populasi siswa antar sekolah untuk melihat skala operasional.",
+    title: "Metrik Kepadatan Sekolah",
+    description: "Populasi siswa per unit sekolah.",
     chartType: "bar",
     labels: (dashboardData.value?.schools || []).slice(0, 6).map((item) => item.name),
     series: [{ name: "Siswa", data: (dashboardData.value?.schools || []).slice(0, 6).map((item) => numberValue(item.total_students)) }],
@@ -1143,31 +737,6 @@ const visualPanel = computed(() => {
     chartType: "bar",
     labels: (dashboardData.value?.classes || []).slice(0, 8).map((item) => item.class_name),
     series: [{ name: "Siswa", data: (dashboardData.value?.classes || []).slice(0, 8).map((item) => numberValue(item.student_count)) }],
-  };
-
-  if (role === "KOPERASI") return {
-    title: "Status Pesanan",
-    description: "Distribusi pesanan berdasarkan status proses.",
-    chartType: "bar",
-    labels: ["Pending", "Processing", "Ready", "Completed", "Canceled"],
-    series: [{
-      name: "Pesanan",
-      data: [
-        numberValue(dashboardData.value?.overview?.pending_orders),
-        numberValue(dashboardData.value?.overview?.processing_orders),
-        numberValue(dashboardData.value?.overview?.ready_orders),
-        numberValue(dashboardData.value?.overview?.completed_orders),
-        numberValue(dashboardData.value?.overview?.canceled_orders),
-      ],
-    }],
-  };
-
-  if (role === "SARPRAS") return {
-    title: "Komposisi Stok Barang",
-    description: "Perbandingan stok tersedia, dipinjam, dan terlambat.",
-    chartType: "bar",
-    labels: ["Tersedia", "Dipinjam", "Terlambat"],
-    series: [{ name: "Jumlah", data: [numberValue(dashboardData.value?.overview?.stock_available), numberValue(dashboardData.value?.overview?.stock_borrowed), numberValue(dashboardData.value?.overview?.overdue_loans)] }],
   };
 
   const overview = dashboardData.value?.overview || {};
@@ -1243,17 +812,10 @@ const visualChartOptions = computed(() => {
 });
 
 const compositionChartSeries = computed(() =>
-  role === "SUPER_ADMIN"
-    ? [
-      numberValue(dashboardData.value?.overview?.schools_with_admin),
-      numberValue(dashboardData.value?.overview?.schools_without_admin),
-      numberValue(dashboardData.value?.overview?.schools_with_classes),
-      numberValue(dashboardData.value?.overview?.schools_with_curriculum),
-    ]
-    : summaryCards.value.map((item) => {
-      const numeric = Number(item.value);
-      return Number.isFinite(numeric) ? numeric : 0;
-    }),
+  summaryCards.value.map((item) => {
+    const numeric = Number(item.value);
+    return Number.isFinite(numeric) ? numeric : 0;
+  }),
 );
 
 const compositionChartOptions = computed(() => ({
@@ -1261,9 +823,7 @@ const compositionChartOptions = computed(() => ({
     fontFamily: "inherit",
     toolbar: { show: false },
   },
-  labels: role === "SUPER_ADMIN"
-    ? ["Sudah Punya Admin", "Belum Punya Admin", "Sudah Punya Kelas", "Sudah Isi Kurikulum"]
-    : summaryCards.value.map((item) => item.label),
+  labels: summaryCards.value.map((item) => item.label),
   colors: chartPalette,
   stroke: { width: 2, colors: ['#ffffff'] }, // Outline putih bersih
   dataLabels: { enabled: false },
@@ -1301,79 +861,86 @@ const loadDashboard = async () => {
   const endpoint = endpointByRole[role];
 
   if (!endpoint) {
+    errorMessage.value = "Role tidak dikenali";
     dashboardData.value = {};
-    pushToast({
-      title: "Dashboard Gagal Dimuat",
-      message: "Role tidak dikenali",
-      type: "error",
-    });
     return;
   }
 
   isLoading.value = true;
+  errorMessage.value = "";
 
   try {
     const response = await api.get(endpoint);
     dashboardData.value = response?.data || {};
   } catch (error) {
-    if (error?.isAborted) {
-      return;
-    }
+    errorMessage.value = error.message;
     dashboardData.value = {};
-    pushToast({
-      title: "Dashboard Gagal Dimuat",
-      message: error.message,
-      type: "error",
-    });
   } finally {
     isLoading.value = false;
   }
 };
 
-const sendAttendanceWhatsappReport = async (classItem) => {
-  if (!classItem?.id) {
-    return;
-  }
-
-  sendingWhatsappClassId.value = classItem.id;
+const sendAttendanceEmailReport = async () => {
+  isSendingAttendanceEmailReport.value = true;
+  attendanceEmailReportMessage.value = "";
+  attendanceEmailReportError.value = false;
+  attendanceEmailReportSummary.value = null;
 
   try {
-    const payload = {
-      class_id: classItem.id,
-    };
-    if (attendanceWhatsappReportDate.value) {
-      payload.date = attendanceWhatsappReportDate.value;
+    const payload = {};
+    if (attendanceEmailReportDate.value) {
+      payload.date = attendanceEmailReportDate.value;
     }
 
-    const response = await api.post("/attendance/report/homeroom-whatsapp", payload);
-    attendanceWhatsappReportSummary.value = response?.data || null;
-    pushToast({
-      title: "WhatsApp Berhasil Dikirim",
-      message: response?.message || `WhatsApp berhasil dikirim ke wali kelas ${classItem.class_name}.`,
-      type: "success",
-    });
+    const response = await api.post("/attendance/report/homeroom-email", payload);
+    attendanceEmailReportSummary.value = response?.data || null;
+    attendanceEmailReportMessage.value = response?.message || "Laporan email berhasil diproses.";
   } catch (error) {
-    pushToast({
-      title: "Gagal Mengirim Laporan WhatsApp",
-      message: error.message || "Gagal mengirim laporan WhatsApp.",
-      type: "error",
-    });
+    attendanceEmailReportError.value = true;
+    attendanceEmailReportMessage.value = error.message || "Gagal mengirim laporan email.";
   } finally {
-    sendingWhatsappClassId.value = null;
+    isSendingAttendanceEmailReport.value = false;
   }
 };
 
 onMounted(loadDashboard);
-onMounted(() => {
-  dashboardClockTimer = window.setInterval(() => {
-    currentTime.value = new Date();
-  }, 1000);
-});
 
-onBeforeUnmount(() => {
-  if (dashboardClockTimer) {
-    window.clearInterval(dashboardClockTimer);
-    dashboardClockTimer = null;
+onUnmounted(() => {
+  clearAnnouncementAutoAdvance();
+  if (announcementNoticeTimer) {
+    clearTimeout(announcementNoticeTimer);
+    announcementNoticeTimer = null;
   }
 });
 </script>
+
+<style scoped>
+.announcement-slide-next-enter-active,
+.announcement-slide-next-leave-active,
+.announcement-slide-prev-enter-active,
+.announcement-slide-prev-leave-active {
+  transition:
+    opacity 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.announcement-slide-next-enter-from {
+  opacity: 0;
+  transform: translateX(28px) scale(0.985);
+}
+
+.announcement-slide-next-leave-to {
+  opacity: 0;
+  transform: translateX(-28px) scale(0.985);
+}
+
+.announcement-slide-prev-enter-from {
+  opacity: 0;
+  transform: translateX(-28px) scale(0.985);
+}
+
+.announcement-slide-prev-leave-to {
+  opacity: 0;
+  transform: translateX(28px) scale(0.985);
+}
+</style>
