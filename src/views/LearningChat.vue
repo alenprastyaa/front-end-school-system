@@ -10,6 +10,12 @@
             :class="{ hidden: mobileChatOpen, 'lg:flex': true }">
             <header class="flex h-[59px] shrink-0 items-center justify-between bg-[#f0f2f5] px-4 dark:bg-[#202c33]">
               <div class="flex min-w-0 items-center gap-3">
+                <button type="button"
+                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
+                  aria-label="Kembali"
+                  @click="isMobileViewport ? goBack() : loadSubjects()">
+                  <Icon :icon="isMobileViewport ? 'mdi:arrow-left' : 'mdi:refresh'" class="h-5 w-5" />
+                </button>
                 <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[#00a884] text-white shadow-sm">
                   <Icon icon="ph:chats-circle-duotone" class="h-5 w-5 opacity-90" />
                 </div>
@@ -20,8 +26,8 @@
               </div>
               <button type="button"
                 class="flex h-10 w-10 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
-                @click="isMobileViewport ? goBack() : loadSubjects()">
-                <Icon :icon="isMobileViewport ? 'mdi:arrow-left' : 'mdi:refresh'" class="h-5 w-5" />
+                @click="loadSubjects">
+                <Icon icon="mdi:refresh" class="h-5 w-5" />
               </button>
             </header>
 
