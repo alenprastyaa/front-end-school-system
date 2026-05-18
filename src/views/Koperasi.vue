@@ -56,20 +56,30 @@
           <div
             class="flex flex-col gap-3 rounded-sm bg-white p-3 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800 sm:p-4 lg:flex-row lg:items-center lg:justify-between">
             <div class="grid gap-2 sm:hidden">
-              <select v-model="selectedCategory" @change="applyProductFilters"
-                class="min-w-0 rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
-                <option value="">Semua kategori</option>
-                <option v-for="category in categories" :key="`mobile-${category}`" :value="category">
-                  {{ category }}
-                </option>
-              </select>
-              <select v-model.number="productsLimit" @change="applyProductFilters"
-                class="min-w-0 rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
-                <option :value="8">8</option>
-                <option :value="12">12</option>
-                <option :value="24">24</option>
-                <option :value="48">48</option>
-              </select>
+              <label class="block">
+                <span class="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">Kategori</span>
+                <div class="relative">
+                  <select v-model="selectedCategory" @change="applyProductFilters"
+                    class="koperasi-select min-w-0 w-full rounded-2xl border border-orange-100 bg-gradient-to-b from-white to-orange-50/70 px-4 py-3 text-sm font-medium text-gray-900 shadow-[0_8px_20px_rgba(249,115,22,0.08)] outline-none transition focus:border-orange-300 focus:ring-2 focus:ring-orange-200">
+                    <option value="">Semua kategori</option>
+                    <option v-for="category in categories" :key="`mobile-${category}`" :value="category">
+                      {{ category }}
+                    </option>
+                  </select>
+                </div>
+              </label>
+              <label class="block">
+                <span class="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">Tampilkan</span>
+                <div class="relative">
+                  <select v-model.number="productsLimit" @change="applyProductFilters"
+                    class="koperasi-select min-w-0 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 shadow-sm outline-none transition focus:border-orange-300 focus:ring-2 focus:ring-orange-200">
+                    <option :value="8">8 produk</option>
+                    <option :value="12">12 produk</option>
+                    <option :value="24">24 produk</option>
+                    <option :value="48">48 produk</option>
+                  </select>
+                </div>
+              </label>
             </div>
 
             <div
@@ -90,7 +100,7 @@
             <div class="hidden items-center justify-between gap-3 sm:flex sm:justify-start">
               <span class="text-xs font-medium text-gray-500">{{ paginationLabel(productsMeta) }}</span>
               <select v-model.number="productsLimit" @change="applyProductFilters"
-                class="min-w-[88px] rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
+                class="koperasi-select min-w-[88px] rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
                 <option :value="8">8</option>
                 <option :value="12">12</option>
                 <option :value="24">24</option>
@@ -407,7 +417,7 @@
               </button>
             </div>
             <select v-model="orderStatusFilter" @change="applyOrderFilters"
-              class="rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
+              class="koperasi-select rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
               <option value="">Semua status</option>
               <option value="PENDING">Pending</option>
               <option value="PROCESSING">Processing</option>
@@ -416,7 +426,7 @@
               <option value="CANCELED">Canceled</option>
             </select>
             <select v-model="orderPaymentStatusFilter" @change="applyOrderFilters"
-              class="rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
+              class="koperasi-select rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
               <option value="">Semua pembayaran</option>
               <option value="PENDING">Menunggu</option>
               <option value="CASH_DUE">Tunai saat terima</option>
@@ -425,13 +435,13 @@
               <option value="FAILED">Gagal</option>
             </select>
             <select v-model="orderPaymentMethodFilter" @change="applyOrderFilters"
-              class="rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
+              class="koperasi-select rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
               <option value="">Semua metode</option>
               <option value="TUNAI">Tunai</option>
               <option value="NON_TUNAI">Non Tunai</option>
             </select>
             <select v-model.number="ordersLimit" @change="applyOrderFilters"
-              class="rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
+              class="koperasi-select rounded-sm border-gray-300 text-sm focus:border-orange-500 focus:ring-orange-500">
               <option :value="5">5 / halaman</option>
               <option :value="10">10 / halaman</option>
               <option :value="20">20 / halaman</option>
@@ -607,20 +617,20 @@
                 </button>
               </div>
               <select v-model="selectedCategory" @change="applyProductFilters"
-                class="rounded-sm border-gray-300 text-xs font-normal focus:border-orange-500 focus:ring-orange-500 sm:text-sm">
+                class="koperasi-select rounded-sm border-gray-300 text-xs font-normal focus:border-orange-500 focus:ring-orange-500 sm:text-sm">
                 <option value="">Semua kategori</option>
                 <option v-for="category in categories" :key="`manage-${category}`" :value="category">
                   {{ category }}
                 </option>
               </select>
               <select v-model="productActiveFilter" @change="applyProductFilters"
-                class="rounded-sm border-gray-300 text-xs font-normal focus:border-orange-500 focus:ring-orange-500 sm:text-sm">
+                class="koperasi-select rounded-sm border-gray-300 text-xs font-normal focus:border-orange-500 focus:ring-orange-500 sm:text-sm">
                 <option value="active">Aktif</option>
                 <option value="all">Semua status</option>
                 <option value="inactive">Nonaktif</option>
               </select>
               <select v-model.number="productsLimit" @change="applyProductFilters"
-                class="rounded-sm border-gray-300 text-xs font-normal focus:border-orange-500 focus:ring-orange-500 sm:text-sm">
+                class="koperasi-select rounded-sm border-gray-300 text-xs font-normal focus:border-orange-500 focus:ring-orange-500 sm:text-sm">
                 <option :value="8">8 / halaman</option>
                 <option :value="12">12 / halaman</option>
                 <option :value="24">24 / halaman</option>
@@ -991,7 +1001,7 @@
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-200">Kategori</label>
               <select v-model="productForm.category"
-                class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                class="koperasi-select block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 @change="handleCategoryChange">
                 <option value="" disabled>Pilih kategori</option>
                 <option v-for="option in categoryOptions" :key="option.value" :value="option.value">
@@ -2205,9 +2215,43 @@ onUnmounted(() => {
   border-radius: 8px;
 }
 
+.koperasi-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
 @media (min-width: 640px) {
   .koperasi-product-grid {
     gap: 12px;
+  }
+}
+
+@media (max-width: 639px) {
+  .koperasi-select {
+    min-height: 48px;
+    border-radius: 16px;
+    padding-left: 14px;
+    padding-right: 44px;
+    background-image:
+      linear-gradient(45deg, transparent 50%, #f97316 50%),
+      linear-gradient(135deg, #f97316 50%, transparent 50%),
+      linear-gradient(to right, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.96));
+    background-position:
+      calc(100% - 18px) 53%,
+      calc(100% - 12px) 53%,
+      0 0;
+    background-repeat: no-repeat;
+    background-size: 6px 6px, 6px 6px, 100% 100%;
+    box-shadow: 0 10px 24px rgba(249, 115, 22, 0.08);
+  }
+
+  .dark .koperasi-select {
+    background-image:
+      linear-gradient(45deg, transparent 50%, #fb923c 50%),
+      linear-gradient(135deg, #fb923c 50%, transparent 50%),
+      linear-gradient(to right, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.96));
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.22);
   }
 }
 
