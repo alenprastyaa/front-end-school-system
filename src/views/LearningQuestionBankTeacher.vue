@@ -319,7 +319,7 @@
           <form @submit.prevent="generateQuestionBankWithAi" class="relative flex min-h-0 flex-1 flex-col">
             <fieldset :disabled="isGeneratingAiQuestions" class="flex min-h-0 flex-1 flex-col">
               <div ref="aiGeneratorScrollRef"
-                class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6 [-webkit-overflow-scrolling:touch]">
+                class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-32 pt-4 [-webkit-overflow-scrolling:touch] sm:p-6">
                 <div class="space-y-6">
                   <div class="grid gap-5 md:grid-cols-2">
                     <div class="space-y-1.5">
@@ -427,8 +427,8 @@
                                 {{ item.question_type === "MCQ" ? "Pilihan Ganda" : "Essay" }}
                               </span>
                             </div>
-                            <p class="mt-3 text-xs font-medium leading-5 text-slate-900 dark:text-white sm:text-sm sm:font-semibold sm:leading-6">
-                              {{ parseQuestionContent(item.question_text).question_text }}
+                            <p class="mt-3 whitespace-pre-wrap break-words text-xs font-medium leading-5 text-slate-900 dark:text-white sm:text-sm sm:font-semibold sm:leading-6">
+                              {{ normalizePreviewText(parseQuestionContent(item.question_text).question_text) }}
                             </p>
                             <img v-if="parseQuestionContent(item.question_text).question_image_url"
                               :src="parseQuestionContent(item.question_text).question_image_url" alt="Gambar pertanyaan"
@@ -440,12 +440,12 @@
                                 :class="optionIndex === item.correct_option
                                   ? 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300'
                                   : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300'">
-                                <div>{{ String.fromCharCode(65 + optionIndex) }}. {{ parseOptionItem(option).text }}</div>
+                                <div>{{ String.fromCharCode(65 + optionIndex) }}. {{ normalizePreviewText(parseOptionItem(option).text) }}</div>
                               </div>
                             </div>
 
                             <div v-else
-                              class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300 sm:text-sm">
+                              class="mt-4 whitespace-pre-wrap break-words rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300 sm:text-sm">
                               <span class="font-semibold">Rubrik:</span> {{ item.rubric }}
                             </div>
                           </div>
@@ -1092,6 +1092,26 @@ const parseQuestionContent = (rawText) => {
     question_text: questionPart,
     question_image_url: imagePart,
   };
+};
+
+const normalizePreviewText = (value) => {
+  const text = String(value || "").trim();
+  if (!text) {
+    return "";
+  }
+
+  return text
+    .replace(/\\\(/g, "")
+    .replace(/\\\)/g, "")
+    .replace(/\\\[/g, "")
+    .replace(/\\\]/g, "")
+    .replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, "($1/$2)")
+    .replace(/\\theta/g, "theta")
+    .replace(/\\sin/g, "sin")
+    .replace(/\\cos/g, "cos")
+    .replace(/\\tan/g, "tan")
+    .replace(/\\pi/g, "pi")
+    .replace(/\\sqrt\{([^}]*)\}/g, "sqrt($1)");
 };
 
 const composeQuestionText = (questionText, questionImageUrl) => {
