@@ -90,8 +90,24 @@
     <teleport to="body">
       <div v-if="isSuccessModalOpen" class="reg-modal-overlay" @click.self="closeSuccessModal">
         <div class="reg-modal" role="dialog" aria-modal="true" aria-labelledby="reg-success-title">
-          <div class="reg-modal-badge">Registrasi Berhasil</div>
-          <h2 id="reg-success-title" class="reg-modal-title">Screenshot sekarang sebelum ditutup</h2>
+          <div class="reg-modal-head">
+            <div class="reg-modal-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3l-8.47-14.14a2 2 0 0 0-3.42 0Z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <div>
+              <p class="reg-modal-kicker">Registrasi berhasil</p>
+              <h2 id="reg-success-title" class="reg-modal-title">Screenshot sekarang sebelum ditutup</h2>
+            </div>
+          </div>
           <p class="reg-modal-desc">
             Username dan password di bawah dipakai siswa untuk login. Simpan dengan screenshot atau salin ke tempat aman.
           </p>
@@ -102,6 +118,16 @@
               <div class="reg-modal-value-group">
                 <code class="reg-modal-value">{{ registrationResult?.username }}</code>
                 <button type="button" class="reg-modal-copy" @click="copyToClipboard(registrationResult?.username)">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" class="reg-modal-copy-icon">
+                    <path
+                      d="M9 12h6m-6 4h6M15 3H9a2 2 0 0 0-2 2v1H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1h2a2 2 0 0 0 2-2V8l-6-5Z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
                   Salin
                 </button>
               </div>
@@ -112,6 +138,16 @@
               <div class="reg-modal-value-group">
                 <code class="reg-modal-value">{{ registrationResult?.password }}</code>
                 <button type="button" class="reg-modal-copy" @click="copyToClipboard(registrationResult?.password)">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" class="reg-modal-copy-icon">
+                    <path
+                      d="M9 12h6m-6 4h6M15 3H9a2 2 0 0 0-2 2v1H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1h2a2 2 0 0 0 2-2V8l-6-5Z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
                   Salin
                 </button>
               </div>
@@ -595,21 +631,39 @@ const copyToClipboard = async (text) => {
   padding: 1.5rem;
 }
 
-.reg-modal-badge {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  background: rgba(26, 115, 232, 0.1);
-  color: #0b57d0;
-  padding: 6px 10px;
-  font-size: 11px;
+.reg-modal-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.reg-modal-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #fde8eb;
+  color: #e11d48;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.reg-modal-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.reg-modal-kicker {
+  margin: 0 0 6px;
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: #e11d48;
 }
 
 .reg-modal-title {
-  margin: 12px 0 8px;
+  margin: 0;
   font-family: 'Sora', sans-serif;
   font-size: 22px;
   line-height: 1.25;
@@ -617,7 +671,7 @@ const copyToClipboard = async (text) => {
 }
 
 .reg-modal-desc {
-  margin: 0 0 16px;
+  margin: 14px 0 16px;
   color: #49566f;
   font-size: 13px;
   line-height: 1.6;
@@ -675,14 +729,17 @@ const copyToClipboard = async (text) => {
 }
 
 .reg-modal-copy {
-  background: #e8f0fe;
-  color: #0b57d0;
+  background: #fff1f2;
+  color: #e11d48;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .reg-modal-login {
-  background: #1a73e8;
+  background: #e11d48;
   color: #ffffff;
-  box-shadow: 0 8px 18px rgba(26, 115, 232, 0.22);
+  box-shadow: 0 8px 18px rgba(225, 29, 72, 0.22);
   text-align: center;
 }
 
@@ -697,6 +754,12 @@ const copyToClipboard = async (text) => {
   transform: translateY(-1px);
 }
 
+.reg-modal-copy-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
 .reg-modal-actions {
   display: flex;
   flex-wrap: wrap;
@@ -708,6 +771,15 @@ const copyToClipboard = async (text) => {
   .reg-modal {
     padding: 1.25rem;
     border-radius: 18px;
+  }
+
+  .reg-modal-head {
+    gap: 12px;
+  }
+
+  .reg-modal-icon {
+    width: 50px;
+    height: 50px;
   }
 
   .reg-modal-value-group {
