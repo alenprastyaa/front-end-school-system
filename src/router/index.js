@@ -219,7 +219,7 @@ const routes = [
     meta: {
       title: "Setting Admin" + appName,
       requiresAuth: true,
-      roles: ["ADMIN"],
+      roles: ["SUPER_ADMIN", "ADMIN"],
     },
   },
   {

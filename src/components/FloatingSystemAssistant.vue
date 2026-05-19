@@ -79,32 +79,17 @@ import { api } from "@/api";
 import { isAuthenticated, getStoredRole } from "@/utils/auth";
 
 const route = useRoute();
-const currentRole = getStoredRole();
-const assistantConfigByRole = {
-  ADMIN: {
-    buttonLabel: "Asisten Admin",
-    title: "Pembantu Admin Sekolah",
-    placeholder: "Tanya pengelolaan data sekolah...",
-    intro: "Halo, saya asisten admin sekolah. Saya bantu jelaskan fitur yang memang bisa diakses admin, seperti user sekolah, kelas, siswa, kurikulum, billing, dan pengaturan.",
-    quickQuestions: [
-      "Cara tambah siswa baru?",
-      "Cara atur kelas dan wali kelas?",
-      "Bagaimana melihat tagihan sekolah?",
-    ],
-  },
-  GURU: {
-    buttonLabel: "Asisten Guru",
-    title: "Pembantu Guru",
-    placeholder: "Tanya pembelajaran, nilai, atau live chat...",
-    intro: "Halo, saya asisten guru. Saya bantu jelaskan fitur yang memang bisa diakses guru, seperti pembelajaran, bank soal, quiz, ujian, penilaian, dan live chat.",
-    quickQuestions: [
-      "Cara buat jadwal pembelajaran?",
-      "Bagaimana alur Bank Soal ke Quiz?",
-      "Cara menilai tugas atau ujian siswa?",
-    ],
-  },
+const assistantConfig = {
+  buttonLabel: "Asisten AI",
+  title: "Asisten Umum",
+  placeholder: "Tulis pertanyaan apa saja...",
+  intro: "Halo, saya asisten umum. Saya bisa membantu menjawab pertanyaan dari banyak topik dengan bahasa yang sederhana dan praktis.",
+  quickQuestions: [
+    "Jelaskan topik ini dengan sederhana",
+    "Buat langkah-langkah singkat",
+    "Beri contoh praktis",
+  ],
 };
-const assistantConfig = assistantConfigByRole[currentRole] || assistantConfigByRole.GURU;
 const open = ref(false);
 const viewportWidth = ref(typeof window !== "undefined" ? window.innerWidth : 1280);
 const question = ref("");

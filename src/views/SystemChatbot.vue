@@ -59,36 +59,19 @@
 import { ref } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { getStoredRole } from "@/utils/auth";
 
-const currentRole = getStoredRole();
-const assistantConfigByRole = {
-  ADMIN: {
-    pageTitle: "Chatbot Admin Sekolah",
-    description: "Tanyakan alur kerja admin sekolah. Jawaban akan difokuskan ke fitur yang memang tersedia untuk admin.",
-    placeholder: "Contoh: Cara tambah siswa baru?",
-    intro: "Halo, saya asisten admin sekolah. Saya akan fokus menjelaskan menu dan proses yang memang dapat diakses admin.",
-    quickQuestions: [
-      "Cara tambah siswa baru bagaimana?",
-      "Bagaimana mengatur kelas dan wali kelas?",
-      "Bagaimana melihat ringkasan kondisi sekolah?",
-      "Cara cek billing sekolah bagaimana?",
-    ],
-  },
-  GURU: {
-    pageTitle: "Chatbot Guru",
-    description: "Tanyakan alur kerja guru. Jawaban akan difokuskan ke fitur pembelajaran dan penilaian yang memang tersedia untuk guru.",
-    placeholder: "Contoh: Cara membuat quiz dari bank soal?",
-    intro: "Halo, saya asisten guru. Saya akan fokus menjelaskan menu dan proses yang memang dapat diakses guru.",
-    quickQuestions: [
-      "Langkah buat jadwal pembelajaran apa saja?",
-      "Cara kerja Bank Soal dan Quiz bagaimana?",
-      "Bagaimana menilai tugas atau ujian siswa?",
-      "Bagaimana memakai Live Chat mapel?",
-    ],
-  },
+const assistantConfig = {
+  pageTitle: "Chatbot Umum",
+  description: "Tanyakan apa saja. Asisten ini tidak dibatasi ke topik sekolah dan akan menjawab dengan bahasa yang sederhana.",
+  placeholder: "Contoh: Jelaskan foto ini, bantu ringkas teks, atau buat langkah singkat?",
+  intro: "Halo, saya asisten umum. Saya bisa membantu menjawab pertanyaan dari banyak topik, bukan hanya topik sekolah.",
+  quickQuestions: [
+    "Jelaskan topik ini dengan sederhana",
+    "Buat langkah-langkah singkat",
+    "Ringkas jawaban jadi 3 poin",
+    "Beri contoh praktis",
+  ],
 };
-const assistantConfig = assistantConfigByRole[currentRole] || assistantConfigByRole.GURU;
 const question = ref("");
 const isLoading = ref(false);
 const messages = ref([
@@ -127,16 +110,8 @@ const sendQuestion = async () => {
 
   try {
     const response = await api.post("/learning/system-chatbot", { question: cleanedQuestion });
-    const roleHint = response?.data?.role_hint || "";
     const answer = response?.data?.answer || "Maaf, saya belum bisa menjawab pertanyaan itu.";
-    const suggestions = Array.isArray(response?.data?.suggestions) ? response.data.suggestions : [];
-
-    const suggestionText =
-      suggestions.length > 0
-        ? `\n\nAnda juga bisa tanya:\n- ${suggestions.slice(0, 3).join("\n- ")}`
-        : "";
-
-    addMessage("bot", `${roleHint}\n\n${answer}${suggestionText}`.trim());
+    addMessage("bot", answer);
   } catch (error) {
     addMessage("bot", "Maaf, saya belum bisa menjawab sekarang. Silakan coba lagi.");
     pushToast({

@@ -388,6 +388,18 @@
                       class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
                   </div>
 
+                  <label
+                    class="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left dark:border-slate-700 dark:bg-slate-800/40">
+                    <input v-model="aiGeneratorForm.include_illustration" type="checkbox"
+                      class="mt-1 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-600 dark:border-slate-600 dark:bg-slate-800" />
+                    <span class="min-w-0">
+                      <span class="block text-sm font-semibold text-slate-900 dark:text-white">Sertakan ilustrasi AI</span>
+                      <span class="mt-1 block text-xs leading-5 text-slate-500 dark:text-slate-400">
+                        AI akan membuat ilustrasi otomatis untuk tiap soal sesuai konteks pertanyaan.
+                      </span>
+                    </span>
+                  </label>
+
                   <section v-if="generatedAiQuestions.length" ref="aiPreviewSectionRef"
                     class="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-700 dark:bg-slate-800/30 sm:p-5">
                     <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -426,12 +438,16 @@
                                 class="inline-flex rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
                                 {{ item.question_type === "MCQ" ? "Pilihan Ganda" : "Essay" }}
                               </span>
+                              <span v-if="getGeneratedQuestionImageUrl(item)"
+                                class="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                                Ilustrasi AI
+                              </span>
                             </div>
                             <p class="mt-3 whitespace-pre-wrap break-words text-xs font-medium leading-5 text-slate-900 dark:text-white sm:text-sm sm:font-semibold sm:leading-6">
-                              {{ normalizePreviewText(parseQuestionContent(item.question_text).question_text) }}
+                              {{ normalizeGeneratedQuestionText(parseQuestionContent(item.question_text).question_text) }}
                             </p>
-                            <img v-if="parseQuestionContent(item.question_text).question_image_url"
-                              :src="parseQuestionContent(item.question_text).question_image_url" alt="Gambar pertanyaan"
+                            <img v-if="getGeneratedQuestionImageUrl(item)"
+                              :src="getGeneratedQuestionImageUrl(item)" alt="Gambar pertanyaan"
                               class="mt-3 max-h-48 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
 
                             <div v-if="item.question_type === 'MCQ'" class="mt-4 grid gap-2">
@@ -464,7 +480,7 @@
                 <button v-if="generatedAiQuestions.length" type="button" @click="saveGeneratedAiQuestions"
                   :disabled="isSavingGeneratedAiQuestions || selectedGeneratedAiQuestions.length === 0"
                   class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:text-sm">
-                  {{ isSavingGeneratedAiQuestions ? "Menyimpan..." : `Simpan ${selectedGeneratedAiQuestions.length} Terpilih` }}
+                  {{ isSavingGeneratedAiQuestions ? "Menyimpan..." : `Simpan ${selectedGeneratedAiQuestions.length} Soal` }}
                 </button>
                 <button type="submit" :disabled="isGeneratingAiQuestions"
                   class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:text-sm">
@@ -1105,6 +1121,7 @@ const normalizePreviewText = (value) => {
     .replace(/\\\)/g, "")
     .replace(/\\\[/g, "")
     .replace(/\\\]/g, "")
+    .replace(/(-?)\s*\\?rac\{([^}]*)\}\{([^}]*)\}/g, (_, sign, numerator, denominator) => `${sign === "-" ? "-" : ""}${numerator}/${denominator}`)
     .replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, "($1/$2)")
     .replace(/\\theta/g, "theta")
     .replace(/\\sin/g, "sin")
@@ -1113,6 +1130,8 @@ const normalizePreviewText = (value) => {
     .replace(/\\pi/g, "pi")
     .replace(/\\sqrt\{([^}]*)\}/g, "sqrt($1)");
 };
+
+const normalizeGeneratedQuestionText = (value) => normalizePreviewText(value);
 
 const composeQuestionText = (questionText, questionImageUrl) => {
   const cleanQuestion = String(questionText || "").trim();
@@ -1159,6 +1178,7 @@ const aiGeneratorForm = reactive({
   phase_name: "",
   curriculum_name: "",
   topic: "",
+  include_illustration: false,
   additional_instructions: "",
 });
 const generatedAiQuestions = ref([]);
@@ -1308,6 +1328,7 @@ const resetAiGeneratorForm = () => {
   aiGeneratorForm.phase_name = "";
   aiGeneratorForm.curriculum_name = "";
   aiGeneratorForm.topic = "";
+  aiGeneratorForm.include_illustration = false;
   aiGeneratorForm.additional_instructions = "";
   generatedAiQuestions.value = [];
   selectedGeneratedAiQuestionIds.value = [];
@@ -1746,6 +1767,7 @@ const generateQuestionBankWithAi = async () => {
       grade_label: aiGeneratorForm.grade_label || "",
       phase_name: aiGeneratorForm.phase_name || "",
       curriculum_name: aiGeneratorForm.curriculum_name || "",
+      include_illustration: Boolean(aiGeneratorForm.include_illustration),
       additional_instructions: aiGeneratorForm.additional_instructions || "",
     };
 
@@ -1757,6 +1779,7 @@ const generateQuestionBankWithAi = async () => {
     const summary = response?.data || {};
     generatedAiQuestions.value = (summary.items || []).map((item, index) => ({
       ...item,
+      question_image_url: aiGeneratorForm.include_illustration ? (item.question_image_url || "") : "",
       temp_id: `generated-${Date.now()}-${index}`,
     }));
     selectedGeneratedAiQuestionIds.value = generatedAiQuestions.value.map((item) => item.temp_id);
@@ -1797,6 +1820,59 @@ const clearGeneratedAiSelection = () => {
   selectedGeneratedAiQuestionIds.value = [];
 };
 
+watch(
+  () => aiGeneratorForm.include_illustration,
+  (enabled) => {
+    if (enabled) return;
+
+    generatedAiQuestions.value = generatedAiQuestions.value.map((item) => {
+      const parsed = parseQuestionContent(item.question_text);
+      return {
+        ...item,
+        question_image_url: "",
+        question_text: parsed.question_text,
+      };
+    });
+  },
+);
+
+const getGeneratedQuestionImageUrl = (item) => {
+  if (!item) return "";
+  if (item.question_image_url) return item.question_image_url;
+  return parseQuestionContent(item.question_text).question_image_url;
+};
+
+const handleGeneratedQuestionImageUpload = async (item, event) => {
+  const file = event?.target?.files?.[0];
+  if (!file || !item) return;
+
+  try {
+    const uploaded = await uploadFileDirect(file);
+    const parsed = parseQuestionContent(item.question_text);
+    item.question_image_url = uploaded?.url || "";
+    item.question_text = composeQuestionText(parsed.question_text, item.question_image_url);
+    if (event?.target) {
+      event.target.value = "";
+    }
+  } catch (error) {
+    isError.value = true;
+    message.value = error.message;
+    pushToast({
+      title: "Upload Ilustrasi Gagal",
+      message: error.message,
+      type: "error",
+    });
+  }
+};
+
+const removeGeneratedQuestionImage = (item) => {
+  if (!item) return;
+
+  const parsed = parseQuestionContent(item.question_text);
+  item.question_image_url = "";
+  item.question_text = parsed.question_text;
+};
+
 const saveGeneratedAiQuestions = async () => {
   if (!selectedSubject.value || selectedGeneratedAiQuestions.value.length === 0) {
     return;
@@ -1811,7 +1887,16 @@ const saveGeneratedAiQuestions = async () => {
       `/learning/subjects/${selectedSubject.value.id}/question-bank/save-generated-ai`,
       {
         question_type: aiGeneratorForm.question_type,
-        items: selectedGeneratedAiQuestions.value.map(({ temp_id, ...item }) => item),
+        items: selectedGeneratedAiQuestions.value.map((item) => {
+          const parsedQuestion = parseQuestionContent(item.question_text);
+          return {
+            ...item,
+            question_text: composeQuestionText(
+              normalizeGeneratedQuestionText(parsedQuestion.question_text),
+              aiGeneratorForm.include_illustration ? (item.question_image_url || parsedQuestion.question_image_url) : "",
+            ),
+          };
+        }).map(({ temp_id, question_image_url, ...item }) => item),
       },
     );
 

@@ -429,6 +429,7 @@ const menuByRole = {
     { key: "schools", to: "/schools", label: "Sekolah", icon: "ph:buildings" },
     { key: "module-settings", to: "/module-settings", label: "Setting Modul", icon: "ph:squares-four" },
     { key: "billing", to: "/billing", label: "Billing", icon: "ph:credit-card" },
+    { key: "admin-settings", to: "/admin-settings", dataTour: "settings", label: "Setting Admin", icon: "ph:gear-six" },
   ],
   ADMIN: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
