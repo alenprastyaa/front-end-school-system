@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { api } from "@/api";
-import { getStoredUser, updateStoredUser } from "@/utils/auth";
+import { getStoredUser, normalizeRole, updateStoredUser } from "@/utils/auth";
 import { normalizePublicUrl } from "@/utils/url";
 
 const PROFILE_TTL = 5 * 60 * 1000;
@@ -44,7 +44,10 @@ export const useProfileStore = defineStore("profile", {
     hydrateFromStorage() {
       this.profile = {
         ...this.profile,
-        ...(getStoredUser() || {}),
+        ...{
+          ...(getStoredUser() || {}),
+          role: normalizeRole(getStoredUser()?.role || this.profile.role),
+        },
       };
     },
 
@@ -52,6 +55,7 @@ export const useProfileStore = defineStore("profile", {
       const nextProfile = {
         ...this.profile,
         ...profile,
+        role: normalizeRole(profile.role || this.profile.role),
         school_logo: normalizePublicUrl(profile.school_logo) || null,
         inventory_module_enabled: profile.inventory_module_enabled !== false,
         attendance_module_enabled: profile.attendance_module_enabled !== false,

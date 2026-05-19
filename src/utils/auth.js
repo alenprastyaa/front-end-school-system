@@ -11,7 +11,14 @@ export const getStoredUser = () => {
   }
 };
 
-export const normalizeRole = (role) => String(role || "").trim().toUpperCase();
+export const normalizeRole = (role) =>
+  String(role || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "_")
+    .replace(/-/g, "_")
+    .replace(/^SUPERADMIN$/, "SUPER_ADMIN")
+    .replace(/^SUPER_ADMINISTRATOR$/, "SUPER_ADMIN");
 
 export const getStoredRole = () => normalizeRole(localStorage.getItem("role"));
 

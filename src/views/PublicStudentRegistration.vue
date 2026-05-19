@@ -75,43 +75,6 @@
             {{ message }}
           </div>
 
-          <div v-if="registrationResult" class="reg-success-card">
-            <div class="reg-success-badge">Berhasil Dibuat</div>
-            <h2 class="reg-success-title">Akun siswa siap dipakai login</h2>
-            <p class="reg-success-desc">
-              Simpan kredensial ini sekarang. Siswa bisa langsung login setelah ini.
-            </p>
-
-            <div class="reg-success-credentials">
-              <div class="reg-success-row">
-                <span class="reg-success-label">Username</span>
-                <div class="reg-success-value-group">
-                  <code class="reg-success-value">{{ registrationResult.username }}</code>
-                  <button type="button" class="reg-success-copy" @click="copyToClipboard(registrationResult.username)">
-                    Salin
-                  </button>
-                </div>
-              </div>
-
-              <div class="reg-success-row">
-                <span class="reg-success-label">Password</span>
-                <div class="reg-success-value-group">
-                  <code class="reg-success-value">{{ registrationResult.password }}</code>
-                  <button type="button" class="reg-success-copy" @click="copyToClipboard(registrationResult.password)">
-                    Salin
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="reg-success-actions">
-              <router-link to="/auth/login" class="reg-success-login">Ke Halaman Login</router-link>
-              <button type="button" class="reg-success-reset" @click="registrationResult = null">
-                Tutup
-              </button>
-            </div>
-          </div>
-
           <!-- Submit -->
           <button type="submit" class="reg-submit" :disabled="isSubmitting || isLoadingOptions || !registrationToken">
             {{ isSubmitting ? "Menyimpan registrasi..." : "Kirim Registrasi" }}
@@ -123,6 +86,45 @@
         </form>
       </div>
     </div>
+
+    <teleport to="body">
+      <div v-if="isSuccessModalOpen" class="reg-modal-overlay" @click.self="closeSuccessModal">
+        <div class="reg-modal" role="dialog" aria-modal="true" aria-labelledby="reg-success-title">
+          <div class="reg-modal-badge">Registrasi Berhasil</div>
+          <h2 id="reg-success-title" class="reg-modal-title">Screenshot sekarang sebelum ditutup</h2>
+          <p class="reg-modal-desc">
+            Username dan password di bawah dipakai siswa untuk login. Simpan dengan screenshot atau salin ke tempat aman.
+          </p>
+
+          <div class="reg-modal-credentials">
+            <div class="reg-modal-row">
+              <span class="reg-modal-label">Username</span>
+              <div class="reg-modal-value-group">
+                <code class="reg-modal-value">{{ registrationResult?.username }}</code>
+                <button type="button" class="reg-modal-copy" @click="copyToClipboard(registrationResult?.username)">
+                  Salin
+                </button>
+              </div>
+            </div>
+
+            <div class="reg-modal-row">
+              <span class="reg-modal-label">Password</span>
+              <div class="reg-modal-value-group">
+                <code class="reg-modal-value">{{ registrationResult?.password }}</code>
+                <button type="button" class="reg-modal-copy" @click="copyToClipboard(registrationResult?.password)">
+                  Salin
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="reg-modal-actions">
+            <router-link to="/auth/login" class="reg-modal-login">Ke Halaman Login</router-link>
+            <button type="button" class="reg-modal-close" @click="closeSuccessModal">Tutup</button>
+          </div>
+        </div>
+      </div>
+    </teleport>
   </div>
 </template>
 
@@ -139,6 +141,7 @@ const isLoadingOptions = ref(false);
 const message = ref("");
 const isError = ref(false);
 const registrationResult = ref(null);
+const isSuccessModalOpen = ref(false);
 const availableClasses = ref([]);
 
 const baseForm = () => ({
@@ -189,14 +192,12 @@ const handleSubmit = async () => {
     isError.value = false;
     const username = response?.data?.username || "-";
     const password = response?.data?.password || "-";
-    const baseMessage = response?.message && response.message !== "User registered successfully"
-      ? response.message
-      : "Registrasi siswa berhasil";
-    message.value = `${baseMessage}. Username: ${username}. Password: ${password}.`;
+    message.value = "Registrasi siswa berhasil.";
     registrationResult.value = {
       username,
       password,
     };
+    isSuccessModalOpen.value = true;
 
     const selectedClass = form.class_id;
     Object.assign(form, baseForm());
@@ -226,6 +227,10 @@ onMounted(async () => {
     message.value = error.message;
   }
 });
+
+const closeSuccessModal = () => {
+  isSuccessModalOpen.value = false;
+};
 
 const copyToClipboard = async (text) => {
   const value = String(text || "").trim();
@@ -569,23 +574,32 @@ const copyToClipboard = async (text) => {
   color: #0849b8;
 }
 
-.reg-success-card {
-  margin-bottom: 18px;
-  border: 1px solid #c7e9ff;
-  background:
-    linear-gradient(180deg, rgba(26, 115, 232, 0.08), rgba(255, 255, 255, 0.96)),
-    #ffffff;
-  border-radius: 16px;
-  padding: 18px;
-  box-shadow: 0 10px 30px rgba(26, 115, 232, 0.08);
+.reg-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 18, 32, 0.7);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1000;
 }
 
-.reg-success-badge {
+.reg-modal {
+  width: min(100%, 520px);
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid rgba(26, 115, 232, 0.14);
+  box-shadow: 0 24px 80px rgba(11, 18, 32, 0.28);
+  padding: 1.5rem;
+}
+
+.reg-modal-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   border-radius: 999px;
-  background: rgba(26, 115, 232, 0.12);
+  background: rgba(26, 115, 232, 0.1);
   color: #0b57d0;
   padding: 6px 10px;
   font-size: 11px;
@@ -594,32 +608,32 @@ const copyToClipboard = async (text) => {
   text-transform: uppercase;
 }
 
-.reg-success-title {
-  margin: 12px 0 6px;
+.reg-modal-title {
+  margin: 12px 0 8px;
   font-family: 'Sora', sans-serif;
-  font-size: 21px;
+  font-size: 22px;
   line-height: 1.25;
   color: #0b1220;
 }
 
-.reg-success-desc {
+.reg-modal-desc {
   margin: 0 0 16px;
   color: #49566f;
   font-size: 13px;
   line-height: 1.6;
 }
 
-.reg-success-credentials {
+.reg-modal-credentials {
   display: grid;
   gap: 12px;
 }
 
-.reg-success-row {
+.reg-modal-row {
   display: grid;
   gap: 8px;
 }
 
-.reg-success-label {
+.reg-modal-label {
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
@@ -627,17 +641,17 @@ const copyToClipboard = async (text) => {
   color: #5f6368;
 }
 
-.reg-success-value-group {
+.reg-modal-value-group {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
 }
 
-.reg-success-value {
+.reg-modal-value {
   flex: 1;
   min-width: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #0b1220;
   color: #f8fafc;
   padding: 12px 14px;
@@ -647,9 +661,9 @@ const copyToClipboard = async (text) => {
   word-break: break-word;
 }
 
-.reg-success-copy,
-.reg-success-login,
-.reg-success-reset {
+.reg-modal-copy,
+.reg-modal-login,
+.reg-modal-close {
   border: 0;
   border-radius: 10px;
   padding: 11px 14px;
@@ -660,29 +674,30 @@ const copyToClipboard = async (text) => {
   text-decoration: none;
 }
 
-.reg-success-copy {
+.reg-modal-copy {
   background: #e8f0fe;
   color: #0b57d0;
 }
 
-.reg-success-login {
+.reg-modal-login {
   background: #1a73e8;
   color: #ffffff;
   box-shadow: 0 8px 18px rgba(26, 115, 232, 0.22);
+  text-align: center;
 }
 
-.reg-success-reset {
+.reg-modal-close {
   background: #eef2f7;
   color: #202124;
 }
 
-.reg-success-copy:hover,
-.reg-success-login:hover,
-.reg-success-reset:hover {
+.reg-modal-copy:hover,
+.reg-modal-login:hover,
+.reg-modal-close:hover {
   transform: translateY(-1px);
 }
 
-.reg-success-actions {
+.reg-modal-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -690,18 +705,22 @@ const copyToClipboard = async (text) => {
 }
 
 @media (max-width: 640px) {
-  .reg-success-value-group {
+  .reg-modal {
+    padding: 1.25rem;
+    border-radius: 18px;
+  }
+
+  .reg-modal-value-group {
     align-items: stretch;
   }
 
-  .reg-success-copy {
+  .reg-modal-copy {
     width: 100%;
   }
 
-  .reg-success-login,
-  .reg-success-reset {
+  .reg-modal-login,
+  .reg-modal-close {
     width: 100%;
-    text-align: center;
   }
 }
 
