@@ -5,78 +5,30 @@
         <div>
           <p class="reg-eyebrow">Pendaftaran Siswa</p>
           <h1 class="reg-title">Gabung Ke Kelas Sekarang</h1>
-          <p class="reg-subtitle">Akun siswa akan langsung terhubung ke sekolah yang membagikan link ini.</p>
+          <p class="reg-subtitle">Cukup isi nama lengkap. Username dan password akan dibuat otomatis oleh sistem.</p>
         </div>
         <router-link to="/auth/login" class="reg-login-btn">Ke Login</router-link>
       </div>
       <div class="reg-body">
         <form @submit.prevent="handleSubmit">
 
-          <!-- Akun -->
+          <!-- Data Siswa -->
           <div class="reg-section-divider">
-            <span class="reg-section-label">Akun</span>
+            <span class="reg-section-label">Data Siswa</span>
             <span class="reg-section-line"></span>
           </div>
 
           <div class="reg-grid">
             <div class="reg-field full">
-              <label class="reg-label">Username Siswa <span class="required">*</span></label>
-              <div class="username-input-wrapper">
-                <input v-model.trim="form.username" type="text" required minlength="3" placeholder="Contoh: siswa7a01"
-                  class="reg-input" :class="{
-                    'input-checking': isCheckingUsername,
-                    'input-available': usernameAvailable === true,
-                    'input-taken': usernameAvailable === false
-                  }" />
-                <span v-if="isCheckingUsername" class="username-status checking">
-                  <svg class="spinner" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                  </svg>
-                </span>
-                <span v-else-if="usernameAvailable === true" class="username-status available">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                    <polyline points="22 4 12 14.01 9 11.01" />
-                  </svg>
-                </span>
-                <span v-else-if="usernameAvailable === false" class="username-status taken">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="15" y1="9" x2="9" y2="15" />
-                    <line x1="9" y1="9" x2="15" y2="15" />
-                  </svg>
-                </span>
-              </div>
-              <span v-if="usernameMessage" :class="['username-message', usernameAvailable ? 'available' : 'taken']">
-                {{ usernameMessage }}
-              </span>
-              <div v-if="usernameSuggestions.length > 0" class="username-suggestions">
-                <span class="suggestions-label">Saran username:</span>
-                <div class="suggestions-list">
-                  <button
-                    v-for="suggestion in usernameSuggestions"
-                    :key="suggestion"
-                    type="button"
-                    @click="selectSuggestion(suggestion)"
-                    class="suggestion-btn"
-                  >
-                    {{ suggestion }}
-                  </button>
-                </div>
-              </div>
-              <span v-else class="reg-hint">Minimal 3 karakter. Gunakan username yang unik.</span>
-            </div>
-
-            <div class="reg-field">
-              <label class="reg-label">Password <span class="required">*</span></label>
-              <input v-model="form.password" type="password" required minlength="6" placeholder="Min. 6 karakter"
-                class="reg-input" />
-            </div>
-
-            <div class="reg-field">
-              <label class="reg-label">Ulangi Password <span class="required">*</span></label>
-              <input v-model="form.confirm_password" type="password" required minlength="6"
-                placeholder="Ulangi password" class="reg-input" />
+              <label class="reg-label">Nama Lengkap <span class="required">*</span></label>
+              <input
+                v-model.trim="form.full_name"
+                type="text"
+                required
+                placeholder="Contoh: Budi Santoso"
+                class="reg-input"
+              />
+              <span class="reg-hint">Username dan password akan dibuat otomatis setelah daftar.</span>
             </div>
           </div>
 
@@ -89,14 +41,25 @@
           <div class="reg-grid">
             <div class="reg-field">
               <label class="reg-label">Sekolah</label>
-              <input :value="schoolName || (isLoadingOptions ? 'Memuat sekolah...' : '-')" type="text" readonly
-                class="reg-input" />
+              <input :value="schoolName || (isLoadingOptions ? 'Memuat sekolah...' : '-')" type="text" readonly class="reg-input" />
             </div>
 
             <div class="reg-field">
               <label class="reg-label">Kelas <span class="required">*</span></label>
-              <select v-model="form.class_id" required :disabled="availableClasses.length === 0"
-                class="reg-input reg-select">
+              <input
+                v-if="availableClasses.length === 1"
+                :value="selectedClassLabel || '-'"
+                type="text"
+                readonly
+                class="reg-input"
+              />
+              <select
+                v-else
+                v-model="form.class_id"
+                required
+                :disabled="availableClasses.length === 0"
+                class="reg-input reg-select"
+              >
                 <option value="">
                   {{ schoolName ? "Pilih kelas" : "Link pendaftaran tidak valid" }}
                 </option>
@@ -107,32 +70,51 @@
             </div>
           </div>
 
-          <!-- Kontak Opsional -->
-          <div class="reg-section-divider">
-            <span class="reg-section-label">Kontak Opsional</span>
-            <span class="reg-section-line"></span>
-          </div>
-
-          <div class="reg-grid">
-            <div class="reg-field">
-              <label class="reg-label">Email Orang Tua</label>
-              <input v-model.trim="form.parent_email" type="email" placeholder="ortu@contoh.com" class="reg-input" />
-            </div>
-
-            <div class="reg-field">
-              <label class="reg-label">Nomor HP</label>
-              <input v-model.trim="form.phone_number" type="text" placeholder="081234567890" class="reg-input" />
-            </div>
-          </div>
-
           <!-- Message -->
           <div v-if="message" :class="['reg-msg', isError ? 'error' : 'success']">
             {{ message }}
           </div>
 
+          <div v-if="registrationResult" class="reg-success-card">
+            <div class="reg-success-badge">Berhasil Dibuat</div>
+            <h2 class="reg-success-title">Akun siswa siap dipakai login</h2>
+            <p class="reg-success-desc">
+              Simpan kredensial ini sekarang. Siswa bisa langsung login setelah ini.
+            </p>
+
+            <div class="reg-success-credentials">
+              <div class="reg-success-row">
+                <span class="reg-success-label">Username</span>
+                <div class="reg-success-value-group">
+                  <code class="reg-success-value">{{ registrationResult.username }}</code>
+                  <button type="button" class="reg-success-copy" @click="copyToClipboard(registrationResult.username)">
+                    Salin
+                  </button>
+                </div>
+              </div>
+
+              <div class="reg-success-row">
+                <span class="reg-success-label">Password</span>
+                <div class="reg-success-value-group">
+                  <code class="reg-success-value">{{ registrationResult.password }}</code>
+                  <button type="button" class="reg-success-copy" @click="copyToClipboard(registrationResult.password)">
+                    Salin
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="reg-success-actions">
+              <router-link to="/auth/login" class="reg-success-login">Ke Halaman Login</router-link>
+              <button type="button" class="reg-success-reset" @click="registrationResult = null">
+                Tutup
+              </button>
+            </div>
+          </div>
+
           <!-- Submit -->
           <button type="submit" class="reg-submit" :disabled="isSubmitting || isLoadingOptions || !registrationToken">
-            {{ isSubmitting ? "Menyimpan registrasi..." : "Kirim Registrasi Siswa" }}
+            {{ isSubmitting ? "Menyimpan registrasi..." : "Kirim Registrasi" }}
           </button>
 
           <p class="reg-footer-note">
@@ -145,7 +127,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute } from "vue-router";
 import { api } from "@/api";
 
@@ -156,26 +138,19 @@ const isSubmitting = ref(false);
 const isLoadingOptions = ref(false);
 const message = ref("");
 const isError = ref(false);
-
-// Username validation states
-const isCheckingUsername = ref(false);
-const usernameAvailable = ref(null); // null = not checked, true = available, false = taken
-const usernameMessage = ref("");
-const usernameSuggestions = ref([]);
-let usernameCheckTimeout = null;
+const registrationResult = ref(null);
+const availableClasses = ref([]);
 
 const baseForm = () => ({
-  username: "",
-  password: "",
-  confirm_password: "",
+  full_name: "",
   class_id: "",
-  parent_email: "",
-  phone_number: "",
 });
 
 const form = reactive(baseForm());
-
-const availableClasses = ref([]);
+const selectedClassLabel = computed(() => {
+  const match = availableClasses.value.find((item) => String(item.id) === String(form.class_id));
+  return match?.class_name || "";
+});
 
 const loadOptions = async () => {
   isLoadingOptions.value = true;
@@ -185,72 +160,18 @@ const loadOptions = async () => {
     });
     schoolName.value = response?.data?.school?.name || "";
     availableClasses.value = response?.data?.classes || [];
+    if (availableClasses.value.length === 1) {
+      form.class_id = String(availableClasses.value[0].id);
+    }
   } finally {
     isLoadingOptions.value = false;
   }
 };
 
-const checkUsernameAvailability = async (username) => {
-  if (!username || username.length < 3) {
-    usernameAvailable.value = null;
-    usernameMessage.value = "";
-    usernameSuggestions.value = [];
-    return;
-  }
-
-  isCheckingUsername.value = true;
-  try {
-    const response = await api.get("/public/check-username", {
-      params: { username },
-    });
-
-    usernameAvailable.value = response?.available || false;
-    usernameMessage.value = response?.message || "";
-    usernameSuggestions.value = response?.suggestions || [];
-  } catch (error) {
-    usernameAvailable.value = null;
-    usernameMessage.value = "";
-    usernameSuggestions.value = [];
-  } finally {
-    isCheckingUsername.value = false;
-  }
-};
-
-// Watch username changes with debounce
-watch(
-  () => form.username,
-  (newUsername) => {
-    if (usernameCheckTimeout) {
-      clearTimeout(usernameCheckTimeout);
-    }
-
-    if (!newUsername || newUsername.length < 3) {
-      usernameAvailable.value = null;
-      usernameMessage.value = "";
-      usernameSuggestions.value = [];
-      return;
-    }
-
-    usernameCheckTimeout = setTimeout(() => {
-      checkUsernameAvailability(newUsername);
-    }, 500);
-  }
-);
-
-const selectSuggestion = (suggestion) => {
-  form.username = suggestion;
-};
-
 const handleSubmit = async () => {
-  if (form.password !== form.confirm_password) {
+  if (!form.full_name.trim()) {
     isError.value = true;
-    message.value = "Konfirmasi password tidak sama.";
-    return;
-  }
-
-  if (usernameAvailable.value === false) {
-    isError.value = true;
-    message.value = "Username sudah digunakan, pilih username lain.";
+    message.value = "Nama lengkap wajib diisi.";
     return;
   }
 
@@ -260,26 +181,26 @@ const handleSubmit = async () => {
 
   try {
     const response = await api.post("/public/student-registration", {
-      username: form.username,
-      password: form.password,
+      full_name: form.full_name,
       token: registrationToken,
       class_id: Number(form.class_id),
-      parent_email: form.parent_email || null,
-      phone_number: form.phone_number || null,
     });
 
     isError.value = false;
-    message.value = response?.message || "Registrasi siswa berhasil";
-    
-    // Reset form setelah berhasil, tapi pertahankan class_id
+    const username = response?.data?.username || "-";
+    const password = response?.data?.password || "-";
+    const baseMessage = response?.message && response.message !== "User registered successfully"
+      ? response.message
+      : "Registrasi siswa berhasil";
+    message.value = `${baseMessage}. Username: ${username}. Password: ${password}.`;
+    registrationResult.value = {
+      username,
+      password,
+    };
+
     const selectedClass = form.class_id;
     Object.assign(form, baseForm());
     form.class_id = selectedClass;
-    
-    // Reset username validation states
-    usernameAvailable.value = null;
-    usernameMessage.value = "";
-    usernameSuggestions.value = [];
   } catch (error) {
     isError.value = true;
     message.value = error.message;
@@ -289,11 +210,7 @@ const handleSubmit = async () => {
 };
 
 onMounted(async () => {
-  // Reset form saat halaman dibuka
   Object.assign(form, baseForm());
-  usernameAvailable.value = null;
-  usernameMessage.value = "";
-  usernameSuggestions.value = [];
   message.value = "";
   isError.value = false;
 
@@ -310,12 +227,27 @@ onMounted(async () => {
   }
 });
 
-onUnmounted(() => {
-  // Clear timeout untuk mencegah memory leak
-  if (usernameCheckTimeout) {
-    clearTimeout(usernameCheckTimeout);
+const copyToClipboard = async (text) => {
+  const value = String(text || "").trim();
+  if (!value) {
+    return;
   }
-});
+
+  try {
+    await navigator.clipboard.writeText(value);
+    return;
+  } catch (error) {
+    const textarea = document.createElement("textarea");
+    textarea.value = value;
+    textarea.setAttribute("readonly", "readonly");
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+  }
+};
 </script>
 
 <style scoped>
@@ -635,6 +567,142 @@ onUnmounted(() => {
   background: #eef6ff;
   border: 1px solid #b9d7ff;
   color: #0849b8;
+}
+
+.reg-success-card {
+  margin-bottom: 18px;
+  border: 1px solid #c7e9ff;
+  background:
+    linear-gradient(180deg, rgba(26, 115, 232, 0.08), rgba(255, 255, 255, 0.96)),
+    #ffffff;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(26, 115, 232, 0.08);
+}
+
+.reg-success-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  background: rgba(26, 115, 232, 0.12);
+  color: #0b57d0;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reg-success-title {
+  margin: 12px 0 6px;
+  font-family: 'Sora', sans-serif;
+  font-size: 21px;
+  line-height: 1.25;
+  color: #0b1220;
+}
+
+.reg-success-desc {
+  margin: 0 0 16px;
+  color: #49566f;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.reg-success-credentials {
+  display: grid;
+  gap: 12px;
+}
+
+.reg-success-row {
+  display: grid;
+  gap: 8px;
+}
+
+.reg-success-label {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #5f6368;
+}
+
+.reg-success-value-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.reg-success-value {
+  flex: 1;
+  min-width: 0;
+  border-radius: 10px;
+  background: #0b1220;
+  color: #f8fafc;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  word-break: break-word;
+}
+
+.reg-success-copy,
+.reg-success-login,
+.reg-success-reset {
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  text-decoration: none;
+}
+
+.reg-success-copy {
+  background: #e8f0fe;
+  color: #0b57d0;
+}
+
+.reg-success-login {
+  background: #1a73e8;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(26, 115, 232, 0.22);
+}
+
+.reg-success-reset {
+  background: #eef2f7;
+  color: #202124;
+}
+
+.reg-success-copy:hover,
+.reg-success-login:hover,
+.reg-success-reset:hover {
+  transform: translateY(-1px);
+}
+
+.reg-success-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+@media (max-width: 640px) {
+  .reg-success-value-group {
+    align-items: stretch;
+  }
+
+  .reg-success-copy {
+    width: 100%;
+  }
+
+  .reg-success-login,
+  .reg-success-reset {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 .reg-submit {
