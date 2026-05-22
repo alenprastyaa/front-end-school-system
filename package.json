@@ -4,7 +4,7 @@
   "description": "Free Open Source Template Dashboard Admin Vue Tailwind CSS",
   "private": false,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "serve": "vue-cli-service serve --host 127.0.0.1",
     "build": "vue-cli-service build",
     "windsass": "sass --watch src/assets/sass/app.windzo.scss src/assets/sass/css/windzo.css",
     "require": "npm i -g sass @vue/cli"
@@ -17,6 +17,7 @@
   "author": "Mohammad Sahrullah",
   "license": "MIT",
   "dependencies": {
+    "@vuepic/vue-datepicker": "^12.1.0",
     "apexcharts": "^3.34.0",
     "autoprefixer": "^10.4.14",
     "chart.js": "^3.7.1",

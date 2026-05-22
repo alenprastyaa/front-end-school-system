@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { api } from "@/api";
+import { getStoredRole } from "@/utils/auth";
 
 const SUMMARY_TTL = 15000;
 const SUBJECT_TTL = 60000;
@@ -267,6 +268,12 @@ export const useSidebar = defineStore("sidebar", {
     },
 
     async refreshPrivateChatSummary({ force = false } = {}) {
+      const role = getStoredRole();
+      if (!["ADMIN", "KOPERASI", "GURU", "SISWA"].includes(role)) {
+        this.applyPrivateChatSummary([]);
+        return [];
+      }
+
       if (!force && this.privateChatSummaryLoadedAt && Date.now() - this.privateChatSummaryLoadedAt < PRIVATE_CHAT_TTL) {
         return this.privateChatSummaryItems;
       }

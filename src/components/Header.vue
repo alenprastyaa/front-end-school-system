@@ -405,7 +405,7 @@ const logout = () => {
   realtimeStore.disconnect();
   clearSession();
   profileStore.resetProfileState();
-  router.push({ name: "Login" });
+  window.location.assign("/auth/login");
 };
 
 const syncProfileForm = () => {

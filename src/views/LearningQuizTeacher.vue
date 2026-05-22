@@ -62,263 +62,95 @@
             </div>
           </Transition>
 
-          <div class="space-y-6 p-6">
-            <section class="grid gap-8 xl:grid-cols-[minmax(0,1.2fr),1fr]">
-              <section>
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Konfigurasi Quiz</h3>
-                <p class="mb-6 mt-1 text-sm text-slate-500">
-                  Pilih soal dari bank soal di bawah, lalu langsung atur detail quiz tanpa perlu pindah tab.
-                </p>
-
-                <form @submit.prevent="submitAssignment"
-                  class="space-y-5 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                  <div class="space-y-1.5">
-                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Judul Quiz</label>
-                    <input v-model="assignmentForm.title" required placeholder="Misal: Ulangan Bab 3"
-                      class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                  </div>
-
-                  <div class="space-y-1.5">
-                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Deskripsi / Instruksi</label>
-                    <textarea v-model="assignmentForm.description" rows="3"
-                      placeholder="Tuliskan instruksi pengerjaan..."
-                      class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                  </div>
-
-                  <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1.5">
-                      <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tipe Quiz</label>
-                      <select v-model="assignmentForm.assignment_type"
-                        class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
-                        <option value="MCQ">Pilihan Ganda</option>
-                        <option value="ESSAY">Essay</option>
-                      </select>
-                    </div>
-                    <div class="space-y-1.5">
-                      <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Batas Waktu</label>
-                      <input v-model="assignmentForm.due_date" type="datetime-local"
-                        class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                    </div>
-                  </div>
-
-                  <div class="space-y-1.5">
-                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Mode Durasi Quiz</label>
-                    <div class="grid gap-3 sm:grid-cols-2">
-                      <button type="button" @click="setQuestionDurationMode('PER_QUESTION')"
-                        class="rounded-2xl border p-4 text-left transition"
-                        :class="assignmentForm.question_duration_mode === 'PER_QUESTION'
-                          ? 'border-sky-500 bg-sky-50 ring-2 ring-sky-100 dark:border-sky-400 dark:bg-sky-500/10 dark:ring-sky-500/20'
-                          : 'border-slate-200 bg-white hover:border-sky-200 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-sky-500/40 dark:hover:bg-slate-800/60'">
-                        <div class="flex items-start gap-3">
-                          <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border"
-                            :class="assignmentForm.question_duration_mode === 'PER_QUESTION'
-                              ? 'border-sky-600 bg-sky-600 text-white dark:border-sky-400 dark:bg-sky-400'
-                              : 'border-slate-300 dark:border-slate-600'">
-                            <span v-if="assignmentForm.question_duration_mode === 'PER_QUESTION'" class="h-2 w-2 rounded-full bg-white"></span>
-                          </span>
-                          <span>
-                            <span class="block text-sm font-bold text-slate-900 dark:text-white">Per Soal</span>
-                            <span class="mt-1 block text-xs leading-5 text-slate-500 dark:text-slate-400">
-                              Timer berjalan untuk setiap soal. Cocok untuk latihan cepat.
-                            </span>
-                          </span>
-                        </div>
-                      </button>
-                      <button type="button" @click="setQuestionDurationMode('GLOBAL')"
-                        class="rounded-2xl border p-4 text-left transition"
-                        :class="assignmentForm.question_duration_mode === 'GLOBAL'
-                          ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-100 dark:border-emerald-400 dark:bg-emerald-500/10 dark:ring-emerald-500/20'
-                          : 'border-slate-200 bg-white hover:border-emerald-200 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-emerald-500/40 dark:hover:bg-slate-800/60'">
-                        <div class="flex items-start gap-3">
-                          <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border"
-                            :class="assignmentForm.question_duration_mode === 'GLOBAL'
-                              ? 'border-emerald-600 bg-emerald-600 text-white dark:border-emerald-400 dark:bg-emerald-400'
-                              : 'border-slate-300 dark:border-slate-600'">
-                            <span v-if="assignmentForm.question_duration_mode === 'GLOBAL'" class="h-2 w-2 rounded-full bg-white"></span>
-                          </span>
-                          <span>
-                            <span class="block text-sm font-bold text-slate-900 dark:text-white">Global</span>
-                            <span class="mt-1 block text-xs leading-5 text-slate-500 dark:text-slate-400">
-                              Timer berjalan untuk seluruh sesi, seperti ujian resmi tanpa kode.
-                            </span>
-                          </span>
-                        </div>
-                      </button>
-                    </div>
-                    <label class="mt-3 block text-xs font-semibold uppercase tracking-wider text-slate-500">
-                      {{ assignmentForm.question_duration_mode === 'PER_QUESTION'
-                        ? 'Durasi per Soal (detik)'
-                        : 'Durasi Quiz Total (menit)' }}
-                    </label>
-                    <input v-model="assignmentForm.question_duration_value" type="number" min="1"
-                      :max="assignmentForm.question_duration_mode === 'PER_QUESTION' ? 3600 : 180"
-                      :placeholder="assignmentForm.question_duration_mode === 'PER_QUESTION' ? 'Contoh: 10' : 'Contoh: 30'"
-                      class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                    <p class="text-xs text-slate-500 dark:text-slate-400">
-                      {{ assignmentForm.question_duration_mode === 'PER_QUESTION'
-                        ? 'Setiap siswa mendapat hitung mundur terpisah untuk tiap soal. Saat waktu habis, soal otomatis dikunci lalu lanjut ke soal berikutnya.'
-                        : 'Waktu dihitung untuk seluruh sesi quiz dalam menit. Siswa bebas pindah soal selama waktu masih tersisa, seperti ujian tetapi tanpa kode ujian.' }}
-                    </p>
-                  </div>
-
-                  <div
-                    class="mt-4 rounded-xl bg-sky-50/50 p-4 ring-1 ring-inset ring-sky-100 dark:bg-sky-500/5 dark:ring-sky-500/10">
-                    <label class="text-xs font-semibold uppercase tracking-wider text-sky-800 dark:text-sky-300">Pilih Acak dari Bank Soal</label>
-                    <div class="mt-2 flex items-center gap-3">
-                      <input v-model="randomQuestionCount" type="number" min="1"
-                        class="block w-24 rounded-lg border-0 bg-white py-2 px-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                      <button type="button" @click="generateRandomSelection"
-                        class="rounded-lg bg-sky-100 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:bg-sky-200 dark:bg-sky-600 dark:text-white dark:hover:bg-sky-500">
-                        Generate
-                      </button>
-                    </div>
-                  </div>
-
-                  <label
-                    class="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/50">
-                    <input v-model="assignmentForm.shuffle_questions" type="checkbox" class="mt-1" />
-                    <div>
-                      <p class="text-sm font-semibold text-slate-900 dark:text-white">Acak urutan soal saat diterbitkan</p>
-                      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                        Jika aktif, sistem akan mengacak urutan soal di quiz ini. Jika nonaktif, urutan soal mengikuti daftar pilihan saat ini.
-                      </p>
-                    </div>
-                  </label>
-
-                  <button :disabled="isSavingAssignment"
-                    class="mt-6 w-full rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-500 disabled:opacity-50">
-                    {{ isSavingAssignment ? "Menyimpan..." : "Terbitkan Quiz Sekarang" }}
-                  </button>
-                </form>
-              </section>
-
-              <section class="space-y-6">
-                <div
-                  class="rounded-2xl border border-slate-100 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900/50">
-                  <div class="flex items-center justify-between">
-                    <h3 class="font-bold text-slate-900 dark:text-white">Soal Terpilih</h3>
-                    <span
-                      class="inline-flex items-center justify-center rounded-full bg-sky-600 px-2.5 py-0.5 text-xs font-bold text-white">
-                      {{ selectedQuestionCount }}
-                    </span>
-                  </div>
-
-                  <div class="mt-4 flex max-h-[300px] flex-col gap-3 overflow-y-auto pr-2">
-                    <article v-for="(item, idx) in selectedQuestionsForPublish" :key="item.id"
-                      class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-                      <div class="flex items-start justify-between gap-3">
-                        <div class="min-w-0">
-                          <p class="text-sm font-medium text-slate-800 dark:text-slate-200"><span
-                              class="text-slate-400">{{ idx + 1 }}.</span> {{ item.question_text }}</p>
-                          <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ assignmentTypeLabel(item.question_type) }}</p>
-                        </div>
-                        <button type="button" @click="openQuestionPreview(item, 'selected', idx + 1)"
-                          class="shrink-0 rounded-lg bg-sky-100 px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:hover:bg-sky-500/20">
-                          Review
-                        </button>
-                      </div>
-                    </article>
-                    <div v-if="selectedQuestionsForPublish.length === 0"
-                      class="rounded-xl border-2 border-dashed border-slate-200 py-8 text-center text-sm text-slate-500 dark:border-slate-700">
-                      Belum ada soal yang dipilih dari Bank Soal.
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 class="font-bold text-slate-900 dark:text-white">Quiz Berjalan</h3>
-                  <div
-                    class="mt-3 overflow-hidden rounded-xl border border-slate-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                    <table class="min-w-full text-left text-sm">
-                      <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                        <tr v-for="item in runningAssignments" :key="item.id"
-                          class="transition hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                          <td class="p-3">
-                            <p class="font-semibold text-slate-900 dark:text-white">{{ item.title }}</p>
-                            <div class="mt-1 flex items-center gap-2">
-                              <span class="text-xs text-slate-500">{{ formatDateTime(item.due_date) }}</span>
-                              <span class="h-1 w-1 rounded-full bg-slate-300"></span>
-                              <span class="text-xs text-slate-500">{{ item.is_exam || String(item.question_duration_mode || '').toUpperCase() === 'GLOBAL' ? `${formatDurationSeconds(item.question_duration_seconds)}/sesi` : `${formatDurationSeconds(item.question_duration_seconds)}/soal` }}</span>
-                              <span class="h-1 w-1 rounded-full bg-slate-300"></span>
-                              <span class="text-xs font-medium text-sky-600 dark:text-sky-400">{{ item.submission_count || 0 }} Submit</span>
-                            </div>
-                          </td>
-                          <td class="p-3 text-right">
-                            <button @click="openQuizOverview(item)"
-                              class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300">Detail</button>
-                          </td>
-                        </tr>
-                        <tr v-if="runningAssignments.length === 0">
-                          <td colspan="2" class="p-6 text-center text-sm text-slate-500">Belum ada quiz yang diterbitkan.</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </section>
-            </section>
-
-            <div
-              class="flex flex-col gap-4 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-900/5 dark:bg-slate-800/50 dark:ring-white/5 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <h3 class="font-semibold text-slate-900 dark:text-white">Pilih Soal untuk Quiz</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400">Total {{ questionBankTotal }} soal tersimpan untuk mapel ini. Untuk membuat, impor, atau merapikan bank soal, gunakan halaman khusus Bank Soal.</p>
-              </div>
-              <div class="flex flex-wrap gap-3">
-                <router-link to="/learning-question-bank-teacher"
-                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500">
-                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5M3.75 12h16.5m-16.5 6.75h16.5" />
-                  </svg>
-                  Kelola Bank Soal
-                </router-link>
-              </div>
+          <div class="space-y-4 p-6">
+            <div class="mt-2 flex flex-col gap-3 sm:flex-row">
+                <button
+                  type="button"
+                  @click="activeQuizMenu = 'bank'"
+                  class="flex flex-1 items-center justify-between rounded-2xl border-2 px-5 py-3 text-left text-sm font-semibold transition-all"
+                  :class="activeQuizMenu === 'bank'
+                    ? 'border-sky-600 bg-sky-600 text-white'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'"
+                >
+                  <span>Bank Soal</span>
+                  <span
+                    class="rounded-full px-2.5 py-1 text-xs font-bold"
+                    :class="activeQuizMenu === 'bank'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'"
+                  >
+                    {{ questionBankTotal }}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  @click="activeQuizMenu = 'running'"
+                  class="flex flex-1 items-center justify-between rounded-2xl border-2 px-5 py-3 text-left text-sm font-semibold transition-all"
+                  :class="activeQuizMenu === 'running'
+                    ? 'border-sky-600 bg-sky-600 text-white'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'"
+                >
+                  <span>Quiz Berjalan</span>
+                  <span
+                    class="rounded-full px-2.5 py-1 text-xs font-bold"
+                    :class="activeQuizMenu === 'running'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'"
+                  >
+                    {{ runningAssignments.length }}
+                  </span>
+                </button>
             </div>
 
-            <section class="overflow-hidden rounded-2xl border border-slate-100 dark:border-slate-800">
-              <div class="border-b border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-                <div class="grid gap-4 md:grid-cols-4">
-                  <div class="relative md:col-span-2">
-                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                      <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                      </svg>
-                    </div>
-                    <input v-model="bankSearch" type="text" placeholder="Cari pertanyaan..."
-                      class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-9 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+            <section v-if="activeQuizMenu === 'bank'" class="rounded-xl border-2 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+              <div class="border-b border-slate-200 p-4 dark:border-slate-700">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                  <div>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Quiz</h3>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Pilih soal dari bank soal, lalu terbitkan lewat modal singkat.</p>
                   </div>
-                  <select v-model="bankTypeFilter"
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-3 pr-10 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
-                    <option value="ALL">Semua Tipe Soal</option>
-                    <option value="MCQ">Pilihan Ganda</option>
-                    <option value="ESSAY">Essay</option>
-                  </select>
-                  <select v-model="bankPageSize"
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-3 pr-10 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
-                    <option :value="10">Tampilkan 10 baris</option>
-                    <option :value="20">Tampilkan 20 baris</option>
-                    <option :value="50">Tampilkan 50 baris</option>
-                  </select>
+                  <div class="flex flex-wrap gap-2">
+                    <router-link to="/learning-question-bank-teacher"
+                      class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                      Kelola Bank Soal
+                    </router-link>
+                    <button @click="openAssignmentPublishFlow" type="button"
+                      class="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-700">
+                      Buat Quiz
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <div
-                class="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-slate-800 dark:bg-slate-800/20 md:flex-row md:items-center md:justify-between">
-                <div class="text-sm font-medium text-slate-500">
-                  Halaman <span class="text-slate-900 dark:text-white">{{ bankCurrentPage }}</span> dari {{
-                    bankTotalPages }}
-                </div>
-                <div class="flex gap-2">
-                  <button @click="selectAllCurrentBankPage"
-                    class="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-sky-50 dark:bg-slate-800 dark:text-sky-400 dark:ring-slate-700 dark:hover:bg-slate-700">
-                    Pilih Semua Halaman Ini
-                  </button>
-                  <button @click="clearSelectedQuestions" v-if="assignmentForm.selected_question_bank_ids.length > 0"
-                    class="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
-                    Hapus Pilihan ({{ assignmentForm.selected_question_bank_ids.length }})
-                  </button>
+              <div class="border-b border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                  <div class="flex flex-col gap-3 md:flex-row md:items-center">
+                    <input v-model="bankSearch" type="text" placeholder="Cari soal..."
+                      class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white md:w-64" />
+                    <select v-model="bankPageSize"
+                      class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white md:w-32">
+                      <option :value="10">10 soal</option>
+                      <option :value="20">20 soal</option>
+                      <option :value="50">50 soal</option>
+                    </select>
+                  </div>
+                  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between xl:justify-end">
+                    <span class="text-sm text-slate-500 dark:text-slate-400">
+                      {{ questionBankTotal }} soal &bull; {{ selectedQuestionCount }} dipilih
+                    </span>
+                    <button @click="generateRandomSelection" type="button"
+                      class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                      Acak {{ randomQuestionCount }}
+                    </button>
+                    <button @click="selectAllCurrentBankPage" type="button"
+                      class="rounded-lg border border-blue-600 bg-white px-3 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-300">
+                      Pilih Halaman Ini
+                    </button>
+                    <button v-if="assignmentForm.selected_question_bank_ids.length > 0" @click="clearSelectedQuestions" type="button"
+                      class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                      Kosongkan
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -326,54 +158,50 @@
                 <table class="min-w-full text-left text-sm">
                   <thead class="bg-white text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-900">
                     <tr>
-                      <th class="w-12 px-5 py-4 font-semibold">Pilih</th>
-                      <th class="px-5 py-4 font-semibold">Pertanyaan</th>
-                      <th class="px-5 py-4 font-semibold">Tipe</th>
-                      <th class="px-5 py-4 font-semibold">Status Penggunaan</th>
-                      <th class="px-5 py-4 font-semibold text-right">Review</th>
+                      <th class="w-12 px-4 py-3 font-semibold">Pilih</th>
+                      <th class="px-4 py-3 font-semibold">Soal</th>
+                      <th class="px-4 py-3 font-semibold">Jenis</th>
+                      <th class="px-4 py-3 font-semibold text-right">Aksi</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-900">
                     <tr v-for="item in paginatedQuestionBank" :key="item.id"
-                      class="group transition hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                      <td class="px-5 py-4 align-top">
-                        <input v-model="assignmentForm.selected_question_bank_ids" type="checkbox" :value="item.id"
-                          class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-600 dark:border-slate-600 dark:bg-slate-800" />
+                      class="align-top hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                      <td class="px-4 py-3">
+                        <input :checked="assignmentForm.selected_question_bank_ids.includes(item.id)" type="checkbox"
+                          @change="toggleQuestionSelection(item)"
+                          class="mt-1 h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-600 dark:border-slate-600 dark:bg-slate-800" />
                       </td>
-                      <td class="px-5 py-4">
-                        <p class="max-w-3xl font-medium leading-relaxed text-slate-900 dark:text-white">{{
-                          item.question_text }}</p>
-                        <p class="mt-1 text-xs text-slate-400">Dibuat: {{ formatDateTime(item.created_at) }}</p>
+                      <td class="px-4 py-3">
+                        <p class="max-w-3xl text-sm font-semibold leading-5 text-slate-900 dark:text-white">
+                          {{ parseQuestionContent(item.question_text).question_text }}
+                        </p>
+                        <img v-if="parseQuestionContent(item.question_text).question_image_url"
+                          :src="parseQuestionContent(item.question_text).question_image_url" alt="Gambar pertanyaan"
+                          class="mt-3 max-h-32 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+                        <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                          Dibuat: {{ formatDateTime(item.created_at) }}
+                        </p>
                       </td>
-                      <td class="px-5 py-4 align-top">
-                        <span
-                          class="inline-flex items-center rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset"
-                          :class="item.question_type === 'MCQ' ? 'bg-indigo-50 text-indigo-700 ring-indigo-600/20 dark:bg-indigo-500/10 dark:text-indigo-300' : 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-300'">
+                      <td class="px-4 py-3">
+                        <span class="inline-flex rounded-md border px-2.5 py-1 text-xs font-bold"
+                          :class="item.question_type === 'MCQ'
+                            ? 'border-blue-700 bg-blue-50 text-blue-800 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300'
+                            : 'border-amber-700 bg-amber-50 text-amber-800 dark:border-amber-500 dark:bg-amber-900/30 dark:text-amber-300'">
                           {{ assignmentTypeLabel(item.question_type) }}
                         </span>
                       </td>
-                      <td class="px-5 py-4 align-top">
-                        <div v-if="Number(item.usage_count) > 0"
-                          class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
-                          <svg class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                          </svg>
-                          <span class="font-medium">Terpakai ({{ item.usage_count }}x)</span>
-                        </div>
-                        <span v-else class="text-slate-400">Belum terpakai</span>
-                      </td>
-                      <td class="px-5 py-4 align-top text-right">
+                      <td class="px-4 py-3 text-right">
                         <button type="button" @click="openQuestionPreview(item, 'bank')"
-                          class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
-                          Review
+                          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                          Lihat
                         </button>
                       </td>
                     </tr>
                     <tr v-if="paginatedQuestionBank.length === 0">
-                      <td colspan="5" class="px-5 py-12 text-center">
-                        <div class="text-sm text-slate-500">Tidak ada soal yang cocok dengan pencarian.</div>
+                      <td colspan="4" class="px-4 py-12 text-center">
+                        <p class="text-base font-semibold text-slate-500 dark:text-slate-400">Belum Ada Soal</p>
+                        <p class="mt-2 text-sm text-slate-500 dark:text-slate-500">Soal yang cocok dengan pencarian akan muncul di sini.</p>
                       </td>
                     </tr>
                   </tbody>
@@ -381,20 +209,86 @@
               </div>
 
               <div
-                class="flex items-center justify-between border-t border-slate-100 bg-white px-5 py-3 dark:border-slate-800 dark:bg-slate-900">
-                <p class="text-sm text-slate-500">Menampilkan {{ bankStartRow }} - {{ bankEndRow }} dari {{
-                  filteredQuestionBank.length }}</p>
+                class="flex flex-col gap-3 border-t-2 border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                  Menampilkan {{ bankStartRow }} - {{ bankEndRow }} dari {{ questionBankTotal }} soal
+                </p>
                 <div class="flex gap-2">
                   <button @click="bankCurrentPage = Math.max(1, bankCurrentPage - 1)" :disabled="bankCurrentPage === 1"
-                    class="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-800">
+                    class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
                     Sebelumnya
                   </button>
                   <button @click="bankCurrentPage = Math.min(bankTotalPages, bankCurrentPage + 1)"
                     :disabled="bankCurrentPage === bankTotalPages"
-                    class="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-800">
+                    class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
                     Berikutnya
                   </button>
                 </div>
+              </div>
+            </section>
+
+            <section v-else class="overflow-hidden rounded-xl border-2 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+              <div class="border-b border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-slate-700 dark:bg-slate-800/30">
+                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Quiz Berjalan</h3>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Daftar quiz yang sudah diterbitkan untuk mapel ini.</p>
+                  </div>
+                  <div class="flex flex-wrap gap-3">
+                    <div class="rounded-xl border border-slate-200 bg-white px-4 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-800/70">
+                      <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Total Quiz</div>
+                      <div class="mt-1 text-lg font-bold text-slate-900 dark:text-white">{{ runningAssignments.length }}</div>
+                    </div>
+                    <div class="rounded-xl border border-sky-200 bg-sky-50 px-4 py-2 shadow-sm dark:border-sky-900/40 dark:bg-sky-500/10">
+                      <div class="text-[11px] font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300">Total Submit</div>
+                      <div class="mt-1 text-lg font-bold text-sky-800 dark:text-sky-200">{{ totalRunningSubmissions }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-left text-sm">
+                  <thead class="bg-white text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-900">
+                    <tr>
+                      <th class="px-4 py-3 font-semibold">Quiz</th>
+                      <th class="px-4 py-3 font-semibold">Ringkasan</th>
+                      <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-900">
+                    <tr v-for="item in runningAssignments" :key="item.id"
+                      class="transition hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                      <td class="px-4 py-3">
+                        <p class="font-semibold text-slate-900 dark:text-white">{{ item.title }}</p>
+                        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                          {{ assignmentTypeLabel(item.assignment_type) }}
+                        </p>
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex flex-wrap items-center gap-2">
+                          <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                            {{ formatDateTime(item.due_date) }}
+                          </span>
+                          <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                            {{ item.is_exam || String(item.question_duration_mode || '').toUpperCase() === 'GLOBAL' ? `${formatDurationSeconds(item.question_duration_seconds)}/sesi` : `${formatDurationSeconds(item.question_duration_seconds)}/soal` }}
+                          </span>
+                          <span class="inline-flex rounded-full bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+                            {{ item.submission_count || 0 }} submit
+                          </span>
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-right">
+                        <button @click="openQuizOverview(item)"
+                          class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
+                          Detail
+                        </button>
+                      </td>
+                    </tr>
+                    <tr v-if="runningAssignments.length === 0">
+                      <td colspan="2" class="p-6 text-center text-sm text-slate-500">Belum ada quiz yang diterbitkan.</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </section>
           </div>
@@ -415,6 +309,182 @@
         </div>
       </div>
     </main>
+
+    <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
+      enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+      leave-to-class="opacity-0">
+      <div v-if="assignmentGuideModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+        <div
+          class="flex w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          @click.stop>
+          <div
+            class="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Pilih Soal Dulu</h2>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Quiz belum bisa dibuat karena belum ada soal yang dipilih.</p>
+            </div>
+            <button @click="assignmentGuideModal = false"
+              class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div class="space-y-4 p-6">
+            <div class="rounded-xl bg-blue-50 p-4 text-sm text-blue-900 dark:bg-blue-500/10 dark:text-blue-200">
+              Centang minimal 1 soal pada tabel, lalu klik <span class="font-semibold">Buat Quiz</span> lagi.
+            </div>
+            <ol class="list-decimal space-y-2 pl-5 text-sm text-slate-600 dark:text-slate-300">
+              <li>Pilih mata pelajaran yang aktif.</li>
+              <li>Centang soal yang ingin dipakai dari tabel.</li>
+              <li>Gunakan tombol `Pilih Halaman Ini` atau `Acak` jika perlu.</li>
+              <li>Setelah ada soal terpilih, buka modal `Buat Quiz`.</li>
+            </ol>
+            <div class="flex items-center justify-end border-t border-slate-100 pt-4 dark:border-slate-800">
+              <button @click="assignmentGuideModal = false" type="button"
+                class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
+                Mengerti
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
+      enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+      leave-to-class="opacity-0">
+      <div v-if="assignmentPublishModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+        <div
+          class="flex w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          @click.stop>
+          <div
+            class="flex items-start justify-between border-b border-slate-100 bg-slate-50/70 px-6 py-5 dark:border-slate-800 dark:bg-slate-800/30">
+            <div class="space-y-3">
+              <div>
+                <h2 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Buat Quiz</h2>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Atur detail inti lalu terbitkan untuk siswa.</p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <span
+                  class="inline-flex items-center rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+                  {{ selectedQuestionCount }} soal dipilih
+                </span>
+                <span
+                  class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  {{ assignmentForm.question_duration_mode === 'GLOBAL' ? 'Mode global' : 'Mode per soal' }}
+                </span>
+              </div>
+            </div>
+            <button @click="assignmentPublishModal = false"
+              class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <form @submit.prevent="submitAssignment" class="space-y-5 p-6">
+            <div class="grid gap-4 md:grid-cols-2">
+              <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Judul Quiz</label>
+                <input v-model="assignmentForm.title" required placeholder="Contoh: Ulangan Bab 3"
+                  class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+              </div>
+              <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Deadline</label>
+                <VueDatePicker
+                  v-model="assignmentDueDateValue"
+                  :min-date="new Date()"
+                  auto-apply
+                  teleport="body"
+                  enable-time-picker
+                  :is-24="true"
+                  minutes-increment="5"
+                  :transitions="false"
+                  :locale="indonesiaLocale"
+                  format="dd MMM yyyy, HH:mm"
+                  placeholder="Pilih deadline"
+                  input-class-name="quiz-deadline-picker"
+                />
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Instruksi</label>
+              <input v-model="assignmentForm.description" type="text" placeholder="Instruksi singkat untuk siswa"
+                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+            </div>
+
+            <div class="grid gap-5 md:grid-cols-2">
+              <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jenis Quiz</label>
+                <div
+                  class="flex h-[44px] items-center rounded-lg border border-slate-300 bg-slate-50 px-3 text-sm font-semibold text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                  {{ selectedQuestionTypeLabel }}
+                </div>
+              </div>
+              <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Mode Waktu</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button type="button" @click="setQuestionDurationMode('PER_QUESTION')"
+                    class="rounded-lg px-3 py-2.5 text-sm font-semibold transition"
+                    :class="assignmentForm.question_duration_mode === 'PER_QUESTION'
+                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+                      : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'">
+                    Per Soal
+                  </button>
+                  <button type="button" @click="setQuestionDurationMode('GLOBAL')"
+                    class="rounded-lg px-3 py-2.5 text-sm font-semibold transition"
+                    :class="assignmentForm.question_duration_mode === 'GLOBAL'
+                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+                      : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'">
+                    Global
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-[minmax(0,180px),1fr]">
+              <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  {{ assignmentForm.question_duration_mode === 'PER_QUESTION' ? 'Durasi per Soal' : 'Durasi Total' }}
+                </label>
+                <div class="relative">
+                  <input v-model="assignmentForm.question_duration_value" type="number" min="1"
+                    :max="assignmentForm.question_duration_mode === 'PER_QUESTION' ? 3600 : 180"
+                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 pr-16 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+                  <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs font-semibold text-slate-400">
+                    {{ assignmentForm.question_duration_mode === 'PER_QUESTION' ? 'detik' : 'menit' }}
+                  </span>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Opsi Tambahan</label>
+                <label
+                  class="flex h-[44px] items-center gap-3 rounded-lg border border-slate-300 bg-slate-50 px-3 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                  <input v-model="assignmentForm.shuffle_questions" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600" />
+                  Acak urutan soal saat diterbitkan
+                </label>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-5 dark:border-slate-800">
+              <button @click="assignmentPublishModal = false" type="button"
+                class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+                Batal
+              </button>
+              <button :disabled="isSavingAssignment"
+                class="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50">
+                {{ isSavingAssignment ? "Menyimpan..." : "Terbitkan" }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Transition>
 
     <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
@@ -504,20 +574,21 @@
       </div>
     </Transition>
 
-    <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
-      enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
-      leave-to-class="opacity-0">
-      <div v-if="quizOverviewModal.open"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-
-        <div
-          class="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
-          @click.stop>
+    <teleport to="body">
+      <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
+        enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+        leave-to-class="opacity-0">
+        <div v-if="quizOverviewModal.open"
+          class="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
 
           <div
-            class="flex flex-none items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
+            class="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+            @click.stop>
+
+          <div
+            class="flex flex-none items-center justify-between border-b border-slate-200 bg-slate-50/80 px-6 py-5 dark:border-slate-800 dark:bg-slate-800/40">
             <div>
-              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Detail Quiz Berjalan</h2>
+              <h2 class="text-xl font-bold text-slate-900 dark:text-white">Detail Quiz Berjalan</h2>
               <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 {{ quizOverviewModal.assignment?.title || "-" }} • {{
                   assignmentTypeLabel(quizOverviewModal.assignment?.assignment_type) }}
@@ -531,50 +602,16 @@
             </button>
           </div>
 
-          <div v-if="quizOverviewModal.loading" class="p-12 text-center">
-            <div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-sky-600"></div>
-            <p class="mt-4 text-sm text-slate-500">Memuat detail quiz...</p>
-          </div>
-
-          <div v-else class="flex-1 overflow-y-auto p-6">
-            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
-              <div class="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
-                <div class="text-xs text-slate-500 dark:text-slate-400">Total Siswa</div>
-                <div class="mt-1 text-2xl font-bold text-slate-900 dark:text-white">{{
-                  quizOverviewModal.analytics.total_students || 0 }}</div>
-              </div>
-              <div
-                class="rounded-xl bg-emerald-50 p-4 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:ring-emerald-500/20">
-                <div class="text-xs text-emerald-700 dark:text-emerald-300">Sudah Submit</div>
-                <div class="mt-1 text-2xl font-bold text-emerald-900 dark:text-emerald-200">{{
-                  quizOverviewModal.analytics.submitted_count || 0 }}</div>
-              </div>
-              <div class="rounded-xl bg-red-50 p-4 ring-1 ring-red-200 dark:bg-red-500/10 dark:ring-red-500/20">
-                <div class="text-xs text-red-700 dark:text-red-300">Belum Submit</div>
-                <div class="mt-1 text-2xl font-bold text-red-900 dark:text-red-200">{{
-                  quizOverviewModal.analytics.pending_count || 0 }}</div>
-              </div>
-              <div class="rounded-xl bg-sky-50 p-4 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:ring-sky-500/20">
-                <div class="text-xs text-sky-700 dark:text-sky-300">Rata-rata Nilai</div>
-                <div class="mt-1 text-2xl font-bold text-sky-900 dark:text-sky-200">{{
-                  quizOverviewModal.analytics.average_score ?? "-" }}</div>
-              </div>
-              <div class="rounded-xl bg-amber-50 p-4 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:ring-amber-500/20">
-                <div class="text-xs text-amber-700 dark:text-amber-300">Total Pelanggaran</div>
-                <div class="mt-1 text-2xl font-bold text-amber-900 dark:text-amber-200">{{
-                  quizOverviewModal.analytics.total_violations || 0 }}</div>
-              </div>
-              <div class="rounded-xl bg-violet-50 p-4 ring-1 ring-violet-200 dark:bg-violet-500/10 dark:ring-violet-500/20">
-                <div class="text-xs text-violet-700 dark:text-violet-300">Siswa Terflag</div>
-                <div class="mt-1 text-2xl font-bold text-violet-900 dark:text-violet-200">{{
-                  quizOverviewModal.analytics.flagged_students_count || 0 }}</div>
-              </div>
+            <div v-if="quizOverviewModal.loading" class="p-12 text-center">
+              <div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-sky-600"></div>
+              <p class="mt-4 text-sm text-slate-500">Memuat detail quiz...</p>
             </div>
 
-            <div class="mt-6 grid gap-6 xl:grid-cols-2">
-              <section
-                class="overflow-hidden rounded-xl border border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900">
-                <div class="border-b border-slate-100 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/50">
+            <div v-else class="flex-1 overflow-y-auto bg-slate-50/40 p-6 dark:bg-slate-950/30">
+              <div class="mt-6 grid gap-6 xl:grid-cols-2">
+                <section
+                  class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div class="border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/50">
                   <h3 class="font-semibold text-slate-900 dark:text-white">Sudah Submit</h3>
                 </div>
                 <div class="max-h-72 overflow-y-auto">
@@ -610,11 +647,11 @@
                     </tbody>
                   </table>
                 </div>
-              </section>
+                </section>
 
-              <section
-                class="overflow-hidden rounded-xl border border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900">
-                <div class="border-b border-slate-100 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/50">
+                <section
+                  class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div class="border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/50">
                   <h3 class="font-semibold text-slate-900 dark:text-white">Belum Submit</h3>
                 </div>
                 <div class="max-h-72 overflow-y-auto">
@@ -647,45 +684,46 @@
                     </tbody>
                   </table>
                 </div>
+                </section>
+              </div>
+
+              <section v-if="quizOverviewModal.analytics.question_breakdown?.length"
+                class="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div class="border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/50">
+                  <h3 class="font-semibold text-slate-900 dark:text-white">Analitik Soal</h3>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-sm text-left">
+                    <thead class="bg-white dark:bg-slate-900">
+                      <tr>
+                        <th class="px-5 py-3 font-semibold text-slate-500">No</th>
+                        <th class="px-5 py-3 font-semibold text-slate-500">Soal</th>
+                        <th class="px-5 py-3 font-semibold text-slate-500">Terjawab</th>
+                        <th class="px-5 py-3 font-semibold text-emerald-600 dark:text-emerald-400">Benar</th>
+                        <th class="px-5 py-3 font-semibold text-red-600 dark:text-red-400">Salah</th>
+                        <th class="px-5 py-3 font-semibold text-slate-500">Akurasi</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                      <tr v-for="item in quizOverviewModal.analytics.question_breakdown"
+                        :key="`question-${item.question_number}`">
+                        <td class="px-5 py-3 font-medium text-slate-900 dark:text-white">{{ item.question_number }}</td>
+                        <td class="px-5 py-3 text-slate-900 dark:text-white">{{ item.question }}</td>
+                        <td class="px-5 py-3 text-slate-500 dark:text-slate-400">{{ item.answered_count }}</td>
+                        <td class="px-5 py-3 font-medium text-emerald-600 dark:text-emerald-400">{{ item.correct_count }}
+                        </td>
+                        <td class="px-5 py-3 font-medium text-red-600 dark:text-red-400">{{ item.wrong_count }}</td>
+                        <td class="px-5 py-3 font-bold text-slate-700 dark:text-slate-300">{{ item.correct_rate }}%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </section>
             </div>
-
-            <section v-if="quizOverviewModal.analytics.question_breakdown?.length"
-              class="mt-6 overflow-hidden rounded-xl border border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900">
-              <div class="border-b border-slate-100 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/50">
-                <h3 class="font-semibold text-slate-900 dark:text-white">Analitik Soal</h3>
-              </div>
-              <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-sm text-left">
-                  <thead class="bg-white dark:bg-slate-900">
-                    <tr>
-                      <th class="px-5 py-3 font-semibold text-slate-500">No</th>
-                      <th class="px-5 py-3 font-semibold text-slate-500">Soal</th>
-                      <th class="px-5 py-3 font-semibold text-slate-500">Terjawab</th>
-                      <th class="px-5 py-3 font-semibold text-emerald-600 dark:text-emerald-400">Benar</th>
-                      <th class="px-5 py-3 font-semibold text-red-600 dark:text-red-400">Salah</th>
-                      <th class="px-5 py-3 font-semibold text-slate-500">Akurasi</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                    <tr v-for="item in quizOverviewModal.analytics.question_breakdown"
-                      :key="`question-${item.question_number}`">
-                      <td class="px-5 py-3 font-medium text-slate-900 dark:text-white">{{ item.question_number }}</td>
-                      <td class="px-5 py-3 text-slate-900 dark:text-white">{{ item.question }}</td>
-                      <td class="px-5 py-3 text-slate-500 dark:text-slate-400">{{ item.answered_count }}</td>
-                      <td class="px-5 py-3 font-medium text-emerald-600 dark:text-emerald-400">{{ item.correct_count }}
-                      </td>
-                      <td class="px-5 py-3 font-medium text-red-600 dark:text-red-400">{{ item.wrong_count }}</td>
-                      <td class="px-5 py-3 font-bold text-slate-700 dark:text-slate-300">{{ item.correct_rate }}%</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
           </div>
         </div>
-      </div>
-    </Transition>
+      </Transition>
+    </teleport>
 
     <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
@@ -728,8 +766,11 @@
                   </span>
                 </div>
                 <p class="mt-4 text-base font-semibold leading-7 text-slate-900 dark:text-white">
-                  {{ questionPreviewModal.question.question_text }}
+                  {{ parseQuestionContent(questionPreviewModal.question.question_text).question_text }}
                 </p>
+                <img v-if="parseQuestionContent(questionPreviewModal.question.question_text).question_image_url"
+                  :src="parseQuestionContent(questionPreviewModal.question.question_text).question_image_url"
+                  alt="Gambar soal" class="mt-4 max-h-64 rounded-xl border border-slate-200 object-contain dark:border-slate-700" />
               </section>
 
               <section class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
@@ -830,9 +871,11 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
+import { VueDatePicker } from "@vuepic/vue-datepicker";
+import { id as indonesiaLocale } from "date-fns/locale/id";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { formatDateTime, parseDateValue } from "@/utils/date";
+import { formatDateTime, formatDateTimeLocalInput, parseDateValue } from "@/utils/date";
 
 const subjects = ref([]);
 const selectedSubject = ref(null);
@@ -848,6 +891,8 @@ const isSavingQuestionPreview = ref(false);
 const isDownloadingTemplate = ref(false);
 const isImportingQuestionBank = ref(false);
 const questionBankModalOpen = ref(false);
+const assignmentGuideModal = ref(false);
+const assignmentPublishModal = ref(false);
 const questionBankDocumentInput = ref(null);
 const questionBankImportFile = ref(null);
 const bankSearch = ref("");
@@ -855,6 +900,7 @@ const bankTypeFilter = ref("ALL");
 const bankPageSize = ref(20);
 const bankCurrentPage = ref(1);
 const randomQuestionCount = ref(5);
+const activeQuizMenu = ref("bank");
 const quizOverviewModal = reactive({
   open: false,
   loading: false,
@@ -881,7 +927,7 @@ const questionBankImportFileName = computed(() => questionBankImportFile.value?.
 
 // Fitur: Body Scroll Lock saat modal aktif
 const isAnyModalOpen = computed(() =>
-  questionBankModalOpen.value || quizOverviewModal.open || questionPreviewModal.open,
+  assignmentGuideModal.value || assignmentPublishModal.value || questionBankModalOpen.value || quizOverviewModal.open || questionPreviewModal.open,
 );
 
 watch(isAnyModalOpen, (isOpen) => {
@@ -900,12 +946,13 @@ const assignmentForm = reactive({
   title: "",
   description: "",
   due_date: "",
-  assignment_type: "MCQ",
+  assignment_type: "",
   shuffle_questions: false,
   question_duration_mode: "PER_QUESTION",
   question_duration_value: 10,
   selected_question_bank_ids: [],
 });
+const assignmentDueDateValue = ref(null);
 
 const questionBankForm = reactive({
   question_type: "MCQ",
@@ -914,6 +961,26 @@ const questionBankForm = reactive({
   correct_option: 0,
   rubric: "",
 });
+
+const QUESTION_IMAGE_MARKER = "[[QUESTION_IMAGE_URL]]";
+
+const parseQuestionContent = (rawText) => {
+  const text = String(rawText || "");
+  const markerIndex = text.lastIndexOf(QUESTION_IMAGE_MARKER);
+  if (markerIndex === -1) {
+    return {
+      question_text: text.trim(),
+      question_image_url: "",
+    };
+  }
+
+  const questionPart = text.slice(0, markerIndex).trim();
+  const imagePart = text.slice(markerIndex + QUESTION_IMAGE_MARKER.length).trim();
+  return {
+    question_text: questionPart,
+    question_image_url: imagePart,
+  };
+};
 
 const assignmentTypeLabel = (type) => {
   if (type === "MCQ") return "Quiz Pilihan Ganda";
@@ -960,14 +1027,25 @@ const bankEndRow = computed(() => {
 });
 
 const filteredQuestionBankForAssignment = computed(() =>
-  questionBank.value.filter((item) => item.question_type === assignmentForm.assignment_type),
+  !assignmentForm.assignment_type
+    ? questionBank.value
+    : questionBank.value.filter((item) => item.question_type === assignmentForm.assignment_type),
 );
 
 const selectedQuestionsForPublish = computed(() =>
-  filteredQuestionBankForAssignment.value.filter((item) => assignmentForm.selected_question_bank_ids.includes(item.id)),
+  questionBank.value.filter((item) => assignmentForm.selected_question_bank_ids.includes(item.id)),
 );
 
-const selectedQuestionCount = computed(() => selectedQuestionsForPublish.value.length);
+const selectedQuestionCount = computed(() => assignmentForm.selected_question_bank_ids.length);
+const totalRunningSubmissions = computed(() =>
+  runningAssignments.value.reduce((total, item) => total + Number(item.submission_count || 0), 0),
+);
+const selectedQuestionTypeLabel = computed(() => {
+  if (!assignmentForm.assignment_type) {
+    return "Otomatis dari soal yang dipilih";
+  }
+  return assignmentTypeLabel(assignmentForm.assignment_type);
+});
 const normalizedPreviewOptions = computed(() =>
   questionPreviewModal.question?.question_type === "MCQ"
     ? questionPreviewForm.options.map((item) => String(item || "").trim()).filter(Boolean)
@@ -1022,14 +1100,18 @@ watch([questionBankTotal, bankPageSize], () => {
   }
 });
 
-watch(
-  () => assignmentForm.assignment_type,
-  () => {
-    assignmentForm.selected_question_bank_ids = assignmentForm.selected_question_bank_ids.filter((id) =>
-      filteredQuestionBankForAssignment.value.some((item) => item.id === id),
-    );
-  },
-);
+watch(assignmentPublishModal, (isOpen) => {
+  if (!isOpen) return;
+  assignmentDueDateValue.value = parseDateValue(assignmentForm.due_date);
+});
+
+watch(assignmentDueDateValue, (value) => {
+  const nextValue = value ? formatDateTimeLocalInput(value) : "";
+  if (assignmentForm.due_date === nextValue) {
+    return;
+  }
+  assignmentForm.due_date = nextValue;
+});
 
 const resetQuestionBankForm = () => {
   questionBankForm.question_type = "MCQ";
@@ -1050,11 +1132,12 @@ const resetAssignmentForm = () => {
   assignmentForm.title = "";
   assignmentForm.description = "";
   assignmentForm.due_date = "";
-  assignmentForm.assignment_type = "MCQ";
+  assignmentForm.assignment_type = "";
   assignmentForm.shuffle_questions = false;
   assignmentForm.question_duration_mode = "PER_QUESTION";
   assignmentForm.question_duration_value = 10;
   assignmentForm.selected_question_bank_ids = [];
+  assignmentDueDateValue.value = null;
 };
 
 const setQuestionDurationMode = (mode) => {
@@ -1067,19 +1150,62 @@ const setQuestionDurationMode = (mode) => {
 
 const clearSelectedQuestions = () => {
   assignmentForm.selected_question_bank_ids = [];
+  assignmentForm.assignment_type = "";
+};
+
+const toggleQuestionSelection = (question) => {
+  const isSelected = assignmentForm.selected_question_bank_ids.includes(question.id);
+
+  if (isSelected) {
+    assignmentForm.selected_question_bank_ids = assignmentForm.selected_question_bank_ids.filter((id) => id !== question.id);
+    if (assignmentForm.selected_question_bank_ids.length === 0) {
+      assignmentForm.assignment_type = "";
+    }
+    return;
+  }
+
+  if (assignmentForm.assignment_type && assignmentForm.assignment_type !== question.question_type) {
+    isError.value = true;
+    message.value = "Satu quiz hanya bisa memakai satu jenis soal. Pilih soal dengan tipe yang sama.";
+    return;
+  }
+
+  assignmentForm.assignment_type = question.question_type;
+  assignmentForm.selected_question_bank_ids = [...assignmentForm.selected_question_bank_ids, question.id];
+};
+
+const openAssignmentPublishFlow = () => {
+  if (selectedQuestionCount.value <= 0) {
+    assignmentGuideModal.value = true;
+    assignmentPublishModal.value = false;
+    return;
+  }
+
+  assignmentGuideModal.value = false;
+  assignmentPublishModal.value = true;
 };
 
 const selectAllCurrentBankPage = () => {
-  const ids = paginatedQuestionBank.value.map((item) => item.id);
+  const pageType = assignmentForm.assignment_type || paginatedQuestionBank.value[0]?.question_type || "";
+  const ids = paginatedQuestionBank.value
+    .filter((item) => !pageType || item.question_type === pageType)
+    .map((item) => item.id);
+  if (pageType) {
+    assignmentForm.assignment_type = pageType;
+  }
   assignmentForm.selected_question_bank_ids = Array.from(new Set([...assignmentForm.selected_question_bank_ids, ...ids]));
 };
 
 const generateRandomSelection = () => {
-  const pool = [...filteredQuestionBankForAssignment.value];
+  const resolvedType = assignmentForm.assignment_type || questionBank.value[0]?.question_type || "";
+  const pool = [...questionBank.value.filter((item) => !resolvedType || item.question_type === resolvedType)];
   const count = Math.max(1, Number(randomQuestionCount.value) || 1);
   for (let index = pool.length - 1; index > 0; index -= 1) {
     const swapIndex = Math.floor(Math.random() * (index + 1));
     [pool[index], pool[swapIndex]] = [pool[swapIndex], pool[index]];
+  }
+  if (resolvedType) {
+    assignmentForm.assignment_type = resolvedType;
   }
   assignmentForm.selected_question_bank_ids = pool.slice(0, count).map((item) => item.id);
 };
@@ -1247,7 +1373,10 @@ const selectSubject = async (subject) => {
   bankSearch.value = "";
   bankTypeFilter.value = "ALL";
   bankCurrentPage.value = 1;
+  activeQuizMenu.value = "bank";
   resetAssignmentForm();
+  assignmentGuideModal.value = false;
+  assignmentPublishModal.value = false;
   resetQuestionBankImport();
   closeQuestionPreview();
   closeQuizOverview();
@@ -1400,6 +1529,7 @@ const submitAssignment = async () => {
 
     const response = await api.post("/learning/assignments", formData);
     message.value = response?.message || "Quiz berhasil diterbitkan";
+    assignmentPublishModal.value = false;
     pushToast({
       title: "Quiz Berhasil Diterbitkan",
       message: response?.message || "Quiz berhasil diterbitkan dan siap dikerjakan siswa.",
@@ -1417,3 +1547,29 @@ const submitAssignment = async () => {
 
 onMounted(loadSubjects);
 </script>
+
+<style>
+.quiz-deadline-picker {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(203 213 225);
+  background: rgb(255 255 255);
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: rgb(15 23 42);
+}
+
+.quiz-deadline-picker:focus {
+  border-color: rgb(37 99 235);
+  outline: none;
+  box-shadow: 0 0 0 1px rgb(37 99 235);
+}
+
+.dark .quiz-deadline-picker {
+  border-color: rgb(71 85 105);
+  background: rgb(15 23 42);
+  color: rgb(248 250 252);
+}
+</style>

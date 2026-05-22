@@ -50,16 +50,16 @@
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
-import { useRouter } from "vue-router";
 import { api, cancelPendingApiRequests } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { clearSession, persistSession } from "@/utils/auth";
 import { useProfileStore } from "@/store/profile";
+import { useRealtimeStore } from "@/store/realtime";
 
 const SHOW_PWA_INSTALL_AFTER_LOGIN_KEY = "show-pwa-install-after-login";
 const LOGIN_LOCK_UNTIL_KEY = "login-lock-until";
-const router = useRouter();
 const profileStore = useProfileStore();
+const realtimeStore = useRealtimeStore();
 const isLoading = ref(false);
 const lockRemainingSeconds = ref(0);
 let lockCountdownTimer = null;
@@ -173,6 +173,7 @@ const handleLogin = async () => {
 
   try {
     cancelPendingApiRequests();
+    realtimeStore.disconnect();
     clearSession();
     profileStore.resetProfileState();
     const response = await api.post("/auth/login", { ...form });
@@ -186,7 +187,7 @@ const handleLogin = async () => {
     lockRemainingSeconds.value = 0;
     persistLockUntil(null);
     sessionStorage.setItem(SHOW_PWA_INSTALL_AFTER_LOGIN_KEY, "1");
-    router.push("/dashboard");
+    window.location.assign("/dashboard");
   } catch (error) {
     const status = Number(error?.status || 0);
     const message = String(error?.message || "");

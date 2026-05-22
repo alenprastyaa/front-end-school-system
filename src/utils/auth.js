@@ -2,6 +2,21 @@ import { normalizePublicUrl } from "@/utils/url";
 
 const FORCED_LOGOUT_NOTICE_KEY = "forced-logout-notice";
 
+const decodeJwtPayload = (token) => {
+  try {
+    const rawToken = String(token || "").trim();
+    if (!rawToken) return null;
+    const parts = rawToken.split(".");
+    if (parts.length < 2) return null;
+    const normalized = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized.padEnd(normalized.length + ((4 - normalized.length % 4) % 4), "=");
+    const decoded = atob(padded);
+    return JSON.parse(decoded);
+  } catch (error) {
+    return null;
+  }
+};
+
 export const getStoredUser = () => {
   try {
     const rawUser = localStorage.getItem("user");
@@ -20,13 +35,21 @@ export const normalizeRole = (role) =>
     .replace(/^SUPERADMIN$/, "SUPER_ADMIN")
     .replace(/^SUPER_ADMINISTRATOR$/, "SUPER_ADMIN");
 
-export const getStoredRole = () => normalizeRole(localStorage.getItem("role"));
+export const getStoredRole = () => {
+  const tokenPayload = decodeJwtPayload(localStorage.getItem("token"));
+  const tokenRole = normalizeRole(tokenPayload?.role);
+  if (tokenRole) {
+    return tokenRole;
+  }
+  return normalizeRole(localStorage.getItem("role"));
+};
 
 export const isAuthenticated = () => Boolean(localStorage.getItem("token"));
 
 export const persistSession = (payload) => {
   const data = payload?.data || payload;
-  const role = normalizeRole(data.role);
+  const tokenRole = normalizeRole(decodeJwtPayload(data.token)?.role);
+  const role = tokenRole || normalizeRole(data.role);
   const schoolFeatures = data.school_features || {};
 
   localStorage.setItem("token", data.token);

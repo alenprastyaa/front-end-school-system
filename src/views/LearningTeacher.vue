@@ -1,507 +1,511 @@
 <template>
-  <div class="min-h-screen bg-slate-50 p-4 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
-    <main class="mx-auto mt-8 max-w-[1400px]">
+  <!-- Layout Utama: Sidebar di Kiri, Konten di Kanan (Desktop) -->
+  <div
+    class="learning-teacher-page min-h-screen bg-slate-50 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
 
-      <section class="mb-8">
+    <main class="min-h-screen">
+      <section class="border-b-2 border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900 md:px-6">
+        <div class="flex flex-col gap-1">
+          <h1 class="text-xl font-bold text-slate-900 dark:text-white">Papan Kelas</h1>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Pilih kelas yang ingin dikelola</p>
+        </div>
 
-        <div
-          class="flex flex-nowrap gap-2 overflow-x-auto pb-3 pt-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <nav
+          class="mt-4 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button v-for="item in subjects" :key="item.id" @click="selectSubject(item)"
-            class="group relative flex min-w-[200px] flex-none snap-start flex-col items-start overflow-hidden rounded-xl px-3 py-2.5 text-left transition-all"
+            class="group relative flex min-w-[220px] flex-none flex-col items-start overflow-hidden rounded-2xl p-3.5 text-left transition-all"
             :class="selectedSubject?.id === item.id
-              ? 'bg-sky-600 shadow-md ring-1 ring-sky-600 dark:bg-cyan-600'
+              ? 'bg-sky-600 shadow-md ring-1 ring-sky-600 dark:bg-sky-500'
               : 'bg-white shadow-sm ring-1 ring-slate-900/5 hover:bg-slate-50 dark:bg-slate-900 dark:ring-white/10 dark:hover:bg-slate-800/80'">
             <span :class="selectedSubject?.id === item.id ? 'text-white' : 'text-slate-900 dark:text-white'"
-              class="line-clamp-1 text-xs font-semibold tracking-tight sm:text-sm sm:font-bold">{{ item.name }}</span>
-            <span
-              :class="selectedSubject?.id === item.id ? 'text-sky-200 dark:text-cyan-100' : 'text-slate-500 dark:text-slate-400'"
-              class="mt-0.5 line-clamp-1 text-[10px] font-normal sm:text-[11px] sm:font-medium">
+              class="font-bold tracking-tight">{{ item.name }}</span>
+            <span :class="selectedSubject?.id === item.id ? 'text-sky-200' : 'text-slate-500 dark:text-slate-400'"
+              class="mt-1 text-xs font-medium">
               {{ item.class_name }}
             </span>
             <div v-if="selectedSubject?.id === item.id"
-              class="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
+              class="absolute right-4 top-4 h-2 w-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
           </button>
-        </div>
+        </nav>
       </section>
 
-      <div>
-        <div v-if="selectedSubject"
-          class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+      <div v-if="selectedSubject">
+        <!-- HEADER KELAS -->
+        <header class="border-b-2 border-slate-200 bg-white p-4 md:p-6 dark:border-slate-800 dark:bg-slate-900">
+          <h2 class="text-3xl font-bold text-slate-900 dark:text-white">{{ selectedSubject.name }}</h2>
+          <p class="mt-2 text-lg text-slate-600 dark:text-slate-300">
+            {{ selectedSubject.class_name }} &bull; {{ selectedSubject.description || "Tidak ada deksripsi khusus." }}
+          </p>
 
-          <div class="border-b border-slate-100 bg-slate-50/50 px-6 pt-6 dark:border-slate-800 dark:bg-slate-800/20">
-            <h2 class="text-lg font-semibold text-slate-900 sm:text-2xl sm:font-bold dark:text-white">{{ selectedSubject.name }}</h2>
-            <p class="mt-1 text-xs font-normal text-slate-500 sm:text-sm dark:text-slate-400">
-              {{ selectedSubject.class_name }} &bull; {{ selectedSubject.description || "Tidak ada deskripsi." }}
-            </p>
+          <!-- TAB SIMPEL -->
+          <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+            <button @click="switchTab('materials')" type="button"
+              class="flex-1 rounded-2xl border-2 px-5 py-3 text-lg font-semibold transition-all"
+              :class="activeTab === 'materials'
+                ? 'border-sky-600 bg-sky-600 text-white'
+                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'">
+              Materi Pelajaran
+            </button>
 
-            <nav class="-mb-px mt-6 flex gap-6 overflow-x-auto">
-              <button @click="activeTab = 'materials'"
-                class="border-b-2 py-2.5 text-xs font-medium transition-colors focus:outline-none sm:py-3 sm:text-sm sm:font-semibold"
-                :class="activeTab === 'materials' ? 'border-sky-600 text-sky-700 dark:border-cyan-400 dark:text-cyan-300' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'">
-                Manajemen Materi
-              </button>
-              <button @click="activeTab = 'assignments'"
-                class="border-b-2 py-2.5 text-xs font-medium transition-colors focus:outline-none sm:py-3 sm:text-sm sm:font-semibold"
-                :class="activeTab === 'assignments' ? 'border-sky-600 text-sky-700 dark:border-cyan-400 dark:text-cyan-300' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'">
-                Tugas & Penilaian
-              </button>
-            </nav>
+            <button @click="switchTab('assignments')" type="button"
+              class="flex-1 rounded-2xl border-2 px-5 py-3 text-lg font-semibold transition-all"
+              :class="activeTab === 'assignments'
+                ? 'border-sky-600 bg-sky-600 text-white'
+                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'">
+              Tugas & Nilai
+            </button>
           </div>
+        </header>
 
-          <div v-show="activeTab === 'materials'" class="p-6">
-            <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h3 class="font-semibold text-slate-900 sm:font-bold dark:text-white">Library Materi</h3>
-                <p class="text-xs font-normal text-slate-500 sm:text-sm">Bahan bacaan dan modul untuk dipelajari siswa.</p>
-              </div>
-              <div class="flex flex-col gap-3 sm:flex-row">
-                <button @click="openMaterialModal('ai-pptx')"
-                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-xs font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm">
-                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M4.5 7.5h15m-15 4.5h15m-15 4.5h9M6 4.5v15m12-15v15" />
-                  </svg>
-                  Generate PPT AI
-                </button>
-                <button @click="openMaterialModal('manual')"
-                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-xs font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm">
-                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                  </svg>
-                  Publikasi Materi Baru
-                </button>
-              </div>
-            </div>
-
-            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              <article v-for="item in materials" :key="item.id"
-                class="flex flex-col justify-between rounded-2xl border border-slate-100 bg-slate-50/50 p-5 dark:border-slate-800 dark:bg-slate-900/50">
-                <div>
-                  <div class="flex items-start justify-between gap-3">
-                    <h4 class="line-clamp-2 font-semibold text-slate-900 dark:text-white sm:font-bold">{{ item.title }}</h4>
-                    <div class="flex shrink-0 items-center gap-2">
-                      <button @click="openMaterialEditModal(item)"
-                        class="inline-flex rounded-lg bg-white px-2.5 py-1.5 text-xs font-bold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
-                        Edit
-                      </button>
-                      <button @click="deleteMaterial(item)"
-                        class="inline-flex rounded-lg bg-rose-50 px-2.5 py-1.5 text-xs font-bold text-rose-700 ring-1 ring-rose-200 transition hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
-                        Hapus
-                      </button>
-                    </div>
-                  </div>
-                  <span class="mt-1 block text-[11px] font-normal text-slate-400 sm:text-xs">{{ formatDateTime(item.created_at)
-                  }}</span>
-                  <p class="mt-3 line-clamp-3 text-xs leading-relaxed text-slate-600 dark:text-slate-400 sm:text-sm">{{
-                    item.content || "Tidak ada deskripsi." }}</p>
-                </div>
-                <div class="mt-5 pt-4 border-t border-slate-200/60 dark:border-slate-700/60">
-                  <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank" rel="noreferrer"
-                    class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-sky-50 px-3 py-2 text-[11px] font-semibold text-sky-700 transition hover:bg-sky-100 dark:bg-cyan-500/10 dark:text-cyan-300 dark:hover:bg-cyan-500/20 sm:text-xs sm:font-bold">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                    </svg>
-                    Buka Lampiran
-                  </a>
-                  <span v-else class="block text-center text-xs italic text-slate-400">Tanpa lampiran</span>
-                </div>
-              </article>
-
-              <div v-if="materials.length === 0"
-                class="col-span-full rounded-2xl border-2 border-dashed border-slate-200 py-12 text-center dark:border-slate-800">
-                <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Belum ada materi
-                  dipublikasikan.</span>
-              </div>
-            </div>
-          </div>
-
-          <div v-show="activeTab === 'assignments'" class="p-6">
-
-            <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
-              <button @click="assignmentModalOpen = true"
-                class="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500 dark:bg-cyan-600 dark:hover:bg-cyan-500">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <!-- KONTEN: MATERI -->
+        <div v-if="activeTab === 'materials'" class="p-4 md:p-6">
+          <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Daftar Materi</h3>
+            <div class="flex flex-col gap-3 sm:flex-row">
+              <!-- <button @click="openMaterialModal('ai-pptx')"
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3.5 text-base font-bold text-white transition hover:bg-emerald-700">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M4.5 7.5h15m-15 4.5h15m-15 4.5h9M6 4.5v15m12-15v15" />
+                </svg>
+                Buat Presentasi (AI)
+              </button> -->
+              <button @click="openMaterialModal('manual')"
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-5 py-3 text-base font-bold text-white transition hover:bg-sky-700">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
-                Buat Tugas / Penilaian
+                Tambah Materi Manual
+              </button>
+            </div>
+          </div>
+
+          <div
+            class="overflow-hidden rounded-2xl border-2 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-slate-200 text-left dark:divide-slate-700">
+                <thead class="bg-slate-50 dark:bg-slate-900/40">
+                  <tr class="text-sm uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+                    <th class="px-5 py-4 font-semibold">Judul</th>
+                    <th class="px-5 py-4 font-semibold">Dipublikasi</th>
+                    <th class="px-5 py-4 font-semibold">Isi / Ringkasan</th>
+                    <th class="px-5 py-4 font-semibold">Lampiran</th>
+                    <th class="px-5 py-4 font-semibold text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                  <tr v-for="item in materials" :key="item.id"
+                    class="align-top hover:bg-slate-50 dark:hover:bg-slate-900/40">
+                    <td class="px-5 py-4">
+                      <div class="text-base font-semibold text-slate-900 dark:text-white">{{ item.title }}</div>
+                    </td>
+                    <td class="px-5 py-4">
+                      <div class="text-sm text-slate-600 dark:text-slate-300">{{ formatDateTime(item.created_at) }}
+                      </div>
+                    </td>
+                    <td class="px-5 py-4">
+                      <p class="max-w-xl text-base leading-6 text-slate-700 dark:text-slate-300">
+                        {{ item.content || "Tidak ada deksripsi khusus." }}
+                      </p>
+                    </td>
+                    <td class="px-5 py-4">
+                      <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
+                        rel="noreferrer"
+                        class="inline-flex items-center rounded-md border border-blue-700 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-800 transition hover:bg-blue-100 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300">
+                        Buka Lampiran
+                      </a>
+                      <span v-else class="text-sm text-slate-400 dark:text-slate-500">-</span>
+                    </td>
+                    <td class="px-5 py-4">
+                      <div class="flex justify-end gap-2">
+                        <button @click="openMaterialEditModal(item)"
+                          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white">
+                          Edit
+                        </button>
+                        <button @click="openDeleteModal('material', item)"
+                          class="rounded-md border border-rose-700 bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-rose-700">
+                          Hapus
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr v-if="materials.length === 0">
+                    <td colspan="5" class="px-5 py-14 text-center">
+                      <p class="text-base font-semibold text-slate-500 dark:text-slate-400">Belum Ada Materi</p>
+                      <p class="mt-2 text-sm text-slate-500 dark:text-slate-500">Silakan klik tombol "Tambah Materi" di
+                        atas.</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- KONTEN: TUGAS & PENILAIAN -->
+        <div v-if="activeTab === 'assignments'" class="p-4 md:p-6">
+
+          <!-- State 1: Daftar Tugas -->
+          <div v-if="!gradingAssignment">
+            <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Daftar Tugas & Ujian</h3>
+              <button @click="assignmentModalOpen = true"
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-5 py-3 text-base font-bold text-white transition hover:bg-sky-700">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Buat Tugas Baru
               </button>
             </div>
 
-            <div class="grid items-start gap-6 lg:grid-cols-12">
+            <!-- Filter -->
+            <div
+              class="mb-6 rounded-2xl border-2 border-slate-200 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-800">
+              <div class="grid gap-4 md:grid-cols-3">
+                <input v-model="assignmentSearch" type="text" placeholder="Cari nama tugas..."
+                  class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+                <select v-model="assignmentTypeFilter"
+                  class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+                  <option value="ALL">Tampilkan Semua</option>
+                  <option value="FILE">Tugas Kumpul Online</option>
+                  <option value="MANUAL">Tugas Penilaian Langsung</option>
+                </select>
+                <select v-model="assignmentSort"
+                  class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+                  <option value="NEWEST">Paling Baru Dibuat</option>
+                  <option value="DUE_ASC">Batas Waktu Terdekat</option>
+                  <option value="DUE_DESC">Batas Waktu Terjauh</option>
+                </select>
+              </div>
+            </div>
 
-              <section class="lg:col-span-4 xl:col-span-3">
-                <h3 class="mb-4 font-semibold text-slate-900 dark:text-white sm:font-bold">Daftar Tugas & Penilaian</h3>
-                <div class="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                  <div class="rounded-2xl border border-sky-200 bg-sky-50/70 p-4 dark:border-cyan-500/20 dark:bg-cyan-500/10">
-                    <p class="text-[11px] font-semibold uppercase tracking-wider text-sky-700 dark:text-cyan-300 sm:text-xs">Dalam LMS</p>
-                    <p class="mt-2 text-xs font-normal text-slate-700 dark:text-slate-200 sm:text-sm">
-                      Siswa mengumpulkan file atau jawaban langsung lewat sistem.
-                    </p>
-                  </div>
-                  <div class="rounded-2xl border border-amber-200 bg-amber-50/80 p-4 dark:border-amber-500/20 dark:bg-amber-500/10">
-                    <p class="text-[11px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300 sm:text-xs">Di Luar LMS</p>
-                    <p class="mt-2 text-xs font-normal text-slate-700 dark:text-slate-200 sm:text-sm">
-                      Ujian, praktik, presentasi, atau observasi dilakukan offline, lalu nilainya dicatat di sini.
-                    </p>
-                  </div>
-                </div>
-                <div class="mb-3 grid gap-2">
-                  <input
-                    v-model="assignmentSearch"
-                    type="text"
-                    placeholder="Cari judul/deskripsi tugas..."
-                    class="block w-full rounded-xl border-0 bg-white py-2.5 px-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
-                  />
-                  <div class="grid grid-cols-2 gap-2">
-                    <select
-                      v-model="assignmentTypeFilter"
-                    class="block rounded-xl border-0 bg-white py-2.5 px-3 text-[11px] text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700 sm:text-xs"
-                    >
-                      <option value="ALL">Semua Jenis</option>
-                      <option value="FILE">Dalam LMS</option>
-                      <option value="MANUAL">Di Luar LMS</option>
-                    </select>
-                    <select
-                      v-model="assignmentSort"
-                    class="block rounded-xl border-0 bg-white py-2.5 px-3 text-[11px] text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700 sm:text-xs"
-                    >
-                      <option value="NEWEST">Terbaru</option>
-                      <option value="DUE_ASC">Tenggat Terdekat</option>
-                      <option value="DUE_DESC">Tenggat Terjauh</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="flex max-h-[600px] flex-col gap-3 overflow-y-auto pr-2">
-                  <article v-for="item in filteredAssignments" :key="item.id"
-                    class="group relative rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all hover:border-sky-200 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-cyan-700"
-                    :class="selectedAssignment?.id === item.id ? 'ring-2 ring-sky-600 dark:ring-cyan-500' : ''">
-                    <div class="absolute right-3 top-3 flex items-center gap-1.5">
-                      <button
-                        @click="openAssignmentEditModal(item)"
-                        class="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-500 ring-1 ring-slate-200 transition hover:bg-slate-50 hover:text-slate-700 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-800"
-                        title="Edit"
-                      >
-                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 3.487a2.1 2.1 0 0 1 2.97 2.97L8.65 17.64l-4.15 1.18 1.18-4.15L16.862 3.487Z" />
-                        </svg>
-                      </button>
-                      <button
-                        @click="deleteAssignment(item)"
-                        class="inline-flex h-7 w-7 items-center justify-center rounded-md text-rose-600 ring-1 ring-rose-200 transition hover:bg-rose-50 dark:text-rose-300 dark:ring-rose-500/30 dark:hover:bg-rose-500/10"
-                        title="Hapus"
-                      >
-                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16m-10 4v6m4-6v6M9 4h6l1 2H8l1-2Zm-2 3h10l-1 13H8L7 7Z" />
-                        </svg>
-                      </button>
-                    </div>
-                    <h4 class="pr-16 font-semibold text-slate-900 dark:text-white sm:font-bold">{{ item.title }}</h4>
-                    <div class="mt-2 mb-3 flex flex-wrap items-center gap-2 text-[10px] font-medium sm:text-[11px] sm:font-semibold">
-                      <span :class="assignmentTypeBadgeClass(item.assignment_type)"
-                        class="inline-flex items-center rounded-md px-2 py-1">
-                        {{ assignmentTypeLabel(item.assignment_type) }}
-                      </span>
-                      <span :class="assignmentDeliveryBadgeClass(item.assignment_type)"
-                        class="inline-flex items-center rounded-md px-2 py-1">
-                        {{ assignmentDeliveryLabel(item.assignment_type) }}
-                      </span>
-                      <span
-                        class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                        ⏳ {{ formatDateTime(item.due_date) }}
-                      </span>
-                      <span
-                        class="inline-flex items-center rounded-md bg-sky-50 px-2 py-1 text-sky-700 dark:bg-cyan-500/10 dark:text-cyan-300">
-                        📦 {{ item.submission_count ?? item.submissions?.length ?? 0 }} Terkumpul
-                      </span>
-                    </div>
-                    <button @click="loadSubmissions(item)"
-                        class="w-full rounded-xl bg-slate-50 px-3 py-2 text-[11px] font-semibold text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-cyan-900/30 dark:hover:text-cyan-300 sm:text-xs sm:font-bold">
-                      {{ selectedAssignment?.id === item.id ? 'Sedang Dinilai' : 'Buka Penilaian' }}
-                    </button>
-                    <a v-if="item.attachment_url"
-                      :href="normalizePublicUrl(item.attachment_url)"
-                      target="_blank"
-                      rel="noreferrer"
-                      class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-sky-50 px-3 py-2 text-[11px] font-semibold text-sky-700 transition hover:bg-sky-100 dark:bg-cyan-500/10 dark:text-cyan-300 dark:hover:bg-cyan-500/20 sm:text-xs sm:font-bold">
-                      Buka Lampiran Soal
-                    </a>
-                  </article>
+            <!-- List Tugas -->
+            <div
+              class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+              <table class="min-w-full text-left text-sm">
+                <thead
+                  class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/60 dark:text-slate-300">
+                  <tr>
+                    <th class="px-5 py-4 font-semibold">Tugas / Ujian</th>
+                    <th class="px-5 py-4 font-semibold">Tenggat</th>
+                    <th class="px-5 py-4 font-semibold">Terkumpul</th>
+                    <th class="px-5 py-4 font-semibold">Lampiran</th>
+                    <th class="px-5 py-4 font-semibold text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tr v-for="item in filteredAssignments" :key="item.id"
+                    class="align-top hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
+                    <td class="px-5 py-4">
+                      <div class="font-semibold text-slate-900 dark:text-white">{{ item.title }}</div>
+                    </td>
+                    <td class="px-5 py-4 text-sm text-slate-700 dark:text-slate-300">
+                      {{ formatDateTime(item.due_date) }}
+                    </td>
+                    <td class="px-5 py-4 text-sm font-semibold text-blue-700 dark:text-blue-400">
+                      {{ item.submission_count ?? item.submissions?.length ?? 0 }} Siswa
+                    </td>
+                    <td class="px-5 py-4 text-sm">
+                      <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
+                        rel="noreferrer"
+                        class="inline-flex items-center rounded-md border border-blue-700 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-800 transition hover:bg-blue-100 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300">
+                        Buka Lampiran
+                      </a>
+                      <span v-else class="text-slate-400">-</span>
+                    </td>
+                    <td class="px-5 py-4 text-right">
+                      <div class="relative inline-block">
+                        <button @click="toggleAssignmentActions(item.id, $event)" type="button"
+                          class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                          Aksi
+                        </button>
 
-                  <div v-if="filteredAssignments.length === 0"
-                    class="rounded-2xl border-2 border-dashed border-slate-200 py-8 text-center text-xs text-slate-500 dark:border-slate-800 sm:text-sm">
-                    Tidak ada tugas sesuai filter.
-                  </div>
-                </div>
-              </section>
-
-              <section
-                ref="gradingDeskRef"
-                class="flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900 lg:col-span-8 xl:col-span-9">
-
-                <div
-                  class="flex flex-col gap-4 border-b border-slate-200 bg-slate-50/50 p-5 dark:border-slate-800 dark:bg-slate-800/30 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <h3 class="font-semibold text-slate-900 dark:text-white sm:font-bold">Meja Penilaian Massal</h3>
-                    <p class="mt-1 text-xs font-normal text-sky-600 dark:text-cyan-400 sm:text-sm sm:font-medium">
-                      {{ selectedAssignment?.title || "Belum ada tugas yang dipilih." }}
-                    </p>
-                  </div>
-
-                  <div v-if="selectedAssignment" class="flex flex-wrap items-center gap-3">
-                    <div class="relative">
-                      <input v-model="submissionSearch" type="text" placeholder="Cari nama siswa..."
-                        class="block w-48 rounded-xl border-0 bg-white py-2 pl-3 pr-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                    </div>
-                    <select v-model="submissionFilter"
-                      class="block rounded-xl border-0 bg-white py-2 pl-3 pr-8 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
-                      <option value="ALL">Semua Status</option>
-                      <option value="UNGRADED">Belum Dinilai</option>
-                      <option value="GRADED">Sudah Dinilai</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="h-[600px] overflow-y-auto">
-                  <table v-if="selectedAssignment" class="min-w-[800px] w-full text-left text-sm">
-                    <thead
-                      class="sticky top-0 z-10 border-b border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                      <tr class="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        <th class="px-5 py-4 font-semibold">Siswa</th>
-                        <th class="px-5 py-4 font-semibold">Jawaban / Lampiran</th>
-                        <th class="w-32 px-5 py-4 font-semibold">Nilai</th>
-                        <th class="px-5 py-4 font-semibold">Feedback</th>
-                        <th class="w-24 px-5 py-4 font-semibold text-right">Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                      <tr v-for="item in filteredSubmissions" :key="item.id"
-                        class="group transition hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-
-                        <td class="px-5 py-4 align-top">
-                          <div class="font-bold text-slate-900 dark:text-white">{{ item.student_name }}</div>
-                          <div class="mt-1 text-xs text-slate-500">{{ formatDateTime(item.submitted_at) }}</div>
-                        </td>
-
-                        <td class="px-5 py-4 align-top">
-                          <p
-                            class="max-h-16 max-w-xs overflow-y-auto text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                            {{ item.submission_text || "Tanpa teks catatan." }}
-                          </p>
-                          <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank" rel="noreferrer"
-                            class="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-sky-50 px-2.5 py-1 text-xs font-bold text-sky-700 transition hover:bg-sky-100 dark:bg-cyan-900/30 dark:text-cyan-400 dark:hover:bg-cyan-900/50">
-                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                              stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                            </svg>
-                            {{ item.assignment_type === "MANUAL" ? "Tanpa Pengumpulan LMS" : "File Tugas" }}
-                          </a>
-                          <span v-else-if="item.assignment_type === 'MANUAL'"
-                            class="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
-                            Nilai dicatat manual oleh guru
-                          </span>
-                        </td>
-
-                        <td class="px-5 py-4 align-top">
-                          <input v-model="item.scoreDraft" type="number" min="0" max="100" step="0.01"
-                            placeholder="0-100"
-                            class="w-full rounded-xl border-0 bg-slate-50 py-2 pl-3 pr-2 text-sm font-bold text-slate-900 ring-1 ring-inset ring-slate-200 focus:bg-white focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                        </td>
-
-                        <td class="px-5 py-4 align-top">
-                          <input v-model="item.feedbackDraft" placeholder="Tulis masukan..."
-                            class="w-full min-w-[150px] rounded-xl border-0 bg-slate-50 py-2 px-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:bg-white focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                        </td>
-
-                        <td class="px-5 py-4 align-top text-right">
-                          <button @click="submitGrade(item)"
-                            class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-slate-700 dark:bg-cyan-600 dark:hover:bg-cyan-500">
-                            Simpan
+                        <div v-if="openAssignmentActionId === item.id"
+                          class="fixed z-50 w-44 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-900"
+                          :style="assignmentActionMenuStyle">
+                          <button @click="handleAssignmentAction('grade', item)" type="button"
+                            class="flex w-full items-center rounded-lg px-3 py-2 text-left text-xs font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-500/10">
+                            Beri Nilai
                           </button>
-                        </td>
-                      </tr>
+                          <button @click="handleAssignmentAction('edit', item)" type="button"
+                            class="flex w-full items-center rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
+                            Edit
+                          </button>
+                          <button @click="handleAssignmentAction('delete', item)" type="button"
+                            class="flex w-full items-center rounded-lg px-3 py-2 text-left text-xs font-semibold text-rose-600 transition hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/10">
+                            Hapus
+                          </button>
+                        </div>
+                        <button v-if="openAssignmentActionId === item.id" type="button"
+                          class="fixed inset-0 z-40 cursor-default" @click="closeAssignmentActions"></button>
+                      </div>
+                    </td>
+                  </tr>
 
-                      <tr v-if="filteredSubmissions.length === 0">
-                        <td colspan="5" class="py-16 text-center">
-                          <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Tidak ada data siswa yang
-                            sesuai filter/pencarian.</span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  <tr v-if="filteredAssignments.length === 0">
+                    <td colspan="5" class="px-5 py-14 text-center">
+                      <p class="text-base font-semibold text-slate-500 dark:text-slate-400">Belum Ada Tugas</p>
+                      <p class="mt-2 text-sm text-slate-500">Tugas yang Anda buat akan muncul di sini.</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-                  <div v-else class="flex h-full flex-col items-center justify-center text-center text-slate-400">
-                    <svg class="mb-4 h-16 w-16 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                      stroke-width="1.5">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <p class="font-medium text-slate-500">Pilih tugas di panel sebelah kiri untuk mulai menilai.</p>
-                  </div>
+          <!-- State 2: Meja Penilaian (Fokus Penuh) -->
+          <div v-else>
+            <!-- Tombol Kembali yang sangat jelas -->
+            <button @click="gradingAssignment = null"
+              class="mb-6 flex items-center gap-2 rounded-xl bg-slate-200 px-6 py-3 text-lg font-bold text-slate-800 transition hover:bg-slate-300 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700">
+              Kembali ke Daftar Tugas
+            </button>
+
+            <div
+              class="rounded-2xl border-2 border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+              <div
+                class="border-b-2 border-slate-200 bg-slate-50 p-6 md:p-8 dark:border-slate-800 dark:bg-slate-800/50">
+                <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Menilai: {{ gradingAssignment.title }}
+                </h3>
+
+                <div class="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <input v-model="submissionSearch" type="text" placeholder="Cari nama siswa..."
+                    class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white sm:max-w-xs" />
+                  <select v-model="submissionFilter"
+                    class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white sm:max-w-xs">
+                    <option value="ALL">Semua Siswa</option>
+                    <option value="UNGRADED">Belum Dinilai</option>
+                    <option value="GRADED">Sudah Dinilai</option>
+                  </select>
                 </div>
-              </section>
+              </div>
+
+              <!-- Tabel Nilai Lebar dan Lega -->
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-left text-base">
+                  <thead class="bg-slate-100 dark:bg-slate-800">
+                    <tr class="text-base text-slate-700 dark:text-slate-300">
+                      <th class="border-b-2 border-slate-200 px-6 py-5 font-bold dark:border-slate-700">Nama Siswa</th>
+                      <th class="border-b-2 border-slate-200 px-6 py-5 font-bold dark:border-slate-700">Jawaban / File
+                      </th>
+                      <th class="border-b-2 border-slate-200 px-6 py-5 font-bold dark:border-slate-700 w-48">Nilai
+                        (0-100)</th>
+                      <th class="border-b-2 border-slate-200 px-6 py-5 font-bold dark:border-slate-700">Pesan / Koreksi
+                      </th>
+                      <th
+                        class="border-b-2 border-slate-200 px-6 py-5 font-bold dark:border-slate-700 w-32 text-center">
+                        Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y-2 divide-slate-100 dark:divide-slate-800">
+                    <tr v-for="item in filteredSubmissions" :key="item.id"
+                      class="hover:bg-blue-50/50 dark:hover:bg-slate-800/50">
+
+                      <td class="px-6 py-6 align-top">
+                        <div class="text-lg font-bold text-slate-900 dark:text-white">{{ item.student_name }}</div>
+                        <div class="mt-2 text-sm text-slate-500">Waktu: {{ formatDateTime(item.submitted_at) }}</div>
+                      </td>
+
+                      <td class="px-6 py-6 align-top">
+                        <p v-if="item.submission_text"
+                          class="mb-3 max-w-sm text-base text-slate-700 dark:text-slate-300">
+                          {{ item.submission_text }}
+                        </p>
+                        <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
+                          rel="noreferrer"
+                          class="inline-flex items-center gap-2 rounded-xl bg-blue-100 px-4 py-2 text-base font-bold text-blue-800 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300">
+                          📄 Buka File Jawaban
+                        </a>
+                        <span v-else-if="item.assignment_type === 'MANUAL'"
+                          class="inline-flex rounded-xl bg-amber-100 px-4 py-2 text-base font-bold text-amber-800">
+                          Penilaian Langsung
+                        </span>
+                        <span v-else class="text-slate-500 italic">Belum mengumpulkan file</span>
+                      </td>
+
+                      <td class="px-6 py-6 align-top">
+                        <input v-model="item.scoreDraft" type="number" min="0" max="100" step="0.01"
+                          placeholder="Kosong"
+                          class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-lg font-bold text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+                      </td>
+
+                      <td class="px-6 py-6 align-top">
+                        <textarea v-model="item.feedbackDraft" rows="2" placeholder="Tulis catatan (Opsional)..."
+                          class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white"></textarea>
+                      </td>
+
+                      <td class="px-6 py-6 align-top text-center">
+                        <button @click="submitGrade(item)"
+                          class="w-full rounded-xl bg-blue-600 px-4 py-3 text-base font-bold text-white transition hover:bg-blue-700">
+                          Simpan
+                        </button>
+                      </td>
+                    </tr>
+
+                    <tr v-if="filteredSubmissions.length === 0">
+                      <td colspan="5" class="py-20 text-center text-lg font-bold text-slate-500">
+                        Tidak ada siswa yang sesuai dengan pencarian Anda.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
 
-        <div v-else
-          class="flex min-h-[400px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white/50 px-6 py-12 text-center dark:border-slate-800 dark:bg-slate-900/50">
-          <div class="rounded-full bg-sky-50 p-4 dark:bg-cyan-500/10">
-            <svg class="h-8 w-8 text-sky-600 dark:text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-              stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0A50.57 50.57 0 0112 13.489a50.702 50.702 0 017.74-3.342" />
-            </svg>
-          </div>
-          <h3 class="mt-4 text-lg font-bold text-slate-900 dark:text-white">Workspace Kosong</h3>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Silakan pilih salah satu mata pelajaran dari panel
-            di atas untuk memulai.</p>
+      </div>
+
+      <!-- TAMPILAN AWAL JIKA BELUM PILIH KELAS -->
+      <div v-else class="flex h-full flex-col items-center justify-center p-10 text-center">
+        <div class="rounded-full bg-blue-100 p-8 dark:bg-blue-900/30">
+          <svg class="h-16 w-16 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
         </div>
+        <h2 class="mt-8 text-3xl font-bold text-slate-900 dark:text-white">Selamat Datang!</h2>
+        <p class="mt-3 text-xl text-slate-600 dark:text-slate-400">Silakan klik salah satu kelas di papan atas
+          untuk mulai mengajar.</p>
       </div>
     </main>
 
+    <!-- MODAL MATERI (Diperbesar & Disederhanakan) -->
     <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="materialModalOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/75 p-4 backdrop-blur-sm">
         <div
-          class="flex max-h-[calc(100vh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          class="modal-shell flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden border-2 border-slate-500 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.22)] dark:border-slate-600 dark:bg-slate-900"
           @click.stop>
-          <div class="flex shrink-0 items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
-            <h2 class="text-lg font-bold text-slate-900 dark:text-white">{{ editingMaterialId ? "Edit Materi" : "Publikasi Materi Baru" }}</h2>
+          <div
+            class="flex items-start justify-between border-b-2 border-slate-300 bg-slate-50 px-5 py-4 dark:border-slate-700 dark:bg-slate-800">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Materi
+                Pembelajaran</p>
+              <h2 class="mt-1 text-xl font-bold text-slate-900 dark:text-white">
+                {{ editingMaterialId ? "Ubah Data Materi" :
+                  "Buat Materi Baru" }}</h2>
+            </div>
             <button @click="closeMaterialModal"
-              class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+              class="rounded-md border border-slate-300 bg-white p-2 text-slate-500 transition hover:border-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:border-slate-600 dark:bg-slate-900">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <div class="min-h-0 flex-1 overflow-y-auto">
-            <form @submit.prevent="submitMaterial" class="flex min-h-full flex-col">
-              <div class="space-y-5 p-6">
-              <div class="space-y-1.5">
-                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Mode Materi</label>
+
+          <div class="overflow-y-auto px-5 py-5 md:px-6">
+            <form @submit.prevent="submitMaterial" class="space-y-5">
+
+              <!-- Pilihan Mode -->
+              <div class="space-y-2">
+                <label
+                  class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Pilih
+                  cara membuat</label>
                 <div class="grid gap-3 md:grid-cols-2">
                   <button type="button" @click="materialCreationMode = 'manual'"
-                    class="rounded-2xl border p-4 text-left transition"
-                    :class="materialCreationMode === 'manual'
-                      ? 'border-sky-500 bg-sky-50 ring-2 ring-sky-200 dark:border-cyan-400 dark:bg-cyan-500/10 dark:ring-cyan-500/20'
-                      : 'border-slate-200 bg-white hover:border-sky-200 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-cyan-700'">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-sky-700 dark:text-cyan-300">Manual</p>
-                    <h3 class="mt-2 font-bold text-slate-900 dark:text-white">Upload Materi Biasa</h3>
-                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                      Publikasikan ringkasan dan lampiran materi secara manual seperti biasa.
-                    </p>
+                    class="rounded-lg border-2 p-4 text-left transition"
+                    :class="materialCreationMode === 'manual' ? 'border-blue-700 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/15' : 'border-slate-300 bg-white hover:border-blue-500 dark:border-slate-600 dark:bg-slate-800'">
+                    <h3 class="text-base font-bold text-blue-800 dark:text-blue-300">Tulis & Upload Sendiri</h3>
+                    <p class="mt-1.5 text-sm leading-6 text-slate-600 dark:text-slate-300">Ketik deskripsi manual dan
+                      lampirkan file (PDF/Word/Excel).</p>
                   </button>
                   <button type="button" @click="materialCreationMode = 'ai-pptx'"
-                    class="rounded-2xl border p-4 text-left transition"
-                    :class="materialCreationMode === 'ai-pptx'
-                      ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-200 dark:border-emerald-400 dark:bg-emerald-500/10 dark:ring-emerald-500/20'
-                      : 'border-slate-200 bg-white hover:border-emerald-200 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-emerald-700'">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">AI .pptx</p>
-                    <h3 class="mt-2 font-bold text-slate-900 dark:text-white">Generate PowerPoint</h3>
-                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                      AI membuat outline materi lalu sistem menghasilkan file PowerPoint `.pptx`.
-                    </p>
+                    class="rounded-lg border-2 p-4 text-left transition"
+                    :class="materialCreationMode === 'ai-pptx' ? 'border-emerald-700 bg-emerald-50 dark:border-emerald-400 dark:bg-emerald-900/15' : 'border-slate-300 bg-white hover:border-emerald-500 dark:border-slate-600 dark:bg-slate-800'">
+                    <h3 class="text-base font-bold text-emerald-800 dark:text-emerald-300">Dibantu Sistem AI (Otomatis)
+                    </h3>
+                    <p class="mt-1.5 text-sm leading-6 text-slate-600 dark:text-slate-300">Cukup beritahu topik, sistem
+                      akan
+                      otomatis membuatkan file presentasi (PPT).</p>
                   </button>
                 </div>
               </div>
-              <div class="space-y-1.5">
-                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Judul Materi</label>
-                <input v-model="materialForm.title" required placeholder="Contoh: Pengantar Aljabar"
-                  class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-              </div>
-              <div class="space-y-1.5">
-                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Konten / Ringkasan</label>
-                <textarea v-model="materialForm.content" rows="4" placeholder="Tulis ringkasan atau instruksi materi..."
-                  class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-              </div>
-              <div v-if="materialCreationMode === 'manual'" class="space-y-1.5">
-                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Lampiran File
-                  (Opsional)</label>
-                <input type="file" @change="handleMaterialFile"
-                  class="block w-full text-sm text-slate-500 file:mr-4 file:rounded-lg file:border-0 file:bg-sky-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-sky-700 hover:file:bg-sky-100 dark:text-slate-300 dark:file:bg-cyan-500/10 dark:file:text-cyan-300" />
-              </div>
-              <div v-else class="space-y-5">
-                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-                  <div class="space-y-1.5">
-                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Topik Presentasi</label>
-                    <input v-model="materialAiForm.topic" required placeholder="Contoh: Persamaan Linear Satu Variabel"
-                      class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                  </div>
-                  <div class="space-y-1.5">
-                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jumlah Slide</label>
-                    <input v-model.number="materialAiForm.slide_count" type="number" min="3" max="15"
-                      class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                  </div>
-                </div>
-                <div class="space-y-1.5">
-                  <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tujuan Pembelajaran</label>
-                  <textarea v-model="materialAiForm.learning_goals" rows="3"
-                    placeholder="Contoh: Siswa mampu memahami konsep dasar, menyelesaikan contoh soal, dan menerapkannya pada latihan sederhana."
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                </div>
-                <div class="space-y-1.5">
-                  <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Instruksi Tambahan untuk AI</label>
-                  <textarea v-model="materialAiForm.additional_instructions" rows="3"
-                    placeholder="Contoh: Gunakan contoh sehari-hari, buat poin singkat, dan sisipkan penekanan rumus inti."
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                </div>
-                <div
-                  class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200">
-                  Sistem akan membuat preview isi PowerPoint terlebih dahulu. Setelah cocok, baru Anda publikasikan sebagai file `.pptx`.
-                </div>
-                <div v-if="materialAiPreview" class="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-800/40">
-                  <div class="flex items-start justify-between gap-4">
-                    <div>
-                      <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Preview AI</p>
-                      <h3 class="mt-1 text-base font-bold text-slate-900 dark:text-white">{{ materialAiPreview.presentation_title }}</h3>
-                      <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ materialAiPreview.summary }}</p>
-                    </div>
-                    <span class="inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700">
-                      {{ materialAiPreview.slides.length }} slide
-                    </span>
-                  </div>
 
-                  <div class="max-h-72 space-y-3 overflow-y-auto pr-1">
-                    <article v-for="(slide, index) in materialAiPreview.slides" :key="`${index}-${slide.title}`"
-                      class="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
-                      <div class="flex items-center justify-between gap-3">
-                        <h4 class="font-bold text-slate-900 dark:text-white">Slide {{ index + 1 }}: {{ slide.title }}</h4>
-                      </div>
-                      <ul class="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
-                        <li v-for="(bullet, bulletIndex) in slide.bullets" :key="`${index}-${bulletIndex}`" class="flex gap-2">
-                          <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500"></span>
-                          <span>{{ bullet }}</span>
-                        </li>
-                      </ul>
-                      <p v-if="slide.speaker_notes" class="mt-3 text-xs italic text-slate-500 dark:text-slate-400">
-                        Catatan guru: {{ slide.speaker_notes }}
-                      </p>
-                    </article>
+              <!-- Input Judul -->
+              <div class="space-y-2">
+                <label
+                  class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Judul
+                  materi pembelajaran</label>
+                <input v-model="materialForm.title" required placeholder="Contoh: Bab 1 - Pengenalan Sel..."
+                  class="block w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none transition focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10 dark:border-slate-600 dark:bg-slate-800 dark:text-white" />
+              </div>
+              <div class="space-y-2">
+                <label
+                  class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Deskripsi
+                  singkat untuk
+                  Siswa</label>
+                <textarea v-model="materialForm.content" rows="4"
+                  placeholder="Tuliskan petunjuk atau ringkasan untuk dibaca siswa..."
+                  class="block w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none transition focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10 dark:border-slate-600 dark:bg-slate-800 dark:text-white" />
+              </div>
+
+              <!-- Mode Manual -->
+              <div v-if="materialCreationMode === 'manual'"
+                class="space-y-2 rounded-lg border-2 border-slate-300 bg-slate-50 p-4 dark:border-slate-600 dark:bg-slate-800/80">
+                <label
+                  class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Upload
+                  file
+                  (jika ada)</label>
+                <input type="file" @change="handleMaterialFile"
+                  class="block w-full text-sm text-slate-700 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-blue-700 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-blue-800 dark:text-slate-300" />
+              </div>
+
+              <!-- Mode AI -->
+              <div v-else
+                class="space-y-4 rounded-lg border-2 border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-700 dark:bg-emerald-900/10">
+                <h3 class="text-base font-bold text-emerald-900 dark:text-emerald-300">Pengaturan Presentasi Otomatis
+                </h3>
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <div class="space-y-1.5">
+                    <label
+                      class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Topik
+                      pembahasan</label>
+                    <input v-model="materialAiForm.topic" required placeholder="Contoh: Sejarah Kemerdekaan RI"
+                      class="block w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/10 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+                  </div>
+                  <div class="space-y-1.5">
+                    <label
+                      class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Jumlah
+                      halaman (slide)</label>
+                    <input v-model.number="materialAiForm.slide_count" type="number" min="3" max="15"
+                      class="block w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/10 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
                   </div>
                 </div>
+                <div class="space-y-1.5">
+                  <label
+                    class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Tujuan
+                    belajar / pesan khusus (opsional)</label>
+                  <textarea v-model="materialAiForm.learning_goals" rows="3"
+                    placeholder="Contoh: Fokuskan pada nama-nama tokoh penting..."
+                    class="block w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/10 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+                </div>
+
+                <div v-if="materialAiPreview"
+                  class="mt-3 rounded-lg border-2 border-emerald-600 bg-emerald-600 p-4 text-white">
+                  <p class="text-base font-bold">Rancangan siap</p>
+                  <p class="mt-1 text-sm leading-6 text-emerald-50">Silakan klik tombol simpan jika sudah sesuai.</p>
+                </div>
               </div>
-              </div>
-              <div class="sticky bottom-0 mt-auto flex shrink-0 items-center justify-end gap-3 border-t border-slate-100 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
-                <button type="button" @click="closeMaterialModal"
-                  class="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">Batal</button>
-                <button v-if="materialCreationMode === 'ai-pptx' && materialAiPreview" type="button" @click="generateAiMaterialPreview"
-                  :disabled="isGeneratingAiMaterial || isPublishingAiMaterial"
-                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-200 px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-300 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600">
-                  {{ isGeneratingAiMaterial ? "Membuat Ulang..." : "Generate Ulang" }}
+
+              <div class="flex items-center justify-end gap-3 pt-2">
+                <button v-if="materialCreationMode === 'ai-pptx' && materialAiPreview" type="button"
+                  @click="generateAiMaterialPreview" :disabled="isGeneratingAiMaterial || isPublishingAiMaterial"
+                  class="rounded-md border border-slate-300 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                  {{ isGeneratingAiMaterial ? "Merancang Ulang..." : "Rancang Ulang PPT" }}
                 </button>
                 <button :disabled="isSavingMaterial || isGeneratingAiMaterial || isPublishingAiMaterial" type="submit"
-                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60"
-                  :class="materialCreationMode === 'ai-pptx' ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-sky-600 hover:bg-sky-500'">
+                  class="rounded-md border border-blue-800 px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-60"
+                  :class="materialCreationMode === 'ai-pptx' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'">
                   {{ materialCreationMode === 'ai-pptx'
                     ? materialAiPreview
-                      ? (isPublishingAiMaterial ? "Mempublikasikan..." : "Publikasikan PPT")
-                      : (isGeneratingAiMaterial ? "Membuat Preview..." : "Generate Preview PPT")
-                    : (isSavingMaterial ? "Menyimpan..." : "Publikasikan") }}
+                      ? (isPublishingAiMaterial ? "Menyimpan..." : "Simpan & Publikasikan")
+                      : (isGeneratingAiMaterial ? "Sedang Diproses..." : "Minta AI Buatkan Rancangan")
+                    : (isSavingMaterial ? "Menyimpan..." : "Simpan Materi") }}
                 </button>
               </div>
             </form>
@@ -510,105 +514,100 @@
       </div>
     </Transition>
 
+    <!-- MODAL TUGAS (Diperbesar & Disederhanakan) -->
     <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="assignmentModalOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/75 p-4 backdrop-blur-sm">
         <div
-          class="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          class="modal-shell w-full max-w-3xl overflow-hidden border-2 border-slate-500 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.22)] dark:border-slate-600 dark:bg-slate-900"
           @click.stop>
-          <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
-            <h2 class="text-lg font-bold text-slate-900 dark:text-white">{{ editingAssignmentId ? "Edit Tugas atau Penilaian" : "Buat Tugas atau Penilaian" }}</h2>
+          <div
+            class="flex items-start justify-between border-b-2 border-slate-300 bg-slate-50 px-5 py-4 dark:border-slate-700 dark:bg-slate-800">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Tugas &
+                penilaian</p>
+              <h2 class="mt-1 text-xl font-bold text-slate-900 dark:text-white">{{
+                editingAssignmentId ? "Ubah Tugas" : "Buat Tugas / Ujian Baru" }}</h2>
+            </div>
             <button @click="assignmentModalOpen = false"
-              class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+              class="rounded-md border border-slate-300 bg-white p-2 text-slate-500 transition hover:border-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:border-slate-600 dark:bg-slate-900">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <div class="p-6">
+          <div class="overflow-y-auto px-5 py-5 md:px-6">
             <form @submit.prevent="submitAssignment" class="space-y-5">
-              <div class="space-y-1.5">
-                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Judul</label>
-                <input v-model="assignmentForm.title" required placeholder="Contoh: Latihan Bab 1"
-                  class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+
+              <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Nama
+                  tugas / ujian</label>
+                <input v-model="assignmentForm.title" required placeholder="Contoh: Ujian Tengah Semester..."
+                  class="block w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none transition focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10 dark:border-slate-600 dark:bg-slate-800 dark:text-white" />
               </div>
-              <div class="space-y-1.5">
-                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Lokasi Proses Penilaian</label>
+
+              <div class="space-y-2">
+                <label
+                  class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Metode
+                  pengerjaan</label>
                 <div class="grid gap-3 md:grid-cols-2">
                   <button type="button" @click="assignmentForm.assignment_type = 'FILE'"
-                    class="rounded-2xl border p-4 text-left transition"
-                    :class="assignmentForm.assignment_type === 'FILE'
-                      ? 'border-sky-500 bg-sky-50 ring-2 ring-sky-200 dark:border-cyan-400 dark:bg-cyan-500/10 dark:ring-cyan-500/20'
-                      : 'border-slate-200 bg-white hover:border-sky-200 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-cyan-700'">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-sky-700 dark:text-cyan-300">Dalam LMS</p>
-                    <h3 class="mt-2 font-bold text-slate-900 dark:text-white">Tugas File di LMS</h3>
-                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                      Siswa melihat instruksi, mengunggah file, lalu guru menilai hasil pengumpulan di sistem.
-                    </p>
+                    class="rounded-lg border-2 p-4 text-left transition"
+                    :class="assignmentForm.assignment_type === 'FILE' ? 'border-blue-700 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/15' : 'border-slate-300 bg-white hover:border-blue-500 dark:border-slate-600 dark:bg-slate-800'">
+                    <h3 class="text-base font-bold text-blue-800 dark:text-blue-300">Kumpul Online</h3>
+                    <p class="mt-1.5 text-sm leading-6 text-slate-600 dark:text-slate-300">Siswa harus mengunggah file
+                      jawaban ke
+                      dalam sistem ini.</p>
                   </button>
                   <button type="button" @click="assignmentForm.assignment_type = 'MANUAL'"
-                    class="rounded-2xl border p-4 text-left transition"
-                    :class="assignmentForm.assignment_type === 'MANUAL'
-                      ? 'border-amber-500 bg-amber-50 ring-2 ring-amber-200 dark:border-amber-400 dark:bg-amber-500/10 dark:ring-amber-500/20'
-                      : 'border-slate-200 bg-white hover:border-amber-200 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-amber-700'">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300">Di Luar LMS</p>
-                    <h3 class="mt-2 font-bold text-slate-900 dark:text-white">Penilaian / Ujian Offline</h3>
-                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                      Ujian, praktik, presentasi, observasi, atau performa dilakukan di luar LMS, lalu nilainya dicatat per siswa di sistem.
-                    </p>
+                    class="rounded-lg border-2 p-4 text-left transition"
+                    :class="assignmentForm.assignment_type === 'MANUAL' ? 'border-amber-700 bg-amber-50 dark:border-amber-400 dark:bg-amber-900/15' : 'border-slate-300 bg-white hover:border-amber-500 dark:border-slate-600 dark:bg-slate-800'">
+                    <h3 class="text-base font-bold text-amber-800 dark:text-amber-300">Penilaian Langsung</h3>
+                    <p class="mt-1.5 text-sm leading-6 text-slate-600 dark:text-slate-300">Ujian praktik lisan /
+                      presentasi. Guru
+                      tinggal memasukkan angka nilainya.</p>
                   </button>
                 </div>
               </div>
+
+              <div class="space-y-2">
+                <label
+                  class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Perintah
+                  pengerjaan (soal)</label>
+                <textarea v-model="assignmentForm.description" rows="4"
+                  placeholder="Tulis instruksi lengkap atau soal ujian..."
+                  class="block w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none transition focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10 dark:border-slate-600 dark:bg-slate-800 dark:text-white" />
+              </div>
+
               <div
-                class="rounded-2xl border px-4 py-3 text-sm"
-                :class="assignmentForm.assignment_type === 'MANUAL'
-                  ? 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200'
-                  : 'border-sky-200 bg-sky-50 text-sky-800 dark:border-cyan-500/20 dark:bg-cyan-500/10 dark:text-cyan-200'">
-                {{ assignmentForm.assignment_type === 'MANUAL'
-                  ? 'Mode luar LMS aktif: siswa tidak mengumpulkan apa pun di sistem. Guru langsung memberi nilai dari meja penilaian massal.'
-                  : 'Mode dalam LMS aktif: siswa akan mengumpulkan file lewat sistem sesuai tenggat yang ditentukan.' }}
-              </div>
-              <div class="space-y-1.5">
-                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Instruksi /
-                  Deskripsi</label>
-                <textarea v-model="assignmentForm.description" rows="3"
-                  :placeholder="assignmentForm.assignment_type === 'MANUAL'
-                    ? 'Contoh: Ujian praktik membaca, presentasi, observasi sikap, atau penilaian performa lainnya...'
-                    : 'Jelaskan detail tugas dan instruksi format file...'"
-                  class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-              </div>
-              <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-                <div class="space-y-1.5">
-                  <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Batas Waktu
-                    (Tenggat)</label>
+                class="grid grid-cols-1 gap-3 rounded-lg border-2 border-slate-300 bg-slate-50 p-4 md:grid-cols-2 dark:border-slate-600 dark:bg-slate-800/80">
+                <div class="space-y-2">
+                  <label
+                    class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Batas
+                    waktu (paling lambat)</label>
                   <input v-model="assignmentForm.due_date" type="datetime-local"
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+                    class="block w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none transition focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
                 </div>
-                <div class="space-y-1.5">
-                  <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Lampiran Soal
-                    (Opsional)</label>
-                  <input type="file" @change="handleAssignmentFile" :disabled="assignmentForm.assignment_type === 'MANUAL'"
-                    class="block w-full text-sm text-slate-500 file:mr-4 file:rounded-lg file:border-0 file:bg-sky-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-sky-700 hover:file:bg-sky-100 dark:text-slate-300 dark:file:bg-cyan-500/10 dark:file:text-cyan-300" />
-                  <a v-if="currentAssignmentAttachmentUrl && assignmentForm.assignment_type === 'FILE'"
-                    :href="normalizePublicUrl(currentAssignmentAttachmentUrl)"
-                    target="_blank"
-                    rel="noreferrer"
-                    class="inline-flex items-center gap-1 text-xs font-bold text-sky-700 hover:text-sky-600 dark:text-cyan-300 dark:hover:text-cyan-200">
-                    Lihat lampiran soal saat ini
-                  </a>
-                  <p v-if="assignmentForm.assignment_type === 'MANUAL'" class="text-xs text-slate-500">
-                    Lampiran dimatikan karena siswa tidak mengumpulkan tugas pada tipe ini.
-                  </p>
+                <div class="space-y-2">
+                  <label
+                    class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Upload
+                    file pendukung (misal: PDF soal)</label>
+                  <input type="file" @change="handleAssignmentFile"
+                    :disabled="assignmentForm.assignment_type === 'MANUAL'"
+                    class="block w-full text-sm text-slate-700 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-blue-700 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-blue-800 disabled:opacity-50 dark:text-slate-300" />
                 </div>
               </div>
-              <div class="flex items-center justify-end gap-3 pt-4">
+
+              <div class="flex items-center justify-end gap-3 pt-2">
                 <button type="button" @click="assignmentModalOpen = false"
-                  class="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">Batal</button>
+                  class="rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800">
+                  Batalkan
+                </button>
                 <button :disabled="isSavingAssignment" type="submit"
-                  class="rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-500 disabled:opacity-50">
-                  {{ isSavingAssignment ? "Menyimpan..." : "Simpan" }}
+                  class="rounded-md border border-blue-800 bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:opacity-60">
+                  {{ isSavingAssignment ? "Menyimpan..." : "Simpan Tugas" }}
                 </button>
               </div>
             </form>
@@ -617,47 +616,37 @@
       </div>
     </Transition>
 
+    <!-- MODAL KONFIRMASI HAPUS -->
     <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="isDeleteModalOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/75 p-4 backdrop-blur-sm">
         <div
-          class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          class="modal-shell w-full max-w-md overflow-hidden border-2 border-slate-500 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.22)] dark:border-slate-600 dark:bg-slate-900"
           @click.stop>
-          <div class="flex items-start gap-4 px-6 py-5">
+          <div class="px-5 py-6 text-center md:px-6">
             <div
-              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400">
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              class="mx-auto flex h-14 w-14 items-center justify-center rounded-lg border-2 border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-900 dark:bg-rose-900/30">
+              <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <div class="min-w-0 flex-1">
-              <h2 class="text-lg font-bold text-slate-900 dark:text-white">
-                {{ deleteTargetType === 'material' ? 'Hapus Materi?' : 'Hapus Tugas?' }}
-              </h2>
-              <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                <span v-if="deleteTargetType === 'material'">Materi</span>
-                <span v-else>Tugas</span>
-                <span class="font-semibold text-slate-700 dark:text-slate-200"> {{ deleteTargetItem?.title || "-" }} </span>
-                akan dihapus. Tindakan ini tidak bisa dibatalkan.
-              </p>
-            </div>
+            <h2 class="mt-4 text-xl font-bold text-slate-900 dark:text-white">Hapus permanen?</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">
+              Data <strong>{{ deleteTargetItem?.title || "Ini" }}</strong> akan dihapus dan tidak bisa dikembalikan
+              lagi.
+            </p>
           </div>
           <div
-            class="flex items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
+            class="flex items-center gap-3 border-t-2 border-slate-300 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70">
             <button type="button" @click="closeDeleteModal"
-              class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
-              Batal
+              class="w-full rounded-md border-2 border-slate-300 bg-white py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+              Kembali
             </button>
             <button type="button" @click="confirmDelete" :disabled="isDeletingItem"
-              class="inline-flex items-center justify-center gap-2 rounded-lg bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-60">
-              <svg v-if="isDeletingItem" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"
-                stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-              </svg>
+              class="w-full rounded-md border-2 border-rose-700 bg-rose-600 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:opacity-60">
               {{ isDeletingItem ? "Menghapus..." : "Ya, Hapus" }}
             </button>
           </div>
@@ -676,26 +665,31 @@ import { formatDateTime, formatDateTimeLocalInput as formatJakartaDateTimeLocalI
 import { normalizePublicUrl } from "@/utils/url";
 import { useMasterDataStore } from "@/store/masterData";
 
-const activeTab = ref("materials");
+// STATE UTAMA
 const masterDataStore = useMasterDataStore();
 const subjects = ref([]);
 const selectedSubject = ref(null);
-const selectedAssignment = ref(null);
+const activeTab = ref("materials");
+
+// STATE DATA
 const materials = ref([]);
 const assignments = ref([]);
 const submissions = ref([]);
-const gradingDeskRef = ref(null);
+const gradingAssignment = ref(null); // Jika null berarti menampilkan list tugas. Jika ada isinya, tampilkan layar Penilaian.
+
+// STATE FEEDBACK
 const subjectError = ref("");
 const message = ref("");
 const isError = ref(false);
 
-// State Modal Form
+// STATE MODAL
 const materialModalOpen = ref(false);
 const assignmentModalOpen = ref(false);
 const isSavingMaterial = ref(false);
 const isSavingAssignment = ref(false);
 const isGeneratingAiMaterial = ref(false);
 const isPublishingAiMaterial = ref(false);
+
 const materialFile = ref(null);
 const assignmentFile = ref(null);
 const materialCreationMode = ref("manual");
@@ -703,51 +697,38 @@ const materialAiPreview = ref(null);
 const editingMaterialId = ref(null);
 const editingAssignmentId = ref(null);
 const currentAssignmentAttachmentUrl = ref("");
+
 const isDeleteModalOpen = ref(false);
 const isDeletingItem = ref(false);
 const deleteTargetType = ref("");
 const deleteTargetItem = ref(null);
 
-// State untuk Filter Meja Penilaian
+// STATE PENCARIAN & FILTER
 const submissionSearch = ref("");
 const submissionFilter = ref("ALL");
 const assignmentSearch = ref("");
 const assignmentTypeFilter = ref("ALL");
 const assignmentSort = ref("NEWEST");
+const openAssignmentActionId = ref(null);
+const assignmentActionMenuStyle = ref({ top: "0px", right: "0px" });
 
-const materialForm = reactive({
-  title: "",
-  content: "",
-});
+// FORM DATA
+const materialForm = reactive({ title: "", content: "" });
+const materialAiForm = reactive({ topic: "", slide_count: 8, learning_goals: "", additional_instructions: "" });
+const assignmentForm = reactive({ title: "", description: "", due_date: "", assignment_type: "FILE" });
 
-const materialAiForm = reactive({
-  topic: "",
-  slide_count: 8,
-  learning_goals: "",
-  additional_instructions: "",
-});
-
-const assignmentForm = reactive({
-  title: "",
-  description: "",
-  due_date: "",
-  assignment_type: "FILE",
-});
-
-// Computed Property untuk Filter Data Siswa
+// =======================
+// FUNGSI KOMPUTASI
+// =======================
 const filteredSubmissions = computed(() => {
   return submissions.value.filter(item => {
-    // Pencarian Text (Case Insensitive)
     const matchSearch = item.student_name.toLowerCase().includes(submissionSearch.value.toLowerCase());
-
-    // Filter Dropdown
     let matchFilter = true;
     if (submissionFilter.value === "UNGRADED") {
       matchFilter = item.score === null || item.score === undefined || item.score === "";
     } else if (submissionFilter.value === "GRADED") {
       matchFilter = item.score !== null && item.score !== undefined && item.score !== "";
     }
-
     return matchSearch && matchFilter;
   });
 });
@@ -771,10 +752,32 @@ const filteredAssignments = computed(() => {
     }
     return Number(b?.id || 0) - Number(a?.id || 0);
   });
-
   return next;
 });
 
+// =======================
+// NAVIGASI UX
+// =======================
+const selectSubject = async (subject) => {
+  selectedSubject.value = subject;
+  activeTab.value = "materials";
+  gradingAssignment.value = null; // Reset tampilan ke daftar tugas
+  openAssignmentActionId.value = null;
+  await loadSubjectData();
+};
+
+const switchTab = (tab) => {
+  activeTab.value = tab;
+  gradingAssignment.value = null; // Reset jika berpindah tab
+  openAssignmentActionId.value = null;
+};
+
+const assignmentTypeLabel = (type) => (type === "MANUAL" ? "Penilaian Langsung" : "Kumpul Online");
+const assignmentTypeBadgeClass = (type) => (type === "MANUAL" ? "bg-amber-100 text-amber-800" : "bg-blue-100 text-blue-800");
+
+// =======================
+// RESET FORM
+// =======================
 const resetMaterialForm = () => {
   editingMaterialId.value = null;
   materialForm.title = "";
@@ -798,43 +801,17 @@ const resetAssignmentForm = () => {
   assignmentFile.value = null;
 };
 
-const assignmentTypeLabel = (type) => {
-  if (type === "MANUAL") return "Ujian di Luar LMS";
-  return "Tugas File";
-};
+const handleMaterialFile = (e) => { materialFile.value = e.target.files?.[0] || null; };
+const handleAssignmentFile = (e) => { assignmentFile.value = e.target.files?.[0] || null; };
 
-const assignmentTypeBadgeClass = (type) => {
-  if (type === "MANUAL") {
-    return "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300";
-  }
-
-  return "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300";
-};
-
-const assignmentDeliveryLabel = (type) => (type === "MANUAL" ? "Di Luar LMS" : "Dalam LMS");
-
-const assignmentDeliveryBadgeClass = (type) => {
-  if (type === "MANUAL") {
-    return "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300";
-  }
-
-  return "bg-sky-50 text-sky-700 dark:bg-cyan-500/10 dark:text-cyan-300";
-};
-
-const handleMaterialFile = (event) => {
-  materialFile.value = event.target.files?.[0] || null;
-};
-
-const handleAssignmentFile = (event) => {
-  assignmentFile.value = event.target.files?.[0] || null;
-};
-
+// =======================
+// MANAJEMEN MODAL
+// =======================
 const openMaterialModal = (mode = "manual") => {
   resetMaterialForm();
   materialCreationMode.value = mode;
   materialModalOpen.value = true;
 };
-
 const openMaterialEditModal = (item) => {
   resetMaterialForm();
   editingMaterialId.value = item.id;
@@ -843,24 +820,7 @@ const openMaterialEditModal = (item) => {
   materialForm.content = item.content || "";
   materialModalOpen.value = true;
 };
-
-const closeMaterialModal = () => {
-  materialModalOpen.value = false;
-  resetMaterialForm();
-};
-
-const openDeleteModal = (type, item) => {
-  deleteTargetType.value = type;
-  deleteTargetItem.value = item;
-  isDeleteModalOpen.value = true;
-};
-
-const closeDeleteModal = () => {
-  isDeleteModalOpen.value = false;
-  isDeletingItem.value = false;
-  deleteTargetType.value = "";
-  deleteTargetItem.value = null;
-};
+const closeMaterialModal = () => { materialModalOpen.value = false; resetMaterialForm(); };
 
 const openAssignmentEditModal = (item) => {
   resetAssignmentForm();
@@ -873,13 +833,63 @@ const openAssignmentEditModal = (item) => {
   assignmentModalOpen.value = true;
 };
 
-const resetAiPreview = () => {
-  materialAiPreview.value = null;
+const openDeleteModal = (type, item) => {
+  deleteTargetType.value = type;
+  deleteTargetItem.value = item;
+  isDeleteModalOpen.value = true;
 };
 
+const closeAssignmentActions = () => {
+  openAssignmentActionId.value = null;
+};
+
+const toggleAssignmentActions = (id, event) => {
+  if (openAssignmentActionId.value === id) {
+    closeAssignmentActions();
+    return;
+  }
+
+  const target = event?.currentTarget;
+  const rect = target?.getBoundingClientRect?.();
+  if (rect) {
+    assignmentActionMenuStyle.value = {
+      top: `${Math.round(rect.bottom + 8)}px`,
+      right: `${Math.max(8, Math.round(window.innerWidth - rect.right))}px`,
+    };
+  }
+
+  openAssignmentActionId.value = id;
+};
+
+const handleAssignmentAction = (action, item) => {
+  closeAssignmentActions();
+
+  if (action === "grade") {
+    loadSubmissions(item);
+    return;
+  }
+
+  if (action === "edit") {
+    openAssignmentEditModal(item);
+    return;
+  }
+
+  if (action === "delete") {
+    openDeleteModal("assignment", item);
+  }
+};
+const closeDeleteModal = () => {
+  isDeleteModalOpen.value = false;
+  isDeletingItem.value = false;
+  deleteTargetType.value = "";
+  deleteTargetItem.value = null;
+};
+
+// =======================
+// FUNGSI API
+// =======================
 const loadSubjects = async () => {
   subjectError.value = "";
-
   try {
     subjects.value = await masterDataStore.getTeacherSubjects({ force: true });
     if (!selectedSubject.value && subjects.value.length > 0) {
@@ -892,7 +902,6 @@ const loadSubjects = async () => {
 
 const loadSubjectData = async () => {
   if (!selectedSubject.value) return;
-
   const [materialResponse, assignmentResponse] = await Promise.all([
     api.get(`/learning/subjects/${selectedSubject.value.id}/materials`),
     api.get(`/learning/subjects/${selectedSubject.value.id}/assignments`),
@@ -911,83 +920,51 @@ const loadSubjectData = async () => {
           submission_count: Array.isArray(submissionResponse?.data) ? submissionResponse.data.length : 0,
         };
       } catch (error) {
-        return {
-          ...assignment,
-          submissions: [],
-          submission_count: 0,
-        };
+        return { ...assignment, submissions: [], submission_count: 0 };
       }
     }),
   );
-};
-
-const selectSubject = async (subject) => {
-  selectedSubject.value = subject;
-  selectedAssignment.value = null;
-  submissions.value = [];
-  submissionSearch.value = ""; // Reset search saat ganti mapel
-  submissionFilter.value = "ALL";
-  message.value = "";
-  activeTab.value = "materials";
-  await loadSubjectData();
 };
 
 const submitMaterial = async () => {
   if (!selectedSubject.value) return;
 
   if (materialCreationMode.value === "ai-pptx") {
-    if (!materialAiPreview.value) {
-      await generateAiMaterialPreview();
-      return;
-    }
-
-    isPublishingAiMaterial.value = true;
-    message.value = "";
-    isError.value = false;
-
+    if (!materialAiPreview.value) { await generateAiMaterialPreview(); return; }
+    isPublishingAiMaterial.value = true; message.value = ""; isError.value = false;
     try {
       const response = await api.post(`/learning/subjects/${selectedSubject.value.id}/materials/publish-ai-pptx`, {
-        title: materialForm.title,
-        content: materialForm.content || "",
+        title: materialForm.title, content: materialForm.content || "",
         presentation_title: materialAiPreview.value.presentation_title,
         slides: materialAiPreview.value.slides,
       });
-
-      message.value = response?.message || "Materi PowerPoint AI berhasil dipublikasikan";
+      message.value = response?.message || "Materi AI berhasil dipublikasikan";
       closeMaterialModal();
       await loadSubjectData();
     } catch (error) {
-      isError.value = true;
-      message.value = error.message;
+      isError.value = true; message.value = error.message;
     } finally {
       isPublishingAiMaterial.value = false;
     }
-
     return;
   }
 
-  isSavingMaterial.value = true;
-  message.value = "";
-  isError.value = false;
-
+  isSavingMaterial.value = true; message.value = ""; isError.value = false;
   try {
     const payload = new FormData();
     payload.append("subject_id", String(selectedSubject.value.id));
     payload.append("title", materialForm.title || "");
     payload.append("content", materialForm.content || "");
-    if (materialFile.value) {
-      payload.append("attachment", materialFile.value);
-    }
+    if (materialFile.value) payload.append("attachment", materialFile.value);
 
     const response = editingMaterialId.value
       ? await api.put(`/learning/materials/${editingMaterialId.value}`, payload)
       : await api.post("/learning/materials", payload);
-    message.value = response?.message || (editingMaterialId.value ? "Materi berhasil diperbarui" : "Materi berhasil ditambahkan");
+    message.value = response?.message || "Data berhasil disimpan";
     closeMaterialModal();
     await loadSubjectData();
   } catch (error) {
-    isError.value = true;
-    message.value = error.message;
+    isError.value = true; message.value = error.message;
   } finally {
     isSavingMaterial.value = false;
   }
@@ -995,60 +972,29 @@ const submitMaterial = async () => {
 
 const generateAiMaterialPreview = async () => {
   if (!selectedSubject.value) return;
-
-    isGeneratingAiMaterial.value = true;
-    message.value = "";
-    isError.value = false;
-
-    try {
-      const response = await api.post(`/learning/subjects/${selectedSubject.value.id}/materials/generate-ai-pptx`, {
-        title: materialForm.title,
-        content: materialForm.content || "",
-        topic: materialAiForm.topic,
-        slide_count: materialAiForm.slide_count,
-        learning_goals: materialAiForm.learning_goals || "",
-        additional_instructions: materialAiForm.additional_instructions || "",
-      });
-
-      materialAiPreview.value = {
-        presentation_title: response?.data?.presentation_title || materialForm.title,
-        summary: response?.data?.summary || materialForm.content || "",
-        slides: Array.isArray(response?.data?.slides) ? response.data.slides : [],
-      };
-      message.value = response?.message || "Preview PowerPoint AI berhasil dibuat";
-    } catch (error) {
-      isError.value = true;
-      message.value = error.message;
-    } finally {
-      isGeneratingAiMaterial.value = false;
-    }
-};
-
-const deleteMaterial = async (item) => {
-  openDeleteModal("material", item);
-};
-
-const performDeleteMaterial = async (item) => {
-  message.value = "";
-  isError.value = false;
-
+  isGeneratingAiMaterial.value = true; message.value = ""; isError.value = false;
   try {
-    const response = await api.delete(`/learning/materials/${item.id}`);
-    message.value = response?.message || "Materi berhasil dihapus";
-    await loadSubjectData();
+    const response = await api.post(`/learning/subjects/${selectedSubject.value.id}/materials/generate-ai-pptx`, {
+      title: materialForm.title, content: materialForm.content || "",
+      topic: materialAiForm.topic, slide_count: materialAiForm.slide_count,
+      learning_goals: materialAiForm.learning_goals || "", additional_instructions: materialAiForm.additional_instructions || "",
+    });
+    materialAiPreview.value = {
+      presentation_title: response?.data?.presentation_title || materialForm.title,
+      summary: response?.data?.summary || materialForm.content || "",
+      slides: Array.isArray(response?.data?.slides) ? response.data.slides : [],
+    };
+    message.value = "Berhasil membuat rancangan.";
   } catch (error) {
-    isError.value = true;
-    message.value = error.message;
+    isError.value = true; message.value = error.message;
+  } finally {
+    isGeneratingAiMaterial.value = false;
   }
 };
 
 const submitAssignment = async () => {
   if (!selectedSubject.value) return;
-
-  isSavingAssignment.value = true;
-  message.value = "";
-  isError.value = false;
-
+  isSavingAssignment.value = true; message.value = ""; isError.value = false;
   try {
     const payload = new FormData();
     payload.append("subject_id", String(selectedSubject.value.id));
@@ -1067,65 +1013,42 @@ const submitAssignment = async () => {
     const response = editingAssignmentId.value
       ? await api.put(`/learning/assignments/${editingAssignmentId.value}`, payload)
       : await api.post("/learning/assignments", payload);
-    message.value = response?.message || (editingAssignmentId.value ? "Data penilaian berhasil diperbarui" : "Data penilaian berhasil ditambahkan");
+    message.value = response?.message || "Tugas berhasil disimpan";
     resetAssignmentForm();
     assignmentModalOpen.value = false;
     await loadSubjectData();
   } catch (error) {
-    isError.value = true;
-    message.value = error.message;
+    isError.value = true; message.value = error.message;
   } finally {
     isSavingAssignment.value = false;
   }
 };
 
-const deleteAssignment = async (item) => {
-  openDeleteModal("assignment", item);
-};
-
-const performDeleteAssignment = async (item) => {
-  message.value = "";
-  isError.value = false;
-
-  try {
-    const response = await api.delete(`/learning/assignments/${item.id}`);
-    message.value = response?.message || "Tugas berhasil dihapus";
-    if (selectedAssignment.value?.id === item.id) {
-      selectedAssignment.value = null;
-      submissions.value = [];
-    }
-    await loadSubjectData();
-  } catch (error) {
-    isError.value = true;
-    message.value = error.message;
-  }
-};
-
 const confirmDelete = async () => {
   if (!deleteTargetItem.value) return;
-
-  isDeletingItem.value = true;
-
+  isDeletingItem.value = true; message.value = ""; isError.value = false;
   try {
+    let response;
     if (deleteTargetType.value === "material") {
-      await performDeleteMaterial(deleteTargetItem.value);
+      response = await api.delete(`/learning/materials/${deleteTargetItem.value.id}`);
     } else if (deleteTargetType.value === "assignment") {
-      await performDeleteAssignment(deleteTargetItem.value);
+      response = await api.delete(`/learning/assignments/${deleteTargetItem.value.id}`);
+      if (gradingAssignment.value?.id === deleteTargetItem.value.id) gradingAssignment.value = null;
     }
+    message.value = response?.message || "Data berhasil dihapus";
+    await loadSubjectData();
     closeDeleteModal();
   } catch (error) {
-    closeDeleteModal();
+    isError.value = true; message.value = error.message; closeDeleteModal();
   } finally {
     isDeletingItem.value = false;
   }
 };
 
 const loadSubmissions = async (assignment) => {
-  selectedAssignment.value = assignment;
-  submissionSearch.value = ""; // Reset pencarian saat buka tugas baru
+  gradingAssignment.value = assignment; // Ganti layar menjadi mode Penilaian
+  submissionSearch.value = "";
   submissionFilter.value = "ALL";
-  gradingDeskRef.value?.scrollIntoView({ behavior: "smooth", block: "start" });
-
   try {
     const response = await api.get(`/learning/assignments/${assignment.id}/submissions`);
     submissions.value = (response?.data || []).map((item) => ({
@@ -1135,69 +1058,85 @@ const loadSubmissions = async (assignment) => {
       feedbackDraft: item.feedback ?? "",
     }));
   } catch (error) {
-    isError.value = true;
-    message.value = error.message;
-    submissions.value = [];
+    isError.value = true; message.value = error.message; submissions.value = [];
   }
 };
 
 const submitGrade = async (submission) => {
-  message.value = "";
-  isError.value = false;
-
+  message.value = ""; isError.value = false;
   try {
     const response = await api.post(`/learning/submissions/${submission.id}/grade`, {
       score: submission.scoreDraft === "" ? null : Number(submission.scoreDraft),
       feedback: submission.feedbackDraft || null,
     });
-
-    // Sinkronisasi data di sisi klien agar UI langsung update tanpa loading ulang semua
     submission.score = submission.scoreDraft === "" ? null : Number(submission.scoreDraft);
     submission.feedback = submission.feedbackDraft || null;
-
     message.value = response?.message || "Nilai berhasil disimpan";
-
-    // Perbarui jumlah submission terhitung pada assignments (opsional)
     await loadSubjectData();
   } catch (error) {
-    isError.value = true;
-    message.value = error.message;
+    isError.value = true; message.value = error.message;
   }
 };
 
 onMounted(loadSubjects);
 
-watch(materialCreationMode, () => {
-  resetAiPreview();
+watch(materialCreationMode, () => { materialAiPreview.value = null; });
+watch(() => [materialForm.title, materialForm.content, materialAiForm.topic, materialAiForm.slide_count, materialAiForm.learning_goals, materialAiForm.additional_instructions], () => {
+  if (materialCreationMode.value === "ai-pptx") materialAiPreview.value = null;
 });
-
-watch(
-  () => [
-    materialForm.title,
-    materialForm.content,
-    materialAiForm.topic,
-    materialAiForm.slide_count,
-    materialAiForm.learning_goals,
-    materialAiForm.additional_instructions,
-  ],
-  () => {
-    if (materialCreationMode.value === "ai-pptx") {
-      resetAiPreview();
-    }
-  },
-);
 
 watch(subjectError, (value) => {
-  if (!value) return;
-  pushToast({ title: "Gagal Memuat Pembelajaran", message: value, type: "error" });
+  if (value) pushToast({ title: "Gagal Memuat", message: value, type: "error" });
 });
-
 watch(message, (value) => {
-  if (!value) return;
-  pushToast({
-    title: isError.value ? "Aksi Pembelajaran Gagal" : "Aksi Pembelajaran Berhasil",
-    message: value,
-    type: isError.value ? "error" : "success",
-  });
+  if (value) pushToast({ title: isError.value ? "Gagal" : "Berhasil", message: value, type: isError.value ? "error" : "success" });
 });
 </script>
+
+<style scoped>
+.learning-teacher-page :deep(.text-3xl) {
+  font-size: 1.25rem !important;
+  line-height: 1.6rem !important;
+}
+
+.learning-teacher-page :deep(.text-2xl) {
+  font-size: 1.125rem !important;
+  line-height: 1.5rem !important;
+}
+
+.learning-teacher-page :deep(.text-xl) {
+  font-size: 1rem !important;
+  line-height: 1.4rem !important;
+}
+
+.learning-teacher-page :deep(.text-lg) {
+  font-size: 0.9375rem !important;
+  line-height: 1.35rem !important;
+}
+
+.learning-teacher-page :deep(.text-base) {
+  font-size: 0.875rem !important;
+  line-height: 1.3rem !important;
+}
+
+.learning-teacher-page :deep(.text-sm) {
+  font-size: 0.8125rem !important;
+  line-height: 1.2rem !important;
+}
+
+.learning-teacher-page :deep(.text-xs) {
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+}
+
+.modal-shell {
+  transform: scale(0.96);
+  transform-origin: center top;
+}
+
+@media (max-width: 640px) {
+  .modal-shell {
+    transform: scale(1);
+  }
+}
+</style>

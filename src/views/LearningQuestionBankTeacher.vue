@@ -1,19 +1,23 @@
 <template>
-  <div class="min-h-screen bg-slate-50 p-4 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
+  <div
+    class="learning-question-bank-page min-h-screen bg-slate-50 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
 
+    <main class="min-h-screen">
+      <section class="border-b-2 border-slate-200 bg-white px-5 py-4 dark:border-slate-800 dark:bg-slate-900 md:px-7">
+        <div class="flex flex-col gap-1">
+          <h1 class="text-xl font-bold text-slate-900 dark:text-white">Bank Soal</h1>
+        </div>
 
-    <main class="mx-auto mt-8 max-w-[1400px]">
+        <div v-if="subjectError"
+          class="mt-4 rounded-xl bg-rose-50 p-3 text-sm font-medium text-rose-700 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
+          {{ subjectError }}
+        </div>
 
-      <section class="mb-8">
-
-
-        <div
-          class="flex flex-nowrap gap-3 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <nav
+          class="mt-4 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button v-for="item in subjects" :key="item.id" @click="selectSubject(item)"
-            class="group relative flex min-w-[240px] flex-none snap-start flex-col items-start overflow-hidden rounded-2xl p-4 text-left transition-all"
-            :class="selectedSubject?.id === item.id
-              ? 'bg-sky-600 shadow-md ring-1 ring-sky-600 dark:bg-sky-500'
-              : 'bg-white shadow-sm ring-1 ring-slate-900/5 hover:bg-slate-50 dark:bg-slate-900 dark:ring-white/10 dark:hover:bg-slate-800/80'">
+            class="group relative flex min-w-[240px] flex-none flex-col items-start overflow-hidden rounded-2xl p-4 text-left transition-all"
+            :class="selectedSubject?.id === item.id ? subjectCardClass(true) : subjectCardClass(false)">
             <span :class="selectedSubject?.id === item.id ? 'text-white' : 'text-slate-900 dark:text-white'"
               class="font-bold tracking-tight">{{ item.name }}</span>
             <span :class="selectedSubject?.id === item.id ? 'text-sky-200' : 'text-slate-500 dark:text-slate-400'"
@@ -23,270 +27,172 @@
             <div v-if="selectedSubject?.id === item.id"
               class="absolute right-4 top-4 h-2 w-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
           </button>
-        </div>
+        </nav>
       </section>
 
-      <div>
-        <div v-if="selectedSubject"
-          class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
-
-          <div class="border-b border-slate-100 bg-slate-50/50 px-6 pt-6 dark:border-slate-800 dark:bg-slate-800/20">
-            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ selectedSubject.name }}</h2>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              {{ selectedSubject.class_name }} &bull; {{ selectedSubject.description || "Tidak ada deskripsi." }}
-            </p>
-
+      <div v-if="selectedSubject">
+        <header class="border-b-2 border-slate-200 bg-white p-5 md:p-7 dark:border-slate-800 dark:bg-slate-900">
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ selectedSubject.name }}</h2>
+              <p class="mt-1.5 text-sm text-slate-600 dark:text-slate-300">
+                {{ selectedSubject.class_name }} &bull; {{ selectedSubject.description || "Tidak ada deskripsi." }}
+              </p>
+            </div>
+            <div class="flex flex-col gap-3 sm:flex-row">
+              <button @click="openAiGeneratorModal"
+                class="inline-flex items-center justify-center rounded-lg border-2 border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                Buat Soal dengan AI
+              </button>
+              <button @click="questionBankModalOpen = true"
+                class="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700">
+                Tambah Soal
+              </button>
+            </div>
           </div>
+        </header>
 
-          <div class="space-y-6 p-6">
-            <!-- <section class="rounded-2xl border border-slate-100 bg-slate-50/70 p-5 dark:border-slate-800 dark:bg-slate-800/20">
-              <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <h3 class="text-lg font-bold text-slate-900 dark:text-white">Pusat Bank Soal</h3>
-                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    Buat soal baru, impor dari Word, review, dan rapikan bank soal mapel ini dari satu halaman khusus.
-                  </p>
+        <div class="space-y-4 p-5 md:p-7">
+          <section
+            class="overflow-hidden rounded-xl border-2 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+            <div class="border-b border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+              <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                <div class="flex flex-col gap-3 md:flex-row md:items-center">
+                  <input v-model="bankSearch" type="text" placeholder="Cari soal..."
+                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white md:w-64" />
+                  <select v-model="bankTypeFilter"
+                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white md:w-44">
+                    <option value="ALL">Semua Jenis</option>
+                    <option value="MCQ">Pilihan Ganda</option>
+                    <option value="ESSAY">Uraian</option>
+                  </select>
+                  <select v-model="bankPageSize"
+                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white md:w-32">
+                    <option :value="10">10 soal</option>
+                    <option :value="20">20 soal</option>
+                    <option :value="50">50 soal</option>
+                  </select>
                 </div>
-                <div class="flex flex-wrap gap-3">
-                  <router-link to="/learning-quiz-teacher"
-                    class="inline-flex h-10 items-center justify-center rounded-lg bg-white px-4 text-sm font-medium text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">
-                    Kembali ke Quiz
-                  </router-link>
-                  <button @click="openAiGeneratorModal"
-                    class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M9.813 15.904L9 18l-.813-2.096a2.25 2.25 0 00-1.341-1.341L4.75 13.75l2.096-.813a2.25 2.25 0 001.341-1.341L9 9.5l.813 2.096a2.25 2.25 0 001.341 1.341l2.096.813-2.096.813a2.25 2.25 0 00-1.341 1.341zM18.25 8.75L18 10l-.25-1.25a1.5 1.5 0 00-.938-.938L15.5 7.5l1.312-.312a1.5 1.5 0 00.938-.938L18 5l.25 1.25a1.5 1.5 0 00.938.938L20.5 7.5l-1.312.312a1.5 1.5 0 00-.938.938z" />
-                    </svg>
-                    Generate dengan AI
-                  </button>
-                  <button @click="questionBankModalOpen = true"
-                    class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    Buat Soal Baru
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between xl:justify-end">
+                  <span class="text-sm text-slate-500 dark:text-slate-400">
+                    {{ questionBankTotal }} soal &bull; {{ assignmentForm.selected_question_bank_ids.length }} dicentang
+                  </span>
+                  <button @click="selectAllCurrentBankPage" type="button"
+                    class="rounded-lg border border-blue-600 bg-white px-3 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-300">
+                    Centang Halaman Ini
                   </button>
                 </div>
               </div>
-            </section> -->
+            </div>
 
-            <div
-              class="flex flex-col gap-4 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-900/5 dark:bg-slate-800/50 dark:ring-white/5 lg:flex-row lg:items-center lg:justify-between">
+            <div v-if="assignmentForm.selected_question_bank_ids.length > 0"
+              class="flex flex-col gap-3 border-b-2 border-slate-200 bg-blue-50 px-4 py-3 dark:border-slate-700 dark:bg-blue-500/10 md:flex-row md:items-center md:justify-between">
               <div>
-                <h3 class="font-semibold text-slate-900 dark:text-white">Bank Soal</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400">Total {{ questionBankTotal }} soal tersimpan untuk
-                  mapel ini. Pemilihan soal di tabel bawah langsung masuk ke konfigurasi quiz.</p>
+                <p class="text-sm font-bold text-blue-900 dark:text-blue-200">
+                  {{ assignmentForm.selected_question_bank_ids.length }} soal sedang dicentang
+                </p>
+                <p class="mt-1 text-xs text-blue-700 dark:text-blue-300">
+                  Kosongkan centang tidak menghapus soal. Hapus permanen akan meminta konfirmasi merah.
+                </p>
               </div>
-              <div class="flex flex-wrap gap-3">
-                <button @click="openAiGeneratorModal"
-                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60">
-                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M9.813 15.904L9 18l-.813-2.096a2.25 2.25 0 00-1.341-1.341L4.75 13.75l2.096-.813a2.25 2.25 0 001.341-1.341L9 9.5l.813 2.096a2.25 2.25 0 001.341 1.341l2.096.813-2.096.813a2.25 2.25 0 00-1.341 1.341zM18.25 8.75L18 10l-.25-1.25a1.5 1.5 0 00-.938-.938L15.5 7.5l1.312-.312a1.5 1.5 0 00.938-.938L18 5l.25 1.25a1.5 1.5 0 00.938.938L20.5 7.5l-1.312.312a1.5 1.5 0 00-.938.938z" />
-                  </svg>
-                  Generate AI
+              <div class="flex flex-col gap-2 sm:flex-row">
+                <button @click="clearSelectedQuestions" type="button"
+                  class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200">
+                  Kosongkan Centang
                 </button>
-                <button @click="questionBankModalOpen = true"
-                  class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60">
-                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                  </svg>
-                  Buat Soal Baru
+                <button @click="deleteSelectedQuestionBankItems" type="button" :disabled="isSavingQuestionPreview"
+                  class="rounded-lg bg-rose-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-rose-600 disabled:opacity-50">
+                  Hapus Soal
                 </button>
               </div>
             </div>
 
-            <section v-if="false"
-              class="grid gap-5 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:grid-cols-[1.15fr,0.85fr]">
-              <div class="space-y-3">
-                <div>
-                  <h3 class="font-semibold text-slate-900 dark:text-white">Impor soal dari template MS Word</h3>
-                  <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                    Unduh template `.docx`, isi sesuai format yang sudah disediakan, lalu unggah kembali.
-                  </p>
-                </div>
-                <div class="flex flex-wrap gap-3">
-                  <button type="button" @click="downloadQuestionBankTemplate('MCQ')" :disabled="isDownloadingTemplate"
-                    class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50">
-                    {{ isDownloadingTemplate ? "Menyiapkan..." : "Download Template Pilihan Ganda" }}
-                  </button>
-                </div>
-              </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-left text-sm">
+                <thead class="bg-white text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-900">
+                  <tr>
+                    <th class="w-12 px-4 py-3 font-semibold">Pilih</th>
+                    <th class="px-4 py-3 font-semibold">Soal</th>
+                    <th class="px-4 py-3 font-semibold">Jenis</th>
+                    <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-900">
+                  <tr v-for="item in paginatedQuestionBank" :key="item.id"
+                    class="align-top hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                    <td class="px-4 py-3">
+                      <input v-model="assignmentForm.selected_question_bank_ids" type="checkbox" :value="item.id"
+                        class="mt-1 h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-600 dark:border-slate-600 dark:bg-slate-800" />
+                    </td>
+                    <td class="px-4 py-3">
+                      <p class="max-w-3xl text-sm font-semibold leading-5 text-slate-900 dark:text-white">
+                        {{ parseQuestionContent(item.question_text).question_text }}
+                      </p>
+                      <img v-if="parseQuestionContent(item.question_text).question_image_url"
+                        :src="parseQuestionContent(item.question_text).question_image_url" alt="Gambar pertanyaan"
+                        class="mt-3 max-h-40 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+                      <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                        Dibuat: {{ formatDateTime(item.created_at) }}
+                      </p>
+                    </td>
+                    <td class="px-4 py-3">
+                      <span class="inline-flex rounded-md border px-2.5 py-1 text-xs font-bold"
+                        :class="item.question_type === 'MCQ'
+                          ? 'border-blue-700 bg-blue-50 text-blue-800 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300'
+                          : 'border-amber-700 bg-amber-50 text-amber-800 dark:border-amber-500 dark:bg-amber-900/30 dark:text-amber-300'">
+                        {{ assignmentTypeLabel(item.question_type) }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                      <button type="button" @click="openQuestionPreview(item, 'bank')"
+                        class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                        Lihat / Edit
+                      </button>
+                    </td>
+                  </tr>
+                  <tr v-if="paginatedQuestionBank.length === 0">
+                    <td colspan="4" class="px-4 py-12 text-center">
+                      <p class="text-base font-semibold text-slate-500 dark:text-slate-400">Belum Ada Soal</p>
+                      <p class="mt-2 text-sm text-slate-500 dark:text-slate-500">Soal yang cocok dengan pencarian akan
+                        muncul di sini.</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-              <div v-if="false"
-                class="space-y-3 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-900/5 dark:bg-slate-800/50 dark:ring-white/5">
-                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500">Upload Dokumen Template
-                  Soal</label>
-                <input ref="questionBankDocumentInput" type="file" accept=".docx"
-                  @change="handleQuestionBankDocumentChange"
-                  class="block w-full rounded-xl border-0 bg-white px-3 py-2.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 file:mr-3 file:rounded-lg file:border-0 file:bg-sky-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-sky-700 dark:bg-slate-900 dark:text-white dark:ring-slate-700 dark:file:bg-sky-500/10 dark:file:text-sky-300" />
-                <p class="text-xs leading-5 text-slate-500 dark:text-slate-400">
-                  Format didukung: `.docx` (template Word).
-                </p>
-                <div v-if="questionBankImportFileName"
-                  class="rounded-xl bg-white px-3 py-2 text-sm text-slate-600 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700">
-                  File dipilih: {{ questionBankImportFileName }}
-                </div>
-                <button type="button" @click="importQuestionBankDocument"
-                  :disabled="isImportingQuestionBank || !questionBankImportFile"
-                  class="w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50">
-                  {{ isImportingQuestionBank ? "Mengimpor soal..." : "Upload dan Import Soal" }}
+            <div
+              class="flex flex-col gap-3 border-t-2 border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
+              <p class="text-sm text-slate-500 dark:text-slate-400">
+                Menampilkan {{ bankStartRow }} - {{ bankEndRow }} dari {{ questionBankTotal }} soal
+              </p>
+              <div class="flex gap-2">
+                <button @click="bankCurrentPage = Math.max(1, bankCurrentPage - 1)" :disabled="bankCurrentPage === 1"
+                  class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                  Sebelumnya
+                </button>
+                <button @click="bankCurrentPage = Math.min(bankTotalPages, bankCurrentPage + 1)"
+                  :disabled="bankCurrentPage === bankTotalPages"
+                  class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                  Berikutnya
                 </button>
               </div>
-            </section>
-
-            <section class="overflow-hidden rounded-2xl border border-slate-100 dark:border-slate-800">
-              <div class="border-b border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-                <div class="grid gap-4 md:grid-cols-4">
-                  <div class="relative md:col-span-2">
-                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                      <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                      </svg>
-                    </div>
-                    <input v-model="bankSearch" type="text" placeholder="Cari pertanyaan..."
-                      class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-9 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                  </div>
-                  <select v-model="bankTypeFilter"
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-3 pr-10 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
-                    <option value="ALL">Semua Tipe Soal</option>
-                    <option value="MCQ">Pilihan Ganda</option>
-                    <option value="ESSAY">Essay</option>
-                  </select>
-                  <select v-model="bankPageSize"
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-3 pr-10 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
-                    <option :value="10">Tampilkan 10 baris</option>
-                    <option :value="20">Tampilkan 20 baris</option>
-                    <option :value="50">Tampilkan 50 baris</option>
-                  </select>
-                </div>
-              </div>
-
-              <div
-                class="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/50 px-5 py-3 dark:border-slate-800 dark:bg-slate-800/20 md:flex-row md:items-center md:justify-between">
-                <div class="text-sm font-medium text-slate-500">
-                  Halaman <span class="text-slate-900 dark:text-white">{{ bankCurrentPage }}</span> dari {{
-                    bankTotalPages }}
-                </div>
-                <div class="flex gap-2">
-                  <button @click="deleteSelectedQuestionBankItems" v-if="assignmentForm.selected_question_bank_ids.length > 0"
-                    :disabled="isSavingQuestionPreview"
-                    class="rounded-lg px-3 py-1.5 text-xs font-semibold shadow-sm transition disabled:opacity-50"
-                    :class="pendingDeleteQuestionId === 'bulk-delete'
-                      ? 'bg-rose-600 text-white hover:bg-rose-500'
-                      : 'bg-rose-50 text-rose-700 ring-1 ring-rose-200 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20 dark:hover:bg-rose-500/20'">
-                    {{ pendingDeleteQuestionId === 'bulk-delete'
-                      ? `Klik Lagi Hapus ${assignmentForm.selected_question_bank_ids.length} Soal`
-                      : `Hapus Soal Terpilih (${assignmentForm.selected_question_bank_ids.length})` }}
-                  </button>
-                  <button @click="selectAllCurrentBankPage"
-                    class="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm ring-1 ring-slate-200 transition hover:bg-sky-50 dark:bg-slate-800 dark:text-sky-400 dark:ring-slate-700 dark:hover:bg-slate-700">
-                    Pilih Semua Halaman Ini
-                  </button>
-                  <button @click="clearSelectedQuestions" v-if="assignmentForm.selected_question_bank_ids.length > 0"
-                    class="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
-                    Hapus Pilihan ({{ assignmentForm.selected_question_bank_ids.length }})
-                  </button>
-                </div>
-              </div>
-
-              <div class="overflow-x-auto">
-                <table class="min-w-full text-left text-sm">
-                  <thead class="bg-white text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-900">
-                    <tr>
-                      <th class="w-12 px-5 py-4 font-semibold">Pilih</th>
-                      <th class="px-5 py-4 font-semibold">Pertanyaan</th>
-                      <th class="px-5 py-4 font-semibold">Tipe</th>
-                      <th class="px-5 py-4 font-semibold">Status Penggunaan</th>
-                      <th class="px-5 py-4 font-semibold text-right">Review</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-900">
-                    <tr v-for="item in paginatedQuestionBank" :key="item.id"
-                      class="group transition hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                      <td class="px-5 py-4 align-top">
-                        <input v-model="assignmentForm.selected_question_bank_ids" type="checkbox" :value="item.id"
-                          class="mt-1 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-600 dark:border-slate-600 dark:bg-slate-800" />
-                      </td>
-                      <td class="px-5 py-4">
-                        <p class="max-w-3xl font-medium leading-relaxed text-slate-900 dark:text-white">{{
-                          parseQuestionContent(item.question_text).question_text }}</p>
-                        <img v-if="parseQuestionContent(item.question_text).question_image_url"
-                          :src="parseQuestionContent(item.question_text).question_image_url" alt="Gambar pertanyaan"
-                          class="mt-2 max-h-40 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
-                        <p class="mt-1 text-xs text-slate-400">Dibuat: {{ formatDateTime(item.created_at) }}</p>
-                      </td>
-                      <td class="px-5 py-4 align-top">
-                        <span
-                          class="inline-flex items-center rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset"
-                          :class="item.question_type === 'MCQ' ? 'bg-indigo-50 text-indigo-700 ring-indigo-600/20 dark:bg-indigo-500/10 dark:text-indigo-300' : 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-300'">
-                          {{ assignmentTypeLabel(item.question_type) }}
-                        </span>
-                      </td>
-                      <td class="px-5 py-4 align-top">
-                        <div v-if="Number(item.usage_count) > 0"
-                          class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
-                          <svg class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                          </svg>
-                          <span class="font-medium">Terpakai ({{ item.usage_count }}x)</span>
-                        </div>
-                        <span v-else class="text-slate-400">Belum terpakai</span>
-                      </td>
-                      <td class="px-5 py-4 align-top text-right">
-                        <button type="button" @click="openQuestionPreview(item, 'bank')"
-                          class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
-                          Review
-                        </button>
-                      </td>
-                    </tr>
-                    <tr v-if="paginatedQuestionBank.length === 0">
-                      <td colspan="5" class="px-5 py-12 text-center">
-                        <div class="text-sm text-slate-500">Tidak ada soal yang cocok dengan pencarian.</div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div
-                class="flex items-center justify-between border-t border-slate-100 bg-white px-5 py-3 dark:border-slate-800 dark:bg-slate-900">
-                <p class="text-sm text-slate-500">Menampilkan {{ bankStartRow }} - {{ bankEndRow }} dari {{
-                  filteredQuestionBank.length }}</p>
-                <div class="flex gap-2">
-                  <button @click="bankCurrentPage = Math.max(1, bankCurrentPage - 1)" :disabled="bankCurrentPage === 1"
-                    class="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-800">
-                    Sebelumnya
-                  </button>
-                  <button @click="bankCurrentPage = Math.min(bankTotalPages, bankCurrentPage + 1)"
-                    :disabled="bankCurrentPage === bankTotalPages"
-                    class="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-800">
-                    Berikutnya
-                  </button>
-                </div>
-              </div>
-            </section>
-          </div>
+            </div>
+          </section>
         </div>
+      </div>
 
-        <div v-else
-          class="flex min-h-[500px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white/50 px-6 py-12 text-center dark:border-slate-800 dark:bg-slate-900/50">
-          <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-            <svg class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-            </svg>
-          </div>
-          <h3 class="text-lg font-bold text-slate-900 dark:text-white">Pilih Mata Pelajaran</h3>
-          <p class="mt-2 max-w-sm text-sm text-slate-500 dark:text-slate-400">Silakan pilih mata pelajaran dari menu di
-            atas untuk mulai mengelola bank soal dan menerbitkan quiz.</p>
+      <div v-else
+        class="flex min-h-[500px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white/50 px-6 py-12 text-center dark:border-slate-800 dark:bg-slate-900/50">
+        <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+          <svg class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+          </svg>
         </div>
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Pilih Mata Pelajaran</h3>
+        <p class="mt-2 max-w-sm text-sm text-slate-500 dark:text-slate-400">Silakan pilih mata pelajaran dari menu di
+          atas untuk mulai mengelola bank soal dan menerbitkan quiz.</p>
       </div>
     </main>
 
@@ -303,16 +209,12 @@
           <div
             class="flex flex-none items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
             <div>
-              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Generate Soal dengan AI</h2>
-              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Soal akan dibuat oleh AI dan langsung disimpan ke bank soal mapel ini.
-              </p>
+              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Buat Soal dengan AI</h2>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Ikuti langkah dari atas ke bawah.</p>
             </div>
             <button @click="aiGeneratorModalOpen = false"
-              class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+              Tutup
             </button>
           </div>
 
@@ -320,102 +222,142 @@
             <fieldset :disabled="isGeneratingAiQuestions" class="flex min-h-0 flex-1 flex-col">
               <div ref="aiGeneratorScrollRef"
                 class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-32 pt-4 [-webkit-overflow-scrolling:touch] sm:p-6">
-                <div class="space-y-6">
-                  <div class="grid gap-5 md:grid-cols-2">
-                    <div class="space-y-1.5">
-                      <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tipe Soal</label>
-                      <select v-model="aiGeneratorForm.question_type"
-                        class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
-                        <option value="MCQ">Pilihan Ganda</option>
-                        <option value="ESSAY">Essay</option>
-                      </select>
+                <div class="space-y-4">
+                  <section
+                    class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                    <div class="mb-4 flex items-center gap-3">
+                      <span
+                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">1</span>
+                      <h3 class="text-sm font-bold text-slate-900 dark:text-white">Pilih Bentuk Soal</h3>
                     </div>
-                    <div class="space-y-1.5">
-                      <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jumlah Soal</label>
-                      <input v-model="aiGeneratorForm.question_count" type="number" min="1" max="20"
-                        class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                    </div>
-                  </div>
-
-                  <div class="grid gap-5 md:grid-cols-2">
-                    <div class="space-y-1.5">
-                      <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tingkat Kesulitan</label>
-                      <select v-model="aiGeneratorForm.difficulty"
-                        class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
-                        <option value="MUDAH">Mudah</option>
-                        <option value="MENENGAH">Menengah</option>
-                        <option value="SULIT">Sulit</option>
-                      </select>
-                    </div>
-                    <div class="space-y-1.5">
-                      <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Mapel Aktif</label>
-                      <div
-                        class="rounded-xl bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-800/50 dark:text-slate-200 dark:ring-slate-700/50">
-                        {{ selectedSubject?.name }} • {{ selectedSubject?.class_name }}
+                    <div class="grid gap-4 md:grid-cols-3">
+                      <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-slate-500">Jenis Soal</label>
+                        <select v-model="aiGeneratorForm.question_type"
+                          class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+                          <option value="MCQ">Pilihan Ganda</option>
+                          <option value="ESSAY">Uraian</option>
+                        </select>
+                      </div>
+                      <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-slate-500">Jumlah Soal</label>
+                        <input v-model="aiGeneratorForm.question_count" type="number" min="1" max="20"
+                          class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+                      </div>
+                      <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-slate-500">Tingkat Kesulitan</label>
+                        <select v-model="aiGeneratorForm.difficulty"
+                          class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+                          <option value="MUDAH">Mudah</option>
+                          <option value="MENENGAH">Menengah</option>
+                          <option value="SULIT">Sulit</option>
+                        </select>
                       </div>
                     </div>
-                  </div>
+                  </section>
 
-                  <div class="grid gap-5 md:grid-cols-3">
-                    <div class="space-y-1.5">
-                      <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jenjang / Kelas</label>
-                      <input v-model="aiGeneratorForm.grade_label" type="text" placeholder="Contoh: Kelas 8 SMP"
-                        class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+                  <section
+                    class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                    <div class="mb-4 flex items-center gap-3">
+                      <span
+                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">2</span>
+                      <h3 class="text-sm font-bold text-slate-900 dark:text-white">Isi Materi</h3>
+                    </div>
+                    <div class="space-y-4">
+                      <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-slate-500">Mapel Aktif</label>
+                        <div
+                          class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                          {{ selectedSubject?.name }} • {{ selectedSubject?.class_name }}
+                        </div>
+                      </div>
+                      <div class="grid gap-3 md:grid-cols-3">
+                        <div
+                          class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800">
+                          <p class="text-xs font-semibold text-slate-500">Jenjang / Kelas</p>
+                          <p class="mt-1 text-sm font-bold text-slate-800 dark:text-slate-100">{{ autoAiGradeLabel }}
+                          </p>
+                        </div>
+                        <div
+                          class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800">
+                          <p class="text-xs font-semibold text-slate-500">Fase</p>
+                          <p class="mt-1 text-sm font-bold text-slate-800 dark:text-slate-100">{{ autoAiPhaseName }}</p>
+                        </div>
+                        <div
+                          class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800">
+                          <p class="text-xs font-semibold text-slate-500">Kurikulum</p>
+                          <p class="mt-1 text-sm font-bold text-slate-800 dark:text-slate-100">{{ autoAiCurriculumName
+                          }}</p>
+                        </div>
+                      </div>
+                      <div class="space-y-1.5">
+                        <div class="flex items-center justify-between gap-3">
+                          <label class="text-xs font-semibold text-slate-500">Pilih Materi</label>
+                          <button type="button" @click="loadAiTopicSuggestions" :disabled="isLoadingAiTopicSuggestions"
+                            class="text-xs font-semibold text-blue-700 hover:text-blue-800 disabled:opacity-50 dark:text-blue-300">
+                            {{ isLoadingAiTopicSuggestions ? "Memuat..." : "Muat Ulang" }}
+                          </button>
+                        </div>
+                        <select v-model="aiGeneratorForm.topic"
+                          class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+                          <option value="" disabled>
+                            {{ isLoadingAiTopicSuggestions ? "Memuat daftar materi..." : "Pilih materi..." }}
+                          </option>
+                          <option v-for="topic in aiTopicSuggestions" :key="topic" :value="topic">{{ topic }}</option>
+                          <option value="__custom__">Materi lainnya...</option>
+                        </select>
+                        <input v-if="aiGeneratorForm.topic === '__custom__'" v-model="aiCustomTopic" type="text"
+                          placeholder="Tulis materi sendiri"
+                          class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+                        <p v-if="aiTopicSuggestionError" class="text-xs font-medium text-amber-700 dark:text-amber-300">
+                          {{ aiTopicSuggestionError }}
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section
+                    class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                    <div class="mb-4 flex items-center gap-3">
+                      <span
+                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-700 text-xs font-bold text-white">3</span>
+                      <h3 class="text-sm font-bold text-slate-900 dark:text-white">Tambahan Opsional</h3>
                     </div>
                     <div class="space-y-1.5">
-                      <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Fase</label>
-                      <input v-model="aiGeneratorForm.phase_name" type="text" placeholder="Contoh: Fase D"
-                        class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+                      <label class="text-xs font-semibold text-slate-500">Instruksi Tambahan</label>
+                      <textarea v-model="aiGeneratorForm.additional_instructions" rows="3"
+                        placeholder="Contoh: gunakan konteks kehidupan sehari-hari"
+                        class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
                     </div>
-                    <div class="space-y-1.5">
-                      <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Kurikulum</label>
-                      <input v-model="aiGeneratorForm.curriculum_name" type="text" placeholder="Contoh: Kurikulum Merdeka"
-                        class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                    </div>
-                  </div>
-
-                  <div class="space-y-1.5">
-                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Topik / Materi</label>
-                    <textarea v-model="aiGeneratorForm.topic" rows="3"
-                      placeholder="Contoh: Persamaan linear satu variabel, ekosistem, teks eksplanasi..."
-                      class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                  </div>
-
-                  <div class="space-y-1.5">
-                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Instruksi Tambahan</label>
-                    <textarea v-model="aiGeneratorForm.additional_instructions" rows="4"
-                      placeholder="Contoh: fokus ke HOTS, hindari angka pecahan, gunakan konteks kehidupan sehari-hari..."
-                      class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                  </div>
-
-                  <label
-                    class="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left dark:border-slate-700 dark:bg-slate-800/40">
-                    <input v-model="aiGeneratorForm.include_illustration" type="checkbox"
-                      class="mt-1 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-600 dark:border-slate-600 dark:bg-slate-800" />
-                    <span class="min-w-0">
-                      <span class="block text-sm font-semibold text-slate-900 dark:text-white">Sertakan ilustrasi AI</span>
-                      <span class="mt-1 block text-xs leading-5 text-slate-500 dark:text-slate-400">
-                        AI akan membuat ilustrasi otomatis untuk tiap soal sesuai konteks pertanyaan.
-                      </span>
-                    </span>
-                  </label>
+                    <!-- <label
+                      class="mt-4 flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                      <input v-model="aiGeneratorForm.include_illustration" type="checkbox"
+                        class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600 dark:border-slate-600 dark:bg-slate-800" />
+                      Sertakan gambar jika diperlukan
+                    </label> -->
+                  </section>
 
                   <section v-if="generatedAiQuestions.length" ref="aiPreviewSectionRef"
-                    class="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-700 dark:bg-slate-800/30 sm:p-5">
+                    class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
                     <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                      <div>
-                        <h3 class="text-sm font-semibold text-slate-900 dark:text-white sm:text-base">Preview Soal AI</h3>
-                        <p class="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400 sm:text-sm">
-                          Pilih soal yang ingin disimpan ke bank soal. Saat ini terpilih {{ selectedGeneratedAiQuestions.length }} dari {{ generatedAiQuestions.length }} soal.
-                        </p>
+                      <div class="flex items-center gap-3">
+                        <span
+                          class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">4</span>
+                        <div>
+                          <h3 class="text-sm font-bold text-slate-900 dark:text-white">Cek Hasil</h3>
+                          <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                            {{ selectedGeneratedAiQuestions.length }} dari {{ generatedAiQuestions.length }} soal
+                            dipilih.
+                          </p>
+                        </div>
                       </div>
                       <div class="flex flex-wrap gap-2">
                         <button type="button" @click="selectAllGeneratedAiQuestions"
-                          class="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">
+                          class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                           Pilih Semua
                         </button>
                         <button type="button" @click="clearGeneratedAiSelection"
-                          class="rounded-lg bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">
+                          class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                           Kosongkan Pilihan
                         </button>
                       </div>
@@ -423,7 +365,7 @@
 
                     <div class="mt-4 space-y-4">
                       <article v-for="(item, index) in generatedAiQuestions" :key="item.temp_id"
-                        class="rounded-2xl border bg-white p-4 shadow-sm dark:bg-slate-900"
+                        class="rounded-xl border bg-white p-4 dark:bg-slate-900"
                         :class="selectedGeneratedAiQuestionIds.includes(item.temp_id) ? 'border-sky-300 dark:border-sky-500/40' : 'border-slate-200 dark:border-slate-700'">
                         <div class="flex items-start gap-3">
                           <input v-model="selectedGeneratedAiQuestionIds" :value="item.temp_id" type="checkbox"
@@ -436,27 +378,31 @@
                               </span>
                               <span
                                 class="inline-flex rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
-                                {{ item.question_type === "MCQ" ? "Pilihan Ganda" : "Essay" }}
+                                {{ item.question_type === "MCQ" ? "Pilihan Ganda" : "Uraian" }}
                               </span>
                               <span v-if="getGeneratedQuestionImageUrl(item)"
                                 class="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-                                Ilustrasi AI
+                                Gambar
                               </span>
                             </div>
-                            <p class="mt-3 whitespace-pre-wrap break-words text-xs font-medium leading-5 text-slate-900 dark:text-white sm:text-sm sm:font-semibold sm:leading-6">
-                              {{ normalizeGeneratedQuestionText(parseQuestionContent(item.question_text).question_text) }}
+                            <p
+                              class="mt-3 whitespace-pre-wrap break-words text-xs font-medium leading-5 text-slate-900 dark:text-white sm:text-sm sm:font-semibold sm:leading-6">
+                              {{ normalizeGeneratedQuestionText(parseQuestionContent(item.question_text).question_text)
+                              }}
                             </p>
-                            <img v-if="getGeneratedQuestionImageUrl(item)"
-                              :src="getGeneratedQuestionImageUrl(item)" alt="Gambar pertanyaan"
+                            <img v-if="getGeneratedQuestionImageUrl(item)" :src="getGeneratedQuestionImageUrl(item)"
+                              alt="Gambar pertanyaan"
                               class="mt-3 max-h-48 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
 
                             <div v-if="item.question_type === 'MCQ'" class="mt-4 grid gap-2">
                               <div v-for="(option, optionIndex) in item.options || []"
-                                :key="`${item.temp_id}-option-${optionIndex}`" class="rounded-xl border px-3 py-2 text-xs leading-5 sm:text-sm"
+                                :key="`${item.temp_id}-option-${optionIndex}`"
+                                class="rounded-xl border px-3 py-2 text-xs leading-5 sm:text-sm"
                                 :class="optionIndex === item.correct_option
                                   ? 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300'
                                   : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300'">
-                                <div>{{ String.fromCharCode(65 + optionIndex) }}. {{ normalizePreviewText(parseOptionItem(option).text) }}</div>
+                                <div>{{ String.fromCharCode(65 + optionIndex) }}. {{
+                                  normalizePreviewText(parseOptionItem(option).text) }}</div>
                               </div>
                             </div>
 
@@ -472,7 +418,8 @@
                 </div>
               </div>
 
-              <div class="flex flex-none flex-col gap-2 border-t border-slate-100 bg-slate-50/80 px-4 py-4 dark:border-slate-800 dark:bg-slate-800/50 sm:flex-row sm:items-center sm:justify-end sm:gap-3 sm:px-6">
+              <div
+                class="flex flex-none flex-col gap-2 border-t border-slate-100 bg-slate-50/80 px-4 py-4 dark:border-slate-800 dark:bg-slate-800/50 sm:flex-row sm:items-center sm:justify-end sm:gap-3 sm:px-6">
                 <button @click="aiGeneratorModalOpen = false" type="button"
                   class="w-full rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 sm:w-auto sm:text-sm">
                   Batal
@@ -480,11 +427,13 @@
                 <button v-if="generatedAiQuestions.length" type="button" @click="saveGeneratedAiQuestions"
                   :disabled="isSavingGeneratedAiQuestions || selectedGeneratedAiQuestions.length === 0"
                   class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:text-sm">
-                  {{ isSavingGeneratedAiQuestions ? "Menyimpan..." : `Simpan ${selectedGeneratedAiQuestions.length} Soal` }}
+                  {{ isSavingGeneratedAiQuestions ? "Menyimpan..." : `Simpan ${selectedGeneratedAiQuestions.length}
+                  Soal` }}
                 </button>
                 <button type="submit" :disabled="isGeneratingAiQuestions"
                   class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:text-sm">
-                  {{ isGeneratingAiQuestions ? "Generating..." : generatedAiQuestions.length ? "Generate Ulang" : "Generate" }}
+                  {{ isGeneratingAiQuestions ? "Membuat..." : generatedAiQuestions.length ? `Buat Ulang` : `Buat Soal
+                  dengan AI` }}
                 </button>
               </div>
             </fieldset>
@@ -503,14 +452,13 @@
           <div class="flex items-start gap-4">
             <div
               class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">
-              <svg class="h-6 w-6 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                stroke="currentColor">
+              <svg class="h-6 w-6 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
               </svg>
             </div>
             <div class="min-w-0 flex-1">
-              <h3 class="text-lg font-bold text-slate-900 dark:text-white">Sedang membuat soal AI</h3>
+              <h3 class="text-lg font-bold text-slate-900 dark:text-white">Sedang membuat soal</h3>
               <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">
                 Mohon tunggu sampai proses selesai. Form sedang dikunci agar input tidak berubah.
               </p>
@@ -533,81 +481,107 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
 
         <div
-          class="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          class="flex h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
           @click.stop>
 
           <div
             class="flex flex-none items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
-            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Tambah Soal ke Bank</h2>
+            <div>
+              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Tambah Soal</h2>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Isi pertanyaan dulu, lalu isi jawaban jika bentuknya pilihan ganda.
+              </p>
+            </div>
             <button @click="questionBankModalOpen = false"
-              class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+              Tutup
             </button>
           </div>
 
           <form @submit.prevent="submitQuestionBank" class="flex min-h-0 flex-1 flex-col">
 
-            <div class="flex-1 overflow-y-auto p-5 space-y-4">
+            <div class="flex-1 overflow-y-auto px-5 py-4">
               <div class="space-y-4">
-                <div class="space-y-1.5">
-                  <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tipe Soal</label>
-                  <select v-model="questionBankForm.question_type"
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
-                    <option value="MCQ">Pilihan Ganda</option>
-                    <option value="ESSAY">Essay</option>
-                  </select>
-                </div>
-                <div class="space-y-1.5">
-                  <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Pertanyaan</label>
-                  <textarea v-model="questionBankForm.question_text" rows="3"
-                    placeholder="Tuliskan pertanyaan di sini..."
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                  <div class="mt-2 flex flex-wrap items-center gap-2">
-                    <label
-                      class="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
-                      <input type="file" accept="image/*" class="hidden" @change="uploadQuestionImageForCreate" />
-                      {{ isUploadingQuestionImage ? "Uploading..." : "Upload Gambar Pertanyaan" }}
-                    </label>
-                    <button v-if="questionBankForm.question_image_url" type="button" @click="questionBankForm.question_image_url = ''"
-                      class="rounded-lg bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300">
-                      Hapus Gambar
-                    </button>
+                <section class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                  <div class="mb-4 flex items-center gap-3">
+                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white">1</span>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white">Jenis dan Isi Soal</h3>
                   </div>
-                  <img v-if="questionBankForm.question_image_url" :src="questionBankForm.question_image_url"
-                    alt="Preview gambar pertanyaan"
-                    class="mt-2 max-h-48 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
-                </div>
-              </div>
 
-              <div v-if="questionBankForm.question_type === 'MCQ'" class="grid gap-3">
-                <div v-for="(option, index) in questionBankForm.options" :key="`option-${index}`"
-                  class="rounded-xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                  <div class="mb-3 flex items-center justify-between">
-                    <span
-                      class="flex h-6 w-6 items-center justify-center rounded-md bg-slate-100 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                      {{ String.fromCharCode(65 + index) }}
-                    </span>
-                    <label
-                      class="flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-600 transition hover:text-sky-600 dark:text-slate-400">
-                      <input v-model="questionBankForm.correct_option" type="radio" name="correct-bank" :value="index"
-                        class="h-4 w-4 text-sky-600 focus:ring-sky-600" />
-                      Jawaban Benar
-                    </label>
+                  <div class="space-y-4">
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-semibold text-slate-500">Jenis Soal</label>
+                      <select v-model="questionBankForm.question_type"
+                        class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+                        <option value="MCQ">Pilihan Ganda</option>
+                        <option value="ESSAY">Uraian</option>
+                      </select>
+                    </div>
+
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-semibold text-slate-500">Teks Soal</label>
+                      <textarea v-model="questionBankForm.question_text" rows="4"
+                        placeholder="Tulis soal di sini..."
+                        class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+                      <div class="mt-2 flex flex-wrap items-center gap-2">
+                        <label
+                          class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                          <input type="file" accept="image/*" class="hidden" @change="uploadQuestionImageForCreate" />
+                          {{ isUploadingQuestionImage ? "Memuat gambar..." : "Tambah Gambar Soal" }}
+                        </label>
+                        <button v-if="questionBankForm.question_image_url" type="button"
+                          @click="questionBankForm.question_image_url = ''"
+                          class="rounded-lg bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300">
+                          Hapus Gambar
+                        </button>
+                      </div>
+                      <img v-if="questionBankForm.question_image_url" :src="questionBankForm.question_image_url"
+                        alt="Preview gambar pertanyaan"
+                        class="mt-2 max-h-48 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+                    </div>
                   </div>
-                  <input v-model="questionBankForm.options[index]" type="text"
-                    :placeholder="`Opsi ${String.fromCharCode(65 + index)}`"
-                    class="block w-full rounded-lg border-0 bg-slate-50 py-2 px-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                </div>
-              </div>
+                </section>
 
-              <div v-else class="space-y-1.5">
-                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Rubrik Penilaian
-                  (Opsional)</label>
-                <textarea v-model="questionBankForm.rubric" rows="2"
-                  placeholder="Panduan untuk menilai jawaban essay..."
-                  class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+                <section v-if="questionBankForm.question_type === 'MCQ'"
+                  class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                  <div class="mb-4 flex items-center gap-3">
+                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white">2</span>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white">Opsi Jawaban</h3>
+                  </div>
+                  <div class="space-y-3">
+                    <div v-for="(option, index) in questionBankForm.options" :key="`option-${index}`"
+                      class="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
+                      <div class="flex items-start gap-3">
+                        <label
+                          class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white text-xs font-bold text-slate-700 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700">
+                          {{ String.fromCharCode(65 + index) }}
+                        </label>
+                        <input v-model="questionBankForm.options[index]" type="text"
+                          :placeholder="`Tulis opsi ${String.fromCharCode(65 + index)}`"
+                          class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+                        <label
+                          class="mt-2 flex shrink-0 cursor-pointer items-center gap-2 text-xs font-semibold text-slate-600 transition hover:text-sky-700 dark:text-slate-400">
+                          <input v-model="questionBankForm.correct_option" type="radio" name="correct-bank" :value="index"
+                            class="h-4 w-4 text-sky-600 focus:ring-sky-600" />
+                          Benar
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section v-else class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                  <div class="mb-4 flex items-center gap-3">
+                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white">2</span>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white">Rubrik Penilaian</h3>
+                  </div>
+                  <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-500">Rubrik Penilaian</label>
+                    <textarea v-model="questionBankForm.rubric" rows="3"
+                      placeholder="Tulis panduan penilaian jika diperlukan..."
+                      class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+                  </div>
+                </section>
               </div>
             </div>
 
@@ -714,7 +688,8 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                       <tr v-for="item in quizOverviewModal.submittedStudents" :key="`submitted-${item.id}`">
-                        <td class="px-5 py-3 font-medium text-slate-900 dark:text-white">{{ item.full_name || item.username }}</td>
+                        <td class="px-5 py-3 font-medium text-slate-900 dark:text-white">{{ item.full_name ||
+                          item.username }}</td>
                         <td class="px-5 py-3 text-slate-500 dark:text-slate-400">{{ formatDateTime(item.submitted_at) }}
                         </td>
                         <td class="px-5 py-3 font-bold text-slate-700 dark:text-slate-300">{{ item.score ?? "-" }}</td>
@@ -756,7 +731,8 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                       <tr v-for="item in quizOverviewModal.pendingStudents" :key="`pending-${item.id}`">
-                        <td class="px-5 py-3 font-medium text-slate-900 dark:text-white">{{ item.full_name || item.username }}</td>
+                        <td class="px-5 py-3 font-medium text-slate-900 dark:text-white">{{ item.full_name ||
+                          item.username }}</td>
                         <td class="px-5 py-3 text-slate-500 dark:text-slate-400">{{ item.parent_email || "-" }}</td>
                         <td class="px-5 py-3">
                           <div class="font-semibold"
@@ -830,7 +806,7 @@
           <div
             class="flex flex-none items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
             <div>
-              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Review Soal</h2>
+              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Lihat / Edit Soal</h2>
               <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 {{ questionPreviewModalQuestionHeader }}
               </p>
@@ -927,7 +903,7 @@
               <section v-if="questionPreviewModal.question.question_type === 'MCQ'" class="space-y-3">
                 <div class="flex items-center justify-between">
                   <h3 class="font-semibold text-slate-900 dark:text-white">Pilihan Jawaban</h3>
-                  <span class="text-xs text-slate-500 dark:text-slate-400">Review sebelum soal diterbitkan</span>
+                  <span class="text-xs text-slate-500 dark:text-slate-400">Pilihan jawaban</span>
                 </div>
                 <div class="grid gap-3">
                   <article v-for="(option, optionIndex) in normalizedPreviewOptions"
@@ -966,11 +942,8 @@
             class="flex flex-none items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/80 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/50">
             <button v-if="questionPreviewModal.source === 'bank'" type="button" @click="deleteQuestionFromPreview"
               :disabled="isSavingQuestionPreview"
-              class="mr-auto rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:opacity-50"
-              :class="pendingDeleteQuestionId === questionPreviewModal.question?.id
-                ? 'bg-rose-600 text-white hover:bg-rose-500'
-                : 'bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20'">
-              {{ pendingDeleteQuestionId === questionPreviewModal.question?.id ? "Klik Lagi untuk Hapus" : "Hapus Soal" }}
+              class="mr-auto rounded-xl bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20">
+              Hapus Soal
             </button>
             <button @click="closeQuestionPreview" type="button"
               class="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
@@ -979,6 +952,44 @@
             <button type="button" @click="saveQuestionPreviewChanges" :disabled="isSavingQuestionPreview"
               class="rounded-xl bg-sky-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-sky-500 disabled:opacity-50">
               {{ isSavingQuestionPreview ? "Menyimpan..." : "Simpan Perubahan" }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <Transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0"
+      enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100"
+      leave-to-class="opacity-0">
+      <div v-if="deleteQuestionConfirmModal.open"
+        class="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div
+          class="w-full max-w-md overflow-hidden rounded-2xl border-2 border-rose-200 bg-white shadow-2xl dark:border-rose-500/30 dark:bg-slate-900">
+          <div class="border-b border-rose-100 bg-rose-50 px-6 py-5 dark:border-rose-500/20 dark:bg-rose-500/10">
+            <h3 class="text-lg font-bold text-rose-800 dark:text-rose-200">
+              {{ deleteQuestionConfirmModal.mode === 'bulk' ? 'Hapus Soal Terpilih?' : 'Hapus Soal Ini?' }}
+            </h3>
+            <p class="mt-2 text-sm leading-6 text-rose-700 dark:text-rose-200">
+              {{ deleteQuestionConfirmMessage }}
+            </p>
+          </div>
+
+          <div class="px-6 py-5">
+            <p class="text-sm leading-6 text-slate-600 dark:text-slate-300">
+              Soal yang sudah dihapus tidak akan muncul lagi di bank soal. Pastikan pilihan sudah benar sebelum
+              melanjutkan.
+            </p>
+          </div>
+
+          <div
+            class="flex flex-col-reverse gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/60 sm:flex-row sm:justify-end">
+            <button type="button" @click="closeDeleteQuestionConfirm" :disabled="isSavingQuestionPreview"
+              class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+              Batal
+            </button>
+            <button type="button" @click="confirmDeleteQuestion" :disabled="isSavingQuestionPreview"
+              class="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-rose-700 disabled:opacity-50">
+              {{ isSavingQuestionPreview ? "Menghapus..." : "Ya, Hapus" }}
             </button>
           </div>
         </div>
@@ -1010,7 +1021,6 @@ const isSavingQuestionBank = ref(false);
 const isSavingQuestionPreview = ref(false);
 const isUploadingQuestionImage = ref(false);
 const isUploadingPreviewQuestionImage = ref(false);
-const pendingDeleteQuestionId = ref(null);
 const isDownloadingTemplate = ref(false);
 const isImportingQuestionBank = ref(false);
 const isGeneratingAiQuestions = ref(false);
@@ -1018,6 +1028,10 @@ const isSavingGeneratedAiQuestions = ref(false);
 const aiGeneratorModalOpen = ref(false);
 const aiPreviewSectionRef = ref(null);
 const aiGeneratorScrollRef = ref(null);
+const aiTopicSuggestions = ref([]);
+const aiCustomTopic = ref("");
+const aiTopicSuggestionError = ref("");
+const isLoadingAiTopicSuggestions = ref(false);
 const questionBankModalOpen = ref(false);
 const questionBankDocumentInput = ref(null);
 const questionBankImportFile = ref(null);
@@ -1041,6 +1055,12 @@ const questionPreviewModal = reactive({
   sourceLabel: "",
   questionNumber: null,
 });
+const deleteQuestionConfirmModal = reactive({
+  open: false,
+  mode: "single",
+  question: null,
+  count: 0,
+});
 const questionPreviewForm = reactive({
   question_text: "",
   question_image_url: "",
@@ -1053,7 +1073,11 @@ const questionBankImportFileName = computed(() => questionBankImportFile.value?.
 
 // Fitur: Body Scroll Lock saat modal aktif
 const isAnyModalOpen = computed(() =>
-  aiGeneratorModalOpen.value || questionBankModalOpen.value || quizOverviewModal.open || questionPreviewModal.open,
+  aiGeneratorModalOpen.value
+  || questionBankModalOpen.value
+  || quizOverviewModal.open
+  || questionPreviewModal.open
+  || deleteQuestionConfirmModal.open,
 );
 
 watch(isAnyModalOpen, (isOpen) => {
@@ -1170,13 +1194,57 @@ const normalizeQuestionBankItem = (item) => ({
   correct_option: Number.isInteger(Number(item?.correct_option)) ? Number(item.correct_option) : 0,
 });
 
+const firstSubjectValue = (subject, keys) => {
+  for (const key of keys) {
+    const value = String(subject?.[key] || "").trim();
+    if (value) return value;
+  }
+  return "";
+};
+
+const subjectCardClass = (active = false) => {
+  return active
+    ? "bg-sky-600 shadow-md ring-1 ring-sky-600 dark:bg-sky-500"
+    : "bg-white shadow-sm ring-1 ring-slate-900/5 hover:bg-slate-50 dark:bg-slate-900 dark:ring-white/10 dark:hover:bg-slate-800/80";
+};
+
+const extractGradeNumber = (label) => {
+  const text = String(label || "");
+  const match = text.match(/\b(1[0-2]|[1-9])\b/);
+  if (match) return Number(match[1]);
+
+  const romanMatch = text.match(/\b(XII|XI|X|IX|VIII|VII|VI|V|IV|III|II|I)\b/i);
+  const romanGradeMap = {
+    I: 1,
+    II: 2,
+    III: 3,
+    IV: 4,
+    V: 5,
+    VI: 6,
+    VII: 7,
+    VIII: 8,
+    IX: 9,
+    X: 10,
+    XI: 11,
+    XII: 12,
+  };
+  return romanMatch ? romanGradeMap[romanMatch[1].toUpperCase()] || 0 : 0;
+};
+
+const inferPhaseFromGrade = (grade) => {
+  if (grade >= 1 && grade <= 2) return "Fase A";
+  if (grade >= 3 && grade <= 4) return "Fase B";
+  if (grade >= 5 && grade <= 6) return "Fase C";
+  if (grade >= 7 && grade <= 9) return "Fase D";
+  if (grade === 10) return "Fase E";
+  if (grade >= 11 && grade <= 12) return "Fase F";
+  return "Fase belum terbaca";
+};
+
 const aiGeneratorForm = reactive({
   question_type: "MCQ",
   question_count: 5,
   difficulty: "MENENGAH",
-  grade_label: "",
-  phase_name: "",
-  curriculum_name: "",
   topic: "",
   include_illustration: false,
   additional_instructions: "",
@@ -1193,9 +1261,9 @@ const aiGenerationStages = [
 ];
 
 const assignmentTypeLabel = (type) => {
-  if (type === "MCQ") return "Quiz Pilihan Ganda";
-  if (type === "ESSAY") return "Quiz Uraian";
-  return "Quiz";
+  if (type === "MCQ") return "Pilihan Ganda";
+  if (type === "ESSAY") return "Uraian";
+  return "Soal";
 };
 
 const formatViolationLabel = (type) => {
@@ -1241,6 +1309,24 @@ const selectedGeneratedAiQuestions = computed(() =>
   generatedAiQuestions.value.filter((item) => selectedGeneratedAiQuestionIds.value.includes(item.temp_id)),
 );
 const activeAiGenerationStage = computed(() => aiGenerationStages[aiGenerationStageIndex.value] || aiGenerationStages[0]);
+const autoAiGradeLabel = computed(() =>
+  firstSubjectValue(selectedSubject.value, ["grade_label", "grade_name", "level_name", "class_name"]) || "-",
+);
+const autoAiPhaseName = computed(() => {
+  const subject = selectedSubject.value || {};
+  const explicitPhase = firstSubjectValue(subject, ["phase_name", "fase_name", "phase", "fase"]);
+  if (explicitPhase) {
+    return /^fase/i.test(explicitPhase) ? explicitPhase : `Fase ${explicitPhase}`;
+  }
+
+  return inferPhaseFromGrade(extractGradeNumber(autoAiGradeLabel.value));
+});
+const autoAiCurriculumName = computed(() => "Kurikulum Merdeka");
+const resolvedAiTopic = computed(() =>
+  aiGeneratorForm.topic === "__custom__"
+    ? String(aiCustomTopic.value || "").trim()
+    : String(aiGeneratorForm.topic || "").trim(),
+);
 
 const selectedQuestionsForPublish = computed(() =>
   filteredQuestionBankForAssignment.value.filter((item) => assignmentForm.selected_question_bank_ids.includes(item.id)),
@@ -1275,6 +1361,12 @@ const questionPreviewModalQuestionHeader = computed(() =>
 const questionPreviewModalNumberLabel = computed(() =>
   `${questionPreviewModalSourcePrefix.value} - ${questionPreviewModalNumberText.value}`,
 );
+const deleteQuestionConfirmMessage = computed(() => {
+  if (deleteQuestionConfirmModal.mode === "bulk") {
+    return `Anda akan menghapus ${deleteQuestionConfirmModal.count} soal dari bank soal.`;
+  }
+  return "Anda akan menghapus 1 soal dari bank soal.";
+});
 const runningAssignments = computed(() =>
   [...assignments.value].sort((left, right) => {
     const leftTime = parseDateValue(left?.due_date)?.getTime() || 0;
@@ -1324,10 +1416,10 @@ const resetAiGeneratorForm = () => {
   aiGeneratorForm.question_type = "MCQ";
   aiGeneratorForm.question_count = 5;
   aiGeneratorForm.difficulty = "MENENGAH";
-  aiGeneratorForm.grade_label = "";
-  aiGeneratorForm.phase_name = "";
-  aiGeneratorForm.curriculum_name = "";
   aiGeneratorForm.topic = "";
+  aiCustomTopic.value = "";
+  aiTopicSuggestions.value = [];
+  aiTopicSuggestionError.value = "";
   aiGeneratorForm.include_illustration = false;
   aiGeneratorForm.additional_instructions = "";
   generatedAiQuestions.value = [];
@@ -1372,9 +1464,6 @@ const resetAssignmentForm = () => {
 
 const clearSelectedQuestions = () => {
   assignmentForm.selected_question_bank_ids = [];
-  if (pendingDeleteQuestionId.value === "bulk-delete") {
-    pendingDeleteQuestionId.value = null;
-  }
 };
 
 const selectAllCurrentBankPage = () => {
@@ -1406,7 +1495,7 @@ const openQuestionPreview = (question, source = "bank", questionNumber = null) =
   questionPreviewModal.open = true;
   questionPreviewModal.question = { ...normalizedQuestion };
   questionPreviewModal.source = source;
-  questionPreviewModal.sourceLabel = source === "selected" ? "Soal yang akan diterbitkan" : "Review sebelum dipilih";
+  questionPreviewModal.sourceLabel = source === "selected" ? "Soal terpilih" : "Bank soal";
   questionPreviewModal.questionNumber = questionNumber;
   const parsedQuestion = parseQuestionContent(normalizedQuestion.question_text || "");
   questionPreviewForm.question_text = parsedQuestion.question_text;
@@ -1425,12 +1514,27 @@ const closeQuestionPreview = () => {
   questionPreviewModal.source = "bank";
   questionPreviewModal.sourceLabel = "";
   questionPreviewModal.questionNumber = null;
-  pendingDeleteQuestionId.value = null;
+  closeDeleteQuestionConfirm();
   questionPreviewForm.question_text = "";
   questionPreviewForm.question_image_url = "";
   questionPreviewForm.options = ["", "", "", "", ""];
   questionPreviewForm.correct_option = 0;
   questionPreviewForm.rubric = "";
+};
+
+const openDeleteQuestionConfirm = ({ mode = "single", question = null, count = 0 } = {}) => {
+  deleteQuestionConfirmModal.open = true;
+  deleteQuestionConfirmModal.mode = mode;
+  deleteQuestionConfirmModal.question = question;
+  deleteQuestionConfirmModal.count = count;
+};
+
+const closeDeleteQuestionConfirm = (force = false) => {
+  if (isSavingQuestionPreview.value && !force) return;
+  deleteQuestionConfirmModal.open = false;
+  deleteQuestionConfirmModal.mode = "single";
+  deleteQuestionConfirmModal.question = null;
+  deleteQuestionConfirmModal.count = 0;
 };
 
 const saveQuestionPreviewChanges = async () => {
@@ -1486,49 +1590,11 @@ const saveQuestionPreviewChanges = async () => {
 const deleteQuestionFromPreview = async () => {
   if (!questionPreviewModal.question?.id) return;
 
-  if (pendingDeleteQuestionId.value !== questionPreviewModal.question.id) {
-    pendingDeleteQuestionId.value = questionPreviewModal.question.id;
-    pushToast({
-      title: "Konfirmasi Hapus Soal",
-      message: "Klik tombol hapus sekali lagi untuk menghapus soal ini dari bank soal.",
-      type: "info",
-      duration: 2600,
-    });
-    window.setTimeout(() => {
-      if (pendingDeleteQuestionId.value === questionPreviewModal.question?.id) {
-        pendingDeleteQuestionId.value = null;
-      }
-    }, 2600);
-    return;
-  }
-
-  isSavingQuestionPreview.value = true;
-  message.value = "";
-  isError.value = false;
-
-  try {
-    const response = await api.delete(`/learning/question-bank/${questionPreviewModal.question.id}`);
-    pendingDeleteQuestionId.value = null;
-    closeQuestionPreview();
-    message.value = response?.message || "Soal berhasil dihapus";
-    pushToast({
-      title: "Soal Dihapus",
-      message: response?.message || "Soal bank berhasil dihapus.",
-      type: "success",
-    });
-    await loadSubjectData();
-  } catch (error) {
-    pendingDeleteQuestionId.value = null;
-    isError.value = true;
-    message.value = error.message;
-    pushToast({
-      title: "Gagal Menghapus Soal",
-      message: error.message,
-      type: "error",
-    });
-  } finally {
-    isSavingQuestionPreview.value = false;
-  }
+  openDeleteQuestionConfirm({
+    mode: "single",
+    question: { ...questionPreviewModal.question },
+    count: 1,
+  });
 };
 
 const deleteSelectedQuestionBankItems = async () => {
@@ -1536,48 +1602,58 @@ const deleteSelectedQuestionBankItems = async () => {
     return;
   }
 
-  if (pendingDeleteQuestionId.value !== "bulk-delete") {
-    pendingDeleteQuestionId.value = "bulk-delete";
-    pushToast({
-      title: "Konfirmasi Hapus Massal",
-      message: `Klik sekali lagi untuk menghapus ${assignmentForm.selected_question_bank_ids.length} soal yang dipilih.`,
-      type: "info",
-      duration: 2800,
-    });
-    window.setTimeout(() => {
-      if (pendingDeleteQuestionId.value === "bulk-delete") {
-        pendingDeleteQuestionId.value = null;
-      }
-    }, 2800);
-    return;
-  }
+  openDeleteQuestionConfirm({
+    mode: "bulk",
+    question: null,
+    count: assignmentForm.selected_question_bank_ids.length,
+  });
+};
+
+const confirmDeleteQuestion = async () => {
+  if (!selectedSubject.value) return;
 
   try {
     isSavingQuestionPreview.value = true;
     message.value = "";
     isError.value = false;
 
-    const response = await api.post(
-      `/learning/subjects/${selectedSubject.value.id}/question-bank/bulk-delete`,
-      { question_ids: assignmentForm.selected_question_bank_ids },
-    );
+    if (deleteQuestionConfirmModal.mode === "bulk") {
+      const response = await api.post(
+        `/learning/subjects/${selectedSubject.value.id}/question-bank/bulk-delete`,
+        { question_ids: assignmentForm.selected_question_bank_ids },
+      );
 
-    const total = response?.data?.total || 0;
-    pendingDeleteQuestionId.value = null;
-    assignmentForm.selected_question_bank_ids = [];
-    message.value = response?.message || "Soal terpilih berhasil dihapus";
-    pushToast({
-      title: "Hapus Massal Berhasil",
-      message: `${total} soal berhasil dihapus dari bank soal.`,
-      type: "success",
-    });
+      const total = response?.data?.total || 0;
+      assignmentForm.selected_question_bank_ids = [];
+      message.value = response?.message || "Soal terpilih berhasil dihapus";
+      pushToast({
+        title: "Soal Terpilih Dihapus",
+        message: `${total} soal berhasil dihapus dari bank soal.`,
+        type: "success",
+      });
+    } else {
+      const questionId = deleteQuestionConfirmModal.question?.id || questionPreviewModal.question?.id;
+      if (!questionId) {
+        throw new Error("Soal tidak ditemukan.");
+      }
+
+      const response = await api.delete(`/learning/question-bank/${questionId}`);
+      closeQuestionPreview();
+      message.value = response?.message || "Soal berhasil dihapus";
+      pushToast({
+        title: "Soal Dihapus",
+        message: response?.message || "Soal bank berhasil dihapus.",
+        type: "success",
+      });
+    }
+
+    closeDeleteQuestionConfirm(true);
     await loadSubjectData();
   } catch (error) {
-    pendingDeleteQuestionId.value = null;
     isError.value = true;
     message.value = error.message;
     pushToast({
-      title: "Hapus Massal Gagal",
+      title: "Gagal Menghapus Soal",
       message: error.message,
       type: "error",
     });
@@ -1668,6 +1744,42 @@ const selectSubject = async (subject) => {
 
 const openAiGeneratorModal = () => {
   aiGeneratorModalOpen.value = true;
+  if (aiTopicSuggestions.value.length === 0) {
+    loadAiTopicSuggestions();
+  }
+};
+
+const loadAiTopicSuggestions = async () => {
+  if (!selectedSubject.value || isLoadingAiTopicSuggestions.value) return;
+
+  isLoadingAiTopicSuggestions.value = true;
+  aiTopicSuggestionError.value = "";
+
+  try {
+    const response = await api.get(`/learning/subjects/${selectedSubject.value.id}/question-bank/topic-suggestions`, {
+      params: {
+        grade_label: autoAiGradeLabel.value === "-" ? "" : autoAiGradeLabel.value,
+        phase_name: autoAiPhaseName.value === "Fase belum terbaca" ? "" : autoAiPhaseName.value,
+        curriculum_name: autoAiCurriculumName.value,
+      },
+    });
+    const topics = Array.isArray(response?.data?.topics) ? response.data.topics : [];
+    aiTopicSuggestions.value = topics;
+    if (topics.length > 0 && (!aiGeneratorForm.topic || aiGeneratorForm.topic === "__custom__")) {
+      aiGeneratorForm.topic = topics[0];
+      aiCustomTopic.value = "";
+    }
+    if (topics.length === 0) {
+      aiGeneratorForm.topic = "__custom__";
+      aiTopicSuggestionError.value = "Daftar materi belum tersedia. Silakan tulis materi sendiri.";
+    }
+  } catch (error) {
+    aiTopicSuggestions.value = [];
+    aiGeneratorForm.topic = "__custom__";
+    aiTopicSuggestionError.value = "Daftar materi belum bisa dimuat. Silakan tulis materi sendiri.";
+  } finally {
+    isLoadingAiTopicSuggestions.value = false;
+  }
 };
 
 const handleQuestionBankDocumentChange = (event) => {
@@ -1752,6 +1864,10 @@ const importQuestionBankDocument = async () => {
 
 const generateQuestionBankWithAi = async () => {
   if (!selectedSubject.value) return;
+  if (!resolvedAiTopic.value) {
+    aiTopicSuggestionError.value = "Pilih materi atau tulis materi sendiri terlebih dahulu.";
+    return;
+  }
 
   isGeneratingAiQuestions.value = true;
   message.value = "";
@@ -1760,13 +1876,13 @@ const generateQuestionBankWithAi = async () => {
 
   try {
     const payload = {
-      topic: aiGeneratorForm.topic,
+      topic: resolvedAiTopic.value,
       question_type: aiGeneratorForm.question_type,
       question_count: Number(aiGeneratorForm.question_count) || 0,
       difficulty: aiGeneratorForm.difficulty,
-      grade_label: aiGeneratorForm.grade_label || "",
-      phase_name: aiGeneratorForm.phase_name || "",
-      curriculum_name: aiGeneratorForm.curriculum_name || "",
+      grade_label: autoAiGradeLabel.value === "-" ? "" : autoAiGradeLabel.value,
+      phase_name: autoAiPhaseName.value === "Fase belum terbaca" ? "" : autoAiPhaseName.value,
+      curriculum_name: autoAiCurriculumName.value,
       include_illustration: Boolean(aiGeneratorForm.include_illustration),
       additional_instructions: aiGeneratorForm.additional_instructions || "",
     };
@@ -1785,9 +1901,9 @@ const generateQuestionBankWithAi = async () => {
     selectedGeneratedAiQuestionIds.value = generatedAiQuestions.value.map((item) => item.temp_id);
     message.value = response?.message
       ? `${response.message}: ${summary.total || 0} soal preview berhasil dibuat.`
-      : "Preview soal AI berhasil dibuat";
+      : "Soal otomatis siap dicek";
     pushToast({
-      title: "Preview Soal AI Siap",
+      title: "Soal Siap Dicek",
       message: `${summary.total || 0} soal berhasil dibuat dan siap dipilih.`,
       type: "success",
     });
@@ -1802,7 +1918,7 @@ const generateQuestionBankWithAi = async () => {
     isError.value = true;
     message.value = error.message;
     pushToast({
-      title: "Generate Soal AI Gagal",
+      title: "Buat Soal Gagal",
       message: error.message,
       type: "error",
     });
@@ -1903,9 +2019,9 @@ const saveGeneratedAiQuestions = async () => {
     const summary = response?.data || {};
     message.value = response?.message
       ? `${response.message}: ${summary.total || 0} soal berhasil disimpan ke bank soal.`
-      : "Soal AI berhasil disimpan";
+      : "Soal berhasil disimpan";
     pushToast({
-      title: "Soal AI Disimpan",
+      title: "Soal Disimpan",
       message: `${summary.total || 0} soal terpilih berhasil masuk ke bank soal.`,
       type: "success",
     });
@@ -1916,7 +2032,7 @@ const saveGeneratedAiQuestions = async () => {
     isError.value = true;
     message.value = error.message;
     pushToast({
-      title: "Simpan Soal AI Gagal",
+      title: "Simpan Soal Gagal",
       message: error.message,
       type: "error",
     });

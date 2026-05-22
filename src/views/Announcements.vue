@@ -39,7 +39,7 @@
             <div class="flex items-start justify-between gap-4">
               <div class="min-w-0">
                 <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  {{ selectedAnnouncement?.target_label || targetLabel(form.target_audience) }}
+                  {{ selectedAnnouncement?.target_label || targetLabel(form.target_audiences) }}
                 </p>
                 <h3 class="mt-2 text-xl font-bold text-slate-900 dark:text-white">
                   {{ selectedAnnouncement?.title || previewAnnouncement.title || "Judul belum diisi" }}
@@ -58,7 +58,7 @@
             <div class="mt-5 flex flex-wrap gap-2">
               <span
                 class="inline-flex rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-900/70 dark:text-slate-200 dark:ring-slate-700">
-                {{ selectedAnnouncement?.target_label || targetLabel(form.target_audience) }}
+                {{ selectedAnnouncement?.target_label || targetLabel(form.target_audiences) }}
               </span>
               <span
                 class="inline-flex rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-900/70 dark:text-slate-200 dark:ring-slate-700">
@@ -234,14 +234,18 @@
                     <div>
                       <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Ditujukan
                         Untuk</label>
-                      <select v-model="form.target_audience"
-                        class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
-                        <option v-for="option in targetOptions" :key="option.value" :value="option.value">
-                          {{ option.label }}
-                        </option>
-                      </select>
-                      <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Pilih satu target utama agar highlight
-                        di dashboard lebih tepat.</p>
+                      <div
+                        class="grid gap-2 rounded-2xl bg-slate-50 p-3 ring-1 ring-inset ring-slate-200 sm:grid-cols-2 dark:bg-slate-800 dark:ring-slate-700">
+                        <label v-for="option in targetOptions" :key="option.value"
+                          class="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white dark:text-slate-200 dark:hover:bg-slate-900">
+                          <input type="checkbox" :checked="isTargetChecked(option.value)"
+                            class="h-4 w-4 rounded border-slate-300 text-sky-600 accent-sky-600 focus:ring-sky-600"
+                            @change="toggleTargetAudience(option.value)" />
+                          <span>{{ option.label }}</span>
+                        </label>
+                      </div>
+                      <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Centang satu atau beberapa target
+                        penerima pengumuman.</p>
                     </div>
 
                     <div>
@@ -309,6 +313,7 @@ const targetOptions = [
   { value: "SARPRAS", label: "Sarpras" },
   { value: "KOPERASI", label: "Koperasi" },
 ];
+const targetRoleValues = targetOptions.filter((item) => item.value !== "ALL").map((item) => item.value);
 const route = useRoute();
 
 const statusFilters = [
@@ -321,7 +326,7 @@ const statusFilters = [
 const emptyForm = () => ({
   title: "",
   content: "",
-  target_audience: "ALL",
+  target_audiences: ["ALL"],
   deactivated_at: "",
 });
 
@@ -369,14 +374,18 @@ const filteredAnnouncements = computed(() => {
   return announcements.value.filter((item) => String(item.status || "").toUpperCase() === activeFilter.value);
 });
 
-const previewAnnouncement = computed(() => ({
-  title: form.title.trim() || "Judul belum diisi",
-  content: form.content.trim() || "Isi pengumuman belum diisi.",
-  target_audience: form.target_audience || "ALL",
-  target_label: targetLabel(form.target_audience),
-  status: "DRAFT",
-  status_label: "Draft",
-}));
+const previewAnnouncement = computed(() => {
+  const targetAudiences = normalizeTargetAudiences(form.target_audiences);
+  return {
+    title: form.title.trim() || "Judul belum diisi",
+    content: form.content.trim() || "Isi pengumuman belum diisi.",
+    target_audience: targetAudienceString(targetAudiences),
+    target_audiences: targetAudiences,
+    target_label: targetLabel(targetAudiences),
+    status: "DRAFT",
+    status_label: "Draft",
+  };
+});
 
 const reviewSelection = computed(() => {
   if (!selectedAnnouncement.value) {
@@ -386,17 +395,72 @@ const reviewSelection = computed(() => {
 });
 
 const reviewCardClass = computed(() => {
-  const target = String(reviewSelection.value.target_audience || "ALL").toUpperCase();
-  if (target === "ALL") return "border-sky-200 bg-gradient-to-br from-sky-50 to-cyan-50 dark:border-sky-500/20 dark:from-slate-900 dark:to-slate-950";
-  if (target === "GURU") return "border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 dark:border-emerald-500/20 dark:from-slate-900 dark:to-slate-950";
-  if (target === "SISWA") return "border-indigo-200 bg-gradient-to-br from-indigo-50 to-sky-50 dark:border-indigo-500/20 dark:from-slate-900 dark:to-slate-950";
-  if (target === "ADMIN") return "border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 dark:border-amber-500/20 dark:from-slate-900 dark:to-slate-950";
+  const targets = normalizeTargetAudiences(reviewSelection.value.target_audiences || reviewSelection.value.target_audience || "ALL");
+  if (targets.includes("ALL")) return "border-sky-200 bg-gradient-to-br from-sky-50 to-cyan-50 dark:border-sky-500/20 dark:from-slate-900 dark:to-slate-950";
+  if (targets.length === 1 && targets[0] === "GURU") return "border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 dark:border-emerald-500/20 dark:from-slate-900 dark:to-slate-950";
+  if (targets.length === 1 && targets[0] === "SISWA") return "border-indigo-200 bg-gradient-to-br from-indigo-50 to-sky-50 dark:border-indigo-500/20 dark:from-slate-900 dark:to-slate-950";
+  if (targets.length === 1 && targets[0] === "ADMIN") return "border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 dark:border-amber-500/20 dark:from-slate-900 dark:to-slate-950";
   return "border-slate-200 bg-gradient-to-br from-slate-50 to-white dark:border-slate-700 dark:from-slate-900 dark:to-slate-950";
 });
 
+const splitTargetAudience = (value) => String(value || "")
+  .split(",")
+  .map((item) => item.trim().toUpperCase())
+  .filter(Boolean);
+
+const normalizeTargetAudiences = (value) => {
+  const rawValues = Array.isArray(value) ? value.flatMap((item) => splitTargetAudience(item)) : splitTargetAudience(value);
+  const normalized = [];
+
+  rawValues.forEach((item) => {
+    if (item === "ALL") {
+      normalized.splice(0, normalized.length, "ALL");
+      return;
+    }
+    if (normalized.includes("ALL") || !targetRoleValues.includes(item) || normalized.includes(item)) {
+      return;
+    }
+    normalized.push(item);
+  });
+
+  return normalized.length ? normalized : ["ALL"];
+};
+
+const targetAudienceString = (value) => {
+  const normalized = normalizeTargetAudiences(value);
+  return normalized.includes("ALL") ? "ALL" : normalized.join(",");
+};
+
 const targetLabel = (value) => {
-  const found = targetOptions.find((item) => item.value === String(value || "").toUpperCase());
-  return found?.label || "Semua Warga Sekolah";
+  const normalized = normalizeTargetAudiences(value);
+  if (normalized.includes("ALL")) {
+    return "Semua Warga Sekolah";
+  }
+  const labels = normalized
+    .map((target) => targetOptions.find((item) => item.value === target)?.label)
+    .filter(Boolean);
+  return labels.length ? labels.join(", ") : "Semua Warga Sekolah";
+};
+
+const isTargetChecked = (value) => normalizeTargetAudiences(form.target_audiences).includes(value);
+
+const toggleTargetAudience = (value) => {
+  const target = String(value || "").trim().toUpperCase();
+  if (target === "ALL") {
+    form.target_audiences = ["ALL"];
+    return;
+  }
+  if (!targetRoleValues.includes(target)) {
+    return;
+  }
+
+  let next = normalizeTargetAudiences(form.target_audiences).filter((item) => item !== "ALL");
+  if (next.includes(target)) {
+    next = next.filter((item) => item !== target);
+  } else {
+    next.push(target);
+  }
+  form.target_audiences = next.length ? next : ["ALL"];
 };
 
 const formatDateTimeLocal = (value) => {
@@ -447,7 +511,7 @@ const openEditModal = (item) => {
   editingId.value = item.id;
   form.title = item.title || "";
   form.content = item.content || "";
-  form.target_audience = item.target_audience || "ALL";
+  form.target_audiences = normalizeTargetAudiences(item.target_audiences || item.target_audience || "ALL");
   form.deactivated_at = formatDateTimeLocal(item.deactivated_at || "");
   selectedAnnouncement.value = item;
   isFormModalOpen.value = true;
@@ -502,10 +566,12 @@ const submitAnnouncement = async () => {
   const wasEditing = Boolean(editingId.value);
   isSubmitting.value = true;
   try {
+    const targetAudiences = normalizeTargetAudiences(form.target_audiences);
     const payload = {
       title: form.title,
       content: form.content,
-      target_audience: form.target_audience,
+      target_audience: targetAudienceString(targetAudiences),
+      target_audiences: targetAudiences,
       deactivated_at: form.deactivated_at || null,
     };
 

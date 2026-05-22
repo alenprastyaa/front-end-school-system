@@ -33,7 +33,7 @@ module.exports = defineConfig({
     config.plugins.delete("preload");
   },
   devServer: {
-    host: "0.0.0.0",
+    host: process.env.VUE_APP_DEV_SERVER_HOST || "127.0.0.1",
     allowedHosts: "all",
   },
 })

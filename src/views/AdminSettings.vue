@@ -89,7 +89,7 @@
         </div>
       </section> -->
 
-      <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+      <!-- <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
         <div class="flex flex-col gap-3">
           <div>
             <h2 class="text-lg font-bold text-slate-900 dark:text-white">Load Test Login</h2>
@@ -172,7 +172,7 @@
               item }}</li>
           </ul>
         </div>
-      </section>
+      </section> -->
 
       <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 -translate-y-2"
         enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-200"

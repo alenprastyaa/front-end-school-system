@@ -313,6 +313,16 @@ const routes = [
     },
   },
   {
+    path: "/learning-teaching-module-teacher",
+    name: "LearningTeachingModuleTeacher",
+    component: lazyRoute(() => import("../views/LearningTeachingModuleTeacher.vue")),
+    meta: {
+      title: "Modul Ajar AI Guru" + appName,
+      requiresAuth: true,
+      roles: ["GURU"],
+    },
+  },
+  {
     path: "/learning-quiz-teacher",
     name: "LearningQuizTeacher",
     component: lazyRoute(() => import("../views/LearningQuizTeacher.vue")),

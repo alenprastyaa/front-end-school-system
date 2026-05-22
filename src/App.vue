@@ -22,12 +22,14 @@
       <Header v-if="!shouldHideChrome && !shouldHideHeader && !hideHeaderOnMobileChat" @sidebarToggle="toggleSidebar" />
 
       <div class="flex-1 min-h-0" :class="isChatLayoutRoute ? 'overflow-hidden' : 'overflow-y-auto'">
-        <transition name="slide-up">
-          <div :key="$route.name || $route.path" :class="isChatLayoutRoute ? 'h-full' : ''">
-            <router-view />
-            <Footer v-if="!shouldHideChrome && !isChatLayoutRoute" />
-          </div>
-        </transition>
+        <router-view v-slot="{ Component }">
+          <transition name="slide-up">
+            <div :key="$route.name || $route.path" :class="isChatLayoutRoute ? 'h-full' : ''">
+              <component :is="Component" />
+              <Footer v-if="!shouldHideChrome && !isChatLayoutRoute" />
+            </div>
+          </transition>
+        </router-view>
       </div>
     </div>
   </div>

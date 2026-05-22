@@ -28,138 +28,190 @@
         </div>
 
         <div class="p-6">
-          <section class="rounded-2xl border border-slate-200 bg-amber-50/70 p-5 dark:border-amber-500/20 dark:bg-amber-500/10">
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Daftar Task Ujian dari Admin</h3>
-                <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                  Pilih task yang perlu Anda susun, ambil soalnya dari bank soal mapel ini, lalu kirim paketnya kembali ke admin.
-                </p>
-              </div>
-              <button @click="loadSubjectData"
-                class="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">
-                Refresh
-              </button>
+          <section class="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-900/40">
+            <div>
+              <h3 class="text-lg font-bold text-slate-900 dark:text-white">Task Ujian dari Admin</h3>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                Pilih satu task, susun paket soalnya, lalu kirim kembali ke admin.
+              </p>
             </div>
 
-            <div class="mt-4 grid gap-4 xl:grid-cols-2">
-              <article v-for="item in examRequestAssignments" :key="item.id"
-                class="rounded-2xl border bg-white p-4 shadow-sm dark:bg-slate-900"
-                :class="Number(activeExamRequestId) === Number(item.id)
-                  ? 'border-sky-400 ring-2 ring-sky-200 dark:border-sky-500 dark:ring-sky-500/20'
-                  : 'border-slate-200 dark:border-slate-700'">
-                <div class="flex flex-wrap items-center gap-2">
-                  <span class="inline-flex rounded-md bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20">
-                    {{ examCategoryLabel(item.exam_category) }}
-                  </span>
-                  <span class="inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ring-1 ring-inset"
-                    :class="examStatusBadgeClass(getEffectiveExamStatus(item))">
-                    {{ examStatusLabel(getEffectiveExamStatus(item)) }}
-                  </span>
-                  <span class="inline-flex rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700">
-                    Kode: {{ item.exam_code }}
-                  </span>
-                  <span v-if="Number(activeExamRequestId) === Number(item.id)"
-                    class="inline-flex rounded-md bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">
-                    Sedang Anda susun
-                  </span>
-                </div>
-                <h4 class="mt-3 font-bold text-slate-900 dark:text-white">{{ item.title }}</h4>
-                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ item.description || "Tanpa catatan admin." }}</p>
-                <div class="mt-3 space-y-1 text-sm text-slate-600 dark:text-slate-300">
-                  <p>Mulai: {{ formatDateTime(item.start_at) }}</p>
-                  <p>Selesai: {{ formatDateTime(item.due_date) }}</p>
-                  <p>Tipe: {{ assignmentTypeLabel(item.assignment_type) }}</p>
-                  <p>Durasi sesi: {{ formatDurationSeconds(item.question_duration_seconds) }}</p>
-                  <p>Target dari admin: {{ item.exam_target_question_count || 0 }} soal</p>
-                </div>
-                <div class="mt-4 flex justify-end">
-                  <button v-if="getEffectiveExamStatus(item) === 'REQUESTED'" @click="selectExamRequest(item)"
-                    class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500">
-                    {{ Number(activeExamRequestId) === Number(item.id) ? "Task Sedang Aktif" : "Susun Task Ini" }}
-                  </button>
-                  <span v-else class="text-sm font-semibold text-emerald-600 dark:text-emerald-300">
-                    Paket sudah dikirim dan menunggu admin
-                  </span>
-                </div>
-              </article>
-
-              <div v-if="examRequestAssignments.length === 0"
-                class="rounded-2xl border-2 border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-700">
-                Belum ada task ujian resmi dari admin untuk mapel ini.
-              </div>
+            <div class="mt-4 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+              <table class="min-w-full text-left text-sm">
+                <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
+                  <tr>
+                    <th class="px-4 py-3 font-semibold">Task</th>
+                    <th class="px-4 py-3 font-semibold">Kategori</th>
+                    <th class="px-4 py-3 font-semibold">Tipe</th>
+                    <th class="px-4 py-3 font-semibold">Target</th>
+                    <th class="px-4 py-3 font-semibold">Jadwal</th>
+                    <th class="px-4 py-3 font-semibold">Status</th>
+                    <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-900">
+                  <tr v-for="item in examRequestAssignments" :key="item.id"
+                    class="align-top transition hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
+                    :class="Number(activeExamRequestId) === Number(item.id) ? 'bg-sky-50/70 dark:bg-sky-500/10' : ''">
+                    <td class="px-4 py-3">
+                      <p class="font-semibold text-slate-900 dark:text-white">{{ item.title }}</p>
+                      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.exam_code }}</p>
+                      <p class="mt-1 line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{{ item.description || "Tanpa catatan admin." }}</p>
+                    </td>
+                    <td class="px-4 py-3">
+                      <span class="inline-flex rounded-md bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20">
+                        {{ examCategoryLabel(item.exam_category) }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
+                      {{ assignmentTypeLabel(item.assignment_type) }}
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
+                      {{ item.exam_target_question_count || 0 }} soal
+                    </td>
+                    <td class="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
+                      <div>{{ formatDateTime(item.start_at) }}</div>
+                      <div class="mt-1">{{ formatDateTime(item.due_date) }}</div>
+                    </td>
+                    <td class="px-4 py-3">
+                      <span class="inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ring-1 ring-inset"
+                        :class="examStatusBadgeClass(getEffectiveExamStatus(item))">
+                        {{ examStatusLabel(getEffectiveExamStatus(item)) }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                      <button v-if="getEffectiveExamStatus(item) === 'REQUESTED'" @click="selectExamRequest(item)"
+                        class="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-sky-500">
+                        {{ Number(activeExamRequestId) === Number(item.id) ? "Aktif" : "Pilih" }}
+                      </button>
+                      <span v-else class="text-xs font-semibold text-emerald-600 dark:text-emerald-300">
+                        Sudah dikirim
+                      </span>
+                    </td>
+                  </tr>
+                  <tr v-if="examRequestAssignments.length === 0">
+                    <td colspan="7" class="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+                      Belum ada task ujian resmi dari admin untuk mapel ini.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </section>
 
-          <div ref="composerSectionRef" class="mt-6 grid gap-8 xl:grid-cols-[minmax(0,1.2fr),1fr]">
-            <section
-              class="rounded-2xl transition-all duration-500"
-              :class="isComposerHighlighted ? 'ring-2 ring-sky-200 ring-offset-4 ring-offset-slate-50 dark:ring-sky-500/20 dark:ring-offset-slate-950' : ''">
-              <h3 class="text-lg font-bold text-slate-900 dark:text-white">Area Penyusunan Paket Ujian</h3>
-              <p class="mb-6 mt-1 text-sm text-slate-500">
-                {{ activeExamRequest ? `Task aktif: ${activeExamRequest.title}. Pilih soal yang akan dikirim ke admin.` : "Pilih satu task di atas agar area penyusunan soal aktif." }}
-              </p>
+          <section v-if="activeExamRequest" ref="composerSectionRef"
+            class="mt-6 rounded-2xl border bg-white p-6 shadow-sm transition-all duration-500 dark:bg-slate-900"
+            :class="isComposerHighlighted
+              ? 'border-sky-300 ring-2 ring-sky-200 dark:border-sky-500 dark:ring-sky-500/20'
+              : 'border-slate-200 dark:border-slate-800'">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Penyusunan Paket Ujian</h3>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Task aktif: {{ activeExamRequest.title }}</p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <span class="inline-flex rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+                  {{ assignmentTypeLabel(activeExamRequest.assignment_type) }}
+                </span>
+                <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  Target {{ activeExamTargetQuestionCount }} soal
+                </span>
+                <span class="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                  Dipilih {{ selectedQuestionCount }} soal
+                </span>
+              </div>
+            </div>
 
-              <form @submit.prevent="submitExamPackageForAdmin"
-                class="space-y-5 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <div class="space-y-1.5">
-                  <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Durasi Sesi Ujian (menit)</label>
-                  <input v-model="assignmentForm.question_duration_minutes" type="number" min="1" max="180"
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                </div>
-
-                <label class="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/50">
-                  <input v-model="assignmentForm.shuffle_questions" type="checkbox" class="mt-1" />
-                  <div>
-                    <p class="text-sm font-semibold text-slate-900 dark:text-white">Acak urutan soal saat paket diserahkan</p>
-                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                      Jika aktif, urutan soal pada paket ke admin akan diacak.
-                    </p>
+            <form @submit.prevent="submitExamPackageForAdmin" class="mt-6 space-y-5">
+              <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-800/40">
+                <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                  <div class="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                    <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Kode Task</div>
+                    <div class="mt-1 text-sm font-bold text-slate-900 dark:text-white">{{ activeExamRequest.exam_code }}</div>
                   </div>
-                </label>
-
-                <div v-if="activeExamRequest"
-                  class="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-200">
-                  Admin meminta tepat <span class="font-bold">{{ activeExamRequest.exam_target_question_count || 0 }} soal</span>.
-                  Saat ini Anda memilih <span class="font-bold">{{ selectedQuestionCount }} soal</span>.
-                </div>
-
-                <button :disabled="isSavingAssignment || !activeExamRequest"
-                  class="mt-2 w-full rounded-xl bg-sky-600 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-sky-500 disabled:opacity-50">
-                  {{ isSavingAssignment ? "Mengirim..." : "Kirim Paket Soal ke Admin" }}
-                </button>
-              </form>
-            </section>
-
-            <section class="space-y-6">
-              <div class="rounded-2xl border border-slate-100 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900/50">
-                <div class="flex items-center justify-between">
-                  <h3 class="font-bold text-slate-900 dark:text-white">Soal Terpilih</h3>
-                  <span class="inline-flex items-center justify-center rounded-full bg-sky-600 px-2.5 py-0.5 text-xs font-bold text-white">
-                    {{ selectedQuestionCount }}
-                  </span>
-                </div>
-                <p v-if="activeExamRequest" class="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-                  Target task: {{ activeExamRequest.exam_target_question_count || 0 }} soal.
-                </p>
-
-                <div class="mt-4 flex max-h-[280px] flex-col gap-3 overflow-y-auto pr-2">
-                  <article v-for="(item, idx) in selectedQuestionsForPublish" :key="item.id"
-                    class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-                    <p class="text-sm font-medium text-slate-800 dark:text-slate-200">
-                      <span class="text-slate-400">{{ idx + 1 }}.</span> {{ item.question_text }}
-                    </p>
-                  </article>
-                  <div v-if="selectedQuestionsForPublish.length === 0"
-                    class="rounded-xl border-2 border-dashed border-slate-200 py-8 text-center text-sm text-slate-500 dark:border-slate-700">
-                    Belum ada soal yang dipilih dari bank soal.
+                  <div class="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                    <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Jadwal</div>
+                    <div class="mt-1 text-sm font-bold text-slate-900 dark:text-white">{{ formatDateTime(activeExamRequest.start_at) }}</div>
+                    <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">s.d. {{ formatDateTime(activeExamRequest.due_date) }}</div>
+                  </div>
+                  <div class="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 shadow-sm dark:border-sky-500/20 dark:bg-sky-500/10">
+                    <div class="text-[11px] font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300">Target Admin</div>
+                    <div class="mt-1 text-sm font-bold text-sky-900 dark:text-sky-100">{{ activeExamTargetQuestionCount }} soal</div>
+                  </div>
+                  <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 shadow-sm dark:border-emerald-500/20 dark:bg-emerald-500/10">
+                    <div class="text-[11px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Dipilih</div>
+                    <div class="mt-1 text-sm font-bold text-emerald-900 dark:text-emerald-100">{{ selectedQuestionCount }} soal</div>
                   </div>
                 </div>
               </div>
-            </section>
-          </div>
 
-          <section ref="questionBankSectionRef" class="mt-6 overflow-hidden rounded-2xl border border-slate-100 dark:border-slate-800">
+              <div class="grid gap-5 xl:grid-cols-[320px,minmax(0,1fr)]">
+                <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-800/40">
+                  <h4 class="font-semibold text-slate-900 dark:text-white">Pengaturan Paket</h4>
+                  <div class="mt-4 space-y-4">
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Durasi Sesi</label>
+                      <input v-model="assignmentForm.question_duration_minutes" type="number" min="1" max="180"
+                        class="block w-full rounded-xl border-0 bg-white py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700/50" />
+                      <p class="text-xs text-slate-500 dark:text-slate-400">Isi dalam menit untuk satu sesi ujian.</p>
+                    </div>
+
+                    <label class="flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
+                      <input v-model="assignmentForm.shuffle_questions" type="checkbox" class="mt-1" />
+                      <div>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-white">Acak urutan soal</p>
+                        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                          Aktifkan jika paket yang dikirim ke admin perlu urutan soal acak.
+                        </p>
+                      </div>
+                    </label>
+
+                    <div class="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-200">
+                      Jumlah soal harus tepat <span class="font-bold">{{ activeExamTargetQuestionCount }}</span> sebelum paket dikirim.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-800/40">
+                  <div class="flex items-center justify-between gap-3">
+                    <div>
+                      <h4 class="font-semibold text-slate-900 dark:text-white">Soal Terpilih</h4>
+                      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Preview soal yang akan ikut dalam paket ujian.</p>
+                    </div>
+                    <span class="inline-flex items-center justify-center rounded-full bg-sky-600 px-2.5 py-0.5 text-xs font-bold text-white">
+                      {{ selectedQuestionCount }}
+                    </span>
+                  </div>
+                  <div class="mt-3 flex max-h-[260px] flex-col gap-2 overflow-y-auto pr-1">
+                    <article v-for="(item, idx) in selectedQuestionsForPublish" :key="item.id"
+                      class="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                      <p class="text-slate-900 dark:text-white">
+                        <span class="mr-2 text-slate-400">{{ idx + 1 }}.</span>{{ parseQuestionContent(item.question_text).question_text }}
+                      </p>
+                      <img v-if="parseQuestionContent(item.question_text).question_image_url"
+                        :src="normalizePublicUrl(parseQuestionContent(item.question_text).question_image_url)"
+                        alt="Gambar soal"
+                        class="mt-3 max-h-40 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+                    </article>
+                    <div v-if="selectedQuestionsForPublish.length === 0"
+                      class="rounded-xl border-2 border-dashed border-slate-200 py-8 text-center text-sm text-slate-500 dark:border-slate-700">
+                      Belum ada soal yang dipilih dari bank soal.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-3 border-t border-slate-200 pt-5 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-sm text-slate-500 dark:text-slate-400">Periksa pengaturan dan jumlah soal sebelum mengirim paket.</p>
+                <button :disabled="isSavingAssignment"
+                  class="rounded-xl bg-sky-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-sky-500 disabled:opacity-50">
+                  {{ isSavingAssignment ? "Mengirim..." : "Kirim Paket Soal ke Admin" }}
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section v-if="activeExamRequest" ref="questionBankSectionRef" class="mt-6 overflow-hidden rounded-2xl border border-slate-100 dark:border-slate-800">
             <div class="border-b border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                 <div class="grid gap-4 md:grid-cols-4">
                 <div class="relative md:col-span-2">
@@ -223,7 +275,13 @@
                         class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-600 dark:border-slate-600 dark:bg-slate-800" />
                     </td>
                     <td class="px-5 py-4">
-                      <p class="max-w-3xl font-medium leading-relaxed text-slate-900 dark:text-white">{{ item.question_text }}</p>
+                      <p class="max-w-3xl font-medium leading-relaxed text-slate-900 dark:text-white">
+                        {{ parseQuestionContent(item.question_text).question_text }}
+                      </p>
+                      <img v-if="parseQuestionContent(item.question_text).question_image_url"
+                        :src="normalizePublicUrl(parseQuestionContent(item.question_text).question_image_url)"
+                        alt="Gambar soal"
+                        class="mt-3 max-h-40 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
                       <p class="mt-1 text-xs text-slate-400">Dibuat: {{ formatDateTime(item.created_at) }}</p>
                     </td>
                     <td class="px-5 py-4 align-top">
@@ -259,6 +317,7 @@ import { api } from "@/api";
 import { formatDateTime } from "@/utils/date";
 import { pushToast } from "@/composables/useToast";
 import { useMasterDataStore } from "@/store/masterData";
+import { normalizePublicUrl } from "@/utils/url";
 
 const subjects = ref([]);
 const masterDataStore = useMasterDataStore();
@@ -285,6 +344,26 @@ const assignmentForm = reactive({
   question_duration_minutes: 10,
   selected_question_bank_ids: [],
 });
+
+const QUESTION_IMAGE_MARKER = "[[QUESTION_IMAGE_URL]]";
+
+const parseQuestionContent = (rawText) => {
+  const text = String(rawText || "");
+  const markerIndex = text.lastIndexOf(QUESTION_IMAGE_MARKER);
+  if (markerIndex < 0) {
+    return {
+      question_text: text.trim(),
+      question_image_url: "",
+    };
+  }
+
+  const questionPart = text.slice(0, markerIndex).trim();
+  const imagePart = text.slice(markerIndex + QUESTION_IMAGE_MARKER.length).trim();
+  return {
+    question_text: questionPart,
+    question_image_url: imagePart,
+  };
+};
 
 const assignmentTypeLabel = (type) => {
   if (type === "MCQ") return "Pilihan Ganda";

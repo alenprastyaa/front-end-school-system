@@ -1,5 +1,5 @@
-const CACHE_NAME = "school-system-pwa-v1";
-const RUNTIME_CACHE_NAME = "school-system-runtime-v1";
+const CACHE_NAME = "school-system-pwa-v2";
+const RUNTIME_CACHE_NAME = "school-system-runtime-v2";
 
 const getAssetUrl = (path) => {
   try {
@@ -104,7 +104,25 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  const cacheableDestinations = ["document", "script", "style", "image", "font", "manifest"];
+  const networkFirstDestinations = ["script", "style", "document", "manifest"];
+  if (networkFirstDestinations.includes(request.destination)) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response && response.ok) {
+            const responseCopy = response.clone();
+            caches.open(RUNTIME_CACHE_NAME)
+              .then((cache) => cache.put(request, responseCopy))
+              .catch(() => undefined);
+          }
+          return response;
+        })
+        .catch(() => caches.match(request)),
+    );
+    return;
+  }
+
+  const cacheableDestinations = ["image", "font"];
   if (!cacheableDestinations.includes(request.destination)) {
     return;
   }

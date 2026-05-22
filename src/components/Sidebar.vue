@@ -467,6 +467,7 @@ const menuByRole = {
       icon: "ph:books",
       children: [
         { to: "/learning-teacher", dataTour: "learning-teacher", label: "Pembelajaran", icon: "ph:book-open-text" },
+        { to: "/learning-teaching-module-teacher", label: "Modul Ajar AI", icon: "ph:notebook" },
         { to: "/learning-chat-teacher", label: "Live Chat", icon: "ph:chats-circle" },
         { to: "/learning-question-bank-teacher", dataTour: "question-bank", label: "Bank Soal", icon: "ph:stack" },
         { to: "/learning-quiz-teacher", label: "Quiz", icon: "ph:brain" },
@@ -790,7 +791,7 @@ const pushKoperasiToast = (payload) => {
 };
 
 const bindRealtimeStream = () => {
-  if (!shouldTrackLiveChat && !shouldTrackPrivateChat && !shouldTrackKoperasi.value) {
+  if (!shouldTrackLiveChat && !shouldTrackPrivateChat.value && !shouldTrackKoperasi.value) {
     return;
   }
 
@@ -876,7 +877,7 @@ onMounted(() => {
   if (shouldTrackLiveChat) {
     startupTasks.push(sidebarStore.refreshLiveChatSubjects(role));
   }
-  if (shouldTrackPrivateChat) {
+  if (shouldTrackPrivateChat.value) {
     startupTasks.push(sidebarStore.refreshPrivateChatSummary({ force: false }));
   }
 

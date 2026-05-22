@@ -148,7 +148,8 @@
                       ? 'border-sky-300 bg-sky-50 text-sky-900 dark:border-sky-500/40 dark:bg-sky-500/10 dark:text-sky-100'
                       : 'border-slate-200 bg-white text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'">
                   <div class="flex items-start gap-3">
-                    <span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                    <span
+                      class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold"
                       :class="item.correctIndex === optionIndex
                         ? 'bg-emerald-600 text-white'
                         : item.selectedIndex === optionIndex
@@ -158,7 +159,8 @@
                     </span>
                     <div class="space-y-2 flex-1">
                       <span class="block font-medium leading-relaxed">{{ option.text }}</span>
-                      <img v-if="option.imageUrl" :src="option.imageUrl" :alt="`Opsi ${String.fromCharCode(65 + optionIndex)}`"
+                      <img v-if="option.imageUrl" :src="option.imageUrl"
+                        :alt="`Opsi ${String.fromCharCode(65 + optionIndex)}`"
                         class="max-h-40 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
                     </div>
                     <span v-if="item.correctIndex === optionIndex"
@@ -172,7 +174,8 @@
                 </p>
               </div>
 
-              <div v-else class="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+              <div v-else
+                class="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
                 {{ item.answerText || "Belum ada jawaban essay yang tersimpan." }}
               </div>
             </article>
@@ -227,7 +230,8 @@
 
         <div>
           <div v-if="selectedSubject" class="space-y-6">
-            <section class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+            <section
+              class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
               <div class="border-b border-slate-100 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-900">
                 <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                   <div>
@@ -247,7 +251,8 @@
               <div class="bg-white p-4 dark:bg-slate-900">
                 <div class="hidden md:block overflow-x-auto">
                   <table class="min-w-full text-sm">
-                    <thead class="bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/60">
+                    <thead
+                      class="bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/60">
                       <tr>
                         <th class="px-3 py-2">Quiz</th>
                         <th class="px-3 py-2">Info</th>
@@ -259,10 +264,12 @@
                       <tr v-for="item in assignments" :key="item.id" class="align-top">
                         <td class="px-3 py-3">
                           <div class="flex flex-wrap gap-1.5">
-                            <span v-if="item.is_exam" class="inline-flex rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-sky-700 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">
+                            <span v-if="item.is_exam"
+                              class="inline-flex rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-sky-700 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">
                               {{ examCategoryLabel(item.exam_category) }}
                             </span>
-                            <span class="inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-rose-700 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
+                            <span
+                              class="inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-rose-700 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
                               {{ assignmentTypeLabel(item.assignment_type) }}
                             </span>
                           </div>
@@ -272,16 +279,19 @@
                           </div>
                         </td>
                         <td class="px-3 py-3 text-xs text-slate-500 dark:text-slate-400">
-                          <div>{{ item.is_exam ? `Mulai ${formatDateTime(item.start_at)}` : assignmentDurationSummary(item) }}</div>
+                          <div>{{ item.is_exam ? `Mulai ${formatDateTime(item.start_at)}` :
+                            assignmentDurationSummary(item) }}</div>
                           <div class="mt-1">{{ formatDateTime(item.due_date) }}</div>
-                          <div v-if="item.score !== null" class="mt-2 font-semibold text-emerald-600 dark:text-emerald-300">
+                          <div v-if="item.score !== null"
+                            class="mt-2 font-semibold text-emerald-600 dark:text-emerald-300">
                             Nilai {{ item.score }} / 100
                           </div>
                         </td>
                         <td class="px-3 py-3">
-                          <span class="inline-flex rounded-full px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.08em] ring-1 ring-inset"
+                          <span
+                            class="inline-flex rounded-full px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.08em] ring-1 ring-inset"
                             :class="item.score !== null
-                            ? 'bg-white text-emerald-700 ring-emerald-200 dark:bg-slate-900 dark:text-emerald-300 dark:ring-emerald-500/20'
+                              ? 'bg-white text-emerald-700 ring-emerald-200 dark:bg-slate-900 dark:text-emerald-300 dark:ring-emerald-500/20'
                               : item.access_blocked
                                 ? 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20'
                                 : item.is_submitted
@@ -289,7 +299,8 @@
                                   : isExamUnavailable(item)
                                     ? 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700'
                                     : 'bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20'">
-                            {{ item.score !== null ? "Dinilai" : item.access_blocked ? "Kode Baru" : item.is_submitted ? "Selesai" : isExamUnavailable(item) ? "Belum Tersedia" : "Siap" }}
+                            {{ item.score !== null ? "Dinilai" : item.access_blocked ? "Kode Baru" : item.is_submitted ?
+                              "Selesai" : isExamUnavailable(item) ? "Belum Tersedia" : "Siap" }}
                           </span>
                         </td>
                         <td class="px-3 py-3 text-right">
@@ -320,10 +331,12 @@
                     <div class="flex items-start justify-between gap-2">
                       <div class="min-w-0">
                         <div class="flex flex-wrap gap-1.5">
-                          <span v-if="item.is_exam" class="inline-flex rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-sky-700 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">
+                          <span v-if="item.is_exam"
+                            class="inline-flex rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-sky-700 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">
                             {{ examCategoryLabel(item.exam_category) }}
                           </span>
-                          <span class="inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-rose-700 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
+                          <span
+                            class="inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-rose-700 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
                             {{ assignmentTypeLabel(item.assignment_type) }}
                           </span>
                         </div>
@@ -332,7 +345,8 @@
                           {{ item.description || "Tidak ada instruksi tambahan." }}
                         </p>
                       </div>
-                      <span class="inline-flex shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.08em] ring-1 ring-inset"
+                      <span
+                        class="inline-flex shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.08em] ring-1 ring-inset"
                         :class="item.score !== null
                           ? 'bg-white text-emerald-700 ring-emerald-200 dark:bg-slate-900 dark:text-emerald-300 dark:ring-emerald-500/20'
                           : item.access_blocked
@@ -342,16 +356,19 @@
                               : isExamUnavailable(item)
                                 ? 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700'
                                 : 'bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20'">
-                        {{ item.score !== null ? "Dinilai" : item.access_blocked ? "Kode Baru" : item.is_submitted ? "Selesai" : isExamUnavailable(item) ? "Belum Tersedia" : "Siap" }}
+                        {{ item.score !== null ? "Dinilai" : item.access_blocked ? "Kode Baru" : item.is_submitted ?
+                          "Selesai" : isExamUnavailable(item) ? "Belum Tersedia" : "Siap" }}
                       </span>
                     </div>
                     <div class="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-                      <span>{{ item.is_exam ? `Mulai ${formatDateTime(item.start_at)}` : assignmentDurationSummary(item) }}</span>
+                      <span>{{ item.is_exam ? `Mulai ${formatDateTime(item.start_at)}` : assignmentDurationSummary(item)
+                      }}</span>
                       <span>•</span>
                       <span>{{ formatDateTime(item.due_date) }}</span>
                     </div>
                     <div class="mt-3 flex items-center justify-between gap-2">
-                      <span v-if="item.score !== null" class="text-xs font-semibold text-emerald-600 dark:text-emerald-300">
+                      <span v-if="item.score !== null"
+                        class="text-xs font-semibold text-emerald-600 dark:text-emerald-300">
                         Nilai {{ item.score }} / 100
                       </span>
                       <span v-else class="text-xs text-slate-400"></span>
@@ -442,7 +459,8 @@
                   <div class="grid gap-4 md:grid-cols-3">
                     <div
                       class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
-                      <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{{ sessionTypeTitle }}</p>
+                      <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{{ sessionTypeTitle }}
+                      </p>
                       <p class="mt-2 text-lg font-black text-slate-900 dark:text-white">
                         {{ sessionTypeValue }}
                       </p>
