@@ -16,7 +16,7 @@
     >
       <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-700">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-[0.12em] text-sky-600 dark:text-sky-300">Asisten Sistem</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.12em] text-sky-600 dark:text-sky-300">Chat AI Qwen</p>
           <p class="text-sm font-bold text-slate-900 dark:text-white">{{ assistantConfig.title }}</p>
         </div>
         <button
@@ -81,15 +81,16 @@ import { isAuthenticated, getStoredRole } from "@/utils/auth";
 const route = useRoute();
 const assistantConfig = {
   buttonLabel: "Asisten AI",
-  title: "Asisten Umum",
+  title: "Qwen",
   placeholder: "Tulis pertanyaan apa saja...",
-  intro: "Halo, saya asisten umum. Saya bisa membantu menjawab pertanyaan dari banyak topik dengan bahasa yang sederhana dan praktis.",
+  intro: "Halo, saya Qwen. Tanyakan apa saja dan saya akan menjawab langsung dengan bahasa yang jelas.",
   quickQuestions: [
     "Jelaskan topik ini dengan sederhana",
-    "Buat langkah-langkah singkat",
+    "Buatkan ide tulisan",
     "Beri contoh praktis",
   ],
 };
+const allowedRoles = new Set(["SUPER_ADMIN", "ADMIN", "GURU", "SISWA", "SARPRAS", "KOPERASI"]);
 const open = ref(false);
 const viewportWidth = ref(typeof window !== "undefined" ? window.innerWidth : 1280);
 const question = ref("");
@@ -113,7 +114,7 @@ const shouldHideOnMobileChat = computed(() =>
 const isAllowed = computed(() => {
   const role = getStoredRole();
   return isAuthenticated()
-    && ["ADMIN", "GURU"].includes(role)
+    && allowedRoles.has(role)
     && !hiddenRouteNames.has(route.name)
     && !shouldHideOnMobileChat.value;
 });
@@ -129,19 +130,27 @@ const useQuickQuestion = (text) => {
   sendQuestion();
 };
 
+const buildHistoryPayload = () => messages.value
+  .slice(-12)
+  .map((msg) => ({
+    role: msg.role === "bot" ? "assistant" : "user",
+    content: msg.text,
+  }));
+
 const sendQuestion = async () => {
   const cleanedQuestion = String(question.value || "").trim();
   if (!cleanedQuestion || isLoading.value) return;
 
+  const history = buildHistoryPayload();
   addMessage("user", cleanedQuestion);
   question.value = "";
   isLoading.value = true;
   try {
-    const response = await api.post("/learning/system-chatbot", { question: cleanedQuestion });
-    const answer = response?.data?.answer || "Maaf, saya belum bisa menjawab sekarang.";
+    const response = await api.post("/ai/chat", { question: cleanedQuestion, history });
+    const answer = response?.data?.answer || "AI Qwen belum mengembalikan jawaban. Coba kirim ulang pertanyaan.";
     addMessage("bot", answer);
   } catch (error) {
-    addMessage("bot", "Maaf, ada kendala saat menjawab. Silakan coba lagi.");
+    addMessage("bot", error.message || "AI Qwen sedang tidak tersambung. Coba lagi beberapa saat.");
   } finally {
     isLoading.value = false;
   }

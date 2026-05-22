@@ -36,7 +36,6 @@
   <ToastHost />
   <ForcedLogoutModal :open="isForcedLogoutModalOpen" :notice="forcedLogoutNotice" @close="closeForcedLogoutModal" />
   <GlobalLoadingOverlay :visible="globalLoading.visible" :message="globalLoading.message" />
-  <FloatingSystemAssistant />
   <!-- End app -->
 </template>
 
@@ -60,7 +59,6 @@ const layoutChromeState = useLayoutChrome();
 const globalLoadingState = useGlobalLoading();
 const webPush = useWebPush();
 const ForcedLogoutModal = defineAsyncComponent(() => import("@/components/ForcedLogoutModal.vue"));
-const FloatingSystemAssistant = defineAsyncComponent(() => import("@/components/FloatingSystemAssistant.vue"));
 const pwaInstall = usePwaInstall();
 
 export default {
@@ -102,7 +100,6 @@ export default {
     Footer,
     GlobalLoadingOverlay,
     ForcedLogoutModal,
-    FloatingSystemAssistant,
     Sidebar,
     ToastHost,
   },

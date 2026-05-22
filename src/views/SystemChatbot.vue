@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-      <p class="text-xs font-semibold uppercase tracking-[0.15em] text-sky-600 dark:text-sky-300">Asisten Sistem</p>
+      <p class="text-xs font-semibold uppercase tracking-[0.15em] text-sky-600 dark:text-sky-300">Chat AI Qwen</p>
       <h1 class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{{ assistantConfig.pageTitle }}</h1>
       <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
         {{ assistantConfig.description }}
@@ -61,14 +61,14 @@ import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 
 const assistantConfig = {
-  pageTitle: "Chatbot Umum",
-  description: "Tanyakan apa saja. Asisten ini tidak dibatasi ke topik sekolah dan akan menjawab dengan bahasa yang sederhana.",
-  placeholder: "Contoh: Jelaskan foto ini, bantu ringkas teks, atau buat langkah singkat?",
-  intro: "Halo, saya asisten umum. Saya bisa membantu menjawab pertanyaan dari banyak topik, bukan hanya topik sekolah.",
+  pageTitle: "Chat AI Qwen",
+  description: "Tanyakan apa saja. AI ini menjawab pertanyaan global secara langsung dengan model Qwen.",
+  placeholder: "Tulis pertanyaan apa saja...",
+  intro: "Halo, saya Qwen. Tanyakan apa saja dan saya akan menjawab langsung dengan bahasa yang jelas.",
   quickQuestions: [
     "Jelaskan topik ini dengan sederhana",
-    "Buat langkah-langkah singkat",
-    "Ringkas jawaban jadi 3 poin",
+    "Buatkan ide tulisan",
+    "Ringkas menjadi 3 poin",
     "Beri contoh praktis",
   ],
 };
@@ -98,24 +98,32 @@ const useQuickQuestion = (text) => {
   sendQuestion();
 };
 
+const buildHistoryPayload = () => messages.value
+  .slice(-12)
+  .map((msg) => ({
+    role: msg.role === "bot" ? "assistant" : "user",
+    content: msg.text,
+  }));
+
 const sendQuestion = async () => {
   const cleanedQuestion = String(question.value || "").trim();
   if (!cleanedQuestion || isLoading.value) {
     return;
   }
 
+  const history = buildHistoryPayload();
   addMessage("user", cleanedQuestion);
   question.value = "";
   isLoading.value = true;
 
   try {
-    const response = await api.post("/learning/system-chatbot", { question: cleanedQuestion });
-    const answer = response?.data?.answer || "Maaf, saya belum bisa menjawab pertanyaan itu.";
+    const response = await api.post("/ai/chat", { question: cleanedQuestion, history });
+    const answer = response?.data?.answer || "AI Qwen belum mengembalikan jawaban. Coba kirim ulang pertanyaan.";
     addMessage("bot", answer);
   } catch (error) {
-    addMessage("bot", "Maaf, saya belum bisa menjawab sekarang. Silakan coba lagi.");
+    addMessage("bot", error.message || "AI Qwen sedang tidak tersambung. Coba lagi beberapa saat.");
     pushToast({
-      title: "Chatbot Gagal",
+      title: "Chat AI Gagal",
       message: error.message || "Terjadi kendala saat mengambil jawaban.",
       type: "error",
     });

@@ -283,16 +283,6 @@ const routes = [
     },
   },
   {
-    path: "/system-chatbot",
-    name: "SystemChatbot",
-    component: lazyRoute(() => import("../views/SystemChatbot.vue")),
-    meta: {
-      title: "Asisten Sistem" + appName,
-      requiresAuth: true,
-      roles: ["ADMIN", "GURU"],
-    },
-  },
-  {
     path: "/learning-chat-teacher",
     name: "LearningChatTeacher",
     component: lazyRoute(() => import("../views/LearningChat.vue")),
