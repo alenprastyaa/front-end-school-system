@@ -62,6 +62,286 @@
         {{ errorMessage }}
       </div>
 
+      <template v-if="isParentDashboard">
+        <section
+          class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div class="bg-slate-950 px-4 py-5 text-white sm:px-6 sm:py-6">
+            <div class="flex flex-col gap-4">
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div class="min-w-0">
+                  <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-300">Pantauan Anak</p>
+                  <h2 class="mt-2 text-2xl font-bold tracking-tight text-white">
+                    {{ selectedParentChild?.full_name || selectedParentChild?.username || "Anak" }}
+                  </h2>
+                  <p class="mt-1 text-sm text-slate-300">
+                    {{ selectedParentChild?.school_name || dashboardData?.student?.school_name || "Sekolah" }}
+                    <span v-if="selectedParentChild?.class_name"> • {{ selectedParentChild.class_name }}</span>
+                  </p>
+                </div>
+
+                <button @click="handleAnnouncementButton"
+                  class="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 text-sm font-semibold text-white ring-1 ring-inset ring-white/15 transition hover:bg-white/15">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M11.25 4.5h1.5m0 15h-1.5m6.364-13.364l1.061-1.06m-11.31 11.31l-1.06 1.06m13.364 0l-1.06-1.06m-11.31-11.31l1.06 1.06M4.5 11.25v1.5m15-1.5v1.5" />
+                  </svg>
+                  Pengumuman
+                </button>
+              </div>
+
+              <div v-if="parentChildren.length > 0" class="flex gap-3 overflow-x-auto pb-1">
+                <button v-for="child in parentChildren" :key="child.id" type="button"
+                  @click="selectedParentChildId = String(child.id); loadDashboard()"
+                  class="min-w-[210px] rounded-2xl border px-4 py-3 text-left transition"
+                  :class="String(child.id) === String(selectedParentChildId || dashboardData.selected_child_id) ? 'border-sky-400 bg-sky-500/10 ring-1 ring-sky-400/30' : 'border-white/10 bg-white/5 hover:bg-white/10'">
+                  <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">Anak</p>
+                  <p class="mt-1 truncate text-sm font-semibold text-white">
+                    {{ child.full_name || child.username }}
+                  </p>
+                  <p class="mt-1 truncate text-xs text-slate-300">
+                    {{ child.school_name || "-" }}{{ child.class_name ? ` • ${child.class_name}` : "" }}
+                  </p>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid gap-3 bg-white p-4 sm:grid-cols-2 sm:p-6 dark:bg-slate-900">
+            <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+              <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Identitas Anak</p>
+              <p class="mt-2 text-base font-bold text-slate-900 dark:text-white">
+                {{ selectedParentChild?.full_name || selectedParentChild?.username || "-" }}
+              </p>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ selectedParentChild?.username || "-" }}</p>
+              <div class="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                <p>Kontak Orang Tua: {{ selectedParentChild?.phone_number || "-" }}</p>
+                <p>Email: {{ selectedParentChild?.parent_email || "-" }}</p>
+              </div>
+            </div>
+            <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+              <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Status Hari Ini</p>
+              <div class="mt-3 flex items-center justify-between gap-3">
+                <div>
+                  <p class="text-2xl font-bold text-slate-900 dark:text-white">
+                    {{ dashboardData?.todayAttendance?.status || "Belum absen" }}
+                  </p>
+                  <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                    {{ dashboardData?.todayAttendance?.clock_in ? `Masuk ${formatTime(dashboardData.todayAttendance.clock_in)}` : "Menunggu check-in" }}
+                  </p>
+                </div>
+                <div class="rounded-2xl bg-white px-4 py-3 text-right shadow-sm ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-700">
+                  <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Anak Aktif</p>
+                  <p class="mt-1 max-w-[14rem] truncate text-sm font-semibold text-slate-900 dark:text-white">
+                    {{ selectedParentChild?.class_name || "Belum ada kelas" }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div v-for="item in summaryCards" :key="item.label" class="relative overflow-hidden rounded-2xl p-5"
+            :class="item.cardClass">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <dt class="text-sm font-medium" :class="item.labelClass">{{ item.label }}</dt>
+                <dd class="mt-2 text-3xl font-bold tracking-tight" :class="item.valueClass">{{ item.value }}</dd>
+                <dd class="mt-3 text-xs" :class="item.captionClass">{{ item.caption }}</dd>
+              </div>
+              <div class="flex h-16 w-16 shrink-0 items-center justify-center">
+                <Icon :icon="item.icon" class="h-10 w-10 opacity-75" :class="item.iconClass" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="grid grid-cols-1 gap-4 xl:grid-cols-[1.45fr_1fr]">
+          <div class="space-y-4">
+            <section
+              class="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <h2 class="text-base font-semibold text-slate-900 dark:text-white">Ringkasan Nilai</h2>
+                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Pantauan tugas, nilai, dan progres belajar anak.</p>
+                </div>
+                <div class="rounded-2xl bg-slate-50 px-4 py-3 text-right dark:bg-slate-800/60">
+                  <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Rata-rata</p>
+                  <p class="mt-1 text-xl font-bold text-slate-900 dark:text-white">
+                    {{ parentGradesSummary.average_score ?? "-" }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/60">
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total</p>
+                  <p class="mt-1 text-xl font-bold text-slate-900 dark:text-white">{{ parentGradesSummary.total_assignments || 0 }}</p>
+                </div>
+                <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/60">
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Terkumpul</p>
+                  <p class="mt-1 text-xl font-bold text-slate-900 dark:text-white">{{ parentGradesSummary.submitted_count || 0 }}</p>
+                </div>
+                <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/60">
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Belum</p>
+                  <p class="mt-1 text-xl font-bold text-slate-900 dark:text-white">{{ parentGradesSummary.pending_count || 0 }}</p>
+                </div>
+                <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/60">
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Dinilai</p>
+                  <p class="mt-1 text-xl font-bold text-slate-900 dark:text-white">{{ parentGradesSummary.graded_count || 0 }}</p>
+                </div>
+              </div>
+
+              <div class="mt-5 space-y-3">
+                <article v-for="row in parentGrades" :key="`${row.assignment_id}-${row.subject_id}`"
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:bg-slate-100/70 dark:border-slate-800 dark:bg-slate-800/60 dark:hover:bg-slate-800">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">{{ row.subject_name }}</p>
+                      <h3 class="mt-1 truncate text-sm font-bold text-slate-900 dark:text-white">{{ row.title }}</h3>
+                    </div>
+                    <div class="shrink-0 text-right">
+                      <p class="text-lg font-bold text-slate-900 dark:text-white">{{ row.score ?? "-" }}</p>
+                      <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                        {{ row.score !== null && row.score !== undefined ? "Dinilai" : (row.is_submitted || row.submission_id ? "Terkumpul" : "Belum") }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                    <span class="inline-flex rounded-full bg-white px-2.5 py-1 ring-1 ring-inset ring-slate-200 dark:bg-slate-950 dark:ring-slate-700">
+                      {{ formatDateTime(row.due_date) }}
+                    </span>
+                    <span class="inline-flex rounded-full bg-white px-2.5 py-1 ring-1 ring-inset ring-slate-200 dark:bg-slate-950 dark:ring-slate-700">
+                      {{ row.assignment_type || "Tugas" }}
+                    </span>
+                  </div>
+                  <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">
+                    {{ row.feedback || "Belum ada feedback." }}
+                  </p>
+                </article>
+                <div v-if="parentGrades.length === 0" class="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                  Belum ada data nilai.
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="space-y-4">
+            <section
+              class="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <h2 class="text-base font-semibold text-slate-900 dark:text-white">Absensi Terbaru</h2>
+                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Riwayat check-in dan check-out anak.</p>
+                </div>
+                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  {{ parentAttendanceHistory.length }} data
+                </span>
+              </div>
+
+              <div class="mt-4 rounded-2xl bg-slate-950 p-4 text-white">
+                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-300">Hari Ini</p>
+                <p class="mt-2 text-2xl font-bold">
+                  {{ dashboardData?.todayAttendance?.status || "Belum absen" }}
+                </p>
+                <div class="mt-3 grid grid-cols-2 gap-3 text-sm text-slate-200">
+                  <div class="rounded-2xl bg-white/5 p-3">
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Masuk</p>
+                    <p class="mt-1 font-semibold">{{ dashboardData?.todayAttendance?.clock_in ? formatTime(dashboardData.todayAttendance.clock_in) : "-" }}</p>
+                  </div>
+                  <div class="rounded-2xl bg-white/5 p-3">
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Pulang</p>
+                    <p class="mt-1 font-semibold">{{ dashboardData?.todayAttendance?.clock_out ? formatTime(dashboardData.todayAttendance.clock_out) : "-" }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4 space-y-3">
+                <div v-for="item in parentAttendanceHistory" :key="`${item.attendance_date}-${item.clock_in}`"
+                  class="flex items-start gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/60">
+                  <div class="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500"></div>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-start justify-between gap-2">
+                      <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ formatDate(item.attendance_date) }}</p>
+                      <span class="text-xs text-slate-500 dark:text-slate-400">{{ item.status || "-" }}</span>
+                    </div>
+                    <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                      Masuk {{ item.clock_in ? formatTime(item.clock_in) : "-" }}
+                      <span class="mx-1">•</span>
+                      Pulang {{ item.clock_out ? formatTime(item.clock_out) : "-" }}
+                    </p>
+                  </div>
+                </div>
+                <div v-if="parentAttendanceHistory.length === 0" class="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                  Belum ada riwayat absensi.
+                </div>
+              </div>
+            </section>
+
+            <section
+              class="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <h2 class="text-base font-semibold text-slate-900 dark:text-white">Tugas Pending</h2>
+                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Tugas yang belum dikerjakan anak.</p>
+                </div>
+                <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+                  {{ parentPendingAssignments.length }}
+                </span>
+              </div>
+
+              <div class="mt-4 space-y-3">
+                <article v-for="item in parentPendingAssignments" :key="item.id"
+                  class="rounded-2xl bg-amber-50 p-4 dark:bg-amber-500/10">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="text-xs font-semibold uppercase tracking-[0.16em] text-amber-700 dark:text-amber-300">{{ item.subject_name || "Mapel" }}</p>
+                      <h3 class="mt-1 text-sm font-bold text-slate-900 dark:text-white">{{ item.title }}</h3>
+                    </div>
+                    <span class="shrink-0 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-amber-700 shadow-sm ring-1 ring-amber-200 dark:bg-slate-950 dark:text-amber-300 dark:ring-amber-500/30">
+                      {{ formatDateTime(item.due_date) }}
+                    </span>
+                  </div>
+                </article>
+                <div v-if="parentPendingAssignments.length === 0" class="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                  Tidak ada tugas pending.
+                </div>
+              </div>
+            </section>
+
+            <section
+              class="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <h2 class="text-base font-semibold text-slate-900 dark:text-white">Administrasi</h2>
+                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Riwayat pembayaran dan berkas terakhir.</p>
+                </div>
+                <span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+                  {{ parentReceiptHistory.length }}
+                </span>
+              </div>
+
+              <div class="mt-4 space-y-3">
+                <article v-for="item in parentReceiptHistory" :key="item.id"
+                  class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">{{ item.periode || "Receipt" }}</p>
+                      <h3 class="mt-1 text-sm font-bold text-slate-900 dark:text-white">{{ item.description || "Tanpa keterangan" }}</h3>
+                    </div>
+                    <span class="shrink-0 text-xs text-slate-500 dark:text-slate-400">{{ formatDateTime(item.created_at) }}</span>
+                  </div>
+                </article>
+                <div v-if="parentReceiptHistory.length === 0" class="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                  Belum ada data administrasi.
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+      </template>
+
+      <template v-else>
       <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div v-for="item in summaryCards" :key="item.label" class="relative overflow-hidden rounded-2xl p-5"
           :class="item.cardClass">
@@ -75,44 +355,6 @@
               <Icon :icon="item.icon" class="h-10 w-10 opacity-75" :class="item.iconClass" />
             </div>
           </div>
-        </div>
-      </section>
-
-      <section v-if="role === 'ADMIN'"
-        class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
-        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 class="text-base font-semibold text-slate-900 dark:text-white">Semua Menu Admin</h2>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Ringkasan cepat untuk seluruh area kerja admin
-              sekolah.</p>
-          </div>
-          <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            {{ adminModuleCards.length }} menu aktif
-          </span>
-        </div>
-
-        <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <router-link v-for="item in adminModuleCards" :key="item.key" :to="item.to"
-            class="group flex min-h-[128px] flex-col justify-between rounded-xl border border-[#e9edef] bg-white p-4 text-[#111b21] transition hover:bg-[#f5f6f6] dark:border-[#222e35] dark:bg-[#202c33] dark:text-[#e9edef] dark:hover:bg-[#2a3942]">
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-white"
-                :class="item.accentClass">
-                <Icon :icon="item.icon" class="h-5 w-5" />
-              </div>
-              <Icon icon="ph:arrow-up-right"
-                class="h-4 w-4 text-slate-400 transition group-hover:text-sky-600 dark:group-hover:text-sky-300" />
-            </div>
-            <div class="mt-4">
-              <p class="truncate text-sm font-semibold text-[#111b21] dark:text-[#e9edef]" :title="item.label">{{
-                item.label }}</p>
-              <div class="mt-2 flex items-end justify-between gap-3">
-                <p class="text-2xl font-bold text-[#111b21] dark:text-[#e9edef]">{{ formatCompactNumber(item.primary) }}
-                </p>
-                <p class="min-w-0 flex-1 truncate text-right text-xs text-[#667781] dark:text-[#8696a0]"
-                  :title="item.caption">{{ item.caption }}</p>
-              </div>
-            </div>
-          </router-link>
         </div>
       </section>
 
@@ -300,6 +542,7 @@
         </div>
 
       </div>
+      </template>
 
       <teleport to="body">
         <transition name="fade-scale">
@@ -425,7 +668,21 @@ const endpointByRole = {
   SARPRAS: "/dashboard/sarpras",
   GURU: "/dashboard/guru",
   SISWA: "/dashboard/siswa",
+  ORANG_TUA: "/dashboard/parent",
 };
+const isParentDashboard = computed(() => role === "ORANG_TUA");
+const selectedParentChildId = ref("");
+const parentChildren = computed(() => Array.isArray(dashboardData.value?.children) ? dashboardData.value.children : []);
+const selectedParentChild = computed(() => {
+  const selectedId = String(selectedParentChildId.value || dashboardData.value?.selected_child_id || "");
+  if (!selectedId) return dashboardData.value?.student || null;
+  return parentChildren.value.find((child) => String(child.id) === selectedId) || dashboardData.value?.student || null;
+});
+const parentGrades = computed(() => Array.isArray(dashboardData.value?.grades) ? dashboardData.value.grades : []);
+const parentGradesSummary = computed(() => dashboardData.value?.gradesSummary || {});
+const parentAttendanceHistory = computed(() => Array.isArray(dashboardData.value?.recentAttendance) ? dashboardData.value.recentAttendance : []);
+const parentReceiptHistory = computed(() => Array.isArray(dashboardData.value?.recentReceipts) ? dashboardData.value.recentReceipts : []);
+const parentPendingAssignments = computed(() => Array.isArray(dashboardData.value?.pendingAssignments) ? dashboardData.value.pendingAssignments : []);
 
 const isAnnouncementExpired = (item) => {
   if (!item?.deactivated_at) return false;
@@ -559,6 +816,7 @@ const heroDescription = computed(() => {
   if (role === "ADMIN") return "Metrik operasional sekolah, status absensi, dan data kelas secara real-time.";
   if (role === "GURU") return "Ringkasan data absensi siswa dan administrasi untuk kelas perwalian Anda.";
   if (role === "SISWA") return "Pantau riwayat absensi, status administrasi, dan tugas akademik Anda.";
+  if (role === "ORANG_TUA") return "Pantau absensi, tugas, dan administrasi anak secara ringkas.";
   return "Ringkasan sistem berdasarkan akses pengguna.";
 });
 
@@ -601,64 +859,13 @@ const summaryCards = computed(() => {
 });
 
 const studentAssignmentAlert = computed(() => {
-  if (role !== "SISWA") return null;
+  if (role !== "SISWA" && role !== "ORANG_TUA") return null;
   const items = dashboardData.value?.pendingAssignments || [];
   if (items.length === 0) return null;
   return {
     count: Number(dashboardData.value?.overview?.pending_assignments || items.length),
     items: items.slice(0, 4),
   };
-});
-
-const adminModuleAccentClasses = [
-  "bg-sky-600",
-  "bg-emerald-600",
-  "bg-amber-500",
-  "bg-indigo-600",
-  "bg-rose-600",
-  "bg-cyan-600",
-  "bg-fuchsia-600",
-  "bg-slate-700",
-];
-
-const defaultAdminModules = (overview = {}) => [
-  { key: "school-users", label: "User Sekolah", to: "/school-users", icon: "clarity:users-line", primary: numberValue(overview.teachers) + numberValue(overview.admins), caption: `${numberValue(overview.teachers)} guru, ${numberValue(overview.admins)} admin` },
-  { key: "private-chat", label: "Chat Pribadi", to: "/private-chat", icon: "ph:chat-circle-dots", primary: numberValue(overview.teachers) + numberValue(overview.students), caption: "Kontak internal sekolah" },
-  { key: "classes", label: "Kelas", to: "/classes", icon: "mdi:google-classroom", primary: numberValue(overview.classes), caption: `${numberValue(overview.students)} siswa terdaftar` },
-  { key: "students", label: "Siswa", to: "/students", icon: "mdi:account-school-outline", primary: numberValue(overview.students), caption: "Akun peserta didik" },
-  { key: "academic-periods", label: "Tahun Ajaran", to: "/academic-periods", icon: "ph:calendar-blank", primary: numberValue(overview.academic_years), caption: `${numberValue(overview.semesters)} semester` },
-  { key: "inventory", label: "Sarpras", to: "/inventory", icon: "ph:archive-box", primary: numberValue(overview.inventory_items), caption: `${numberValue(overview.inventory_active_loans)} dipinjam` },
-  { key: "koperasi", label: "Koperasi", to: "/koperasi", icon: "ph:shopping-cart", primary: numberValue(overview.koperasi_products), caption: `${numberValue(overview.koperasi_pending_orders)} pesanan perlu diproses` },
-  { key: "curriculum", label: "Kurikulum", to: "/learning-admin", icon: "ph:books", primary: numberValue(overview.curriculum_subjects), caption: `${numberValue(overview.curriculum_teacher_loads)} beban guru` },
-  { key: "schedule", label: "Jadwal Pembelajaran", to: "/learning-admin/schedule", icon: "ph:calendar-blank", primary: numberValue(overview.curriculum_schedule_entries), caption: `${numberValue(overview.curriculum_schedule_slots)} slot jadwal` },
-  { key: "learning", label: "LMS Pembelajaran", to: "/learning-admin", icon: "ph:book-open-text", primary: numberValue(overview.learning_subjects), caption: `${numberValue(overview.learning_materials)} materi` },
-  { key: "learning-exams-admin", label: "Ujian Resmi", to: "/learning-exams-admin", icon: "ph:exam", primary: numberValue(overview.official_exams), caption: `${numberValue(overview.official_exams_pending)} belum published` },
-  { key: "announcements", label: "Pengumuman", to: "/announcements", icon: "ph:megaphone-simple", primary: numberValue(overview.announcements_total), caption: `${numberValue(overview.announcements_active)} aktif` },
-  { key: "billing", label: "Billing", to: "/billing", icon: "ph:credit-card", primary: numberValue(overview.billing_unpaid_invoices), caption: "Invoice belum lunas" },
-  { key: "admin-settings", label: "Setting", to: "/admin-settings", icon: "ph:gear-six", primary: numberValue(overview.receipts_total), caption: "Data dan reset ruang admin" },
-];
-
-const adminModuleCards = computed(() => {
-  if (role !== "ADMIN") return [];
-  const school = dashboardData.value?.school || {};
-  const modules = Array.isArray(dashboardData.value?.adminModules) && dashboardData.value.adminModules.length > 0
-    ? dashboardData.value.adminModules
-    : defaultAdminModules(dashboardData.value?.overview || {});
-
-  return modules
-    .filter((item) => {
-      if (item.key === "inventory") return school.inventory_module_enabled !== false;
-      if (item.key === "koperasi") return school.koperasi_module_enabled !== false;
-      if (item.key === "private-chat") return school.private_chat_module_enabled !== false;
-      if (item.key === "learning-exams-admin") return school.official_exam_module_enabled !== false;
-      return true;
-    })
-    .map((item, index) => ({
-      ...item,
-      primary: numberValue(item.primary),
-      caption: item.caption || "-",
-      accentClass: adminModuleAccentClasses[index % adminModuleAccentClasses.length],
-    }));
 });
 
 const primarySortAccessors = computed(() => ({
@@ -944,8 +1151,14 @@ const loadDashboard = async () => {
   errorMessage.value = "";
 
   try {
-    const response = await api.get(endpoint);
+    const params = role === "ORANG_TUA" && selectedParentChildId.value
+      ? { child_id: selectedParentChildId.value }
+      : undefined;
+    const response = await api.get(endpoint, { params });
     dashboardData.value = response?.data || {};
+    if (role === "ORANG_TUA" && !selectedParentChildId.value && dashboardData.value?.selected_child_id) {
+      selectedParentChildId.value = String(dashboardData.value.selected_child_id);
+    }
   } catch (error) {
     errorMessage.value = error.message;
     dashboardData.value = {};

@@ -509,6 +509,9 @@ const menuByRole = {
     { key: "koperasi", to: "/koperasi", label: "Koperasi", icon: "ph:shopping-cart" },
     { key: "private-chat", to: "/private-chat", label: "Chat Pribadi", icon: "ph:chat-circle-dots" },
   ],
+  ORANG_TUA: [
+    { key: "dashboard", to: "/dashboard", label: "Pantauan Anak", icon: "bxs:dashboard" },
+  ],
 };
 
 const filterMenuItems = (items = []) =>

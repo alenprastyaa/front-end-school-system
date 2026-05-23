@@ -26,7 +26,7 @@ const routes = [
     meta: {
       title: "Dashboard" + appName,
       requiresAuth: true,
-      roles: ["SUPER_ADMIN", "ADMIN", "KOPERASI", "SARPRAS", "GURU", "SISWA"],
+      roles: ["SUPER_ADMIN", "ADMIN", "KOPERASI", "SARPRAS", "GURU", "SISWA", "ORANG_TUA"],
     },
   },
   {

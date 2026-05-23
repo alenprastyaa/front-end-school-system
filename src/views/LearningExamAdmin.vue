@@ -98,6 +98,12 @@
                 class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
             </div>
 
+            <div class="space-y-1.5">
+              <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Toleransi Pelanggaran</label>
+              <input v-model="form.max_violations" type="number" min="1" max="20"
+                class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+            </div>
+
             <div class="space-y-1.5 md:col-span-2">
               <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Catatan untuk Guru</label>
               <textarea v-model="form.description" rows="3" placeholder="Instruksi tambahan untuk guru penyusun soal..."
@@ -155,6 +161,7 @@
                 <p>Mulai: {{ formatDateTime(item.start_at) }}</p>
                 <p>Selesai: {{ formatDateTime(item.due_date) }}</p>
                 <p>Durasi sesi: {{ formatDurationMinutes(item.question_duration_seconds) }}</p>
+                <p>Toleransi pelanggaran: {{ Number(item.max_violations || 3) }}x</p>
                 <p>Target soal guru: {{ item.exam_target_question_count || 0 }} soal</p>
                 <p v-if="item.exam_submitted_at">Paket guru masuk: {{ formatDateTime(item.exam_submitted_at) }}</p>
                 <p v-if="item.exam_published_at">Diterbitkan: {{ formatDateTime(item.exam_published_at) }}</p>
@@ -290,6 +297,7 @@ const form = reactive({
   due_date: "",
   question_duration_minutes: 60,
   exam_target_question_count: 20,
+  max_violations: 3,
   description: "",
 });
 
@@ -361,6 +369,7 @@ const resetForm = () => {
   form.due_date = "";
   form.question_duration_minutes = 60;
   form.exam_target_question_count = 20;
+  form.max_violations = 3;
   form.description = "";
 };
 
@@ -374,6 +383,7 @@ const fillFormFromAssignment = (assignment) => {
   form.due_date = formatDateTimeLocalInput(assignment.due_date);
   form.question_duration_minutes = Math.max(1, Math.round(Number(assignment.question_duration_seconds || 0) / 60) || 60);
   form.exam_target_question_count = Math.max(1, Number(assignment.exam_target_question_count || 20));
+  form.max_violations = Math.max(1, Number(assignment.max_violations || 3));
   form.description = assignment.description || "";
 };
 
@@ -491,6 +501,7 @@ const createExamRequest = async () => {
     formData.append("start_at", form.start_at);
     formData.append("question_duration_seconds", String((Number(form.question_duration_minutes) || 0) * 60));
     formData.append("exam_target_question_count", String(Number(form.exam_target_question_count) || 0));
+    formData.append("max_violations", String(Number(form.max_violations) || 3));
 
     const response = await api.post("/learning/assignments", formData);
     message.value = response?.message || "Task ujian berhasil dikirim ke guru";
@@ -535,6 +546,7 @@ const updateExamRequest = async () => {
     formData.append("start_at", form.start_at);
     formData.append("question_duration_seconds", String((Number(form.question_duration_minutes) || 0) * 60));
     formData.append("exam_target_question_count", String(Number(form.exam_target_question_count) || 0));
+    formData.append("max_violations", String(Number(form.max_violations) || 3));
 
     const response = await api.put(`/learning/assignments/${editingAssignmentId.value}/exam-admin`, formData);
     message.value = response?.message || "Task ujian berhasil diperbarui";

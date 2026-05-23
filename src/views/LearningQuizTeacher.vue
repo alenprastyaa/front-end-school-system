@@ -471,6 +471,21 @@
               </div>
             </div>
 
+            <div class="grid gap-4 md:grid-cols-[minmax(0,180px),1fr]">
+              <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Toleransi Pelanggaran</label>
+                <input v-model="assignmentForm.max_violations" type="number" min="1" max="20"
+                  class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+              </div>
+              <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Catatan Anti-Cheat</label>
+                <div
+                  class="flex min-h-[44px] items-center rounded-lg border border-slate-300 bg-slate-50 px-3 text-sm text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  Sesi akan dikunci bila melebihi toleransi yang ditentukan.
+                </div>
+              </div>
+            </div>
+
             <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-5 dark:border-slate-800">
               <button @click="assignmentPublishModal = false" type="button"
                 class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
@@ -950,6 +965,7 @@ const assignmentForm = reactive({
   shuffle_questions: false,
   question_duration_mode: "PER_QUESTION",
   question_duration_value: 10,
+  max_violations: 3,
   selected_question_bank_ids: [],
 });
 const assignmentDueDateValue = ref(null);
@@ -1136,6 +1152,7 @@ const resetAssignmentForm = () => {
   assignmentForm.shuffle_questions = false;
   assignmentForm.question_duration_mode = "PER_QUESTION";
   assignmentForm.question_duration_value = 10;
+  assignmentForm.max_violations = 3;
   assignmentForm.selected_question_bank_ids = [];
   assignmentDueDateValue.value = null;
 };
@@ -1520,6 +1537,7 @@ const submitAssignment = async () => {
     formData.append("assignment_type", assignmentForm.assignment_type);
     formData.append("shuffle_questions", String(Boolean(assignmentForm.shuffle_questions)));
     formData.append("question_duration_mode", assignmentForm.question_duration_mode);
+    formData.append("max_violations", String(Number(assignmentForm.max_violations) || 3));
     if (assignmentForm.question_duration_mode === "GLOBAL") {
       formData.append("question_duration_minutes", String(durationValue));
     } else {

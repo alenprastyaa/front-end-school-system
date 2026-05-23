@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
     <div class="flex items-center justify-center px-6 ">
-      <form @submit.prevent="handleLogin"
+      <form @submit.prevent="handleSubmit"
         class="w-full max-w-md bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-2xl p-8 space-y-6  mt-40">
         <div>
           <p class="text-sm uppercase tracking-wide text-gray-400">School System</p>
@@ -10,35 +10,49 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
-          <input v-model="form.username" type="text" required
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username / No HP</label>
+          <input v-model="loginIdentifier" type="text" required
             class="mt-1 w-full px-3 py-2 rounded-md border dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
+          <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            Username login memakai password. Jika diisi nomor HP, sistem akan kirim OTP WhatsApp.
+          </p>
         </div>
 
-        <div>
+        <div v-if="loginMode === 'password'">
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
           <input v-model="form.password" type="password" required
             class="mt-1 w-full px-3 py-2 rounded-md border dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
         </div>
 
-        <div v-if="lockRemainingSeconds > 0"
+        <div v-else-if="otpSent">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Kode OTP</label>
+          <input v-model="otpForm.otp" type="text" inputmode="numeric" maxlength="6" required
+            class="mt-1 w-full px-3 py-2 rounded-md border text-center text-lg tracking-[0.35em] dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
+          <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Kode berlaku 10 menit. Cek WhatsApp pada nomor yang
+            dimasukkan.</p>
+        </div>
+
+        <div v-if="loginMode === 'password' && lockRemainingSeconds > 0"
           class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
           Akun ini dikunci sementara. Coba lagi dalam {{ formattedLockRemaining }}.
         </div>
 
-        <button type="submit" :disabled="isLoading || lockRemainingSeconds > 0"
+        <button type="submit" :disabled="submitDisabled"
           class="w-full px-4 py-2 rounded-md bg-primary text-white disabled:opacity-60">
-          {{ isLoading ? "Masuk..." : lockRemainingSeconds > 0 ? "Terkunci sementara" : "Masuk" }}
+          {{ submitLabel }}
+        </button>
+
+        <button v-if="loginMode === 'otp' && otpSent" type="button" :disabled="isLoading || isParentLoading"
+          @click="resetOtpFlow"
+          class="w-full rounded-md border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 disabled:opacity-60 dark:border-gray-700 dark:text-gray-200">
+          Ganti Nomor
         </button>
 
         <!-- <p class="text-sm text-gray-500 dark:text-gray-400">
           Butuh bootstrap user awal?
           <router-link to="/auth/register" class="text-sky-600 underline">Buka form register</router-link>
         </p> -->
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-          Form registrasi siswa publik:
-          <router-link to="/student-registration" class="text-sky-600 underline">Buka registrasi siswa</router-link>
-        </p>
+
         <p class="text-sm text-gray-500 dark:text-gray-400">
           Halaman profil sistem:
           <router-link to="/" class="text-sky-600 underline">Buka landing page</router-link>
@@ -49,7 +63,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
 import { api, cancelPendingApiRequests } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { clearSession, persistSession } from "@/utils/auth";
@@ -61,11 +75,43 @@ const LOGIN_LOCK_UNTIL_KEY = "login-lock-until";
 const profileStore = useProfileStore();
 const realtimeStore = useRealtimeStore();
 const isLoading = ref(false);
+const isParentLoading = ref(false);
+const loginIdentifier = ref("");
+const otpSent = ref(false);
 const lockRemainingSeconds = ref(0);
 let lockCountdownTimer = null;
 const form = reactive({
-  username: "",
   password: "",
+});
+const otpForm = reactive({
+  otp: "",
+});
+
+const isPhoneNumberLike = (value) => {
+  const raw = String(value || "").trim();
+  if (!raw) return false;
+  const compact = raw.replace(/[^\d+]/g, "");
+  if (/^[0-9+\s().-]+$/.test(raw) && /^(0|62|\+62)/.test(compact)) {
+    return true;
+  }
+  return /^08\d{7,14}$/.test(raw.replace(/\s+/g, ""));
+};
+
+const loginMode = computed(() => (isPhoneNumberLike(loginIdentifier.value) ? "otp" : "password"));
+const submitLabel = computed(() => {
+  if (loginMode.value === "password") {
+    if (isLoading.value) return "Masuk...";
+    if (lockRemainingSeconds.value > 0) return "Terkunci sementara";
+    return "Masuk";
+  }
+  if (isParentLoading.value) return otpSent.value ? "Memproses..." : "Mengirim...";
+  return otpSent.value ? "Verifikasi OTP" : "Kirim OTP WhatsApp";
+});
+const submitDisabled = computed(() => {
+  if (loginMode.value === "password") {
+    return isLoading.value || lockRemainingSeconds.value > 0;
+  }
+  return isParentLoading.value;
 });
 
 const formattedLockRemaining = computed(() => {
@@ -89,6 +135,25 @@ const stopLockCountdown = () => {
     window.clearInterval(lockCountdownTimer);
     lockCountdownTimer = null;
   }
+};
+
+const resetOtpFlow = () => {
+  otpSent.value = false;
+  otpForm.otp = "";
+};
+
+const finishLogin = (response, message = "Selamat datang, Anda berhasil masuk ke School System.") => {
+  persistSession(response);
+  pushToast({
+    title: "Login Berhasil",
+    message,
+    type: "success",
+  });
+  stopLockCountdown();
+  lockRemainingSeconds.value = 0;
+  persistLockUntil(null);
+  sessionStorage.setItem(SHOW_PWA_INSTALL_AFTER_LOGIN_KEY, "1");
+  window.location.assign("/dashboard");
 };
 
 const persistLockUntil = (lockedUntilIso) => {
@@ -176,18 +241,11 @@ const handleLogin = async () => {
     realtimeStore.disconnect();
     clearSession();
     profileStore.resetProfileState();
-    const response = await api.post("/auth/login", { ...form });
-    persistSession(response);
-    pushToast({
-      title: "Login Berhasil",
-      message: "Selamat datang, Anda berhasil masuk ke School System.",
-      type: "success",
+    const response = await api.post("/auth/login", {
+      username: loginIdentifier.value.trim(),
+      password: form.password,
     });
-    stopLockCountdown();
-    lockRemainingSeconds.value = 0;
-    persistLockUntil(null);
-    sessionStorage.setItem(SHOW_PWA_INSTALL_AFTER_LOGIN_KEY, "1");
-    window.location.assign("/dashboard");
+    finishLogin(response);
   } catch (error) {
     const status = Number(error?.status || 0);
     const message = String(error?.message || "");
@@ -211,4 +269,54 @@ const handleLogin = async () => {
     isLoading.value = false;
   }
 };
+
+const handleOtpSubmit = async () => {
+  isParentLoading.value = true;
+
+  try {
+    cancelPendingApiRequests();
+    const phoneNumber = loginIdentifier.value.trim();
+    if (!otpSent.value) {
+      const response = await api.post("/auth/parent/request-otp", { phone_number: phoneNumber });
+      otpSent.value = true;
+      pushToast({
+        title: "OTP Dikirim",
+        message: response?.message || "Kode OTP telah dikirim ke WhatsApp orang tua.",
+        type: "success",
+      });
+      return;
+    }
+
+    realtimeStore.disconnect();
+    clearSession();
+    profileStore.resetProfileState();
+    const response = await api.post("/auth/parent/verify-otp", {
+      phone_number: phoneNumber,
+      otp: otpForm.otp,
+    });
+    finishLogin(response, "Login orang tua berhasil.");
+  } catch (error) {
+    pushToast({
+      title: otpSent.value ? "Verifikasi OTP Gagal" : "Gagal Mengirim OTP",
+      message: error.message || "Proses login orang tua gagal.",
+      type: "error",
+    });
+  } finally {
+    isParentLoading.value = false;
+  }
+};
+
+const handleSubmit = async () => {
+  if (loginMode.value === "otp") {
+    await handleOtpSubmit();
+    return;
+  }
+  await handleLogin();
+};
+
+watch(loginIdentifier, () => {
+  otpSent.value = false;
+  otpForm.otp = "";
+  form.password = "";
+});
 </script>

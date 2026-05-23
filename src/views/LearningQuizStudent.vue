@@ -401,48 +401,48 @@
       </main>
     </div>
 
-    <div v-else class="bg-white p-4 pb-32 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100"
+    <div v-else class="bg-white p-2 pb-28 font-sans text-slate-900 sm:p-4 dark:bg-slate-950 dark:text-slate-100"
       :class="activeSessionContainerClass" :style="activeSessionContainerStyle">
 
-      <main class="mx-auto " :class="pseudoFullscreenActive ? 'mt-0' : 'mt-8'">
+      <main class="mx-auto " :class="pseudoFullscreenActive ? 'mt-0' : 'mt-3 sm:mt-8'">
         <section
-          class="relative overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+          class="relative overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-900/5 sm:rounded-2xl dark:bg-slate-900 dark:ring-white/10">
           <div v-if="fullscreenRecoveryRequired"
-            class="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-6 backdrop-blur-sm">
+            class="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm sm:p-6">
             <div
-              class="w-full max-w-lg rounded-[28px] border border-slate-200 bg-white p-8 text-center shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+              class="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-2xl sm:rounded-[28px] sm:p-8 dark:border-slate-700 dark:bg-slate-900">
               <div
-                class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
-                <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-rose-100 text-rose-600 sm:h-16 sm:w-16 sm:rounded-2xl dark:bg-rose-500/10 dark:text-rose-300">
+                <svg class="h-6 w-6 sm:h-8 sm:w-8" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round"
                     d="M9.75 9V5.25m0 0H6m3.75 0L5.25 9m9-3.75h3.75m0 0V9m0-3.75L14.25 9M9.75 15l-4.5 4.5m0 0H9m-3.75 0v-3.75M14.25 15l4.5 4.5m0 0V15.75m0 3.75h-3.75" />
                 </svg>
               </div>
-              <h3 class="mt-5 text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+              <h3 class="mt-3 text-lg font-black tracking-tight text-slate-900 sm:mt-5 sm:text-2xl dark:text-white">
                 Fullscreen Wajib Aktif
               </h3>
-              <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">
+              <p class="mt-2 text-xs leading-5 text-slate-600 sm:mt-3 sm:text-sm sm:leading-6 dark:text-slate-400">
                 {{ submissionTarget?.is_exam ? "Ujian" : "Quiz" }} dikunci sementara karena fullscreen terdeteksi
                 keluar. Masuk kembali ke fullscreen untuk melanjutkan pengerjaan.
               </p>
-              <div class="mt-6">
+              <div class="mt-4 sm:mt-6">
                 <button type="button" @click="resumeFullscreenSession"
-                  class="inline-flex items-center justify-center rounded-xl bg-rose-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-rose-500">
+                  class="inline-flex w-full items-center justify-center rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-rose-500 sm:w-auto sm:rounded-xl sm:px-6 sm:py-3">
                   Kembali ke Fullscreen
                 </button>
               </div>
             </div>
           </div>
 
-          <div class="border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/20">
-            <div class="flex items-center justify-between gap-3">
+          <div class="border-b border-slate-100 bg-slate-50/50 px-3 py-2.5 sm:px-6 sm:py-4 dark:border-slate-800 dark:bg-slate-800/20">
+            <div class="flex items-center justify-between gap-2">
               <div
-                class="inline-flex rounded-full bg-white px-4 py-2 text-sm font-bold text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700">
-                Pelanggaran: {{ violationCount }} / {{ maxViolations }}
+                class="inline-flex rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-slate-700 ring-1 ring-inset ring-slate-200 sm:px-4 sm:py-2 sm:text-sm dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700">
+                Pelanggaran: {{ violationCount }}/{{ maxViolations }}
               </div>
               <div
-                class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-rose-700 ring-1 ring-inset ring-rose-200 dark:bg-slate-900 dark:text-rose-300 dark:ring-rose-500/20">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                class="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-rose-700 ring-1 ring-inset ring-rose-200 sm:px-3 sm:py-1.5 sm:text-xs dark:bg-slate-900 dark:text-rose-300 dark:ring-rose-500/20">
+                <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round"
                     d="M12 6v6l4 2.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -451,58 +451,58 @@
             </div>
           </div>
 
-          <div class="p-6">
+          <div class="p-3 sm:p-6">
 
-            <form @submit.prevent="requestSubmitAssignment" class="space-y-8">
-              <div v-if="isExamStyleSession" class="grid gap-6 xl:grid-cols-[minmax(0,1fr),320px]">
-                <section class="space-y-6">
-                  <div class="grid gap-4 md:grid-cols-3">
+            <form @submit.prevent="requestSubmitAssignment" class="space-y-4 sm:space-y-8">
+              <div v-if="isExamStyleSession" class="grid gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1fr),320px]">
+                <section class="space-y-4 sm:space-y-6">
+                  <div class="grid grid-cols-3 gap-2 sm:gap-4">
                     <div
-                      class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
-                      <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{{ sessionTypeTitle }}
+                      class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:rounded-2xl sm:p-4 dark:border-slate-700 dark:bg-slate-800/40">
+                      <p class="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400 sm:text-[11px] sm:tracking-[0.18em]">{{ sessionTypeTitle }}
                       </p>
-                      <p class="mt-2 text-lg font-black text-slate-900 dark:text-white">
+                      <p class="mt-1 text-xs font-black text-slate-900 sm:mt-2 sm:text-lg dark:text-white">
                         {{ sessionTypeValue }}
                       </p>
                     </div>
                     <div
-                      class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
-                      <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Soal Terjawab</p>
-                      <p class="mt-2 text-lg font-black text-emerald-700 dark:text-emerald-300">
-                        {{ answeredQuestionCount }} / {{ totalQuestions }}
+                      class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:rounded-2xl sm:p-4 dark:border-slate-700 dark:bg-slate-800/40">
+                      <p class="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400 sm:text-[11px] sm:tracking-[0.18em]">Terjawab</p>
+                      <p class="mt-1 text-xs font-black text-emerald-700 sm:mt-2 sm:text-lg dark:text-emerald-300">
+                        {{ answeredQuestionCount }}/{{ totalQuestions }}
                       </p>
                     </div>
                     <div
-                      class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
-                      <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Posisi Saat Ini</p>
-                      <p class="mt-2 text-lg font-black text-slate-900 dark:text-white">
+                      class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 sm:rounded-2xl sm:p-4 dark:border-slate-700 dark:bg-slate-800/40">
+                      <p class="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400 sm:text-[11px] sm:tracking-[0.18em]">Posisi</p>
+                      <p class="mt-1 text-xs font-black text-slate-900 sm:mt-2 sm:text-lg dark:text-white">
                         Soal {{ activeQuestionIndex + 1 }}
                       </p>
                     </div>
                   </div>
 
-                  <div v-if="submissionTarget.assignment_type === 'MCQ' && currentQuestion" class="space-y-6">
+                  <div v-if="submissionTarget.assignment_type === 'MCQ' && currentQuestion" class="space-y-4 sm:space-y-6">
                     <article
-                      class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-700 dark:bg-slate-900">
-                      <div class="flex items-start justify-between gap-4">
-                        <h3 class="text-base font-bold leading-relaxed text-slate-900 dark:text-white">
+                      class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-3xl sm:p-8 dark:border-slate-700 dark:bg-slate-900">
+                      <div class="flex items-start justify-between gap-2 sm:gap-4">
+                        <h3 class="text-sm font-bold leading-relaxed text-slate-900 sm:text-base dark:text-white">
                           <span
-                            class="mr-3 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sm font-black text-sky-700 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">{{
+                            class="mr-2 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-xs font-black text-sky-700 ring-1 ring-sky-200 sm:mr-3 sm:h-9 sm:w-9 sm:rounded-2xl sm:text-sm dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">{{
                               activeQuestionIndex + 1 }}</span>
                           {{ currentQuestionText }}
                         </h3>
                         <span
-                          class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                          class="inline-flex shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-500 sm:px-3 sm:py-1 sm:text-[11px] sm:tracking-[0.18em] dark:bg-slate-800 dark:text-slate-300">
                           {{ questionAnswerStateLabel(activeQuestionIndex) }}
                         </span>
                       </div>
                       <img v-if="currentQuestionImageUrl" :src="currentQuestionImageUrl" alt="Gambar pertanyaan"
-                        class="mt-4 max-h-64 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+                        class="mt-3 max-h-56 rounded-lg border border-slate-200 object-contain sm:mt-4 sm:max-h-64 dark:border-slate-700" />
 
-                      <div class="mt-6 space-y-3 pl-0 sm:pl-11">
+                      <div class="mt-4 space-y-2 pl-0 sm:mt-6 sm:space-y-3 sm:pl-11">
                         <label v-for="(option, optionIndex) in currentQuestion.options || []"
                           :key="`option-${activeQuestionIndex}-${optionIndex}`"
-                          class="flex cursor-pointer items-start gap-4 rounded-2xl border-2 px-5 py-4 text-sm transition-all hover:border-sky-300 hover:bg-slate-50 dark:hover:border-sky-500/40 dark:hover:bg-slate-800/50"
+                          class="flex cursor-pointer items-start gap-3 rounded-xl border-2 px-3 py-2.5 text-sm transition-all hover:border-sky-300 hover:bg-slate-50 sm:gap-4 sm:rounded-2xl sm:px-5 sm:py-4 dark:hover:border-sky-500/40 dark:hover:bg-slate-800/50"
                           :class="currentAnswer.selected_option === optionIndex
                             ? 'border-sky-500 bg-sky-50 text-sky-900 shadow-sm dark:border-sky-500 dark:bg-sky-500/10 dark:text-sky-100'
                             : 'border-slate-100 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
@@ -510,10 +510,10 @@
                           <div class="flex h-5 items-center">
                             <input v-model="currentAnswer.selected_option" type="radio"
                               :name="`answer-${activeQuestionIndex}`" :value="optionIndex"
-                              class="h-5 w-5 cursor-pointer border-slate-300 text-sky-600 focus:ring-sky-600 dark:border-slate-600 dark:bg-slate-700 dark:focus:ring-sky-500" />
+                              class="h-4 w-4 cursor-pointer border-slate-300 text-sky-600 focus:ring-sky-600 sm:h-5 sm:w-5 dark:border-slate-600 dark:bg-slate-700 dark:focus:ring-sky-500" />
                           </div>
                           <div class="space-y-2">
-                            <span class="font-medium leading-relaxed">{{ optionText(option) }}</span>
+                            <span class="font-medium leading-snug sm:leading-relaxed">{{ optionText(option) }}</span>
                             <img v-if="optionImageUrl(option)" :src="optionImageUrl(option)"
                               :alt="`Opsi ${String.fromCharCode(65 + optionIndex)}`"
                               class="max-h-40 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
@@ -523,46 +523,46 @@
                     </article>
                   </div>
 
-                  <div v-if="submissionTarget.assignment_type === 'ESSAY' && currentQuestion" class="space-y-6">
+                  <div v-if="submissionTarget.assignment_type === 'ESSAY' && currentQuestion" class="space-y-4 sm:space-y-6">
                     <article
-                      class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-700 dark:bg-slate-900">
-                      <div class="flex items-start justify-between gap-4">
-                        <h3 class="text-base font-bold leading-relaxed text-slate-900 dark:text-white">
+                      class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-3xl sm:p-8 dark:border-slate-700 dark:bg-slate-900">
+                      <div class="flex items-start justify-between gap-2 sm:gap-4">
+                        <h3 class="text-sm font-bold leading-relaxed text-slate-900 sm:text-base dark:text-white">
                           <span
-                            class="mr-3 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-sky-50 text-sm font-black text-sky-700 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">{{
+                            class="mr-2 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-xs font-black text-sky-700 ring-1 ring-sky-200 sm:mr-3 sm:h-9 sm:w-9 sm:rounded-2xl sm:text-sm dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">{{
                               activeQuestionIndex + 1 }}</span>
                           {{ currentQuestionText }}
                         </h3>
                         <span
-                          class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                          class="inline-flex shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-500 sm:px-3 sm:py-1 sm:text-[11px] sm:tracking-[0.18em] dark:bg-slate-800 dark:text-slate-300">
                           {{ questionAnswerStateLabel(activeQuestionIndex) }}
                         </span>
                       </div>
                       <img v-if="currentQuestionImageUrl" :src="currentQuestionImageUrl" alt="Gambar pertanyaan"
-                        class="mt-4 max-h-64 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+                        class="mt-3 max-h-56 rounded-lg border border-slate-200 object-contain sm:mt-4 sm:max-h-64 dark:border-slate-700" />
 
-                      <div class="mt-6 pl-0 sm:pl-11">
-                        <textarea v-model="currentAnswer.answer_text" rows="7"
+                      <div class="mt-4 pl-0 sm:mt-6 sm:pl-11">
+                        <textarea v-model="currentAnswer.answer_text" rows="6"
                           placeholder="Ketik jawaban Anda di sini..."
-                          class="block w-full rounded-2xl border-0 bg-slate-50 px-5 py-4 text-base text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 transition focus:bg-white focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700 dark:focus:bg-slate-900" />
+                          class="block w-full rounded-xl border-0 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 transition focus:bg-white focus:ring-2 focus:ring-inset focus:ring-sky-600 sm:rounded-2xl sm:px-5 sm:py-4 sm:text-base dark:bg-slate-800 dark:text-white dark:ring-slate-700 dark:focus:bg-slate-900" />
                       </div>
                     </article>
                   </div>
 
-                  <div class="flex flex-col gap-3 pb-6 sm:flex-row sm:items-center sm:justify-between">
-                    <div class="flex flex-wrap gap-3">
+                  <div class="flex flex-col gap-2 pb-4 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:pb-6">
+                    <div class="flex gap-2 sm:flex-wrap sm:gap-3">
                       <button type="button" @click="goToPreviousQuestion" :disabled="!hasPreviousQuestion"
-                        class="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                        class="inline-flex flex-1 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:rounded-xl sm:px-5 sm:py-3 sm:text-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                         Sebelumnya
                       </button>
                       <button type="button" @click="goToNextQuestion" :disabled="isLastQuestion"
-                        class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-sky-600 dark:hover:bg-sky-500">
+                        class="inline-flex flex-1 items-center justify-center rounded-lg bg-slate-900 px-3 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:rounded-xl sm:px-5 sm:py-3 sm:text-sm dark:bg-sky-600 dark:hover:bg-sky-500">
                         Berikutnya
                       </button>
                     </div>
                     <button type="submit" :disabled="isSubmitting"
-                      class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-500 disabled:opacity-60">
-                      <svg v-if="isSubmitting" class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"
+                      class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-500 disabled:opacity-60 sm:w-auto sm:rounded-xl sm:px-6 sm:py-3.5 sm:text-sm">
+                      <svg v-if="isSubmitting" class="h-4 w-4 animate-spin sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24"
                         stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round"
                           d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
@@ -574,47 +574,47 @@
 
                 <aside class="space-y-4">
                   <div
-                    class="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/40 xl:sticky xl:top-6">
-                    <div class="flex items-center justify-between gap-3">
+                    class="rounded-2xl border border-slate-200 bg-slate-50 p-3 shadow-sm sm:rounded-3xl sm:p-5 dark:border-slate-700 dark:bg-slate-800/40 xl:sticky xl:top-6">
+                    <div class="flex items-center justify-between gap-2 sm:gap-3">
                       <div>
-                        <h4 class="text-sm font-black uppercase tracking-[0.18em] text-slate-500 dark:text-slate-300">
+                        <h4 class="text-xs font-black uppercase tracking-wider text-slate-500 sm:text-sm sm:tracking-[0.18em] dark:text-slate-300">
                           Navigator Soal</h4>
-                        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                          Hijau = sudah diisi, biru = soal aktif.
+                        <p class="mt-0.5 text-[11px] text-slate-500 sm:mt-1 sm:text-xs dark:text-slate-400">
+                          Hijau = diisi, biru = aktif.
                         </p>
                       </div>
                       <div
-                        class="rounded-2xl bg-white px-3 py-2 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700">
+                        class="rounded-lg bg-white px-2 py-1 text-[11px] font-bold text-slate-700 ring-1 ring-inset ring-slate-200 sm:rounded-2xl sm:px-3 sm:py-2 sm:text-xs dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700">
                         {{ answeredQuestionCount }}/{{ totalQuestions }}
                       </div>
                     </div>
 
-                    <div class="mt-5 grid grid-cols-5 gap-2">
+                    <div class="mt-3 grid grid-cols-6 gap-1.5 sm:mt-5 sm:grid-cols-5 sm:gap-2">
                       <button v-for="(_, index) in submissionTarget.quiz_payload || []" :key="`exam-nav-${index}`"
                         type="button" @click="jumpToQuestion(index)"
-                        class="flex h-11 w-full items-center justify-center rounded-xl text-sm font-black transition"
+                        class="flex h-9 w-full items-center justify-center rounded-lg text-xs font-black transition sm:h-11 sm:rounded-xl sm:text-sm"
                         :class="questionPaletteClass(index)">
                         {{ index + 1 }}
                       </button>
                     </div>
 
-                    <div class="mt-5 space-y-2 text-xs text-slate-500 dark:text-slate-400">
-                      <div class="flex items-center gap-2">
-                        <span class="h-3 w-3 rounded bg-sky-500"></span>
-                        <span>Soal aktif</span>
+                    <div class="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500 sm:mt-5 sm:block sm:space-y-2 sm:text-xs dark:text-slate-400">
+                      <div class="flex items-center gap-1.5 sm:gap-2">
+                        <span class="h-2.5 w-2.5 rounded bg-sky-500 sm:h-3 sm:w-3"></span>
+                        <span>Aktif</span>
                       </div>
-                      <div class="flex items-center gap-2">
-                        <span class="h-3 w-3 rounded bg-emerald-500"></span>
-                        <span>Sudah diisi</span>
+                      <div class="flex items-center gap-1.5 sm:gap-2">
+                        <span class="h-2.5 w-2.5 rounded bg-emerald-500 sm:h-3 sm:w-3"></span>
+                        <span>Diisi</span>
                       </div>
-                      <div class="flex items-center gap-2">
-                        <span class="h-3 w-3 rounded bg-slate-300 dark:bg-slate-600"></span>
+                      <div class="flex items-center gap-1.5 sm:gap-2">
+                        <span class="h-2.5 w-2.5 rounded bg-slate-300 sm:h-3 sm:w-3 dark:bg-slate-600"></span>
                         <span>Belum diisi</span>
                       </div>
                     </div>
 
                     <button v-if="isError && !isSubmitting" type="button" @click="leaveFailedSession"
-                      class="mt-5 inline-flex w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                      class="mt-3 inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 sm:mt-5 sm:rounded-xl sm:px-4 sm:py-3 sm:text-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                       Keluar Sementara
                     </button>
                   </div>
@@ -622,22 +622,22 @@
               </div>
 
               <template v-else>
-                <div v-if="submissionTarget.assignment_type === 'MCQ' && currentQuestion" class="space-y-6">
+                <div v-if="submissionTarget.assignment_type === 'MCQ' && currentQuestion" class="space-y-4 sm:space-y-6">
                   <article
-                    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-700 dark:bg-slate-900">
-                    <h3 class="text-base font-bold leading-relaxed text-slate-900 dark:text-white">
+                    class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-2xl sm:p-8 dark:border-slate-700 dark:bg-slate-900">
+                    <h3 class="text-sm font-bold leading-relaxed text-slate-900 sm:text-base dark:text-white">
                       <span
-                        class="mr-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm text-slate-500 dark:bg-slate-800">{{
+                        class="mr-2 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs text-slate-500 sm:mr-3 sm:h-8 sm:w-8 sm:text-sm dark:bg-slate-800">{{
                           activeQuestionIndex + 1 }}</span>
                       {{ currentQuestionText }}
                     </h3>
                     <img v-if="currentQuestionImageUrl" :src="currentQuestionImageUrl" alt="Gambar pertanyaan"
-                      class="mt-4 max-h-64 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+                      class="mt-3 max-h-56 rounded-lg border border-slate-200 object-contain sm:mt-4 sm:max-h-64 dark:border-slate-700" />
 
-                    <div class="mt-6 space-y-3 pl-0 sm:pl-11">
+                    <div class="mt-4 space-y-2 pl-0 sm:mt-6 sm:space-y-3 sm:pl-11">
                       <label v-for="(option, optionIndex) in currentQuestion.options || []"
                         :key="`option-${activeQuestionIndex}-${optionIndex}`"
-                        class="flex cursor-pointer items-start gap-4 rounded-xl border-2 px-5 py-4 text-sm transition-all hover:border-rose-300 hover:bg-slate-50 dark:hover:border-rose-500/40 dark:hover:bg-slate-800/50"
+                        class="flex cursor-pointer items-start gap-3 rounded-lg border-2 px-3 py-2.5 text-sm transition-all hover:border-rose-300 hover:bg-slate-50 sm:gap-4 sm:rounded-xl sm:px-5 sm:py-4 dark:hover:border-rose-500/40 dark:hover:bg-slate-800/50"
                         :class="currentAnswer.selected_option === optionIndex
                           ? 'border-rose-500 bg-rose-50 text-rose-900 shadow-sm dark:border-rose-500 dark:bg-rose-500/10 dark:text-rose-100'
                           : 'border-slate-100 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
@@ -645,10 +645,10 @@
                         <div class="flex h-5 items-center">
                           <input v-model="currentAnswer.selected_option" type="radio"
                             :name="`answer-${activeQuestionIndex}`" :value="optionIndex"
-                            class="h-5 w-5 cursor-pointer border-slate-300 text-rose-600 focus:ring-rose-600 dark:border-slate-600 dark:bg-slate-700 dark:focus:ring-rose-500" />
+                            class="h-4 w-4 cursor-pointer border-slate-300 text-rose-600 focus:ring-rose-600 sm:h-5 sm:w-5 dark:border-slate-600 dark:bg-slate-700 dark:focus:ring-rose-500" />
                         </div>
                         <div class="space-y-2">
-                          <span class="font-medium leading-relaxed">{{ optionText(option) }}</span>
+                          <span class="font-medium leading-snug sm:leading-relaxed">{{ optionText(option) }}</span>
                           <img v-if="optionImageUrl(option)" :src="optionImageUrl(option)"
                             :alt="`Opsi ${String.fromCharCode(65 + optionIndex)}`"
                             class="max-h-40 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
@@ -658,34 +658,34 @@
                   </article>
                 </div>
 
-                <div v-if="submissionTarget.assignment_type === 'ESSAY' && currentQuestion" class="space-y-6">
+                <div v-if="submissionTarget.assignment_type === 'ESSAY' && currentQuestion" class="space-y-4 sm:space-y-6">
                   <article
-                    class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-700 dark:bg-slate-900">
-                    <h3 class="text-base font-bold leading-relaxed text-slate-900 dark:text-white">
+                    class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:rounded-2xl sm:p-8 dark:border-slate-700 dark:bg-slate-900">
+                    <h3 class="text-sm font-bold leading-relaxed text-slate-900 sm:text-base dark:text-white">
                       <span
-                        class="mr-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm text-slate-500 dark:bg-slate-800">{{
+                        class="mr-2 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs text-slate-500 sm:mr-3 sm:h-8 sm:w-8 sm:text-sm dark:bg-slate-800">{{
                           activeQuestionIndex + 1 }}</span>
                       {{ currentQuestionText }}
                     </h3>
                     <img v-if="currentQuestionImageUrl" :src="currentQuestionImageUrl" alt="Gambar pertanyaan"
-                      class="mt-4 max-h-64 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+                      class="mt-3 max-h-56 rounded-lg border border-slate-200 object-contain sm:mt-4 sm:max-h-64 dark:border-slate-700" />
 
-                    <div class="mt-6 pl-0 sm:pl-11">
-                      <textarea v-model="currentAnswer.answer_text" rows="6" placeholder="Ketik jawaban Anda di sini..."
-                        class="block w-full rounded-xl border-0 bg-slate-50 px-5 py-4 text-base text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 transition focus:bg-white focus:ring-2 focus:ring-inset focus:ring-rose-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700 dark:focus:bg-slate-900" />
+                    <div class="mt-4 pl-0 sm:mt-6 sm:pl-11">
+                      <textarea v-model="currentAnswer.answer_text" rows="5" placeholder="Ketik jawaban Anda di sini..."
+                        class="block w-full rounded-lg border-0 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 transition focus:bg-white focus:ring-2 focus:ring-inset focus:ring-rose-600 sm:rounded-xl sm:px-5 sm:py-4 sm:text-base dark:bg-slate-800 dark:text-white dark:ring-slate-700 dark:focus:bg-slate-900" />
                     </div>
                   </article>
                 </div>
 
-                <div v-if="isLastQuestion" class="pb-24">
+                <div v-if="isLastQuestion" class="pb-20 sm:pb-24">
                   <button type="submit" :disabled="isSubmitting"
-                    class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-rose-600 px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-rose-600/30 transition hover:bg-rose-500 hover:shadow-rose-600/50 disabled:opacity-60 disabled:shadow-none sm:w-auto sm:min-w-[220px]">
-                    <svg v-if="isSubmitting" class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"
+                    class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-rose-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-rose-600/30 transition hover:bg-rose-500 hover:shadow-rose-600/50 disabled:opacity-60 disabled:shadow-none sm:w-auto sm:min-w-[220px] sm:rounded-xl sm:px-8 sm:py-3.5 sm:text-base">
+                    <svg v-if="isSubmitting" class="h-4 w-4 animate-spin sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24"
                       stroke-width="2" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round"
                         d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                     </svg>
-                    <svg v-else class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <svg v-else class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round"
                         d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                     </svg>
@@ -694,16 +694,16 @@
                 </div>
 
                 <div
-                  class="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95">
+                  class="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 px-3 py-2.5 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] backdrop-blur-md sm:p-4 dark:border-slate-800 dark:bg-slate-900/95">
                   <div
-                    class="mx-auto flex max-w-[1400px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+                    class="mx-auto flex max-w-[1400px] flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                    <div class="flex w-full gap-2 sm:w-auto sm:flex-row sm:gap-3">
                       <button v-if="isError && !isSubmitting" type="button" @click="leaveFailedSession"
-                        class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 sm:w-auto">
+                        class="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50 sm:flex-none sm:rounded-xl sm:px-6 sm:py-3 sm:text-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                         Keluar Sementara
                       </button>
                       <button type="button" @click="goToNextQuestion"
-                        class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:w-auto">
+                        class="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-slate-100 px-3 py-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 sm:flex-none sm:px-4 sm:py-2 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
                         {{ quickAdvanceLabel }}
                       </button>
                     </div>
@@ -756,7 +756,7 @@ const examCodeModalOpen = ref(false);
 const confirmSubmitModalOpen = ref(false);
 const pendingExamAssignmentForCode = ref(null);
 const reviewTarget = ref(null);
-const maxViolations = 3;
+const maxViolations = ref(3);
 let questionTimerInterval = null;
 let antiCheatListenersBound = false;
 let lastViolationAt = 0;
@@ -765,6 +765,7 @@ let pseudoFullscreenViewportBound = false;
 let lastViolationSignature = "";
 let hiddenTransitionAt = 0;
 let blurTransitionAt = 0;
+let fullscreenExitGraceUntil = 0;
 let submitLockAssignmentId = null;
 let examCodeModalResolver = null;
 
@@ -1157,6 +1158,7 @@ const resetAntiCheatState = () => {
   lastViolationSignature = "";
   hiddenTransitionAt = 0;
   blurTransitionAt = 0;
+  fullscreenExitGraceUntil = 0;
 };
 
 const syncAntiCheatStateFromSession = (startPayload = {}) => {
@@ -1164,6 +1166,10 @@ const syncAntiCheatStateFromSession = (startPayload = {}) => {
   violationCount.value = Number.isFinite(storedViolationCount) && storedViolationCount >= 0
     ? storedViolationCount
     : 0;
+  const storedMaxViolations = Number(startPayload?.max_violations);
+  if (Number.isFinite(storedMaxViolations) && storedMaxViolations >= 1) {
+    maxViolations.value = storedMaxViolations;
+  }
 
   if (startPayload?.access_blocked) {
     fullscreenRecoveryRequired.value = true;
@@ -1256,6 +1262,7 @@ const activatePseudoFullscreen = () => {
   bindPseudoFullscreenViewport();
   antiCheatMessage.value = "";
   fullscreenRecoveryRequired.value = false;
+  fullscreenExitGraceUntil = 0;
 };
 
 const deactivatePseudoFullscreen = () => {
@@ -1266,7 +1273,7 @@ const deactivatePseudoFullscreen = () => {
 
 const activeSessionContainerClass = computed(() => (
   pseudoFullscreenActive.value
-    ? "fixed inset-0 z-40 overflow-y-auto overscroll-contain p-3 pb-32 md:p-6"
+    ? "fixed inset-0 z-40 overflow-y-auto overscroll-contain p-2 pb-28 sm:p-3 sm:pb-32 md:p-6"
     : "min-h-screen md:p-8"
 ));
 
@@ -1287,6 +1294,7 @@ const requestQuizFullscreen = async () => {
 
   if (document.fullscreenElement || pseudoFullscreenActive.value) {
     fullscreenRecoveryRequired.value = false;
+    fullscreenExitGraceUntil = 0;
     return true;
   }
 
@@ -1304,6 +1312,7 @@ const requestQuizFullscreen = async () => {
   try {
     await element.requestFullscreen();
     fullscreenRecoveryRequired.value = false;
+    fullscreenExitGraceUntil = 0;
     antiCheatMessage.value = "";
     return true;
   } catch (error) {
@@ -1362,7 +1371,8 @@ const recordViolation = async (reason, signature = reason) => {
     // Keep the quiz flow running even when the violation log cannot be sent.
   }
 
-  if (violationCount.value >= maxViolations) {
+  const maxViolationThreshold = Number(maxViolations.value || 3);
+  if (violationCount.value >= maxViolationThreshold) {
     if (submissionTarget.value?.is_exam) {
       antiCheatMessage.value = "Batas pelanggaran ujian resmi tercapai. Menunggu kode baru dari admin untuk melanjutkan.";
       return;
@@ -1386,6 +1396,10 @@ const handleQuizVisibilityChange = async () => {
   }
 
   if (document.visibilityState === "hidden") {
+    if (Date.now() < fullscreenExitGraceUntil) {
+      return;
+    }
+    fullscreenRecoveryRequired.value = true;
     hiddenTransitionAt = Date.now();
     await recordViolation(
       "Terdeteksi berpindah tab atau meminimalkan aplikasi.",
@@ -1403,15 +1417,13 @@ const handleQuizWindowBlur = async () => {
   }
 
   blurTransitionAt = Date.now();
+  if (Date.now() < fullscreenExitGraceUntil) {
+    return;
+  }
 
   if (document.visibilityState === "hidden") {
     return;
   }
-
-  await recordViolation(
-    "Terdeteksi berpindah fokus dari halaman quiz.",
-    "WINDOW_BLUR",
-  );
 };
 
 const handleQuizWindowFocus = () => {
@@ -1427,19 +1439,8 @@ const handleQuizFullscreenChange = async () => {
   }
 
   const now = Date.now();
-  if (document.visibilityState === "hidden") {
-    return;
-  }
-
-  if ((hiddenTransitionAt && now - hiddenTransitionAt < 2200) || (blurTransitionAt && now - blurTransitionAt < 2200)) {
-    return;
-  }
-
   fullscreenRecoveryRequired.value = true;
-  await recordViolation(
-    "Terdeteksi keluar dari mode fullscreen.",
-    "FULLSCREEN_EXIT",
-  );
+  fullscreenExitGraceUntil = now + 1800;
 };
 
 const bindAntiCheatListeners = () => {
@@ -1565,10 +1566,15 @@ const initializeAttemptSession = (assignment, startPayload) => {
     question_duration_mode: questionDurationMode,
     question_duration_seconds: startPayload?.question_duration_seconds ?? assignment.question_duration_seconds ?? 0,
   });
+  const assignmentMaxViolations = Number(startPayload?.max_violations ?? assignment.max_violations ?? 3);
+  maxViolations.value = Number.isFinite(assignmentMaxViolations) && assignmentMaxViolations >= 1
+    ? assignmentMaxViolations
+    : 3;
   submissionTarget.value = {
     ...assignment,
     question_duration_mode: questionDurationMode,
     question_duration_seconds: questionDurationValue,
+    max_violations: maxViolations.value,
     expires_at: (assignment.is_exam || questionDurationMode === "GLOBAL")
       ? buildSessionExpiresAt(attemptStartedAt, questionDurationValue)
       : null,
