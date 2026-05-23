@@ -1,256 +1,287 @@
 <template>
   <div class="min-h-screen bg-slate-50 p-4 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
-
-    <main class="mx-auto mt-8 max-w-[1400px] space-y-6">
-      <section class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
-        <div class="border-b border-slate-100 bg-slate-50/50 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/20">
-          <h1 class="text-lg font-bold text-slate-900 dark:text-white">Penilaian</h1>
-          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Tampilan dibuat lebih ringkas agar fokus ke nilai dan review jawaban.</p>
+    <main class="mx-auto max-w-7xl space-y-5">
+      <!-- Header -->
+      <header class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Penilaian Siswa</h1>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Tinjau jawaban dan beri nilai tugas siswa.</p>
         </div>
-        <div class="p-5">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-end">
-          <div class="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-            <div class="space-y-1.5">
-              <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Mata Pelajaran</label>
-              <select v-model="filters.subjectId" @change="handleSubjectChange"
-                class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-4 pr-10 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
-                <option value="">Semua Mapel</option>
-                <option v-for="item in subjects" :key="item.id" :value="String(item.id)">
-                  {{ item.name }} - {{ item.class_name }}
-                </option>
-              </select>
-            </div>
+        <div class="flex items-center gap-2">
+          <button @click="refreshCurrent"
+            class="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+            <span class="hidden sm:inline">Refresh</span>
+          </button>
+          <button @click="downloadExcel" :disabled="sortedRows.length === 0"
+            class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-50">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            Export
+          </button>
+        </div>
+      </header>
 
-            <div class="space-y-1.5">
-              <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tugas</label>
-              <select v-model="filters.assignmentId"
-                class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-4 pr-10 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
-                <option value="">Semua Tugas</option>
-                <option v-for="item in assignments" :key="item.id" :value="String(item.id)">
-                  {{ item.title }}
-                </option>
-              </select>
-            </div>
+      <!-- Filters -->
+      <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10 md:p-5">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-300">Mata Pelajaran</label>
+            <select v-model="filters.subjectId" @change="handleSubjectChange" :class="fieldClass">
+              <option value="">Pilih mata pelajaran</option>
+              <option v-for="item in subjects" :key="item.id" :value="String(item.id)">
+                {{ item.name }} - {{ item.class_name }}
+              </option>
+            </select>
+          </div>
 
-            <div class="space-y-1.5">
-              <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Status Penilaian</label>
-              <select v-model="filters.gradeStatus"
-                class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-4 pr-10 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
-                <option value="">Semua Status</option>
-                <option value="graded">Sudah Dinilai</option>
-                <option value="ungraded">Belum Dinilai</option>
-              </select>
-            </div>
-
-            <div class="space-y-1.5">
-              <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tipe Tugas</label>
-              <select v-model="filters.assignmentType"
-                class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-4 pr-10 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
-                <option value="">Semua Tipe</option>
-                <option value="FILE">Dokumen/File</option>
-                <option value="MCQ">Pilihan Ganda</option>
-                <option value="ESSAY">Esai</option>
-                <option value="MANUAL">Ujian di Luar LMS</option>
-              </select>
-            </div>
-
-            <div class="space-y-1.5 xl:col-span-1 sm:col-span-2 lg:col-span-4">
-              <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Cari Siswa</label>
-              <div class="relative">
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                  </svg>
-                </div>
-                <input v-model="filters.keyword" placeholder="Ketik nama siswa..."
-                  class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-10 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-300">Cari Siswa</label>
+            <div class="relative">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
               </div>
+              <input v-model="filters.keyword" placeholder="Ketik nama siswa..."
+                class="block h-11 w-full rounded-xl border-0 bg-slate-50 pl-10 pr-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
             </div>
-
-            <div class="space-y-1.5">
-              <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Baris</label>
-              <select v-model="pageSize"
-                class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-4 pr-10 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50">
-                <option :value="10">10 / halaman</option>
-                <option :value="20">20 / halaman</option>
-                <option :value="50">50 / halaman</option>
-                <option :value="100">100 / halaman</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="flex flex-none gap-3 sm:w-auto">
-            <button @click="refreshCurrent"
-              class="flex items-center justify-center gap-2 rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-              </svg>
-              Refresh
-            </button>
-            <button @click="downloadExcel" :disabled="sortedRows.length === 0"
-              class="flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500 disabled:opacity-50">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-              </svg>
-              Export
-            </button>
           </div>
         </div>
+
+        <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-300">Tugas</label>
+            <select v-model="filters.assignmentId" :class="fieldClass">
+              <option value="">Semua tugas</option>
+              <option v-for="item in assignments" :key="item.id" :value="String(item.id)">{{ item.title }}</option>
+            </select>
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-300">Status Penilaian</label>
+            <select v-model="filters.gradeStatus" :class="fieldClass">
+              <option value="">Semua status</option>
+              <option value="graded">Sudah dinilai</option>
+              <option value="ungraded">Belum dinilai</option>
+            </select>
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-slate-600 dark:text-slate-300">Tipe Tugas</label>
+            <select v-model="filters.assignmentType" :class="fieldClass">
+              <option value="">Semua tipe</option>
+              <option value="FILE">Dokumen/File</option>
+              <option value="MCQ">Pilihan Ganda</option>
+              <option value="ESSAY">Esai</option>
+              <option value="MANUAL">Ujian di Luar LMS</option>
+            </select>
+          </div>
         </div>
       </section>
 
-      <section
-        class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
-        <div class="overflow-x-auto">
-          <table class="min-w-[1280px] w-full table-fixed text-left text-sm">
-            <thead
-              class="border-b border-slate-200 bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/50">
+      <!-- Data -->
+      <section class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+        <!-- Desktop table -->
+        <div class="hidden overflow-x-auto lg:block">
+          <table class="w-full table-fixed text-left text-sm">
+            <thead class="border-b border-slate-200 bg-slate-50/80 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-800/50">
               <tr>
-                <th class="w-[200px] px-5 py-3.5 font-semibold"><button @click="handleSort('student_name')"
-                    class="group flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-200">Siswa <span
-                      class="text-slate-300 transition group-hover:text-slate-500">{{ sortIndicator('student_name')
-                      }}</span></button></th>
-                <th class="w-[230px] px-5 py-3.5 font-semibold"><button @click="handleSort('assignment_title')"
-                    class="group flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-200">Tugas <span
-                      class="text-slate-300 transition group-hover:text-slate-500">{{ sortIndicator('assignment_title')
-                      }}</span></button></th>
-                <th class="w-[170px] px-5 py-3.5 font-semibold">Hasil</th>
-                <th class="w-[140px] px-5 py-3.5 font-semibold"><button @click="handleSort('submitted_at')"
-                    class="group flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-200">Waktu Kumpul
-                    <span class="text-slate-300 transition group-hover:text-slate-500">{{ sortIndicator('submitted_at')
-                    }}</span></button></th>
-                <th class="w-[120px] px-5 py-3.5 font-semibold"><button @click="handleSort('violation_count')"
-                    class="group flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-200">Pelanggaran
-                    <span class="text-slate-300 transition group-hover:text-slate-500">{{
-                      sortIndicator('violation_count')
-                    }}</span></button></th>
-                <th class="w-[100px] px-5 py-3.5 font-semibold"><button @click="handleSort('score')"
-                    class="group flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-200">Nilai <span
-                      class="text-slate-300 transition group-hover:text-slate-500">{{ sortIndicator('score')
-                      }}</span></button></th>
-                <th class="w-[160px] px-5 py-3.5 font-semibold text-right">Aksi</th>
+                <th class="w-[22%] px-5 py-3.5 font-semibold">
+                  <button @click="handleSort('student_name')" class="group inline-flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-200">
+                    Siswa <span class="text-slate-300 group-hover:text-slate-500">{{ sortIndicator('student_name') }}</span>
+                  </button>
+                </th>
+                <th class="w-[34%] px-5 py-3.5 font-semibold">
+                  <button @click="handleSort('assignment_title')" class="group inline-flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-200">
+                    Tugas <span class="text-slate-300 group-hover:text-slate-500">{{ sortIndicator('assignment_title') }}</span>
+                  </button>
+                </th>
+                <th class="w-[18%] px-5 py-3.5 font-semibold">
+                  <button @click="handleSort('submitted_at')" class="group inline-flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-200">
+                    Pengumpulan <span class="text-slate-300 group-hover:text-slate-500">{{ sortIndicator('submitted_at') }}</span>
+                  </button>
+                </th>
+                <th class="w-[12%] px-5 py-3.5 font-semibold">
+                  <button @click="handleSort('score')" class="group inline-flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-200">
+                    Nilai <span class="text-slate-300 group-hover:text-slate-500">{{ sortIndicator('score') }}</span>
+                  </button>
+                </th>
+                <th class="w-[14%] px-5 py-3.5 text-right font-semibold">Aksi</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
               <tr v-for="(row, index) in sortedRows" :key="`${row.assignment_id}-${row.id}-${index}`"
-                class="group transition hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-
-                <td class="px-5 py-3.5 align-top">
-                  <div class="flex items-center gap-3">
-                    <!-- <div
-                      class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                      {{ row.student_name.charAt(0).toUpperCase() }}
-                    </div> -->
-                    <div class="min-w-0">
-                      <div class="truncate font-medium text-slate-900 dark:text-white">{{ row.student_name }}</div>
-                      <div class="truncate text-xs text-slate-500">{{ row.class_name }}</div>
-                    </div>
-                  </div>
+                class="transition hover:bg-slate-50/60 dark:hover:bg-slate-800/30">
+                <td class="px-5 py-4">
+                  <div class="font-semibold text-slate-900 dark:text-white">{{ row.student_name }}</div>
+                  <div class="text-xs text-slate-500">{{ row.class_name }}</div>
                 </td>
 
-                <td class="px-5 py-3.5 align-top">
-                  <div class="line-clamp-2 font-medium leading-5 text-slate-900 dark:text-white">{{ row.assignment_title
-                  }}</div>
-                  <div class="mt-2 flex flex-wrap items-center gap-2">
-                    <span :class="assignmentTypeBadgeClass(row)"
-                      class="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset">
+                <td class="px-5 py-4">
+                  <div class="line-clamp-1 font-medium text-slate-900 dark:text-white">{{ row.assignment_title }}</div>
+                  <div class="mt-1.5 flex flex-wrap items-center gap-2">
+                    <span :class="assignmentTypeBadgeClass(row)" class="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
                       {{ assignmentTypeLabel(row) }}
                     </span>
                     <span class="truncate text-xs text-slate-400">{{ row.subject_name }}</span>
                   </div>
                 </td>
 
-                <td class="px-5 py-3.5 align-top">
-                  <button v-if="canOpenQuizReview(row)" @click="openReview(row)"
-                    class="inline-flex items-center gap-1.5 rounded-lg bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-100 dark:bg-sky-500/10 dark:text-sky-300">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    Review Jawaban
-                  </button>
-                  <a v-else-if="row.attachment_url" :href="normalizePublicUrl(row.attachment_url)" target="_blank" rel="noreferrer"
-                    class="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                    </svg>
-                    Buka File
-                  </a>
-                  <span v-else-if="row.assignment_type === 'MANUAL'"
-                    class="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
-                    Nilai Manual
-                  </span>
-                  <span v-else class="text-xs italic text-slate-400">Tidak ada lampiran</span>
-                </td>
-
-                <td class="px-5 py-3.5 align-top text-slate-500 dark:text-slate-400">
-                  <div class="text-sm leading-5">{{ row.assignment_type === 'MANUAL' ? '-' :
-                    formatDateTimeCompact(row.submitted_at) }}</div>
-                  <div
-                    v-if="row.assignment_type !== 'MANUAL' && row.due_date && row.submitted_at && (parseDateValue(row.submitted_at)?.getTime() || 0) > (parseDateValue(row.due_date)?.getTime() || 0)"
-                    class="mt-1 inline-flex rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-600 dark:bg-red-500/10 dark:text-red-300">
-                    Terlambat</div>
-                </td>
-
-                <td class="px-5 py-3.5 align-top">
-                  <div
-                    :class="Number(row.violation_count || 0) > 0 ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'"
-                    class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold">
-                    {{ Number(row.violation_count || 0) }} pelanggaran
+                <td class="px-5 py-4">
+                  <div class="text-sm text-slate-600 dark:text-slate-300">
+                    {{ row.assignment_type === 'MANUAL' ? '—' : formatDateTimeCompact(row.submitted_at) }}
+                  </div>
+                  <div v-if="isSubmissionLate(row) || Number(row.violation_count || 0) > 0" class="mt-1.5 flex flex-wrap gap-1.5">
+                    <span v-if="isSubmissionLate(row)" class="inline-flex rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-600 dark:bg-red-500/10 dark:text-red-300">
+                      Terlambat
+                    </span>
+                    <span v-if="Number(row.violation_count || 0) > 0" class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+                      <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                      </svg>
+                      {{ Number(row.violation_count || 0) }} pelanggaran
+                    </span>
                   </div>
                 </td>
 
-                <td class="px-5 py-3.5 align-top">
-                  <div class="inline-flex min-w-[56px] rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                    {{ row.score ?? "-" }}
+                <td class="px-5 py-4">
+                  <div class="flex items-baseline gap-0.5">
+                    <span class="text-lg font-bold" :class="isGraded(row) ? 'text-slate-900 dark:text-white' : 'text-slate-300 dark:text-slate-600'">
+                      {{ isGraded(row) ? row.score : "—" }}
+                    </span>
+                    <span v-if="isGraded(row)" class="text-xs font-medium text-slate-400">/100</span>
+                  </div>
+                  <div class="mt-0.5 text-[11px] font-semibold" :class="isGraded(row) ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'">
+                    {{ isGraded(row) ? "Sudah dinilai" : "Belum dinilai" }}
                   </div>
                 </td>
 
-                <td class="px-5 py-3.5 align-top text-right">
-                  <button @click="openGradeModal(row)"
-                    class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-sky-500 focus:ring-2 focus:ring-sky-600 focus:ring-offset-2">
-                    Edit Nilai
-                  </button>
+                <td class="px-5 py-4">
+                  <div class="flex items-center justify-end gap-2">
+                    <button v-if="canOpenQuizReview(row)" @click="openReview(row)"
+                      class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-50 dark:text-sky-300 dark:hover:bg-sky-500/10">
+                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Review
+                    </button>
+                    <a v-else-if="row.attachment_url" :href="normalizePublicUrl(row.attachment_url)" target="_blank" rel="noreferrer"
+                      class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                      </svg>
+                      File
+                    </a>
+                    <button @click="openGradeModal(row)"
+                      class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-sky-500">
+                      Edit Nilai
+                    </button>
+                  </div>
                 </td>
               </tr>
 
               <tr v-if="filteredRows.length === 0">
-                <td colspan="7" class="px-6 py-16 text-center">
-                  <div class="mx-auto max-w-sm">
-                    <div
-                      class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                      <svg class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                <td colspan="5" class="px-6 py-16">
+                  <div class="mx-auto max-w-sm text-center">
+                    <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                      <svg class="h-7 w-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                       </svg>
                     </div>
-                    <h3 class="text-sm font-semibold text-slate-900 dark:text-white">Tidak ada data ditemukan</h3>
-                    <p class="mt-1 text-sm text-slate-500">Ubah filter pencarian atau pastikan siswa telah mengumpulkan
-                      tugas.</p>
+                    <h3 class="text-sm font-semibold text-slate-900 dark:text-white">
+                      {{ filters.subjectId ? "Belum ada data" : "Mulai dari sini" }}
+                    </h3>
+                    <p class="mt-1 text-sm text-slate-500">
+                      {{ filters.subjectId ? "Sesuaikan filter atau pastikan siswa sudah mengumpulkan tugas." : "Pilih mata pelajaran untuk menampilkan data penilaian." }}
+                    </p>
                   </div>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div class="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/70 px-6 py-4 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-800/30 dark:text-slate-400 md:flex-row md:items-center md:justify-between">
-          <div>
-            Menampilkan {{ paginationStartRow }}-{{ paginationEndRow }} dari {{ totalRows }} data
+
+        <!-- Mobile cards -->
+        <div class="divide-y divide-slate-100 lg:hidden dark:divide-slate-800">
+          <article v-for="(row, index) in sortedRows" :key="`m-${row.assignment_id}-${row.id}-${index}`" class="p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="font-semibold text-slate-900 dark:text-white">{{ row.student_name }}</p>
+                <p class="text-xs text-slate-500">{{ row.class_name }}</p>
+              </div>
+              <div class="shrink-0 text-right">
+                <p class="text-lg font-bold leading-none" :class="isGraded(row) ? 'text-slate-900 dark:text-white' : 'text-slate-300 dark:text-slate-600'">
+                  {{ isGraded(row) ? row.score : "—" }}
+                </p>
+                <p class="mt-1 text-[11px] font-semibold" :class="isGraded(row) ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'">
+                  {{ isGraded(row) ? "Dinilai" : "Belum dinilai" }}
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-3 rounded-xl bg-slate-50 p-3 dark:bg-slate-800/40">
+              <p class="line-clamp-2 text-sm font-medium text-slate-800 dark:text-slate-100">{{ row.assignment_title }}</p>
+              <div class="mt-2 flex flex-wrap items-center gap-2">
+                <span :class="assignmentTypeBadgeClass(row)" class="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
+                  {{ assignmentTypeLabel(row) }}
+                </span>
+                <span class="text-xs text-slate-400">{{ row.subject_name }}</span>
+              </div>
+              <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                <span>{{ row.assignment_type === 'MANUAL' ? '—' : formatDateTimeCompact(row.submitted_at) }}</span>
+                <span v-if="isSubmissionLate(row)" class="inline-flex rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-600 dark:bg-red-500/10 dark:text-red-300">Terlambat</span>
+                <span v-if="Number(row.violation_count || 0) > 0" class="inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">{{ Number(row.violation_count || 0) }} pelanggaran</span>
+              </div>
+            </div>
+
+            <div class="mt-3 flex items-center gap-2">
+              <button v-if="canOpenQuizReview(row)" @click="openReview(row)"
+                class="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                Review Jawaban
+              </button>
+              <a v-else-if="row.attachment_url" :href="normalizePublicUrl(row.attachment_url)" target="_blank" rel="noreferrer"
+                class="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                Buka File
+              </a>
+              <button @click="openGradeModal(row)"
+                class="inline-flex h-9 flex-1 items-center justify-center rounded-lg bg-sky-600 text-xs font-semibold text-white shadow-sm transition hover:bg-sky-500">
+                Edit Nilai
+              </button>
+            </div>
+          </article>
+
+          <div v-if="filteredRows.length === 0" class="px-6 py-14 text-center">
+            <h3 class="text-sm font-semibold text-slate-900 dark:text-white">
+              {{ filters.subjectId ? "Belum ada data" : "Mulai dari sini" }}
+            </h3>
+            <p class="mt-1 text-sm text-slate-500">
+              {{ filters.subjectId ? "Sesuaikan filter atau pastikan siswa sudah mengumpulkan tugas." : "Pilih mata pelajaran untuk menampilkan data." }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/70 px-5 py-3.5 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-800/30 dark:text-slate-400 md:flex-row md:items-center md:justify-between">
+          <div class="flex items-center gap-3">
+            <span>{{ paginationStartRow }}-{{ paginationEndRow }} dari {{ totalRows }} data</span>
+            <select v-model="pageSize"
+              class="rounded-lg border-0 bg-white py-1 pl-2 pr-7 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700">
+              <option :value="10">10 / hal</option>
+              <option :value="20">20 / hal</option>
+              <option :value="50">50 / hal</option>
+              <option :value="100">100 / hal</option>
+            </select>
           </div>
           <div class="flex items-center gap-2">
             <button @click="goToPreviousPage" :disabled="currentPage <= 1"
               class="rounded-lg bg-white px-3 py-1.5 font-medium text-slate-700 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">
               Sebelumnya
             </button>
-            <span class="min-w-[90px] text-center font-medium text-slate-600 dark:text-slate-300">
-              Halaman {{ currentPage }} / {{ totalPages }}
+            <span class="min-w-[88px] text-center font-medium text-slate-600 dark:text-slate-300">
+              Hal {{ currentPage }} / {{ totalPages }}
             </span>
             <button @click="goToNextPage" :disabled="currentPage >= totalPages"
               class="rounded-lg bg-white px-3 py-1.5 font-medium text-slate-700 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800">
@@ -342,13 +373,13 @@
 
           <div class="space-y-4 px-6 py-5">
             <div class="space-y-1.5">
-              <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Nilai</label>
+              <label class="text-xs font-semibold text-slate-600 dark:text-slate-300">Nilai (0-100)</label>
               <input v-model="gradeModal.scoreDraft" type="number" min="0" max="100" step="0.01" placeholder="0-100"
                 class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-500 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
             </div>
 
             <div class="space-y-1.5">
-              <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Feedback Guru</label>
+              <label class="text-xs font-semibold text-slate-600 dark:text-slate-300">Feedback Guru</label>
               <textarea v-model="gradeModal.feedbackDraft" rows="4" placeholder="Tulis catatan untuk siswa..."
                 class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-500 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50"></textarea>
             </div>
@@ -379,6 +410,8 @@ import { normalizePublicUrl } from "@/utils/url";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 import { downloadExcelWorksheet } from "@/utils/excelExport";
 import { useMasterDataStore } from "@/store/masterData";
+
+const fieldClass = "block h-11 w-full rounded-xl border-0 bg-slate-50 pl-4 pr-10 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50";
 
 const subjects = ref([]);
 const masterDataStore = useMasterDataStore();
@@ -500,6 +533,17 @@ const formatDateTimeCompact = (value) => {
   const formatted = formatDateTime(value);
   return formatted.replace(/\s+WIB$/, "");
 };
+
+const isSubmissionLate = (row) => {
+  if (!row || row.assignment_type === "MANUAL" || !row.due_date || !row.submitted_at) {
+    return false;
+  }
+  const submitted = parseDateValue(row.submitted_at)?.getTime() || 0;
+  const due = parseDateValue(row.due_date)?.getTime() || 0;
+  return submitted > due;
+};
+
+const isGraded = (row) => row?.score !== null && row?.score !== undefined && row?.score !== "";
 
 const normalizeQuestionOptions = (options) => {
   if (Array.isArray(options)) {

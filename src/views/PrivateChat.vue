@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full min-h-full overflow-hidden bg-[#d9dbd5] text-[#111b21] dark:bg-[#0b141a] dark:text-[#e9edef]">
+  <div class="h-full min-h-full overflow-hidden  text-[#111b21] dark:bg-[#0b141a] dark:text-[#e9edef]">
     <main class="mx-auto flex h-full min-h-full w-full flex-col p-0 lg:p-5">
       <div class="min-h-0 flex-1 overflow-hidden bg-white shadow-sm dark:bg-[#111b21] lg:rounded-md">
         <div class="grid h-full min-h-0 lg:grid-cols-[390px_minmax(0,1fr)]">
@@ -10,8 +10,7 @@
               <div class="flex min-w-0 items-center gap-3">
                 <button type="button"
                   class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
-                  aria-label="Kembali ke dashboard"
-                  @click="backToDashboard">
+                  aria-label="Kembali ke dashboard" @click="backToDashboard">
                   <Icon icon="mdi:arrow-left" class="h-5 w-5" />
                 </button>
                 <div
@@ -49,14 +48,13 @@
               </div>
 
               <button v-for="peer in visiblePeers" :key="peer.user_id" type="button" @click="selectPeer(peer)"
-                class="group flex min-h-[72px] w-full items-center gap-3 px-3 text-left transition"
-                :class="selectedPeer?.user_id === peer.user_id
+                class="group flex min-h-[72px] w-full items-center gap-3 px-3 text-left transition" :class="selectedPeer?.user_id === peer.user_id
                   ? 'bg-[#f0f2f5] dark:bg-[#2a3942]'
                   : 'hover:bg-[#f5f6f6] dark:hover:bg-[#202c33]'">
                 <div
                   class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#dfe5e7] text-base font-semibold text-[#54656f] dark:bg-[#2a3942] dark:text-[#d1d7db]">
-                  <img v-if="peer.profile_image" :src="normalizePublicUrl(peer.profile_image)" :alt="displayPeerName(peer)"
-                    class="h-full w-full object-cover" />
+                  <img v-if="peer.profile_image" :src="normalizePublicUrl(peer.profile_image)"
+                    :alt="displayPeerName(peer)" class="h-full w-full object-cover" />
                   <span v-else>{{ peerInitial(peer) }}</span>
                 </div>
                 <div class="min-w-0 flex-1 border-b border-[#e9edef] py-3 dark:border-[#222e35]">
@@ -86,12 +84,15 @@
 
               <div v-if="!isSearchingContacts && visiblePeers.length === 0"
                 class="px-7 py-10 text-center text-sm text-[#667781] dark:text-[#8696a0]">
-                {{ search.trim() ? "Kontak tidak ditemukan." : "Belum ada riwayat chat. Cari nama untuk mulai percakapan." }}
+                {{
+                  search.trim() ? "Kontak tidak ditemukan." : "Belum ada riwayat chat. Cari nama untuk mulaipercakapan."
+                }}
               </div>
             </div>
           </aside>
 
-          <section class="flex min-h-0 h-full flex-col overflow-hidden bg-[#efeae2] private-chat-wallpaper dark:bg-[#0b141a]"
+          <section
+            class="flex min-h-0 h-full flex-col overflow-hidden bg-[#efeae2] private-chat-wallpaper dark:bg-[#0b141a]"
             :class="{ hidden: !mobileChatOpen, 'lg:flex': true }">
             <template v-if="selectedPeer">
               <header class="z-10 flex h-[59px] shrink-0 items-center gap-3 bg-[#f0f2f5] px-3 dark:bg-[#202c33]">
@@ -100,11 +101,7 @@
                   @click="backToPeerList">
                   <Icon icon="mdi:arrow-left" class="h-6 w-6" />
                 </button>
-                <button
-                  type="button"
-                  @click="openPeerProfile"
-                  class="flex min-w-0 flex-1 items-center gap-3 text-left"
-                >
+                <button type="button" @click="openPeerProfile" class="flex min-w-0 flex-1 items-center gap-3 text-left">
                   <div
                     class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#dfe5e7] text-sm font-semibold text-[#54656f] dark:bg-[#2a3942] dark:text-[#d1d7db]">
                     <img v-if="selectedPeer.profile_image" :src="normalizePublicUrl(selectedPeer.profile_image)"
@@ -131,7 +128,8 @@
                   </div>
                 </div>
 
-                <div v-else-if="renderedMessages.length === 0" class="flex h-full min-h-[420px] items-center justify-center">
+                <div v-else-if="renderedMessages.length === 0"
+                  class="flex h-full min-h-[420px] items-center justify-center">
                   <div
                     class="max-w-sm rounded-lg bg-[#fffef7]/95 px-5 py-4 text-center text-sm text-[#667781] shadow-sm dark:bg-[#202c33]/95 dark:text-[#d1d7db]">
                     Belum ada pesan. Mulai percakapan dengan {{ displayPeerName(selectedPeer) }}.
@@ -150,18 +148,14 @@
                     <div v-else class="flex" :class="isOwnMessage(entry.message) ? 'justify-end' : 'justify-start'">
                       <article
                         class="message-bubble relative px-2.5 py-1.5 text-sm leading-5 shadow-sm transition-transform duration-150"
-                        :data-message-id="entry.message.id"
-                        :class="[
+                        :data-message-id="entry.message.id" :class="[
                           isOwnMessage(entry.message)
                             ? 'own bg-[#d9fdd3] text-[#111b21] dark:bg-[#005c4b] dark:text-[#e9edef]'
                             : 'other bg-white text-[#111b21] dark:bg-[#202c33] dark:text-[#e9edef]',
                           replyHighlightMessageId === entry.message.id ? 'ring-2 ring-sky-400 ring-offset-2 ring-offset-transparent' : '',
-                        ]"
-                        @touchstart.passive="handleMessagePressStart(entry.message, $event)"
+                        ]" @touchstart.passive="handleMessagePressStart(entry.message, $event)"
                         @touchmove.passive="handleMessagePressMove(entry.message, $event)"
-                        @touchend="handleMessagePressEnd(entry.message)"
-                        @touchcancel="handleMessagePressEnd"
-                      >
+                        @touchend="handleMessagePressEnd(entry.message)" @touchcancel="handleMessagePressEnd">
                         <div v-if="entry.parsedReply.replyName"
                           class="mb-2 cursor-pointer rounded-lg border-l-4 border-sky-400/80 bg-black/5 px-3 py-2 text-[12px] leading-5 dark:bg-white/10"
                           @click="jumpToReplyTarget(entry.message)">
@@ -170,14 +164,17 @@
                             {{ entry.parsedReply.replyPreview }}
                           </p>
                         </div>
-                        <p v-if="entry.parsedReply.body" class="whitespace-pre-wrap break-words pr-12">{{ entry.parsedReply.body }}</p>
+                        <p v-if="entry.parsedReply.body" class="whitespace-pre-wrap break-words pr-12">{{
+                          entry.parsedReply.body }}</p>
                         <div v-if="entry.message.attachment_url" class="mt-2">
-                          <audio v-if="isVoiceMessage(entry.message)" :src="normalizePublicUrl(entry.message.attachment_url)" controls
-                            class="w-full max-w-sm" />
+                          <audio v-if="isVoiceMessage(entry.message)"
+                            :src="normalizePublicUrl(entry.message.attachment_url)" controls class="w-full max-w-sm" />
                           <button v-else-if="isRenderableImageMessage(entry.message)" type="button"
-                            class="block w-full overflow-hidden rounded-md text-left" @click="openImagePreview(entry.message)">
+                            class="block w-full overflow-hidden rounded-md text-left"
+                            @click="openImagePreview(entry.message)">
                             <img :src="normalizePublicUrl(entry.message.attachment_url)"
-                              :alt="entry.message.attachment_name || 'Lampiran gambar'" class="max-h-72 w-full object-cover" />
+                              :alt="entry.message.attachment_name || 'Lampiran gambar'"
+                              class="max-h-72 w-full object-cover" />
                           </button>
                           <button v-else-if="isPdfPreviewMessage(entry.message)" type="button"
                             class="block w-full overflow-hidden rounded-md border border-black/10 bg-white text-left shadow-sm dark:border-white/10 dark:bg-[#202c33]"
@@ -185,23 +182,27 @@
                             <img :src="normalizePublicUrl(entry.message.attachment_preview_url)"
                               :alt="entry.message.attachment_name || 'Pratinjau PDF'"
                               class="max-h-60 w-full object-contain bg-white" />
-                            <div class="flex items-center gap-3 border-t border-black/5 px-3 py-2 text-sm font-semibold text-[#111b21] dark:border-white/10 dark:text-[#e9edef]">
+                            <div
+                              class="flex items-center gap-3 border-t border-black/5 px-3 py-2 text-sm font-semibold text-[#111b21] dark:border-white/10 dark:text-[#e9edef]">
                               <Icon icon="ph:file-pdf" class="h-5 w-5 shrink-0 text-[#ef4444]" />
                               <span class="truncate">{{ entry.message.attachment_name || "Buka PDF" }}</span>
                             </div>
                           </button>
-                          <a v-else :href="normalizePublicUrl(entry.message.attachment_url)" target="_blank" rel="noreferrer"
+                          <a v-else :href="normalizePublicUrl(entry.message.attachment_url)" target="_blank"
+                            rel="noreferrer"
                             class="flex items-center gap-3 rounded-md bg-black/5 px-3 py-2 text-sm font-semibold hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15">
-                            <Icon :icon="entry.message.message_type === 'PDF' ? 'ph:file-pdf' : 'ph:paperclip'" class="h-5 w-5 shrink-0" />
+                            <Icon :icon="entry.message.message_type === 'PDF' ? 'ph:file-pdf' : 'ph:paperclip'"
+                              class="h-5 w-5 shrink-0" />
                             <span class="truncate">{{ entry.message.attachment_name || "Buka file" }}</span>
                           </a>
                         </div>
                         <div class="-mb-0.5 mt-0.5 flex items-center justify-end gap-1 pl-8 text-[11px] leading-none"
                           :class="isOwnMessage(entry.message) ? 'text-[#667781] dark:text-[#aebac1]' : 'text-[#667781] dark:text-[#8696a0]'">
                           <time>{{ formatMessageTime(entry.message.created_at) }}</time>
-                          <span v-if="entry.message.edited_at" class="text-[10px] font-medium uppercase tracking-wide opacity-80">Diedit</span>
-                          <Icon v-if="isOwnMessage(entry.message)" :icon="ownReadIcon(entry.message)"
-                            class="h-4 w-4" :class="ownReadIconClass(entry.message)" />
+                          <span v-if="entry.message.edited_at"
+                            class="text-[10px] font-medium uppercase tracking-wide opacity-80">Diedit</span>
+                          <Icon v-if="isOwnMessage(entry.message)" :icon="ownReadIcon(entry.message)" class="h-4 w-4"
+                            :class="ownReadIconClass(entry.message)" />
                         </div>
                       </article>
                     </div>
@@ -212,10 +213,12 @@
               <form ref="composerBarRef" @submit.prevent="sendMessage"
                 class="fixed inset-x-0 z-20 shrink-0 bg-[#f0f2f5] px-3 py-2 dark:bg-[#202c33] md:sticky md:inset-auto md:px-4"
                 :style="composerBarStyle">
-                <div v-if="editTarget" class="mb-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm shadow-sm dark:border-amber-900/50 dark:bg-amber-500/10">
+                <div v-if="editTarget"
+                  class="mb-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm shadow-sm dark:border-amber-900/50 dark:bg-amber-500/10">
                   <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0 flex-1">
-                      <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">Mengedit</p>
+                      <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                        Mengedit</p>
                       <p class="mt-1 truncate font-semibold text-[#111b21] dark:text-[#e9edef]">
                         {{ editTarget.sender_name || "Pengguna" }}
                       </p>
@@ -230,11 +233,14 @@
                     </button>
                   </div>
                 </div>
-                <div v-if="replyTarget" class="mb-2 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm shadow-sm dark:border-sky-900/50 dark:bg-sky-500/10">
+                <div v-if="replyTarget"
+                  class="mb-2 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm shadow-sm dark:border-sky-900/50 dark:bg-sky-500/10">
                   <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0 flex-1">
-                      <p class="text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300">Membalas</p>
-                      <button type="button" class="mt-1 block w-full text-left" @click="scrollToMessageId(replyTarget.id)">
+                      <p class="text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300">Membalas
+                      </p>
+                      <button type="button" class="mt-1 block w-full text-left"
+                        @click="scrollToMessageId(replyTarget.id)">
                         <p class="truncate font-semibold text-[#111b21] dark:text-[#e9edef]">
                           {{ replyTarget.sender_name || "Pengguna" }}
                         </p>
@@ -292,7 +298,8 @@
                     </button>
                     <div v-if="emojiPanelOpen"
                       class="absolute bottom-12 left-0 z-30 w-64 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl dark:border-slate-700 dark:bg-slate-900">
-                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Emoji</p>
+                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        Emoji</p>
                       <div class="grid grid-cols-8 gap-1">
                         <button v-for="emoji in chatEmojis" :key="emoji" type="button"
                           class="rounded-lg p-1 text-xl transition hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -304,16 +311,17 @@
                   </div>
                   <button type="button"
                     class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
-                    :disabled="isSendingMessage || isRecordingVoice || Boolean(editTarget)" @click="openAttachmentPicker">
+                    :disabled="isSendingMessage || isRecordingVoice || Boolean(editTarget)"
+                    @click="openAttachmentPicker">
                     <Icon icon="mdi:paperclip" class="h-6 w-6" />
                   </button>
                   <div class="mb-1 flex min-h-10 flex-1 items-center rounded-lg bg-white px-3 dark:bg-[#2a3942]">
                     <textarea v-model="composer" rows="1" placeholder="Ketik pesan" @input="resizeComposer"
-                      @focus="ensureComposerVisible"
-                      @keydown="handleComposerKeydown"
+                      @focus="ensureComposerVisible" @keydown="handleComposerKeydown"
                       class="block max-h-28 min-h-[24px] w-full resize-none overflow-y-auto border-0 bg-transparent py-2 text-[15px] leading-6 text-[#111b21] outline-none placeholder:text-[#667781] dark:text-[#e9edef] dark:placeholder:text-[#8696a0]" />
                   </div>
-                  <button v-if="!composer.trim() && !attachmentFile && !editTarget" type="button" :disabled="isSendingMessage"
+                  <button v-if="!composer.trim() && !attachmentFile && !editTarget" type="button"
+                    :disabled="isSendingMessage"
                     class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition text-[#54656f] hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
                     :class="isRecordingVoice ? 'bg-rose-500 text-white hover:bg-rose-400 dark:text-white' : ''"
                     @click="toggleVoiceRecording">
@@ -330,9 +338,11 @@
                 @change="handleAttachmentChange" />
             </template>
 
-            <div v-else class="hidden h-full min-h-[560px] items-center justify-center bg-[#f0f2f5] px-8 dark:bg-[#222e35] lg:flex">
+            <div v-else
+              class="hidden h-full min-h-[560px] items-center justify-center bg-[#f0f2f5] px-8 dark:bg-[#222e35] lg:flex">
               <div class="max-w-md text-center">
-                <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-[#d9dbd5] dark:bg-[#111b21]">
+                <div
+                  class="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-[#d9dbd5] dark:bg-[#111b21]">
                   <Icon icon="ph:chat-circle-dots-duotone" class="h-12 w-12 text-[#667781] dark:text-[#8696a0]" />
                 </div>
                 <h2 class="mt-6 text-2xl font-light text-[#41525d] dark:text-[#d1d7db]">Chat Pribadi</h2>
@@ -349,13 +359,8 @@
       <div class="absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-3">
         <p class="truncate text-xs font-semibold text-white/80">{{ previewPdfName || "Preview PDF" }}</p>
         <div class="flex items-center gap-2">
-          <a
-            v-if="previewPdfUrl"
-            :href="previewPdfUrl"
-            :download="previewPdfName || 'preview.pdf'"
-            class="rounded-full bg-white/15 px-3 py-2 text-xs font-semibold text-white hover:bg-white/25"
-            @click.stop
-          >
+          <a v-if="previewPdfUrl" :href="previewPdfUrl" :download="previewPdfName || 'preview.pdf'"
+            class="rounded-full bg-white/15 px-3 py-2 text-xs font-semibold text-white hover:bg-white/25" @click.stop>
             Unduh
           </a>
           <button type="button" @click.stop="closePdfPreview"
@@ -365,12 +370,8 @@
         </div>
       </div>
       <div class="flex h-full w-full items-center justify-center overflow-auto p-4 pt-16">
-        <iframe
-          v-if="previewPdfUrl"
-          :src="previewPdfUrl"
-          class="h-[85vh] w-full max-w-5xl rounded-2xl bg-white shadow-2xl"
-          title="Preview PDF"
-        />
+        <iframe v-if="previewPdfUrl" :src="previewPdfUrl"
+          class="h-[85vh] w-full max-w-5xl rounded-2xl bg-white shadow-2xl" title="Preview PDF" />
       </div>
     </div>
 
@@ -390,13 +391,16 @@
         </div>
 
         <div class="mt-4 flex items-center gap-4">
-          <div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#dfe5e7] text-xl font-semibold text-[#54656f] dark:bg-[#2a3942] dark:text-[#d1d7db]">
+          <div
+            class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#dfe5e7] text-xl font-semibold text-[#54656f] dark:bg-[#2a3942] dark:text-[#d1d7db]">
             <img v-if="selectedPeer?.profile_image" :src="normalizePublicUrl(selectedPeer.profile_image)"
               :alt="displayPeerName(selectedPeer)" class="h-full w-full object-cover" />
             <span v-else>{{ peerInitial(selectedPeer) }}</span>
           </div>
           <div class="min-w-0 flex-1">
-            <h4 class="truncate text-lg font-semibold text-slate-900 dark:text-white">{{ displayPeerName(selectedPeer) }}</h4>
+            <h4 class="truncate text-lg font-semibold text-slate-900 dark:text-white">{{ displayPeerName(selectedPeer)
+            }}
+            </h4>
             <p class="truncate text-sm text-slate-500 dark:text-slate-400">@{{ selectedPeer?.username || "-" }}</p>
           </div>
         </div>

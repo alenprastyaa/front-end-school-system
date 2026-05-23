@@ -141,6 +141,14 @@
                   />
                   Ujian Resmi
                 </label>
+                <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <input
+                    v-model="form.teaching_module_ai_enabled"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                  />
+                  Modul Ajar AI
+                </label>
               </div>
             </div>
           </div>
@@ -441,6 +449,7 @@ const form = reactive({
   official_exam_module_enabled: true,
   koperasi_module_enabled: true,
   private_chat_module_enabled: true,
+  teaching_module_ai_enabled: true,
 });
 const schoolLogoFile = ref(null);
 const schoolLogoPreview = ref("");
@@ -483,6 +492,7 @@ const resetForm = () => {
   form.official_exam_module_enabled = true;
   form.koperasi_module_enabled = true;
   form.private_chat_module_enabled = true;
+  form.teaching_module_ai_enabled = true;
   schoolLogoFile.value = null;
   schoolLogoPreview.value = "";
   removeSchoolLogo.value = false;
@@ -519,6 +529,7 @@ const loadSchools = async () => {
           official_exam_module_enabled: item.official_exam_module_enabled !== false,
           koperasi_module_enabled: item.koperasi_module_enabled !== false,
           private_chat_module_enabled: item.private_chat_module_enabled !== false,
+          teaching_module_ai_enabled: item.teaching_module_ai_enabled !== false,
         }))
       : [];
   } catch (error) {
@@ -542,6 +553,7 @@ const submitSchool = async () => {
     payload.append("koperasi_module_enabled", String(Boolean(form.koperasi_module_enabled)));
     payload.append("private_chat_module_enabled", String(Boolean(form.private_chat_module_enabled)));
     payload.append("official_exam_module_enabled", String(Boolean(form.official_exam_module_enabled)));
+    payload.append("teaching_module_ai_enabled", String(Boolean(form.teaching_module_ai_enabled)));
     if (schoolLogoFile.value) {
       payload.append("logo", schoolLogoFile.value);
     }
@@ -571,6 +583,7 @@ const editSchool = (item) => {
   form.koperasi_module_enabled = item.koperasi_module_enabled !== false;
   form.private_chat_module_enabled = item.private_chat_module_enabled !== false;
   form.official_exam_module_enabled = item.official_exam_module_enabled !== false;
+  form.teaching_module_ai_enabled = item.teaching_module_ai_enabled !== false;
   schoolLogoFile.value = null;
   schoolLogoPreview.value = normalizePublicUrl(item.logo_url) || "";
   removeSchoolLogo.value = false;

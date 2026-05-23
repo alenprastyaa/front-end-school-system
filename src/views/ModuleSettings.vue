@@ -8,7 +8,7 @@
             <h1 class="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Setting Modul</h1>
             <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">
             Atur modul yang tampil di sekolah. Modul dasar tetap aktif, sementara Sarpras, Absensi, Koperasi, Chat
-            Pribadi, dan Ujian Resmi bisa diaktifkan atau dimatikan per sekolah.
+            Pribadi, Ujian Resmi, dan Modul Ajar AI bisa diaktifkan atau dimatikan per sekolah.
             </p>
           </div>
           <button @click="loadSchools" :disabled="isLoading"
@@ -39,6 +39,7 @@
                 <th class="px-4 py-3 font-medium sm:px-6">Koperasi</th>
                 <th class="px-4 py-3 font-medium sm:px-6">Chat Pribadi</th>
                 <th class="px-4 py-3 font-medium sm:px-6">Ujian Resmi</th>
+                <th class="px-4 py-3 font-medium sm:px-6">Modul Ajar AI</th>
                 <th class="px-4 py-3 font-medium text-right sm:px-6">Aksi</th>
               </tr>
             </thead>
@@ -82,6 +83,13 @@
                     {{ item.official_exam_module_enabled !== false ? "Aktif" : "Nonaktif" }}
                   </label>
                 </td>
+                <td class="px-4 py-4 sm:px-6">
+                  <label class="inline-flex items-center gap-2 text-sm font-semibold">
+                    <input v-model="item.teaching_module_ai_enabled" type="checkbox"
+                      class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
+                    {{ item.teaching_module_ai_enabled !== false ? "Aktif" : "Nonaktif" }}
+                  </label>
+                </td>
                 <td class="px-4 py-4 sm:px-6 text-right">
                   <button
                     class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-50"
@@ -91,7 +99,7 @@
                 </td>
               </tr>
               <tr v-if="schools.length === 0">
-                <td colspan="7" class="px-4 py-10 text-center text-slate-500 sm:px-6">Belum ada sekolah terdaftar.</td>
+                <td colspan="8" class="px-4 py-10 text-center text-slate-500 sm:px-6">Belum ada sekolah terdaftar.</td>
               </tr>
             </tbody>
           </table>
@@ -135,6 +143,7 @@ const loadSchools = async () => {
           koperasi_module_enabled: toBooleanFlag(item.koperasi_module_enabled),
           private_chat_module_enabled: toBooleanFlag(item.private_chat_module_enabled),
           official_exam_module_enabled: toBooleanFlag(item.official_exam_module_enabled),
+          teaching_module_ai_enabled: toBooleanFlag(item.teaching_module_ai_enabled),
         }))
       : [];
   } catch (error) {
@@ -156,6 +165,7 @@ const saveModuleSettings = async (item) => {
     formData.append("koperasi_module_enabled", String(Boolean(item.koperasi_module_enabled)));
     formData.append("private_chat_module_enabled", String(Boolean(item.private_chat_module_enabled)));
     formData.append("official_exam_module_enabled", String(Boolean(item.official_exam_module_enabled)));
+    formData.append("teaching_module_ai_enabled", String(Boolean(item.teaching_module_ai_enabled)));
     const response = await api.put(`/school/${item.id}/modules`, formData);
     message.value = response?.message || "Setting modul berhasil disimpan.";
     pushToast({

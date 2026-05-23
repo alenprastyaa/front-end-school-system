@@ -1,6 +1,9 @@
 <template>
   <!-- App -->
-  <div class="flex h-screen overflow-hidden bg-slate-100 font-lexend dark:bg-slate-950">
+  <div
+    class="flex h-screen overflow-hidden font-lexend"
+    :class="isChatLayoutRoute ? 'bg-[#d9dbd5] dark:bg-[#0b141a]' : 'bg-slate-100 dark:bg-[#0b141a]'"
+  >
     <div v-if="!shouldHideChrome"
       class="pointer-events-none fixed inset-y-0 left-0 z-[60] w-sidebar max-w-[86vw] transition-transform duration-300 ease-out lg:pointer-events-auto lg:static lg:max-w-none"
       :class="sidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
@@ -21,12 +24,25 @@
     <div class="flex h-screen min-h-0 flex-auto w-full flex-col overflow-hidden transition-colors">
       <Header v-if="!shouldHideChrome && !shouldHideHeader && !hideHeaderOnMobileChat" @sidebarToggle="toggleSidebar" />
 
-      <div class="flex-1 min-h-0" :class="isChatLayoutRoute ? 'overflow-hidden' : 'overflow-y-auto'">
+      <div
+        class="flex-1 min-h-0"
+        :class="isChatLayoutRoute ? 'overflow-hidden bg-[#d9dbd5] dark:bg-[#0b141a]' : 'app-standard-content overflow-y-auto'"
+      >
         <router-view v-slot="{ Component }">
-          <transition name="slide-up">
-            <div :key="$route.name || $route.path" :class="isChatLayoutRoute ? 'h-full' : ''">
+          <div
+            v-if="isChatLayoutRoute"
+            :key="$route.name || $route.path"
+            class="h-full bg-[#d9dbd5] dark:bg-[#0b141a]"
+          >
+            <component :is="Component" />
+          </div>
+          <transition v-else name="slide-up">
+            <div
+              :key="$route.name || $route.path"
+              class="min-h-full"
+            >
               <component :is="Component" />
-              <Footer v-if="!shouldHideChrome && !isChatLayoutRoute" />
+              <Footer v-if="!shouldHideChrome" />
             </div>
           </transition>
         </router-view>
@@ -215,6 +231,120 @@ export default {
 .slide-up-leave-to {
   transform: translateY(20px);
   opacity: 0;
+}
+
+.app-standard-content {
+  background-color: #f8fafc;
+  color: #111b21;
+}
+
+.dark .app-standard-content {
+  background-color: #0b141a;
+  color: #e9edef;
+}
+
+.dark .app-standard-content .bg-white,
+.dark .app-standard-content .bg-slate-50,
+.dark .app-standard-content .bg-slate-50\/50,
+.dark .app-standard-content .bg-slate-50\/60,
+.dark .app-standard-content .bg-slate-50\/70,
+.dark .app-standard-content .bg-slate-50\/80,
+.dark .app-standard-content .bg-slate-50\/90,
+.dark .app-standard-content .bg-gray-50,
+.dark .app-standard-content .bg-gray-50\/50,
+.dark .app-standard-content .bg-slate-100,
+.dark .app-standard-content .bg-gray-100,
+.dark .app-standard-content .dark\:bg-slate-950,
+.dark .app-standard-content .dark\:bg-slate-950\/40,
+.dark .app-standard-content .dark\:bg-slate-950\/50,
+.dark .app-standard-content .dark\:bg-slate-900,
+.dark .app-standard-content .dark\:bg-slate-900\/40,
+.dark .app-standard-content .dark\:bg-slate-900\/50,
+.dark .app-standard-content .dark\:bg-slate-900\/70,
+.dark .app-standard-content .dark\:bg-slate-900\/80,
+.dark .app-standard-content .dark\:bg-gray-900,
+.dark .app-standard-content .dark\:bg-gray-800 {
+  background-color: #111b21 !important;
+}
+
+.dark .app-standard-content .hover\:bg-white:hover,
+.dark .app-standard-content .hover\:bg-slate-50:hover,
+.dark .app-standard-content .hover\:bg-slate-50\/50:hover,
+.dark .app-standard-content .hover\:bg-slate-50\/60:hover,
+.dark .app-standard-content .hover\:bg-slate-50\/70:hover,
+.dark .app-standard-content .hover\:bg-slate-50\/80:hover,
+.dark .app-standard-content .hover\:bg-gray-50:hover,
+.dark .app-standard-content .hover\:bg-slate-100:hover,
+.dark .app-standard-content .hover\:bg-gray-100:hover,
+.dark .app-standard-content .dark\:hover\:bg-slate-900:hover,
+.dark .app-standard-content .dark\:hover\:bg-slate-800:hover,
+.dark .app-standard-content .dark\:hover\:bg-slate-800\/40:hover,
+.dark .app-standard-content .dark\:hover\:bg-slate-800\/50:hover,
+.dark .app-standard-content .dark\:hover\:bg-slate-700:hover,
+.dark .app-standard-content .dark\:hover\:bg-gray-800:hover {
+  background-color: #202c33 !important;
+}
+
+.dark .app-standard-content .dark\:bg-slate-800,
+.dark .app-standard-content .dark\:bg-slate-800\/30,
+.dark .app-standard-content .dark\:bg-slate-800\/40,
+.dark .app-standard-content .dark\:bg-slate-800\/50,
+.dark .app-standard-content .dark\:bg-slate-800\/60,
+.dark .app-standard-content .dark\:bg-slate-800\/70,
+.dark .app-standard-content .dark\:bg-slate-800\/80,
+.dark .app-standard-content .dark\:bg-gray-700 {
+  background-color: #202c33 !important;
+}
+
+.dark .app-standard-content .text-slate-950,
+.dark .app-standard-content .text-slate-900,
+.dark .app-standard-content .text-slate-800,
+.dark .app-standard-content .text-gray-950,
+.dark .app-standard-content .text-gray-900,
+.dark .app-standard-content .text-gray-800 {
+  color: #e9edef !important;
+}
+
+.dark .app-standard-content .text-slate-700,
+.dark .app-standard-content .text-slate-600,
+.dark .app-standard-content .text-slate-500,
+.dark .app-standard-content .text-gray-700,
+.dark .app-standard-content .text-gray-600,
+.dark .app-standard-content .text-gray-500 {
+  color: #aebac1 !important;
+}
+
+.dark .app-standard-content .text-slate-400,
+.dark .app-standard-content .text-gray-400 {
+  color: #8696a0 !important;
+}
+
+.dark .app-standard-content .border-slate-100,
+.dark .app-standard-content .border-slate-200,
+.dark .app-standard-content .border-slate-300,
+.dark .app-standard-content .border-gray-100,
+.dark .app-standard-content .border-gray-200,
+.dark .app-standard-content .border-gray-300,
+.dark .app-standard-content .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+.dark .app-standard-content .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.dark .app-standard-content .ring-slate-200,
+.dark .app-standard-content .ring-gray-200,
+.dark .app-standard-content .ring-gray-300 {
+  border-color: #222e35 !important;
+  --tw-ring-color: #222e35 !important;
+}
+
+.dark .app-standard-content input,
+.dark .app-standard-content select,
+.dark .app-standard-content textarea {
+  background-color: #202c33;
+  border-color: #222e35;
+  color: #e9edef;
+}
+
+.dark .app-standard-content input::placeholder,
+.dark .app-standard-content textarea::placeholder {
+  color: #8696a0;
 }
 
 @supports (padding-top: env(safe-area-inset-top)) {

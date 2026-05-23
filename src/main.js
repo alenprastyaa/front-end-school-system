@@ -10,6 +10,13 @@ import "@vuepic/vue-datepicker/dist/main.css";
 import vClickOutside from "click-outside-vue3";
 import { registerPwaServiceWorker } from "@/utils/serviceWorker";
 
+const storedTheme = localStorage.getItem("color-theme");
+if (storedTheme === "dark") {
+  document.documentElement.classList.add("dark");
+} else if (storedTheme === "light") {
+  document.documentElement.classList.remove("dark");
+}
+
 const app = createApp(App);
 app.use(router);
 app.use(createPinia());

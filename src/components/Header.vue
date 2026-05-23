@@ -31,6 +31,15 @@
           <Icon :icon="fullscreenMode ? 'ic:outline-fullscreen-exit' : 'ic:outline-fullscreen'" />
         </button>
 
+        <button
+          type="button"
+          class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-xl text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          :title="isDarkMode ? 'Ubah ke light mode' : 'Ubah ke dark mode'"
+          @click="toggleDarkMode"
+        >
+          <Icon :icon="isDarkMode ? 'mdi:white-balance-sunny' : 'mdi:moon-waning-crescent'" />
+        </button>
+
         <button v-if="pwaInstallVisible" type="button"
           class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
           :disabled="pwaInstallBusy" :title="pwaInstallTitle" @click="handlePwaInstall">
@@ -209,6 +218,7 @@ import { useRoute, useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
 import { cancelPendingApiRequests } from "@/api";
 import { fullscreen as handleFullscreen } from "@/helper/fullscreen";
+import { setDarkMode } from "@/helper/theme";
 import { clearSession, getStoredUser } from "@/utils/auth";
 import { normalizePublicUrl } from "@/utils/url";
 import defaultAvatar from "@/assets/img/user.jpg";
@@ -230,6 +240,7 @@ defineEmits(["sidebarToggle"]);
 
 const menu = ref(false);
 const fullscreenMode = ref(false);
+const isDarkMode = ref(false);
 const pwaInstallBusy = ref(false);
 const showProfileModal = ref(false);
 const isSavingProfile = ref(false);
@@ -400,6 +411,20 @@ const fullscreenToggle = () => {
   handleFullscreen(fullscreenMode.value);
 };
 
+const syncDarkMode = () => {
+  if (typeof document === "undefined") {
+    isDarkMode.value = false;
+    return;
+  }
+  isDarkMode.value = document.documentElement.classList.contains("dark");
+};
+
+const toggleDarkMode = () => {
+  const nextMode = !isDarkMode.value;
+  setDarkMode(nextMode);
+  isDarkMode.value = nextMode;
+};
+
 const logout = () => {
   cancelPendingApiRequests();
   realtimeStore.disconnect();
@@ -559,6 +584,14 @@ const saveProfile = async () => {
 };
 
 onMounted(() => {
+  const storedTheme = localStorage.getItem("color-theme");
+  if (storedTheme === "dark") {
+    setDarkMode(true);
+  } else if (storedTheme === "light") {
+    setDarkMode(false);
+  }
+  syncDarkMode();
+
   document.onfullscreenchange = () => {
     fullscreenMode.value = !!document.fullscreenElement;
   };

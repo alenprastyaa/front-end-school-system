@@ -310,6 +310,7 @@ const routes = [
       title: "Modul Ajar AI Guru" + appName,
       requiresAuth: true,
       roles: ["GURU"],
+      moduleKey: "teaching_module_ai",
     },
   },
   {
@@ -513,18 +514,16 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta.moduleKey) {
     const storedUser = getStoredUser() || {};
-    const moduleEnabled =
-      to.meta.moduleKey === "inventory"
-        ? storedUser.inventory_module_enabled !== false
-        : to.meta.moduleKey === "attendance"
-          ? storedUser.attendance_module_enabled !== false
-        : to.meta.moduleKey === "official_exam"
-          ? storedUser.official_exam_module_enabled !== false
-          : to.meta.moduleKey === "koperasi"
-            ? storedUser.koperasi_module_enabled !== false
-            : to.meta.moduleKey === "private_chat"
-              ? storedUser.private_chat_module_enabled !== false
-            : true;
+    const moduleFlagByKey = {
+      inventory: "inventory_module_enabled",
+      attendance: "attendance_module_enabled",
+      official_exam: "official_exam_module_enabled",
+      koperasi: "koperasi_module_enabled",
+      private_chat: "private_chat_module_enabled",
+      teaching_module_ai: "teaching_module_ai_enabled",
+    };
+    const moduleFlag = moduleFlagByKey[to.meta.moduleKey];
+    const moduleEnabled = moduleFlag ? storedUser[moduleFlag] !== false : true;
     if (!moduleEnabled) {
       next({ name: "Dashboard" });
       return;

@@ -288,6 +288,7 @@ const isAttendanceEnabled = computed(() => storedProfile.value?.attendance_modul
 const isOfficialExamEnabled = computed(() => storedProfile.value?.official_exam_module_enabled !== false);
 const isKoperasiEnabled = computed(() => storedProfile.value?.koperasi_module_enabled !== false);
 const isPrivateChatEnabled = computed(() => storedProfile.value?.private_chat_module_enabled !== false);
+const isTeachingModuleAIEnabled = computed(() => storedProfile.value?.teaching_module_ai_enabled !== false);
 const shouldTrackKoperasi = computed(() => isKoperasiEnabled.value && (isAdminRole || isKoperasiRole));
 const shouldTrackPrivateChat = computed(() => isPrivateChatEnabled.value && ["ADMIN", "KOPERASI", "GURU", "SISWA"].includes(role));
 
@@ -531,6 +532,9 @@ const filterMenuItems = (items = []) =>
       if (item.children) {
         const children = item.children.filter((child) => {
           if ((child.to === "/learning-exams-teacher" || child.to === "/learning-exams-student") && !isOfficialExamEnabled.value) {
+            return false;
+          }
+          if (child.to === "/learning-teaching-module-teacher" && !isTeachingModuleAIEnabled.value) {
             return false;
           }
           return true;

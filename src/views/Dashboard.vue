@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-slate-50/50 px-3 pb-10 pt-3 font-sans text-slate-900 sm:px-4 sm:pt-4 md:px-8 md:pb-12 md:pt-8 dark:bg-slate-950 dark:text-slate-100">
+    class="min-h-screen  px-3 pb-10 pt-3 font-sans text-[#111b21] sm:px-4 sm:pt-4 md:px-8 md:pb-12 md:pt-8 dark:bg-[#0b141a] dark:text-[#e9edef]">
     <div class="mx-auto max-w-[1440px] space-y-5 sm:space-y-6">
 
       <header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
@@ -22,8 +22,7 @@
           <div class="h-8 w-px bg-slate-200 hidden sm:block dark:bg-slate-800"></div>
           <button @click="handleAnnouncementButton"
             class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 transition hover:bg-slate-50 disabled:opacity-50 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-800">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2"
-              stroke="currentColor">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round"
                 d="M11.25 4.5h1.5m0 15h-1.5m6.364-13.364l1.061-1.06m-11.31 11.31l-1.06 1.06m13.364 0l-1.06-1.06m-11.31-11.31l1.06 1.06M4.5 11.25v1.5m15-1.5v1.5" />
             </svg>
@@ -76,6 +75,44 @@
               <Icon :icon="item.icon" class="h-10 w-10 opacity-75" :class="item.iconClass" />
             </div>
           </div>
+        </div>
+      </section>
+
+      <section v-if="role === 'ADMIN'"
+        class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 class="text-base font-semibold text-slate-900 dark:text-white">Semua Menu Admin</h2>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Ringkasan cepat untuk seluruh area kerja admin
+              sekolah.</p>
+          </div>
+          <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">
+            {{ adminModuleCards.length }} menu aktif
+          </span>
+        </div>
+
+        <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <router-link v-for="item in adminModuleCards" :key="item.key" :to="item.to"
+            class="group flex min-h-[128px] flex-col justify-between rounded-xl border border-[#e9edef] bg-white p-4 text-[#111b21] transition hover:bg-[#f5f6f6] dark:border-[#222e35] dark:bg-[#202c33] dark:text-[#e9edef] dark:hover:bg-[#2a3942]">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-white"
+                :class="item.accentClass">
+                <Icon :icon="item.icon" class="h-5 w-5" />
+              </div>
+              <Icon icon="ph:arrow-up-right"
+                class="h-4 w-4 text-slate-400 transition group-hover:text-sky-600 dark:group-hover:text-sky-300" />
+            </div>
+            <div class="mt-4">
+              <p class="truncate text-sm font-semibold text-[#111b21] dark:text-[#e9edef]" :title="item.label">{{
+                item.label }}</p>
+              <div class="mt-2 flex items-end justify-between gap-3">
+                <p class="text-2xl font-bold text-[#111b21] dark:text-[#e9edef]">{{ formatCompactNumber(item.primary) }}
+                </p>
+                <p class="min-w-0 flex-1 truncate text-right text-xs text-[#667781] dark:text-[#8696a0]"
+                  :title="item.caption">{{ item.caption }}</p>
+              </div>
+            </div>
+          </router-link>
         </div>
       </section>
 
@@ -266,12 +303,11 @@
 
       <teleport to="body">
         <transition name="fade-scale">
-          <div
-            v-if="announcementModalOpen && currentAnnouncement"
+          <div v-if="announcementModalOpen && currentAnnouncement"
             class="fixed inset-0 z-[140] flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm"
-            @click.self="closeAnnouncementModal"
-          >
-            <div class="relative w-full max-w-3xl overflow-visible rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
+            @click.self="closeAnnouncementModal">
+            <div
+              class="relative w-full max-w-3xl overflow-visible rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
               <div class="border-b border-slate-100 px-5 py-4 dark:border-slate-800 sm:px-6">
                 <div class="flex items-start justify-between gap-4">
                   <div class="min-w-0 flex-1">
@@ -282,16 +318,15 @@
                       <h2 class="min-w-0 text-xl font-bold tracking-tight text-slate-900 dark:text-white">
                         {{ currentAnnouncement.title }}
                       </h2>
-                      <span class="inline-flex shrink-0 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                      <span
+                        class="inline-flex shrink-0 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                         {{ currentAnnouncementIndex + 1 }} / {{ dashboardAnnouncements.length }}
                       </span>
                     </div>
                   </div>
-                  <button
-                    type="button"
+                  <button type="button"
                     class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                    @click="closeAnnouncementModal"
-                  >
+                    @click="closeAnnouncementModal">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" />
                     </svg>
@@ -301,63 +336,49 @@
 
               <div class="px-5 py-5 sm:px-6">
                 <transition :name="announcementTransitionName" mode="out-in">
-                  <div
-                    :key="currentAnnouncement.id"
-                    class="flex items-center justify-between gap-2 sm:gap-4"
-                  >
-                    <button
-                      v-if="dashboardAnnouncements.length > 1"
-                      type="button"
-                      @click="prevAnnouncement"
+                  <div :key="currentAnnouncement.id" class="flex items-center justify-between gap-2 sm:gap-4">
+                    <button v-if="dashboardAnnouncements.length > 1" type="button" @click="prevAnnouncement"
                       class="shrink-0 rounded-full border border-slate-200 bg-white/95 p-3 text-slate-700 shadow-lg transition hover:bg-white dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-200 dark:hover:bg-slate-800"
-                      aria-label="Pengumuman sebelumnya"
-                    >
+                      aria-label="Pengumuman sebelumnya">
                       <Icon icon="mdi:chevron-left" class="h-5 w-5" />
                     </button>
 
                     <div class="mx-auto flex min-w-0 flex-1 max-w-2xl flex-col items-center space-y-2 text-center">
-                      <p class="mt-0 whitespace-pre-line text-center text-[14px] leading-5 tracking-normal text-slate-700 dark:text-slate-300">
+                      <p
+                        class="mt-0 whitespace-pre-line text-center text-[14px] leading-5 tracking-normal text-slate-700 dark:text-slate-300">
                         {{ currentAnnouncement.content }}
                       </p>
 
                       <div class="mt-1 flex justify-center">
-                        <span class="inline-flex rounded-full bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
-                          {{ currentAnnouncement.published_at ? `Dipost ${formatDateTime(currentAnnouncement.published_at).replace(/ pukul /g, " ")}` : `Diperbarui ${formatDateTime(currentAnnouncement.updated_at).replace(/ pukul /g, " ")}` }}
+                        <span
+                          class="inline-flex rounded-full bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
+                          {{ currentAnnouncement.published_at ? `Dipost
+                          ${formatDateTime(currentAnnouncement.published_at).replace(/ pukul /g, " ")}` : `Diperbarui
+                          ${formatDateTime(currentAnnouncement.updated_at).replace(/ pukul /g, " ")}` }}
                         </span>
                       </div>
 
                       <div v-if="dashboardAnnouncements.length > 1" class="mt-6 flex justify-center">
                         <div class="flex gap-2">
-                          <button
-                            v-for="(item, index) in dashboardAnnouncements"
-                            :key="item.id"
-                            type="button"
+                          <button v-for="(item, index) in dashboardAnnouncements" :key="item.id" type="button"
                             class="h-2.5 rounded-full transition"
                             :class="index === currentAnnouncementIndex ? 'w-8 bg-sky-600 dark:bg-sky-400' : 'w-2.5 bg-slate-300 dark:bg-slate-600'"
                             @click="setCurrentAnnouncementIndex(index, index > currentAnnouncementIndex ? 'next' : 'prev')"
-                            :aria-label="`Lihat pengumuman ${index + 1}`"
-                          />
+                            :aria-label="`Lihat pengumuman ${index + 1}`" />
                         </div>
                       </div>
 
                       <div v-else class="mt-6 flex justify-end">
-                        <button
-                          type="button"
-                          @click="closeAnnouncementModal"
-                          class="inline-flex items-center justify-center rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500"
-                        >
+                        <button type="button" @click="closeAnnouncementModal"
+                          class="inline-flex items-center justify-center rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500">
                           Tutup
                         </button>
                       </div>
                     </div>
 
-                    <button
-                      v-if="dashboardAnnouncements.length > 1"
-                      type="button"
-                      @click="nextAnnouncement"
+                    <button v-if="dashboardAnnouncements.length > 1" type="button" @click="nextAnnouncement"
                       class="shrink-0 rounded-full border border-slate-200 bg-white/95 p-3 text-slate-700 shadow-lg transition hover:bg-white dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-200 dark:hover:bg-slate-800"
-                      aria-label="Pengumuman berikutnya"
-                    >
+                      aria-label="Pengumuman berikutnya">
                       <Icon icon="mdi:chevron-right" class="h-5 w-5" />
                     </button>
                   </div>
@@ -401,6 +422,7 @@ const endpointByRole = {
   SUPER_ADMIN: "/dashboard/superadmin",
   ADMIN: "/dashboard/admin",
   KOPERASI: "/koperasi/dashboard",
+  SARPRAS: "/dashboard/sarpras",
   GURU: "/dashboard/guru",
   SISWA: "/dashboard/siswa",
 };
@@ -492,14 +514,15 @@ const prevAnnouncement = () => {
   setCurrentAnnouncementIndex((currentAnnouncementIndex.value - 1 + total) % total, "prev");
 };
 
-onUnmounted(() => {
-  clearAnnouncementAutoAdvance();
-});
-
 // Palet warna yang lebih modern, bersih, dan enterprise-look
 const chartPalette = ["#3b82f6", "#10b981", "#f59e0b", "#6366f1", "#ef4444", "#64748b"];
 
 const numberValue = (value) => Number(value || 0);
+
+const formatCompactNumber = (value) => {
+  const numeric = numberValue(value);
+  return new Intl.NumberFormat("id-ID", { notation: numeric >= 10000 ? "compact" : "standard" }).format(numeric);
+};
 
 const createSummaryCard = ({
   label,
@@ -585,6 +608,57 @@ const studentAssignmentAlert = computed(() => {
     count: Number(dashboardData.value?.overview?.pending_assignments || items.length),
     items: items.slice(0, 4),
   };
+});
+
+const adminModuleAccentClasses = [
+  "bg-sky-600",
+  "bg-emerald-600",
+  "bg-amber-500",
+  "bg-indigo-600",
+  "bg-rose-600",
+  "bg-cyan-600",
+  "bg-fuchsia-600",
+  "bg-slate-700",
+];
+
+const defaultAdminModules = (overview = {}) => [
+  { key: "school-users", label: "User Sekolah", to: "/school-users", icon: "clarity:users-line", primary: numberValue(overview.teachers) + numberValue(overview.admins), caption: `${numberValue(overview.teachers)} guru, ${numberValue(overview.admins)} admin` },
+  { key: "private-chat", label: "Chat Pribadi", to: "/private-chat", icon: "ph:chat-circle-dots", primary: numberValue(overview.teachers) + numberValue(overview.students), caption: "Kontak internal sekolah" },
+  { key: "classes", label: "Kelas", to: "/classes", icon: "mdi:google-classroom", primary: numberValue(overview.classes), caption: `${numberValue(overview.students)} siswa terdaftar` },
+  { key: "students", label: "Siswa", to: "/students", icon: "mdi:account-school-outline", primary: numberValue(overview.students), caption: "Akun peserta didik" },
+  { key: "academic-periods", label: "Tahun Ajaran", to: "/academic-periods", icon: "ph:calendar-blank", primary: numberValue(overview.academic_years), caption: `${numberValue(overview.semesters)} semester` },
+  { key: "inventory", label: "Sarpras", to: "/inventory", icon: "ph:archive-box", primary: numberValue(overview.inventory_items), caption: `${numberValue(overview.inventory_active_loans)} dipinjam` },
+  { key: "koperasi", label: "Koperasi", to: "/koperasi", icon: "ph:shopping-cart", primary: numberValue(overview.koperasi_products), caption: `${numberValue(overview.koperasi_pending_orders)} pesanan perlu diproses` },
+  { key: "curriculum", label: "Kurikulum", to: "/learning-admin", icon: "ph:books", primary: numberValue(overview.curriculum_subjects), caption: `${numberValue(overview.curriculum_teacher_loads)} beban guru` },
+  { key: "schedule", label: "Jadwal Pembelajaran", to: "/learning-admin/schedule", icon: "ph:calendar-blank", primary: numberValue(overview.curriculum_schedule_entries), caption: `${numberValue(overview.curriculum_schedule_slots)} slot jadwal` },
+  { key: "learning", label: "LMS Pembelajaran", to: "/learning-admin", icon: "ph:book-open-text", primary: numberValue(overview.learning_subjects), caption: `${numberValue(overview.learning_materials)} materi` },
+  { key: "learning-exams-admin", label: "Ujian Resmi", to: "/learning-exams-admin", icon: "ph:exam", primary: numberValue(overview.official_exams), caption: `${numberValue(overview.official_exams_pending)} belum published` },
+  { key: "announcements", label: "Pengumuman", to: "/announcements", icon: "ph:megaphone-simple", primary: numberValue(overview.announcements_total), caption: `${numberValue(overview.announcements_active)} aktif` },
+  { key: "billing", label: "Billing", to: "/billing", icon: "ph:credit-card", primary: numberValue(overview.billing_unpaid_invoices), caption: "Invoice belum lunas" },
+  { key: "admin-settings", label: "Setting", to: "/admin-settings", icon: "ph:gear-six", primary: numberValue(overview.receipts_total), caption: "Data dan reset ruang admin" },
+];
+
+const adminModuleCards = computed(() => {
+  if (role !== "ADMIN") return [];
+  const school = dashboardData.value?.school || {};
+  const modules = Array.isArray(dashboardData.value?.adminModules) && dashboardData.value.adminModules.length > 0
+    ? dashboardData.value.adminModules
+    : defaultAdminModules(dashboardData.value?.overview || {});
+
+  return modules
+    .filter((item) => {
+      if (item.key === "inventory") return school.inventory_module_enabled !== false;
+      if (item.key === "koperasi") return school.koperasi_module_enabled !== false;
+      if (item.key === "private-chat") return school.private_chat_module_enabled !== false;
+      if (item.key === "learning-exams-admin") return school.official_exam_module_enabled !== false;
+      return true;
+    })
+    .map((item, index) => ({
+      ...item,
+      primary: numberValue(item.primary),
+      caption: item.caption || "-",
+      accentClass: adminModuleAccentClasses[index % adminModuleAccentClasses.length],
+    }));
 });
 
 const primarySortAccessors = computed(() => ({

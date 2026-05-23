@@ -316,7 +316,7 @@
                     </div>
                   </section>
 
-                  <section
+                  <!-- <section
                     class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
                     <div class="mb-4 flex items-center gap-3">
                       <span
@@ -329,13 +329,13 @@
                         placeholder="Contoh: gunakan konteks kehidupan sehari-hari"
                         class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
                     </div>
-                    <!-- <label
+                    <label
                       class="mt-4 flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
                       <input v-model="aiGeneratorForm.include_illustration" type="checkbox"
                         class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600 dark:border-slate-600 dark:bg-slate-800" />
                       Sertakan gambar jika diperlukan
-                    </label> -->
-                  </section>
+                    </label>
+                  </section> -->
 
                   <section v-if="generatedAiQuestions.length" ref="aiPreviewSectionRef"
                     class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
@@ -502,9 +502,11 @@
 
             <div class="flex-1 overflow-y-auto px-5 py-4">
               <div class="space-y-4">
-                <section class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                <section
+                  class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
                   <div class="mb-4 flex items-center gap-3">
-                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white">1</span>
+                    <span
+                      class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white">1</span>
                     <h3 class="text-sm font-bold text-slate-900 dark:text-white">Jenis dan Isi Soal</h3>
                   </div>
 
@@ -520,8 +522,7 @@
 
                     <div class="space-y-1.5">
                       <label class="text-xs font-semibold text-slate-500">Teks Soal</label>
-                      <textarea v-model="questionBankForm.question_text" rows="4"
-                        placeholder="Tulis soal di sini..."
+                      <textarea v-model="questionBankForm.question_text" rows="4" placeholder="Tulis soal di sini..."
                         class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
                       <div class="mt-2 flex flex-wrap items-center gap-2">
                         <label
@@ -545,7 +546,8 @@
                 <section v-if="questionBankForm.question_type === 'MCQ'"
                   class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
                   <div class="mb-4 flex items-center gap-3">
-                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white">2</span>
+                    <span
+                      class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white">2</span>
                     <h3 class="text-sm font-bold text-slate-900 dark:text-white">Opsi Jawaban</h3>
                   </div>
                   <div class="space-y-3">
@@ -561,8 +563,8 @@
                           class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
                         <label
                           class="mt-2 flex shrink-0 cursor-pointer items-center gap-2 text-xs font-semibold text-slate-600 transition hover:text-sky-700 dark:text-slate-400">
-                          <input v-model="questionBankForm.correct_option" type="radio" name="correct-bank" :value="index"
-                            class="h-4 w-4 text-sky-600 focus:ring-sky-600" />
+                          <input v-model="questionBankForm.correct_option" type="radio" name="correct-bank"
+                            :value="index" class="h-4 w-4 text-sky-600 focus:ring-sky-600" />
                           Benar
                         </label>
                       </div>
@@ -570,9 +572,11 @@
                   </div>
                 </section>
 
-                <section v-else class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                <section v-else
+                  class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
                   <div class="mb-4 flex items-center gap-3">
-                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white">2</span>
+                    <span
+                      class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white">2</span>
                     <h3 class="text-sm font-bold text-slate-900 dark:text-white">Rubrik Penilaian</h3>
                   </div>
                   <div class="space-y-1.5">

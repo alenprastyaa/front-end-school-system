@@ -31,7 +31,7 @@
     />
     <meta
       name="theme-color"
-      content="#4f46e5"
+      content="#0b141a"
     />
     <meta
       name="apple-mobile-web-app-capable"
@@ -98,6 +98,36 @@
       href="<%= BASE_URL %>manifest.webmanifest"
     />
     <title>School System | LMS, Learning Management System, dan Platform Sekolah Digital</title>
+    <style>
+      html,
+      body,
+      #app {
+        min-height: 100%;
+        background: #f8fafc;
+      }
+
+      html.dark,
+      html.dark body,
+      html.dark #app {
+        background: #0b141a;
+      }
+    </style>
+    <script>
+      (function () {
+        try {
+          var theme = window.localStorage && window.localStorage.getItem("color-theme");
+          if (theme === "dark") {
+            document.documentElement.classList.add("dark");
+            document.documentElement.style.backgroundColor = "#0b141a";
+          } else if (theme === "light") {
+            document.documentElement.classList.remove("dark");
+            document.documentElement.style.backgroundColor = "#f8fafc";
+          }
+        } catch (error) {
+          document.documentElement.style.backgroundColor = "#f8fafc";
+        }
+      })();
+    </script>
     <link
       rel="preconnect"
       href="https://fonts.googleapis.com"

@@ -50,9 +50,9 @@ const RouteLoading = defineComponent({
   name: "RouteLoading",
   setup() {
     return () => h("div", {
-      class: "flex min-h-[320px] items-center justify-center p-6 text-slate-950 dark:text-white",
+      class: "flex min-h-full items-center justify-center bg-[#d9dbd5] p-6 text-[#111b21] dark:bg-[#0b141a] dark:text-[#e9edef]",
     }, [
-      h("div", { class: "w-full max-w-xs rounded-3xl border border-slate-200 bg-white p-7 text-center shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900" }, [
+      h("div", { class: "w-full max-w-xs rounded-3xl border border-[#e9edef] bg-white p-7 text-center shadow-xl shadow-slate-900/10 dark:border-[#222e35] dark:bg-[#202c33]" }, [
         h("div", { class: "relative mx-auto flex h-28 w-28 items-center justify-center" }, [
           h("div", { class: "absolute inset-0 animate-spin" }, Array.from({ length: dotCount }, (_, index) => createDot(index))),
           h("div", { class: "flex h-16 w-16 items-center justify-center rounded-full bg-sky-50 ring-1 ring-sky-100 dark:bg-sky-500/10 dark:ring-sky-400/20" }, [
@@ -60,7 +60,7 @@ const RouteLoading = defineComponent({
           ]),
         ]),
         h("p", { class: "mt-6 text-base font-semibold tracking-normal" }, "Memuat halaman"),
-        h("p", { class: "mt-1 text-xs font-medium text-slate-500 dark:text-slate-400" }, "Mohon tunggu sebentar"),
+        h("p", { class: "mt-1 text-xs font-medium text-[#667781] dark:text-[#8696a0]" }, "Mohon tunggu sebentar"),
       ]),
     ]);
   },
