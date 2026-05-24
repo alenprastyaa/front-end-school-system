@@ -170,14 +170,14 @@
         class="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm"
         @click.self="closeSchoolEditModal"
       >
-        <div class="w-full max-w-lg rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
+        <div class="w-full max-w-4xl rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
           <div class="border-b border-slate-100 px-6 py-5 dark:border-slate-800">
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-600 dark:text-sky-300">Admin Sekolah</p>
             <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Edit Data Sekolah</h2>
             <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Perbarui nama sekolah dan logo yang tampil untuk seluruh admin sekolah ini.</p>
           </div>
 
-          <form class="space-y-5 px-6 py-5" @submit.prevent="submitSchoolEdit">
+          <form class="max-h-[90vh] space-y-5 overflow-y-auto px-6 py-5" @submit.prevent="submitSchoolEdit">
             <div>
               <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Nama Sekolah</label>
               <input
@@ -212,6 +212,31 @@
                     Hapus logo sekolah saat disimpan
                   </label>
                 </div>
+              </div>
+            </div>
+
+            <div class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700">
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Lokasi Absensi</p>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                Admin sekolah juga bisa menentukan lokasi absensi dan radius sekolah.
+              </p>
+              <button
+                type="button"
+                class="mt-3 inline-flex h-10 items-center justify-center rounded-xl bg-sky-600 px-4 text-sm font-semibold text-white transition hover:bg-sky-500"
+                @click="schoolLocationPickerOpen = !schoolLocationPickerOpen"
+              >
+                {{ schoolLocationPickerOpen ? "Tutup Peta" : "Buka Peta Lokasi" }}
+              </button>
+              <div v-if="schoolLocationPickerOpen" class="mt-4">
+                <MapLocationPicker
+                  :title="'Pilih Lokasi Sekolah'"
+                  :latitude="schoolEditForm.attendance_latitude"
+                  :longitude="schoolEditForm.attendance_longitude"
+                  :radius-meters="schoolEditForm.attendance_radius_meters || 150"
+                  @update:latitude="(v) => (schoolEditForm.attendance_latitude = String(v ?? ''))"
+                  @update:longitude="(v) => (schoolEditForm.attendance_longitude = String(v ?? ''))"
+                  @update:radiusMeters="(v) => (schoolEditForm.attendance_radius_meters = String(v ?? ''))"
+                />
               </div>
             </div>
 
@@ -251,6 +276,7 @@ import { useProfileStore } from "@/store/profile";
 import { useSidebar } from "@/store/sidebar";
 import { useRealtimeStore } from "@/store/realtime";
 import { normalizePublicUrl } from "@/utils/url";
+import MapLocationPicker from "@/components/MapLocationPicker.vue";
 
 defineEmits(["sidebarToggle"]);
 
@@ -273,8 +299,12 @@ const schoolEditLogoInputRef = ref(null);
 const schoolEditLogoFile = ref(null);
 const schoolEditLogoPreview = ref("");
 const removeSchoolEditLogo = ref(false);
+const schoolLocationPickerOpen = ref(false);
 const schoolEditForm = reactive({
   name: "",
+  attendance_latitude: "",
+  attendance_longitude: "",
+  attendance_radius_meters: "",
 });
 let toastIdCounter = 0;
 
@@ -357,6 +387,9 @@ const openSchoolEditModal = () => {
   }
 
   schoolEditForm.name = storedProfile.value?.school_name || "";
+  schoolEditForm.attendance_latitude = storedProfile.value?.attendance_latitude == null ? "" : String(storedProfile.value.attendance_latitude);
+  schoolEditForm.attendance_longitude = storedProfile.value?.attendance_longitude == null ? "" : String(storedProfile.value.attendance_longitude);
+  schoolEditForm.attendance_radius_meters = storedProfile.value?.attendance_radius_meters == null ? "" : String(storedProfile.value.attendance_radius_meters);
   schoolEditLogoFile.value = null;
   schoolEditLogoPreview.value = normalizePublicUrl(storedProfile.value?.school_logo) || "";
   removeSchoolEditLogo.value = false;
@@ -364,6 +397,7 @@ const openSchoolEditModal = () => {
     schoolEditLogoInputRef.value.value = "";
   }
   isSchoolEditModalOpen.value = true;
+  schoolLocationPickerOpen.value = Boolean(schoolEditForm.attendance_latitude && schoolEditForm.attendance_longitude);
 };
 
 const closeSchoolEditModal = () => {
@@ -372,6 +406,7 @@ const closeSchoolEditModal = () => {
   }
 
   isSchoolEditModalOpen.value = false;
+  schoolLocationPickerOpen.value = false;
 };
 
 const handleSchoolEditLogoChange = (event) => {
@@ -393,6 +428,21 @@ const submitSchoolEdit = async () => {
   try {
     const formData = new FormData();
     formData.append("name", schoolEditForm.name || schoolNameLabel.value);
+    if (String(schoolEditForm.attendance_latitude || "").trim() !== "") {
+      formData.append("attendance_latitude", String(schoolEditForm.attendance_latitude).trim());
+    } else {
+      formData.append("clear_attendance_latitude", "true");
+    }
+    if (String(schoolEditForm.attendance_longitude || "").trim() !== "") {
+      formData.append("attendance_longitude", String(schoolEditForm.attendance_longitude).trim());
+    } else {
+      formData.append("clear_attendance_longitude", "true");
+    }
+    if (String(schoolEditForm.attendance_radius_meters || "").trim() !== "") {
+      formData.append("attendance_radius_meters", String(schoolEditForm.attendance_radius_meters).trim());
+    } else {
+      formData.append("clear_attendance_radius_meters", "true");
+    }
     if (schoolEditLogoFile.value) {
       formData.append("logo", schoolEditLogoFile.value);
     }
@@ -406,6 +456,9 @@ const submitSchoolEdit = async () => {
       school_id: updatedSchool.id || storedProfile.value?.school_id || null,
       school_name: updatedSchool.name || schoolEditForm.name || "School System",
       school_logo: updatedSchool.logo_url || null,
+      attendance_latitude: updatedSchool.attendance_latitude ?? storedProfile.value?.attendance_latitude ?? null,
+      attendance_longitude: updatedSchool.attendance_longitude ?? storedProfile.value?.attendance_longitude ?? null,
+      attendance_radius_meters: updatedSchool.attendance_radius_meters ?? storedProfile.value?.attendance_radius_meters ?? null,
     });
     isSchoolEditModalOpen.value = false;
     pushToast({

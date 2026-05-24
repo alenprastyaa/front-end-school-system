@@ -222,6 +222,12 @@ const isCheckingOut = ref(false);
 const isVerifyingFace = ref(false);
 const isCameraLoading = ref(false);
 const cameraActive = ref(false);
+const isMobileClient = ref(false);
+const geoCoords = ref({
+  latitude: null,
+  longitude: null,
+  accuracy: null,
+});
 const cameraVideoRef = ref(null);
 const captureCanvasRef = ref(null);
 const overlayCanvasRef = ref(null);
@@ -312,6 +318,40 @@ const resetFaceVerification = (status = "idle", message = "Aktifkan kamera untuk
   };
 };
 
+const ensureGeolocation = async () => {
+  if (!navigator.geolocation) {
+    throw new Error("Browser tidak mendukung GPS. Gunakan Chrome dan aktifkan lokasi.");
+  }
+
+  return await new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos?.coords?.latitude;
+        const lng = pos?.coords?.longitude;
+        const acc = pos?.coords?.accuracy;
+        if (typeof lat !== "number" || typeof lng !== "number") {
+          reject(new Error("Lokasi tidak valid. Aktifkan GPS lalu coba lagi."));
+          return;
+        }
+        geoCoords.value = {
+          latitude: lat,
+          longitude: lng,
+          accuracy: typeof acc === "number" ? acc : null,
+        };
+        resolve(geoCoords.value);
+      },
+      (err) => {
+        const msg =
+          err?.code === 1
+            ? "Izin lokasi ditolak. Aktifkan izin lokasi untuk absensi."
+            : "Gagal mendapatkan lokasi. Aktifkan GPS lalu coba lagi.";
+        reject(new Error(msg));
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+    );
+  });
+};
+
 let liveRafId = null;
 let liveScanLastAt = 0;
 let liveConsecutiveMatches = 0;
@@ -321,6 +361,9 @@ let mediapipeVision = null;
 let mediapipeFaceLandmarker = null;
 let mediapipeDrawingUtils = null;
 let liveWarmupUntilMs = 0;
+let mediapipeLastAtMs = 0;
+
+const MEDIAPIPE_FRAME_INTERVAL_MS = 200;
 
 const stopLiveRecognition = () => {
   if (liveRafId) {
@@ -331,6 +374,7 @@ const stopLiveRecognition = () => {
   liveConsecutiveMatches = 0;
   liveScanInFlight = false;
   liveWarmupUntilMs = 0;
+  mediapipeLastAtMs = 0;
 };
 
 const clearOverlay = () => {
@@ -355,6 +399,7 @@ const stopCamera = () => {
   resetSelectedPreview();
   resetFaceVerification();
   clearOverlay();
+  geoCoords.value = { latitude: null, longitude: null, accuracy: null };
 };
 
 const startCamera = async () => {
@@ -364,11 +409,14 @@ const startCamera = async () => {
 
   isCameraLoading.value = true;
   try {
+    await ensureGeolocation();
+    const isMobile = window.matchMedia?.("(pointer:coarse)")?.matches || window.innerWidth < 640;
+    isMobileClient.value = Boolean(isMobile);
     const stream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: "user",
-        width: { ideal: 960 },
-        height: { ideal: 960 },
+        width: { ideal: isMobile ? 640 : 960 },
+        height: { ideal: isMobile ? 640 : 960 },
       },
       audio: false,
     });
@@ -381,7 +429,7 @@ const startCamera = async () => {
     startLiveRecognition();
   } catch (error) {
     stopCamera();
-    resetFaceVerification("error", "Kamera tidak bisa diakses. Izinkan webcam lalu coba lagi.");
+    resetFaceVerification("error", error?.message || "Kamera/lokasi tidak bisa diakses. Izinkan kamera & lokasi lalu coba lagi.");
   } finally {
     isCameraLoading.value = false;
   }
@@ -438,7 +486,8 @@ const ensureMediapipeFaceLandmarker = async () => {
   mediapipeFaceLandmarker = await vision.FaceLandmarker.createFromOptions(fileset, {
     baseOptions: {
       modelAssetPath: MEDIAPIPE_FACE_LANDMARKER_MODEL_URL,
-      delegate: "GPU",
+      // GPU can be flaky/slow on some mobile browsers; CPU is more consistent.
+      delegate: "CPU",
     },
     runningMode: "VIDEO",
     numFaces: 1,
@@ -458,8 +507,13 @@ const ensureOverlaySize = (video) => {
   const ctx = overlay.getContext("2d");
   if (!ctx) return false;
 
-  const width = video.videoWidth || 0;
-  const height = video.videoHeight || 0;
+  // IMPORTANT:
+  // - Mobile browsers often render <video> with object-cover, so the displayed
+  //   pixels differ from video.videoWidth/video.videoHeight.
+  // - MediaPipe landmarks are normalized; DrawingUtils maps to canvas size.
+  // Therefore: size canvas to the displayed box (CSS pixels), not intrinsic video size.
+  const width = Math.round(overlay.clientWidth || 0);
+  const height = Math.round(overlay.clientHeight || 0);
   if (!width || !height) return false;
 
   if (overlay.width !== width) overlay.width = width;
@@ -506,27 +560,39 @@ const drawFaceMeshOverlay = (video, faceLandmarkerResult, timestampMs = 0) => {
   // Soft neon gradient underlay (full face).
   ctx.save();
   const grad = ctx.createLinearGradient(bbox.x, bbox.y, bbox.x + bbox.w, bbox.y + bbox.h);
-  grad.addColorStop(0, "rgba(34,211,238,0.06)");
-  grad.addColorStop(1, "rgba(244,114,182,0.04)");
+  grad.addColorStop(0, "rgba(56,189,248,0.025)");
+  grad.addColorStop(1, "rgba(99,102,241,0.02)");
   ctx.fillStyle = grad;
   ctx.fillRect(bbox.x, bbox.y, bbox.w, bbox.h);
   ctx.restore();
 
-  // Mesh + contours.
-  mediapipeDrawingUtils.drawConnectors(
-    faceLandmarks,
-    mediapipeVision.FaceLandmarker.FACE_LANDMARKS_TESSELATION,
-    { color: "rgba(255,255,255,0.55)", lineWidth: 1 }
-  );
+  // Mesh (desktop only) + contours (all devices).
+  if (!isMobileClient.value) {
+    mediapipeDrawingUtils.drawConnectors(
+      faceLandmarks,
+      mediapipeVision.FaceLandmarker.FACE_LANDMARKS_TESSELATION,
+      { color: "rgba(255,255,255,0.16)", lineWidth: 0.8 }
+    );
+  }
   mediapipeDrawingUtils.drawConnectors(
     faceLandmarks,
     mediapipeVision.FaceLandmarker.FACE_LANDMARKS_FACE_OVAL,
-    { color: "rgba(34,211,238,0.95)", lineWidth: 2 }
+    { color: "rgba(56,189,248,0.48)", lineWidth: 1.2 }
   );
   mediapipeDrawingUtils.drawConnectors(
     faceLandmarks,
     mediapipeVision.FaceLandmarker.FACE_LANDMARKS_LIPS,
-    { color: "rgba(244,114,182,0.9)", lineWidth: 2 }
+    { color: "rgba(129,140,248,0.38)", lineWidth: 1.1 }
+  );
+  mediapipeDrawingUtils.drawConnectors(
+    faceLandmarks,
+    mediapipeVision.FaceLandmarker.FACE_LANDMARKS_LEFT_EYE,
+    { color: "rgba(226,232,240,0.42)", lineWidth: 1 }
+  );
+  mediapipeDrawingUtils.drawConnectors(
+    faceLandmarks,
+    mediapipeVision.FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE,
+    { color: "rgba(226,232,240,0.42)", lineWidth: 1 }
   );
 
   // Animated scan line inside bbox.
@@ -534,24 +600,26 @@ const drawFaceMeshOverlay = (video, faceLandmarkerResult, timestampMs = 0) => {
   const phase = (t * 0.85) % 1; // 0..1
   const lineY = bbox.y + phase * bbox.h;
   ctx.save();
-  ctx.globalAlpha = 0.9;
-  ctx.strokeStyle = "rgba(34,211,238,0.9)";
-  ctx.lineWidth = 2;
-  ctx.shadowColor = "rgba(34,211,238,0.75)";
-  ctx.shadowBlur = 16;
+  ctx.globalAlpha = 0.36;
+  ctx.strokeStyle = "rgba(94,234,212,0.8)";
+  ctx.lineWidth = 1.5;
+  ctx.shadowColor = "rgba(94,234,212,0.28)";
+  ctx.shadowBlur = 10;
   ctx.beginPath();
   ctx.moveTo(bbox.x, lineY);
   ctx.lineTo(bbox.x + bbox.w, lineY);
   ctx.stroke();
   ctx.restore();
 
-  // Pulsing landmark points.
-  const pulse = 0.55 + 0.45 * Math.sin(t * 4.2);
-  mediapipeDrawingUtils.drawLandmarks(faceLandmarks, {
-    color: `rgba(244,114,182,${0.35 + 0.35 * pulse})`,
-    lineWidth: 1,
-    radius: 1,
-  });
+  // Pulsing landmark points (desktop only; mobile skips for performance).
+  if (!isMobileClient.value) {
+    const pulse = 0.55 + 0.45 * Math.sin(t * 4.2);
+    mediapipeDrawingUtils.drawLandmarks(faceLandmarks, {
+      color: `rgba(125,211,252,${0.14 + 0.18 * pulse})`,
+      lineWidth: 1,
+      radius: 0.85,
+    });
+  }
 };
 
 const captureEvidenceFromVideo = async () => {
@@ -595,6 +663,13 @@ const submitCheckIn = async () => {
     formData.append("image", selectedFile.value);
     formData.append("face_verification_status", faceVerification.value.status || "");
     formData.append("face_verification_distance", String(faceVerification.value.distance ?? ""));
+    if (typeof geoCoords.value.latitude === "number" && typeof geoCoords.value.longitude === "number") {
+      formData.append("latitude", String(geoCoords.value.latitude));
+      formData.append("longitude", String(geoCoords.value.longitude));
+    }
+    if (typeof geoCoords.value.accuracy === "number") {
+      formData.append("accuracy_meters", String(geoCoords.value.accuracy));
+    }
     const response = await api.post("/attendance", formData);
     pushToast({
       title: "Check-in Berhasil",
@@ -661,8 +736,12 @@ const startLiveRecognition = async () => {
 
       // Draw landmarks using MediaPipe (proper tesselation mesh).
       if (mediapipeFaceLandmarker) {
-        const mpResult = mediapipeFaceLandmarker.detectForVideo(video, timestamp);
-        drawFaceMeshOverlay(video, mpResult, timestamp);
+        const nowMs = typeof timestamp === "number" ? timestamp : performance.now();
+        if (nowMs - mediapipeLastAtMs >= MEDIAPIPE_FRAME_INTERVAL_MS) {
+          mediapipeLastAtMs = nowMs;
+          const mpResult = mediapipeFaceLandmarker.detectForVideo(video, nowMs);
+          drawFaceMeshOverlay(video, mpResult, nowMs);
+        }
       }
 
       // Warmup window: show scanning for 5 seconds before matching.

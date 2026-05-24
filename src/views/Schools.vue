@@ -68,6 +68,70 @@
                 class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
               />
             </div>
+
+            <div class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700">
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Lokasi Absensi (Geofence)</p>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                Jika lokasi belum diisi, absensi akan ditolak (ketat). Isi koordinat sekolah dan radius (meter).
+              </p>
+              <button
+                type="button"
+                @click="showLocationPicker = true"
+                class="mt-3 inline-flex h-10 w-full items-center justify-center rounded-xl bg-sky-600 text-sm font-semibold text-white transition hover:bg-sky-500"
+              >
+                Buka Peta & Cari Lokasi
+              </button>
+              <div class="mt-4 grid gap-3 sm:grid-cols-3">
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Latitude</label>
+                  <input
+                    v-model="form.attendance_latitude"
+                    type="number"
+                    step="0.000001"
+                    placeholder="-6.200000"
+                    class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700"
+                  />
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Longitude</label>
+                  <input
+                    v-model="form.attendance_longitude"
+                    type="number"
+                    step="0.000001"
+                    placeholder="106.816666"
+                    class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700"
+                  />
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Radius (meter)</label>
+                  <input
+                    v-model="form.attendance_radius_meters"
+                    type="number"
+                    min="1"
+                    step="1"
+                    placeholder="150"
+                    class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div
+              v-if="showLocationPicker"
+              class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center"
+            >
+              <div class="w-full max-w-3xl">
+                <MapLocationPicker
+                  :latitude="form.attendance_latitude"
+                  :longitude="form.attendance_longitude"
+                  :radius-meters="form.attendance_radius_meters || 150"
+                  @update:latitude="(v) => (form.attendance_latitude = String(v ?? ''))"
+                  @update:longitude="(v) => (form.attendance_longitude = String(v ?? ''))"
+                  @update:radiusMeters="(v) => (form.attendance_radius_meters = String(v ?? ''))"
+                  @close="showLocationPicker = false"
+                />
+              </div>
+            </div>
             <div>
               <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Avatar Sekolah</label>
               <div class="flex items-center gap-4">
@@ -428,6 +492,7 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { normalizePublicUrl } from "@/utils/url";
+import MapLocationPicker from "@/components/MapLocationPicker.vue";
 
 const schools = ref([]);
 const adminUsers = ref([]);
@@ -446,6 +511,9 @@ const form = reactive({
   name: "",
   inventory_module_enabled: true,
   attendance_module_enabled: true,
+  attendance_latitude: "",
+  attendance_longitude: "",
+  attendance_radius_meters: "",
   official_exam_module_enabled: true,
   koperasi_module_enabled: true,
   private_chat_module_enabled: true,
@@ -455,6 +523,7 @@ const schoolLogoFile = ref(null);
 const schoolLogoPreview = ref("");
 const schoolLogoInput = ref(null);
 const removeSchoolLogo = ref(false);
+const showLocationPicker = ref(false);
 
 const adminForm = reactive({
   school_id: "",
@@ -489,6 +558,9 @@ const resetForm = () => {
   form.name = "";
   form.inventory_module_enabled = true;
   form.attendance_module_enabled = true;
+  form.attendance_latitude = "";
+  form.attendance_longitude = "";
+  form.attendance_radius_meters = "";
   form.official_exam_module_enabled = true;
   form.koperasi_module_enabled = true;
   form.private_chat_module_enabled = true;
@@ -550,6 +622,21 @@ const submitSchool = async () => {
     payload.append("name", form.name);
     payload.append("inventory_module_enabled", String(Boolean(form.inventory_module_enabled)));
     payload.append("attendance_module_enabled", String(Boolean(form.attendance_module_enabled)));
+    if (String(form.attendance_latitude || "").trim() !== "") {
+      payload.append("attendance_latitude", String(form.attendance_latitude).trim());
+    } else if (editingId.value) {
+      payload.append("clear_attendance_latitude", "true");
+    }
+    if (String(form.attendance_longitude || "").trim() !== "") {
+      payload.append("attendance_longitude", String(form.attendance_longitude).trim());
+    } else if (editingId.value) {
+      payload.append("clear_attendance_longitude", "true");
+    }
+    if (String(form.attendance_radius_meters || "").trim() !== "") {
+      payload.append("attendance_radius_meters", String(form.attendance_radius_meters).trim());
+    } else if (editingId.value) {
+      payload.append("clear_attendance_radius_meters", "true");
+    }
     payload.append("koperasi_module_enabled", String(Boolean(form.koperasi_module_enabled)));
     payload.append("private_chat_module_enabled", String(Boolean(form.private_chat_module_enabled)));
     payload.append("official_exam_module_enabled", String(Boolean(form.official_exam_module_enabled)));
@@ -580,6 +667,9 @@ const editSchool = (item) => {
   form.name = item.name || "";
   form.inventory_module_enabled = item.inventory_module_enabled !== false;
   form.attendance_module_enabled = item.attendance_module_enabled !== false;
+  form.attendance_latitude = item.attendance_latitude == null ? "" : String(item.attendance_latitude);
+  form.attendance_longitude = item.attendance_longitude == null ? "" : String(item.attendance_longitude);
+  form.attendance_radius_meters = item.attendance_radius_meters == null ? "" : String(item.attendance_radius_meters);
   form.koperasi_module_enabled = item.koperasi_module_enabled !== false;
   form.private_chat_module_enabled = item.private_chat_module_enabled !== false;
   form.official_exam_module_enabled = item.official_exam_module_enabled !== false;
