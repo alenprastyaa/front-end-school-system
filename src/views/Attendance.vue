@@ -679,12 +679,13 @@ const submitCheckIn = async () => {
     stopCamera();
     await loadAttendance();
   } catch (error) {
+    stopCamera();
+    liveConsecutiveMatches = 0;
     pushToast({
       title: "Check-in Gagal",
       message: error.message,
       type: "error",
     });
-    liveConsecutiveMatches = 0;
   } finally {
     isCheckingIn.value = false;
   }
