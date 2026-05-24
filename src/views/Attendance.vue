@@ -37,9 +37,9 @@
         <div v-if="!hasCheckedInToday" class="px-4 pt-4">
           <div class="relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-950">
             <video ref="cameraVideoRef" class="absolute inset-0 h-full w-full object-cover"
-              :class="cameraActive && !selectedFile ? 'block' : 'hidden'" autoplay playsinline muted></video>
-            <img v-if="selectedFile && selectedPreviewUrl" :src="selectedPreviewUrl" alt="Preview selfie"
-              class="absolute inset-0 h-full w-full object-cover" />
+              :class="cameraActive ? 'block' : 'hidden'" autoplay playsinline muted></video>
+            <canvas v-show="cameraActive" ref="overlayCanvasRef"
+              class="pointer-events-none absolute inset-0 h-full w-full"></canvas>
 
             <div v-if="!cameraActive && !selectedFile" class="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
               <div class="flex h-16 w-16 items-center justify-center rounded-full bg-white/10 text-white">
@@ -52,9 +52,9 @@
             </div>
 
             <div class="pointer-events-none absolute inset-5 rounded-2xl border-2 border-white/25"></div>
-            <div v-if="isVerifyingFace" class="pointer-events-none absolute inset-x-7 top-1/2 h-0.5 animate-pulse bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.9)]"></div>
+            <div v-if="cameraActive" class="scan-line pointer-events-none absolute inset-x-7"></div>
             <span class="absolute bottom-3 left-3 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-semibold text-white">
-              {{ cameraActive ? "Kamera aktif" : selectedFile ? "Selfie siap" : "Standby" }}
+              {{ cameraActive ? "Kamera aktif" : "Standby" }}
             </span>
           </div>
         </div>
@@ -76,7 +76,7 @@
 
           <!-- Capture + submit flow -->
           <template v-else-if="!hasCheckedInToday">
-            <div v-if="!selectedFile" class="grid gap-2.5" :class="cameraActive ? 'grid-cols-2' : 'grid-cols-1'">
+            <div class="grid gap-2.5" :class="cameraActive ? 'grid-cols-2' : 'grid-cols-1'">
               <button v-if="!cameraActive" type="button" @click="startCamera"
                 :disabled="isVerifyingFace || isCheckingIn || isCameraLoading || cameraActive || !hasProfileReference || hasCheckedInToday"
                 class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-indigo-600 text-sm font-bold text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50">
@@ -88,25 +88,15 @@
               </button>
 
               <template v-else>
-                <button type="button" @click="captureCheckInPhoto"
-                  :disabled="isVerifyingFace || isCheckingIn || !cameraActive || isCameraLoading || !hasProfileReference || hasCheckedInToday"
-                  class="inline-flex h-12 items-center justify-center rounded-2xl bg-indigo-600 text-sm font-bold text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50">
-                  Ambil Selfie
-                </button>
                 <button type="button" @click="stopCamera" :disabled="isVerifyingFace || isCheckingIn"
-                  class="inline-flex h-12 items-center justify-center rounded-2xl border border-slate-200 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5">
+                  class="col-span-2 inline-flex h-12 items-center justify-center rounded-2xl border border-slate-200 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5">
                   Tutup
                 </button>
               </template>
             </div>
 
-            <button v-else type="button" @click="retakeCheckInPhoto" :disabled="isVerifyingFace || isCheckingIn"
-              class="inline-flex h-12 w-full items-center justify-center rounded-2xl border border-slate-200 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5">
-              Ambil Ulang
-            </button>
-
             <!-- Verification feedback -->
-            <div v-if="selectedFile || isVerifyingFace || faceVerification.status === 'error'"
+            <div v-if="cameraActive || isVerifyingFace || faceVerification.status === 'error'"
               class="flex items-center justify-between gap-3 rounded-2xl border px-3.5 py-3 text-xs" :class="faceVerificationAlertClass">
               <div class="min-w-0">
                 <p class="font-bold">{{ faceVerificationTitle }}</p>
@@ -114,14 +104,6 @@
               </div>
               <p v-if="verificationScorePercent" class="shrink-0 text-xl font-black">{{ verificationScorePercent }}%</p>
             </div>
-
-            <button type="button" @click="submitCheckIn" :disabled="isCheckingIn || !selectedFile || !canSubmitCheckIn"
-              class="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
-              <svg v-if="isCheckingIn || isVerifyingFace" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-              </svg>
-              {{ primaryActionLabel }}
-            </button>
           </template>
 
           <!-- Checked in -->
@@ -210,11 +192,20 @@ const currentTime = ref("");
 const currentDate = ref("");
 let timer;
 let faceApiLoadPromise = null;
+let mediapipeLoadPromise = null;
 let cameraStream = null;
 
 const FACE_API_SCRIPT_URL = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
 const FACE_API_MODEL_URL = "https://justadudewhohacks.github.io/face-api.js/models";
 const FACE_MATCH_THRESHOLD = 0.5;
+const LIVE_SCAN_INTERVAL_MS = 260;
+const LIVE_MATCH_REQUIRED = 3;
+
+const MEDIAPIPE_TASKS_VISION_VERSION = "0.10.18";
+const MEDIAPIPE_VISION_BUNDLE_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_TASKS_VISION_VERSION}/vision_bundle.mjs`;
+const MEDIAPIPE_WASM_BASE_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_TASKS_VISION_VERSION}/wasm`;
+const MEDIAPIPE_FACE_LANDMARKER_MODEL_URL =
+  "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
 
 const updateClock = () => {
   const now = new Date();
@@ -233,10 +224,11 @@ const isCameraLoading = ref(false);
 const cameraActive = ref(false);
 const cameraVideoRef = ref(null);
 const captureCanvasRef = ref(null);
+const overlayCanvasRef = ref(null);
 const faceVerification = ref({
   status: "idle",
   distance: null,
-  message: "Aktifkan kamera lalu ambil selfie untuk mulai verifikasi wajah.",
+  message: "Aktifkan kamera untuk mulai verifikasi wajah.",
 });
 const tableSort = createSortState("attendance_date", "desc");
 const profileStore = useProfileStore();
@@ -285,11 +277,6 @@ const verificationScorePercent = computed(() => {
   }
   return Math.max(0, Math.min(99, Math.round((1 - faceVerification.value.distance) * 100)));
 });
-const primaryActionLabel = computed(() => {
-  if (isCheckingIn.value) return "Mengirim Check-in...";
-  if (isVerifyingFace.value) return "Memverifikasi Wajah...";
-  return "Konfirmasi Check-in";
-});
 const faceVerificationTitle = computed(() => {
   if (!hasProfileReference.value) return "Enrol wajah diperlukan";
   if (faceVerification.value.status === "matched") return "Wajah terverifikasi";
@@ -317,7 +304,7 @@ const resetSelectedPreview = () => {
   }
 };
 
-const resetFaceVerification = (status = "idle", message = "Aktifkan kamera lalu ambil selfie untuk mulai verifikasi wajah.") => {
+const resetFaceVerification = (status = "idle", message = "Aktifkan kamera untuk mulai verifikasi wajah.") => {
   faceVerification.value = {
     status,
     distance: null,
@@ -325,7 +312,37 @@ const resetFaceVerification = (status = "idle", message = "Aktifkan kamera lalu 
   };
 };
 
+let liveRafId = null;
+let liveScanLastAt = 0;
+let liveConsecutiveMatches = 0;
+let liveScanInFlight = false;
+let liveFaceApiInstance = null;
+let mediapipeVision = null;
+let mediapipeFaceLandmarker = null;
+let mediapipeDrawingUtils = null;
+let liveWarmupUntilMs = 0;
+
+const stopLiveRecognition = () => {
+  if (liveRafId) {
+    cancelAnimationFrame(liveRafId);
+    liveRafId = null;
+  }
+  liveScanLastAt = 0;
+  liveConsecutiveMatches = 0;
+  liveScanInFlight = false;
+  liveWarmupUntilMs = 0;
+};
+
+const clearOverlay = () => {
+  const overlay = overlayCanvasRef.value;
+  if (!overlay) return;
+  const ctx = overlay.getContext("2d");
+  if (!ctx) return;
+  ctx.clearRect(0, 0, overlay.width || 0, overlay.height || 0);
+};
+
 const stopCamera = () => {
+  stopLiveRecognition();
   if (cameraStream) {
     cameraStream.getTracks().forEach((track) => track.stop());
     cameraStream = null;
@@ -334,6 +351,10 @@ const stopCamera = () => {
   if (cameraVideoRef.value) {
     cameraVideoRef.value.srcObject = null;
   }
+  selectedFile.value = null;
+  resetSelectedPreview();
+  resetFaceVerification();
+  clearOverlay();
 };
 
 const startCamera = async () => {
@@ -357,6 +378,7 @@ const startCamera = async () => {
       await cameraVideoRef.value.play();
     }
     cameraActive.value = true;
+    startLiveRecognition();
   } catch (error) {
     stopCamera();
     resetFaceVerification("error", "Kamera tidak bisa diakses. Izinkan webcam lalu coba lagi.");
@@ -390,84 +412,158 @@ const loadFaceApi = async () => {
   return faceapi;
 };
 
-const loadImageForFaceApi = (src) =>
-  new Promise((resolve, reject) => {
-    const image = new Image();
-    image.crossOrigin = "anonymous";
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("Gagal memuat gambar untuk verifikasi wajah."));
-    image.src = src;
+const loadMediapipeVision = async () => {
+  if (mediapipeVision) return mediapipeVision;
+
+  if (!mediapipeLoadPromise) {
+    mediapipeLoadPromise = import(/* webpackIgnore: true */ MEDIAPIPE_VISION_BUNDLE_URL).then((mod) => {
+      // Some bundles export as default, some as named export.
+      return mod?.default || mod;
+    });
+  }
+
+  mediapipeVision = await mediapipeLoadPromise;
+  return mediapipeVision;
+};
+
+const ensureMediapipeFaceLandmarker = async () => {
+  if (mediapipeFaceLandmarker && mediapipeDrawingUtils) return;
+
+  const vision = await loadMediapipeVision();
+  if (!vision?.FilesetResolver || !vision?.FaceLandmarker) {
+    throw new Error("Gagal memuat MediaPipe Face Landmarker.");
+  }
+
+  const fileset = await vision.FilesetResolver.forVisionTasks(MEDIAPIPE_WASM_BASE_URL);
+  mediapipeFaceLandmarker = await vision.FaceLandmarker.createFromOptions(fileset, {
+    baseOptions: {
+      modelAssetPath: MEDIAPIPE_FACE_LANDMARKER_MODEL_URL,
+      delegate: "GPU",
+    },
+    runningMode: "VIDEO",
+    numFaces: 1,
+    outputFaceBlendshapes: false,
+    outputFacialTransformationMatrixes: false,
   });
 
-const detectFaceDescriptor = async (faceapi, source) => {
-  const result = await faceapi
-    .detectSingleFace(source, new faceapi.TinyFaceDetectorOptions())
-    .withFaceLandmarks()
-    .withFaceDescriptor();
-
-  if (!result?.descriptor) {
-    throw new Error("Wajah tidak terdeteksi dengan jelas. Gunakan foto yang terang dan menghadap kamera.");
+  const overlay = overlayCanvasRef.value;
+  if (overlay) {
+    mediapipeDrawingUtils = new vision.DrawingUtils(overlay.getContext("2d"));
   }
-
-  return result.descriptor;
 };
 
-const verifySelectedFace = async () => {
-  if (!selectedFile.value || !selectedPreviewUrl.value) {
-    resetFaceVerification();
-    return;
+const ensureOverlaySize = (video) => {
+  const overlay = overlayCanvasRef.value;
+  if (!overlay) return false;
+  const ctx = overlay.getContext("2d");
+  if (!ctx) return false;
+
+  const width = video.videoWidth || 0;
+  const height = video.videoHeight || 0;
+  if (!width || !height) return false;
+
+  if (overlay.width !== width) overlay.width = width;
+  if (overlay.height !== height) overlay.height = height;
+  return true;
+};
+
+const drawFaceMeshOverlay = (video, faceLandmarkerResult, timestampMs = 0) => {
+  const overlay = overlayCanvasRef.value;
+  if (!overlay) return;
+  const ctx = overlay.getContext("2d");
+  if (!ctx) return;
+  if (!ensureOverlaySize(video)) return;
+
+  ctx.clearRect(0, 0, overlay.width, overlay.height);
+  const faceLandmarks = faceLandmarkerResult?.faceLandmarks?.[0];
+  if (!faceLandmarks || !mediapipeVision) return;
+
+  if (!mediapipeDrawingUtils) {
+    mediapipeDrawingUtils = new mediapipeVision.DrawingUtils(ctx);
   }
 
-  if (!hasProfileReference.value) {
-    resetFaceVerification("error", "Foto referensi wajah belum tersedia.");
-    return;
+  // Compute face bbox in pixel space (for scan line bounds).
+  const w = overlay.width;
+  const h = overlay.height;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (let i = 0; i < faceLandmarks.length; i += 1) {
+    const p = faceLandmarks[i];
+    const x = p.x * w;
+    const y = p.y * h;
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
   }
-
-  isVerifyingFace.value = true;
-  faceVerification.value = {
-    status: "loading",
-    distance: null,
-    message: "Sistem sedang mencocokkan wajah dengan foto referensi Anda.",
+  if (!Number.isFinite(minX) || !Number.isFinite(minY)) return;
+  const bbox = {
+    x: Math.max(0, minX - 18),
+    y: Math.max(0, minY - 18),
+    w: Math.min(w - Math.max(0, minX - 18), (maxX - minX) + 36),
+    h: Math.min(h - Math.max(0, minY - 18), (maxY - minY) + 36),
   };
 
-  try {
-    const faceapi = await loadFaceApi();
-    const selfieImage = await loadImageForFaceApi(selectedPreviewUrl.value);
-    const referenceDescriptor = Float32Array.from(JSON.parse(storedReferenceDescriptor.value));
-    const selfieDescriptor = await detectFaceDescriptor(faceapi, selfieImage);
+  // Soft neon gradient underlay (full face).
+  ctx.save();
+  const grad = ctx.createLinearGradient(bbox.x, bbox.y, bbox.x + bbox.w, bbox.y + bbox.h);
+  grad.addColorStop(0, "rgba(34,211,238,0.06)");
+  grad.addColorStop(1, "rgba(244,114,182,0.04)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(bbox.x, bbox.y, bbox.w, bbox.h);
+  ctx.restore();
 
-    const distance = faceapi.euclideanDistance(referenceDescriptor, selfieDescriptor);
-    const matched = distance <= FACE_MATCH_THRESHOLD;
+  // Mesh + contours.
+  mediapipeDrawingUtils.drawConnectors(
+    faceLandmarks,
+    mediapipeVision.FaceLandmarker.FACE_LANDMARKS_TESSELATION,
+    { color: "rgba(255,255,255,0.55)", lineWidth: 1 }
+  );
+  mediapipeDrawingUtils.drawConnectors(
+    faceLandmarks,
+    mediapipeVision.FaceLandmarker.FACE_LANDMARKS_FACE_OVAL,
+    { color: "rgba(34,211,238,0.95)", lineWidth: 2 }
+  );
+  mediapipeDrawingUtils.drawConnectors(
+    faceLandmarks,
+    mediapipeVision.FaceLandmarker.FACE_LANDMARKS_LIPS,
+    { color: "rgba(244,114,182,0.9)", lineWidth: 2 }
+  );
 
-    faceVerification.value = {
-      status: matched ? "matched" : "mismatch",
-      distance,
-      message: matched
-        ? `Wajah cocok dengan foto referensi. Skor kecocokan ${(1 - distance).toFixed(2)}.`
-        : `Wajah tidak cocok dengan foto referensi. Skor jarak ${distance.toFixed(2)} melewati batas aman.`,
-    };
-  } catch (error) {
-    faceVerification.value = {
-      status: "error",
-      distance: null,
-      message: error.message || "Verifikasi wajah gagal diproses.",
-    };
-  } finally {
-    isVerifyingFace.value = false;
-  }
+  // Animated scan line inside bbox.
+  const t = (timestampMs || performance.now()) / 1000;
+  const phase = (t * 0.85) % 1; // 0..1
+  const lineY = bbox.y + phase * bbox.h;
+  ctx.save();
+  ctx.globalAlpha = 0.9;
+  ctx.strokeStyle = "rgba(34,211,238,0.9)";
+  ctx.lineWidth = 2;
+  ctx.shadowColor = "rgba(34,211,238,0.75)";
+  ctx.shadowBlur = 16;
+  ctx.beginPath();
+  ctx.moveTo(bbox.x, lineY);
+  ctx.lineTo(bbox.x + bbox.w, lineY);
+  ctx.stroke();
+  ctx.restore();
+
+  // Pulsing landmark points.
+  const pulse = 0.55 + 0.45 * Math.sin(t * 4.2);
+  mediapipeDrawingUtils.drawLandmarks(faceLandmarks, {
+    color: `rgba(244,114,182,${0.35 + 0.35 * pulse})`,
+    lineWidth: 1,
+    radius: 1,
+  });
 };
 
-const captureCheckInPhoto = async () => {
+const captureEvidenceFromVideo = async () => {
   const video = cameraVideoRef.value;
   const canvas = captureCanvasRef.value;
 
   if (!video || !canvas || !cameraActive.value) {
-    return;
+    return null;
   }
 
   resetSelectedPreview();
   selectedFile.value = null;
-  resetFaceVerification("idle", "Selfie sedang disiapkan untuk verifikasi wajah.");
 
   canvas.width = video.videoWidth || 720;
   canvas.height = video.videoHeight || 720;
@@ -479,41 +575,18 @@ const captureCheckInPhoto = async () => {
   });
 
   if (!blob) {
-    resetFaceVerification("error", "Foto dari kamera tidak berhasil diproses.");
-    return;
+    return null;
   }
 
   selectedFile.value = new File([blob], `attendance-${Date.now()}.jpg`, {
     type: "image/jpeg",
   });
   selectedPreviewUrl.value = URL.createObjectURL(selectedFile.value);
-  await verifySelectedFace();
-};
-
-const retakeCheckInPhoto = async () => {
-  selectedFile.value = null;
-  resetSelectedPreview();
-  resetFaceVerification();
-  if (!cameraActive.value) {
-    await startCamera();
-  }
-};
-
-const loadAttendance = async () => {
-  try {
-    const response = await api.get("/attendance");
-    attendances.value = response?.data?.data || [];
-  } catch (error) {
-    pushToast({
-      title: "Gagal Memuat Absensi",
-      message: error.message,
-      type: "error",
-    });
-  }
+  return selectedFile.value;
 };
 
 const submitCheckIn = async () => {
-  if (!selectedFile.value || !canSubmitCheckIn.value) return;
+  if (isCheckingIn.value || !selectedFile.value || !canSubmitCheckIn.value) return;
 
   isCheckingIn.value = true;
 
@@ -528,9 +601,6 @@ const submitCheckIn = async () => {
       message: response?.message || "Check-in berhasil. Selamat beraktivitas!",
       type: "success",
     });
-    selectedFile.value = null;
-    resetSelectedPreview();
-    resetFaceVerification();
     stopCamera();
     await loadAttendance();
   } catch (error) {
@@ -539,8 +609,148 @@ const submitCheckIn = async () => {
       message: error.message,
       type: "error",
     });
+    liveConsecutiveMatches = 0;
   } finally {
     isCheckingIn.value = false;
+  }
+};
+
+const startLiveRecognition = async () => {
+  if (!cameraActive.value || !cameraVideoRef.value || !hasProfileReference.value) {
+    return;
+  }
+
+  stopLiveRecognition();
+  liveFaceApiInstance = liveFaceApiInstance || (await loadFaceApi());
+  try {
+    await ensureMediapipeFaceLandmarker();
+  } catch (error) {
+    // Non-fatal: face match can still work without landmark overlay.
+    console.warn(error);
+  }
+
+  let referenceDescriptor;
+  try {
+    referenceDescriptor = Float32Array.from(JSON.parse(storedReferenceDescriptor.value));
+  } catch {
+    resetFaceVerification("error", "Data referensi wajah tidak valid. Silakan enrol ulang wajah.");
+    return;
+  }
+
+  resetFaceVerification("loading", "Arahkan wajah ke kamera. Sistem akan mencocokkan secara otomatis.");
+  liveWarmupUntilMs = performance.now() + 5000;
+
+  const loop = async (timestamp) => {
+    if (!cameraActive.value || hasCheckedInToday.value || !cameraVideoRef.value) {
+      return;
+    }
+
+    liveRafId = requestAnimationFrame(loop);
+    if (isCheckingIn.value) return;
+
+    if (liveScanInFlight) return;
+    if (timestamp - liveScanLastAt < LIVE_SCAN_INTERVAL_MS) return;
+
+    liveScanLastAt = timestamp;
+    liveScanInFlight = true;
+    isVerifyingFace.value = true;
+
+    try {
+      const faceapi = liveFaceApiInstance;
+      const video = cameraVideoRef.value;
+
+      // Draw landmarks using MediaPipe (proper tesselation mesh).
+      if (mediapipeFaceLandmarker) {
+        const mpResult = mediapipeFaceLandmarker.detectForVideo(video, timestamp);
+        drawFaceMeshOverlay(video, mpResult, timestamp);
+      }
+
+      // Warmup window: show scanning for 5 seconds before matching.
+      const nowMs = typeof timestamp === "number" ? timestamp : performance.now();
+      if (liveWarmupUntilMs && nowMs < liveWarmupUntilMs) {
+        liveConsecutiveMatches = 0;
+        const remaining = Math.max(0, Math.ceil((liveWarmupUntilMs - nowMs) / 1000));
+        faceVerification.value = {
+          status: "loading",
+          distance: null,
+          message: `Menyiapkan deteksi... ${remaining}s`,
+        };
+        return;
+      }
+
+      const detection = await faceapi
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }))
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+      if (!detection?.descriptor) {
+        // Keep overlay (if any) but reset status.
+        liveConsecutiveMatches = 0;
+        faceVerification.value = {
+          status: "idle",
+          distance: null,
+          message: "Wajah belum terdeteksi. Pastikan wajah terlihat jelas dan cahaya cukup.",
+        };
+        return;
+      }
+
+      const distance = faceapi.euclideanDistance(referenceDescriptor, detection.descriptor);
+      const matched = distance <= FACE_MATCH_THRESHOLD;
+
+      if (matched) {
+        liveConsecutiveMatches += 1;
+      } else {
+        liveConsecutiveMatches = 0;
+      }
+
+      faceVerification.value = {
+        status: matched ? "matched" : "mismatch",
+        distance,
+        message: matched
+          ? `Wajah cocok. Menstabilkan deteksi (${liveConsecutiveMatches}/${LIVE_MATCH_REQUIRED})...`
+          : "Wajah tidak cocok. Coba dekatkan wajah dan hadap kamera lurus.",
+      };
+
+      if (matched && liveConsecutiveMatches >= LIVE_MATCH_REQUIRED) {
+        const evidence = await captureEvidenceFromVideo();
+        if (!evidence) {
+          resetFaceVerification("error", "Gagal mengambil gambar dari kamera.");
+          liveConsecutiveMatches = 0;
+          return;
+        }
+        faceVerification.value = {
+          status: "matched",
+          distance,
+          message: "Wajah terverifikasi. Mengirim check-in...",
+        };
+        await submitCheckIn();
+      }
+    } catch (error) {
+      liveConsecutiveMatches = 0;
+      faceVerification.value = {
+        status: "idle",
+        distance: null,
+        message: error.message || "Wajah belum terdeteksi. Pastikan wajah terlihat jelas.",
+      };
+    } finally {
+      liveScanInFlight = false;
+      isVerifyingFace.value = false;
+    }
+  };
+
+  liveRafId = requestAnimationFrame(loop);
+};
+
+const loadAttendance = async () => {
+  try {
+    const response = await api.get("/attendance");
+    attendances.value = response?.data?.data || [];
+  } catch (error) {
+    pushToast({
+      title: "Gagal Memuat Absensi",
+      message: error.message,
+      type: "error",
+    });
   }
 };
 
@@ -579,3 +789,28 @@ onUnmounted(() => {
   resetSelectedPreview();
 });
 </script>
+
+<style scoped>
+.scan-line {
+  height: 2px;
+  background: rgb(103 232 249);
+  box-shadow: 0 0 18px rgba(103, 232, 249, 0.9);
+  top: 18%;
+  animation: scan-vert 1.6s ease-in-out infinite;
+}
+
+@keyframes scan-vert {
+  0% {
+    transform: translateY(0);
+    opacity: 0.65;
+  }
+  50% {
+    transform: translateY(170px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0.65;
+  }
+}
+</style>

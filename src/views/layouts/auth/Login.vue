@@ -130,6 +130,21 @@ const formattedLockRemaining = computed(() => {
   return `${minutes} menit ${remainingSeconds} detik`;
 });
 
+const formatRetryAt = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(date);
+};
+
 const stopLockCountdown = () => {
   if (lockCountdownTimer) {
     window.clearInterval(lockCountdownTimer);
@@ -296,9 +311,20 @@ const handleOtpSubmit = async () => {
     });
     finishLogin(response, "Login orang tua berhasil.");
   } catch (error) {
+    const status = Number(error?.status || 0);
+    const nextSendAt = error?.payload?.data?.next_send_at
+      || error?.payload?.next_send_at
+      || error?.data?.next_send_at
+      || error?.payload?.nextSendAt
+      || error?.data?.nextSendAt
+      || "";
+    const retryAtLabel = formatRetryAt(nextSendAt);
+    const retryMessage = status === 429 && retryAtLabel
+      ? `Coba lagi setelah ${retryAtLabel}.`
+      : error.message || "Proses login orang tua gagal.";
     pushToast({
       title: otpSent.value ? "Verifikasi OTP Gagal" : "Gagal Mengirim OTP",
-      message: error.message || "Proses login orang tua gagal.",
+      message: retryMessage,
       type: "error",
     });
   } finally {
