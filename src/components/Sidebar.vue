@@ -488,7 +488,7 @@ const menuByRole = {
   ADMIN: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     { key: "school-users", to: "/school-users", dataTour: "teachers", label: "User Sekolah", icon: "clarity:users-line" },
-    { key: "private-chat", to: "/private-chat", label: "Chat Pribadi", icon: "ph:chat-circle-dots" },
+    { key: "chat", to: "/chat", label: "Pesan", icon: "ph:chats-circle" },
     { key: "classes", to: "/classes", dataTour: "classes", label: "Kelas", icon: "mdi:google-classroom" },
     { key: "students", to: "/students", dataTour: "students-admin", label: "Siswa", icon: "mdi:account-school-outline" },
     { key: "academic-periods", to: "/academic-periods", label: "Tahun Ajaran", icon: "ph:calendar-blank" },
@@ -514,7 +514,7 @@ const menuByRole = {
   GURU: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     { key: "homeroom-students", to: "/homeroom-students", dataTour: "students", label: "Siswa Wali Kelas", icon: "mdi:account-school-outline" },
-    { key: "private-chat", to: "/private-chat", label: "Chat Pribadi", icon: "ph:chat-circle-dots" },
+    { key: "chat", to: "/chat", label: "Pesan", icon: "ph:chats-circle" },
     {
       key: "learning-module",
       label: "Modul Pembelajaran",
@@ -522,7 +522,6 @@ const menuByRole = {
       children: [
         { to: "/learning-teacher", dataTour: "learning-teacher", label: "Pembelajaran", icon: "ph:book-open-text" },
         { to: "/learning-teaching-module-teacher", label: "Modul Ajar AI", icon: "ph:notebook" },
-        { to: "/learning-chat-teacher", label: "Live Chat", icon: "ph:chats-circle" },
         { to: "/learning-question-bank-teacher", dataTour: "question-bank", label: "Bank Soal", icon: "ph:stack" },
         { to: "/learning-quiz-teacher", label: "Quiz", icon: "ph:brain" },
         { to: "/learning-exams-teacher", label: "Ujian Resmi", icon: "ph:exam" },
@@ -537,7 +536,7 @@ const menuByRole = {
   ],
   SISWA: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
-    { key: "private-chat", to: "/private-chat", label: "Chat Pribadi", icon: "ph:chat-circle-dots" },
+    { key: "chat", to: "/chat", label: "Pesan", icon: "ph:chats-circle" },
     {
       key: "learning-module",
       label: "Modul Pembelajaran",
@@ -545,7 +544,6 @@ const menuByRole = {
       children: [
         { to: "/learning-student/materials", dataTour: "learning-materials", label: "Materi", icon: "ph:book-open-text" },
         { to: "/learning-student/assignments", dataTour: "learning-assignments", label: "Tugas File", icon: "ph:file-text" },
-        { to: "/learning-chat-student", label: "Live Chat", icon: "ph:chats-circle" },
         { to: "/learning-quiz-student", label: "Quiz", icon: "ph:brain" },
         { to: "/learning-exams-student", label: "Ujian Resmi", icon: "ph:exam" },
         { to: "/learning-grades-student", dataTour: "grades", label: "Nilai Saya", icon: "ph:chart-line-up" },
@@ -560,7 +558,7 @@ const menuByRole = {
   KOPERASI: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     { key: "koperasi", to: "/koperasi", label: "Koperasi", icon: "ph:shopping-cart" },
-    { key: "private-chat", to: "/private-chat", label: "Chat Pribadi", icon: "ph:chat-circle-dots" },
+    { key: "chat", to: "/chat", label: "Pesan", icon: "ph:chats-circle" },
   ],
   ORANG_TUA: [
     { key: "dashboard", to: "/dashboard", label: "Pantauan Anak", icon: "bxs:dashboard" },
@@ -579,7 +577,7 @@ const filterMenuItems = (items = []) =>
       if (item.key === "koperasi" && !isKoperasiEnabled.value) {
         return null;
       }
-      if (item.key === "private-chat" && !isPrivateChatEnabled.value) {
+      if (item.key === "chat" && !isPrivateChatEnabled.value && !shouldTrackLiveChat) {
         return null;
       }
       if (item.key === "learning-exams-admin" && !isOfficialExamEnabled.value) {
@@ -618,16 +616,16 @@ const toggleGroup = (key) => {
 };
 
 const getChildBadge = (child) => {
-  if (child.to === "/learning-chat-teacher" || child.to === "/learning-chat-student") {
-    return liveChatUnreadCount.value;
+  if (child.to === "/chat") {
+    return liveChatUnreadCount.value + privateChatUnreadCount.value;
   }
 
   return 0;
 };
 
 const getGroupBadge = (item) => {
-  if (item.to === "/private-chat" || item.key === "private-chat") {
-    return privateChatUnreadCount.value;
+  if (item.to === "/chat" || item.key === "chat") {
+    return privateChatUnreadCount.value + liveChatUnreadCount.value;
   }
 
   if (item.key === "learning-module") {
@@ -725,7 +723,7 @@ const openLearningFromToast = (toast) => {
 const openChatFromToast = (toast) => {
   dismissToast(toast.id);
   router.push({
-    path: role === "GURU" ? "/learning-chat-teacher" : "/learning-chat-student",
+    path: "/chat",
     query: { subject: String(toast.subjectId) },
   });
 };
@@ -737,7 +735,7 @@ const openPrivateChat = (peerUserId) => {
   }
 
   router.push({
-    path: "/private-chat",
+    path: "/chat",
     query: { user: String(normalizedPeerUserId) },
   });
 };

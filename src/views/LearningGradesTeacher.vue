@@ -81,6 +81,22 @@
         </div>
       </section>
 
+      <!-- Charts Dashboard -->
+      <section v-if="gradedData.length > 0" class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <!-- Rata-rata per Tugas (Line) -->
+        <div class="col-span-1 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10 lg:col-span-2">
+          <VueApexCharts type="line" height="250" :options="averageChartOptions" :series="averagePerAssignmentSeries" />
+        </div>
+        <!-- Distribusi Nilai (Bar) -->
+        <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+          <VueApexCharts type="bar" height="300" :options="distributionChartOptions" :series="distributionChartSeries" />
+        </div>
+        <!-- Siswa (Horizontal Bar) -->
+        <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+          <VueApexCharts type="bar" height="300" :options="studentChartOptions" :series="studentScoreSeries" />
+        </div>
+      </section>
+
       <!-- Data -->
       <section class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
         <!-- Desktop table -->
@@ -403,6 +419,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue";
+import VueApexCharts from "vue3-apexcharts";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatDateKey, formatDateTime, parseDateValue } from "@/utils/date";
@@ -458,6 +475,102 @@ const sortedRows = computed(() =>
     violation_count: (row) => Number(row.violation_count || 0),
   }),
 );
+
+// ======== GRAFIK LOGIC ========
+const gradedData = computed(() => sortedRows.value.filter(r => isGraded(r)));
+
+// 1. Distribusi Nilai (Bar)
+const distributionChartSeries = computed(() => {
+  let a = 0, b = 0, c = 0, d = 0; // A: 85-100, B: 70-84, C: 50-69, D: <50
+  gradedData.value.forEach(r => {
+    const s = Number(r.score);
+    if (s >= 85) a++;
+    else if (s >= 70) b++;
+    else if (s >= 50) c++;
+    else d++;
+  });
+  return [{ name: 'Siswa', data: [d, c, b, a] }];
+});
+const distributionChartOptions = computed(() => {
+  const isDark = document.documentElement.classList.contains('dark');
+  const textColor = isDark ? '#94a3b8' : '#64748b';
+  const gridColor = isDark ? '#334155' : '#e2e8f0';
+  return {
+    chart: { type: 'bar', toolbar: { show: false }, background: 'transparent' },
+    colors: ['#3b82f6'],
+    plotOptions: { bar: { borderRadius: 4, horizontal: false, columnWidth: '45%' } },
+    xaxis: { categories: ['<50', '50-69', '70-84', '85-100'], labels: { style: { colors: textColor } } },
+    yaxis: { labels: { style: { colors: textColor }, formatter: val => Math.floor(val) } },
+    grid: { borderColor: gridColor, strokeDashArray: 4 },
+    dataLabels: { enabled: true },
+    title: { text: 'Distribusi Nilai', style: { color: textColor, fontWeight: 600 } },
+    tooltip: { theme: isDark ? 'dark' : 'light' }
+  };
+});
+
+// 2. Rata-rata per Tugas (Line)
+const averagePerAssignmentSeries = computed(() => {
+  const map = {};
+  gradedData.value.forEach(r => {
+    if (!map[r.assignment_title]) map[r.assignment_title] = { sum: 0, count: 0 };
+    map[r.assignment_title].sum += Number(r.score);
+    map[r.assignment_title].count += 1;
+  });
+  const categories = Object.keys(map);
+  const data = categories.map(k => Number((map[k].sum / map[k].count).toFixed(2)));
+  return [{ name: 'Rata-rata', data }];
+});
+const averageChartOptions = computed(() => {
+  const isDark = document.documentElement.classList.contains('dark');
+  const textColor = isDark ? '#94a3b8' : '#64748b';
+  const gridColor = isDark ? '#334155' : '#e2e8f0';
+  const map = {};
+  gradedData.value.forEach(r => { map[r.assignment_title] = true; });
+  const categories = Object.keys(map);
+  return {
+    chart: { type: 'line', toolbar: { show: false }, background: 'transparent' },
+    colors: ['#10b981'],
+    stroke: { curve: 'smooth', width: 3 },
+    xaxis: { 
+      categories: categories.map(c => c.length > 15 ? c.substring(0,15)+'...' : c),
+      labels: { style: { colors: textColor } }
+    },
+    yaxis: { min: 0, max: 100, labels: { style: { colors: textColor } } },
+    grid: { borderColor: gridColor, strokeDashArray: 4 },
+    dataLabels: { enabled: true, background: { borderRadius: 4, foreColor: '#fff' } },
+    title: { text: 'Rata-rata Nilai per Tugas', style: { color: textColor, fontWeight: 600 } },
+    tooltip: { theme: isDark ? 'dark' : 'light' }
+  };
+});
+
+// 3. Bar Chart Siswa (Horizontal Bar)
+const studentScoreSeries = computed(() => {
+  const data = gradedData.value.slice(0, 15);
+  const seriesData = data.map(r => Number(r.score));
+  return [{ name: 'Nilai', data: seriesData }];
+});
+const studentChartOptions = computed(() => {
+  const isDark = document.documentElement.classList.contains('dark');
+  const textColor = isDark ? '#94a3b8' : '#64748b';
+  const gridColor = isDark ? '#334155' : '#e2e8f0';
+  const data = gradedData.value.slice(0, 15);
+  const categories = data.map(r => r.student_name.length > 12 ? r.student_name.substring(0, 12)+'...' : r.student_name);
+  return {
+    chart: { type: 'bar', toolbar: { show: false }, background: 'transparent' },
+    colors: ['#8b5cf6'],
+    plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '50%' } },
+    xaxis: { min: 0, max: 100, labels: { style: { colors: textColor } } },
+    yaxis: { 
+      categories: categories,
+      labels: { style: { colors: textColor } }
+    },
+    grid: { borderColor: gridColor, strokeDashArray: 4 },
+    dataLabels: { enabled: true, textAnchor: 'start', style: { colors: ['#fff'] }, offsetX: 0 },
+    title: { text: 'Perbandingan Siswa (Top 15 Hal. Ini)', style: { color: textColor, fontWeight: 600 } },
+    tooltip: { theme: isDark ? 'dark' : 'light' }
+  };
+});
+// ================================
 
 const totalPages = computed(() => Math.max(1, Math.ceil(totalRows.value / Number(pageSize.value || 20))));
 const paginationStartRow = computed(() => {

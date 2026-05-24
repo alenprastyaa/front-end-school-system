@@ -15,7 +15,7 @@
 
         <div class="flex items-center gap-3">
           <div class="hidden flex-col items-end sm:flex">
-            <span class="text-xs font-medium text-slate-500">Terakhir diperbarui</span>
+            <span class="text-xs font-medium text-slate-600 dark:text-slate-400">Terakhir diperbarui</span>
             <span class="text-sm font-semibold text-slate-900 dark:text-white">{{
               formatDateTime(dashboardData.generatedAt) }}</span>
           </div>
@@ -108,7 +108,7 @@
 
           <div class="grid gap-3 bg-white p-4 sm:grid-cols-2 sm:p-6 dark:bg-slate-900">
             <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
-              <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Identitas Anak</p>
+              <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600 dark:text-slate-400">Identitas Anak</p>
               <p class="mt-2 text-base font-bold text-slate-900 dark:text-white">
                 {{ selectedParentChild?.full_name || selectedParentChild?.username || "-" }}
               </p>
@@ -119,7 +119,7 @@
               </div>
             </div>
             <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
-              <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Status Hari Ini</p>
+              <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600 dark:text-slate-400">Status Hari Ini</p>
               <div class="mt-3 flex items-center justify-between gap-3">
                 <div>
                   <p class="text-2xl font-bold text-slate-900 dark:text-white">
@@ -130,7 +130,7 @@
                   </p>
                 </div>
                 <div class="rounded-2xl bg-white px-4 py-3 text-right shadow-sm ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-700">
-                  <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Anak Aktif</p>
+                  <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 dark:text-slate-400">Anak Aktif</p>
                   <p class="mt-1 max-w-[14rem] truncate text-sm font-semibold text-slate-900 dark:text-white">
                     {{ selectedParentChild?.class_name || "Belum ada kelas" }}
                   </p>
@@ -163,10 +163,10 @@
               <div class="flex items-center justify-between gap-3">
                 <div>
                   <h2 class="text-base font-semibold text-slate-900 dark:text-white">Ringkasan Nilai</h2>
-                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Pantauan tugas, nilai, dan progres belajar anak.</p>
+                  <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Pantauan tugas, nilai, dan progres belajar anak.</p>
                 </div>
                 <div class="rounded-2xl bg-slate-50 px-4 py-3 text-right dark:bg-slate-800/60">
-                  <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Rata-rata</p>
+                  <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 dark:text-slate-400">Rata-rata</p>
                   <p class="mt-1 text-xl font-bold text-slate-900 dark:text-white">
                     {{ parentGradesSummary.average_score ?? "-" }}
                   </p>
@@ -175,19 +175,19 @@
 
               <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/60">
-                  <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total</p>
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">Total</p>
                   <p class="mt-1 text-xl font-bold text-slate-900 dark:text-white">{{ parentGradesSummary.total_assignments || 0 }}</p>
                 </div>
                 <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/60">
-                  <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Terkumpul</p>
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">Terkumpul</p>
                   <p class="mt-1 text-xl font-bold text-slate-900 dark:text-white">{{ parentGradesSummary.submitted_count || 0 }}</p>
                 </div>
                 <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/60">
-                  <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Belum</p>
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">Belum</p>
                   <p class="mt-1 text-xl font-bold text-slate-900 dark:text-white">{{ parentGradesSummary.pending_count || 0 }}</p>
                 </div>
                 <div class="rounded-2xl bg-slate-50 p-3 dark:bg-slate-800/60">
-                  <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Dinilai</p>
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">Dinilai</p>
                   <p class="mt-1 text-xl font-bold text-slate-900 dark:text-white">{{ parentGradesSummary.graded_count || 0 }}</p>
                 </div>
               </div>
@@ -197,17 +197,17 @@
                   class="rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:bg-slate-100/70 dark:border-slate-800 dark:bg-slate-800/60 dark:hover:bg-slate-800">
                   <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
-                      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">{{ row.subject_name }}</p>
+                      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-600 dark:text-slate-400">{{ row.subject_name }}</p>
                       <h3 class="mt-1 truncate text-sm font-bold text-slate-900 dark:text-white">{{ row.title }}</h3>
                     </div>
                     <div class="shrink-0 text-right">
                       <p class="text-lg font-bold text-slate-900 dark:text-white">{{ row.score ?? "-" }}</p>
-                      <p class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                      <p class="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
                         {{ row.score !== null && row.score !== undefined ? "Dinilai" : (row.is_submitted || row.submission_id ? "Terkumpul" : "Belum") }}
                       </p>
                     </div>
                   </div>
-                  <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                  <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                     <span class="inline-flex rounded-full bg-white px-2.5 py-1 ring-1 ring-inset ring-slate-200 dark:bg-slate-950 dark:ring-slate-700">
                       {{ formatDateTime(row.due_date) }}
                     </span>
@@ -219,7 +219,7 @@
                     {{ row.feedback || "Belum ada feedback." }}
                   </p>
                 </article>
-                <div v-if="parentGrades.length === 0" class="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                <div v-if="parentGrades.length === 0" class="py-8 text-center text-sm text-slate-600 dark:text-slate-400">
                   Belum ada data nilai.
                 </div>
               </div>
@@ -232,7 +232,7 @@
               <div class="flex items-center justify-between gap-3">
                 <div>
                   <h2 class="text-base font-semibold text-slate-900 dark:text-white">Absensi Terbaru</h2>
-                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Riwayat check-in dan check-out anak.</p>
+                  <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Riwayat check-in dan check-out anak.</p>
                 </div>
                 <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                   {{ parentAttendanceHistory.length }} data
@@ -246,11 +246,11 @@
                 </p>
                 <div class="mt-3 grid grid-cols-2 gap-3 text-sm text-slate-200">
                   <div class="rounded-2xl bg-white/5 p-3">
-                    <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Masuk</p>
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Masuk</p>
                     <p class="mt-1 font-semibold">{{ dashboardData?.todayAttendance?.clock_in ? formatTime(dashboardData.todayAttendance.clock_in) : "-" }}</p>
                   </div>
                   <div class="rounded-2xl bg-white/5 p-3">
-                    <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Pulang</p>
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Pulang</p>
                     <p class="mt-1 font-semibold">{{ dashboardData?.todayAttendance?.clock_out ? formatTime(dashboardData.todayAttendance.clock_out) : "-" }}</p>
                   </div>
                 </div>
@@ -263,7 +263,7 @@
                   <div class="min-w-0 flex-1">
                     <div class="flex items-start justify-between gap-2">
                       <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ formatDate(item.attendance_date) }}</p>
-                      <span class="text-xs text-slate-500 dark:text-slate-400">{{ item.status || "-" }}</span>
+                      <span class="text-xs text-slate-600 dark:text-slate-400">{{ item.status || "-" }}</span>
                     </div>
                     <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
                       Masuk {{ item.clock_in ? formatTime(item.clock_in) : "-" }}
@@ -272,7 +272,7 @@
                     </p>
                   </div>
                 </div>
-                <div v-if="parentAttendanceHistory.length === 0" class="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                <div v-if="parentAttendanceHistory.length === 0" class="py-6 text-center text-sm text-slate-600 dark:text-slate-400">
                   Belum ada riwayat absensi.
                 </div>
               </div>
@@ -283,7 +283,7 @@
               <div class="flex items-center justify-between gap-3">
                 <div>
                   <h2 class="text-base font-semibold text-slate-900 dark:text-white">Tugas Pending</h2>
-                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Tugas yang belum dikerjakan anak.</p>
+                  <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Tugas yang belum dikerjakan anak.</p>
                 </div>
                 <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
                   {{ parentPendingAssignments.length }}
@@ -303,7 +303,7 @@
                     </span>
                   </div>
                 </article>
-                <div v-if="parentPendingAssignments.length === 0" class="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                <div v-if="parentPendingAssignments.length === 0" class="py-6 text-center text-sm text-slate-600 dark:text-slate-400">
                   Tidak ada tugas pending.
                 </div>
               </div>
@@ -314,7 +314,7 @@
               <div class="flex items-center justify-between gap-3">
                 <div>
                   <h2 class="text-base font-semibold text-slate-900 dark:text-white">Administrasi</h2>
-                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Riwayat pembayaran dan berkas terakhir.</p>
+                  <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Riwayat pembayaran dan berkas terakhir.</p>
                 </div>
                 <span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
                   {{ parentReceiptHistory.length }}
@@ -326,13 +326,13 @@
                   class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
                   <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
-                      <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">{{ item.periode || "Receipt" }}</p>
+                      <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-600 dark:text-slate-400">{{ item.periode || "Receipt" }}</p>
                       <h3 class="mt-1 text-sm font-bold text-slate-900 dark:text-white">{{ item.description || "Tanpa keterangan" }}</h3>
                     </div>
-                    <span class="shrink-0 text-xs text-slate-500 dark:text-slate-400">{{ formatDateTime(item.created_at) }}</span>
+                    <span class="shrink-0 text-xs text-slate-600 dark:text-slate-400">{{ formatDateTime(item.created_at) }}</span>
                   </div>
                 </article>
-                <div v-if="parentReceiptHistory.length === 0" class="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                <div v-if="parentReceiptHistory.length === 0" class="py-6 text-center text-sm text-slate-600 dark:text-slate-400">
                   Belum ada data administrasi.
                 </div>
               </div>

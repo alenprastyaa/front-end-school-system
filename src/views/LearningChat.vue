@@ -1,11 +1,11 @@
 <template>
   <div
-    class="h-full min-h-0 overflow-hidden bg-[#d9dbd5] font-sans text-[#111b21] dark:bg-[#0b141a] dark:text-[#e9edef]">
-    <main class="mx-auto flex h-full min-h-0 w-full flex-col p-0 lg:p-5">
+    class="min-h-0 overflow-hidden font-sans text-[#111b21] dark:text-[#e9edef]" :class="unifiedMode ? 'contents' : 'h-full bg-[#d9dbd5] dark:bg-[#0b141a]'">
+    <main class="mx-auto flex min-h-0 w-full flex-col" :class="unifiedMode ? 'contents' : 'h-full p-0 lg:p-5'">
       <div
-        class="flex-1 min-h-0 overflow-hidden bg-white shadow-sm dark:bg-[#111b21] lg:rounded-md">
-        <div class="grid h-full min-h-0 lg:grid-cols-[390px_minmax(0,1fr)]">
-          <aside
+        class="min-h-0 overflow-hidden shadow-sm" :class="unifiedMode ? 'contents' : 'flex-1 bg-white dark:bg-[#111b21] lg:rounded-md'">
+        <div class="min-h-0" :class="unifiedMode ? 'contents' : 'grid h-full lg:grid-cols-[390px_minmax(0,1fr)]'">
+          <aside v-if="!unifiedMode"
             class="flex min-h-0 flex-col border-r border-[#e9edef] bg-white dark:border-[#222e35] dark:bg-[#111b21]"
             :class="{ hidden: mobileChatOpen, 'lg:flex': true }">
             <header class="flex h-[59px] shrink-0 items-center justify-between bg-[#f0f2f5] px-4 dark:bg-[#202c33]">
@@ -74,15 +74,15 @@
             </div>
           </aside>
 
-          <section class="flex min-h-0 h-full flex-col overflow-hidden bg-[#efeae2] learning-chat-wallpaper dark:bg-[#0b141a]"
-            :class="{ hidden: !mobileChatOpen, 'lg:flex': true }">
+          <section class="flex min-h-0 flex-col overflow-hidden bg-[#efeae2] learning-chat-wallpaper dark:bg-[#0b141a]"
+            :class="unifiedMode ? 'flex-1 w-full' : 'h-full ' + (mobileChatOpen ? '' : 'hidden lg:flex')">
             <template v-if="selectedSubject">
               <header
                 class="z-10 flex h-[59px] shrink-0 items-center gap-3 bg-[#f0f2f5] px-3 dark:bg-[#202c33]">
                 <div class="flex items-center gap-3">
               <button type="button"
                 class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10 lg:hidden"
-                    @click="backToGroupList">
+                    @click="unifiedMode ? emit('back') : backToGroupList">
                     <Icon icon="mdi:arrow-left" class="h-6 w-6" />
                   </button>
                   <button type="button"
@@ -197,6 +197,7 @@
                     </div>
                   </template>
                 </div>
+                <div ref="bottomAnchorRef" class="h-px w-full"></div>
               </div>
 
               <form ref="composerBarRef" @submit.prevent="sendMessage"
@@ -459,6 +460,13 @@ import { normalizePublicUrl } from "@/utils/url";
 import { useSidebar } from "@/store/sidebar";
 import { useRealtimeStore } from "@/store/realtime";
 
+const props = defineProps({
+  unifiedMode: { type: Boolean, default: false },
+  activeSubjectId: { type: Number, default: null }
+});
+
+const emit = defineEmits(['back']);
+
 const role = getStoredRole();
 const route = useRoute();
 const router = useRouter();
@@ -493,6 +501,7 @@ const waveformTimer = ref(null);
 const recordingWavePoints = ref("0,20 300,20");
 const attachmentInputRef = ref(null);
 const messageListRef = ref(null);
+const bottomAnchorRef = ref(null);
 const composerBarRef = ref(null);
 const replyTarget = ref(null);
 const replyHighlightMessageId = ref(null);
@@ -637,9 +646,7 @@ const composerBarStyle = computed(() => ({
 }));
 
 const messageListStyle = computed(() => ({
-  paddingBottom: isMobileViewport.value
-    ? `calc(${viewportBottomInset.value}px + env(safe-area-inset-bottom, 0px) + ${Math.max(composerBarHeight.value, 104) + 20}px)`
-    : "",
+  paddingBottom: `calc(${viewportBottomInset.value}px + env(safe-area-inset-bottom, 0px) + ${Math.max(composerBarHeight.value, 104) + 24}px)`,
 }));
 
 const currentMessages = computed(() =>
@@ -983,6 +990,21 @@ const closePdfPreview = () => {
 
 const scrollToBottom = async () => {
   await nextTick();
+  await new Promise((resolve) => {
+    if (typeof window === "undefined") {
+      resolve();
+      return;
+    }
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(resolve);
+    });
+  });
+
+  if (bottomAnchorRef.value) {
+    bottomAnchorRef.value.scrollIntoView({ block: "end" });
+    return;
+  }
+
   if (messageListRef.value) {
     messageListRef.value.scrollTop = messageListRef.value.scrollHeight;
   }
@@ -1235,6 +1257,11 @@ const loadOnlineUsers = async (subjectId) => {
 };
 
 const selectSubject = async (subject) => {
+  if (selectedSubject.value?.id === subject.id) {
+    mobileChatOpen.value = true;
+    await scrollToBottom();
+    return;
+  }
   const previousSubjectId = selectedSubject.value?.id || null;
   if (previousSubjectId && Number(previousSubjectId) !== Number(subject.id)) {
     await sendTypingEvent(false);
@@ -1875,6 +1902,34 @@ onMounted(async () => {
   await loadSubjects();
 });
 
+watch(() => props.activeSubjectId, (newId) => {
+  if (newId) {
+    const subj = subjects.value.find(s => s.id === newId);
+    if (subj) selectSubject(subj);
+  } else {
+    selectedSubject.value = null;
+  }
+});
+
+watch(subjects, (newSubjects) => {
+  if (props.unifiedMode && props.activeSubjectId && selectedSubject.value?.id !== props.activeSubjectId) {
+    const subj = newSubjects.find(s => s.id === props.activeSubjectId);
+    if (subj) selectSubject(subj);
+  }
+});
+
+defineExpose({
+  orderedSubjects,
+  subjectUnreadCount,
+  latestMessagePreview,
+  formatSubjectTime,
+  getSubjectIcon,
+  getSubjectIconClass,
+  subjects,
+  messagesBySubject,
+  selectSubject
+});
+
 onUnmounted(() => {
   sendTypingEvent(false);
   if (typingStopTimer.value) {
@@ -1933,6 +1988,17 @@ watch(
     }
     await selectSubject(subject);
   },
+);
+
+watch(
+  () => [selectedSubject.value?.id, renderedMessages.value.length],
+  async () => {
+    if (!selectedSubject.value || isLoadingMessages.value) {
+      return;
+    }
+    await scrollToBottom();
+  },
+  { flush: "post" },
 );
 </script>
 

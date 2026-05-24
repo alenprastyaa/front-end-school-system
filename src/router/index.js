@@ -136,15 +136,18 @@ const routes = [
     },
   },
   {
-    path: "/private-chat",
-    name: "PrivateChat",
-    component: lazyRoute(() => import("../views/PrivateChat.vue")),
+    path: "/chat",
+    name: "ChatUnified",
+    component: lazyRoute(() => import("../views/UnifiedChat.vue")),
     meta: {
-      title: "Chat Pribadi" + appName,
+      title: "Pesan" + appName,
       requiresAuth: true,
       roles: ["ADMIN", "KOPERASI", "GURU", "SISWA"],
-      moduleKey: "private_chat",
     },
+  },
+  {
+    path: "/private-chat",
+    redirect: "/chat"
   },
   {
     path: "/learning-admin",
@@ -284,13 +287,7 @@ const routes = [
   },
   {
     path: "/learning-chat-teacher",
-    name: "LearningChatTeacher",
-    component: lazyRoute(() => import("../views/LearningChat.vue")),
-    meta: {
-      title: "Live Chat Guru" + appName,
-      requiresAuth: true,
-      roles: ["GURU"],
-    },
+    redirect: "/chat"
   },
   {
     path: "/learning-question-bank-teacher",
@@ -362,13 +359,7 @@ const routes = [
   },
   {
     path: "/learning-chat-student",
-    name: "LearningChatStudent",
-    component: lazyRoute(() => import("../views/LearningChat.vue")),
-    meta: {
-      title: "Live Chat Siswa" + appName,
-      requiresAuth: true,
-      roles: ["SISWA"],
-    },
+    redirect: "/chat"
   },
   {
     path: "/learning-quiz-student",

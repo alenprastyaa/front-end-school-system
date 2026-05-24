@@ -1,9 +1,9 @@
 <template>
-  <div class="h-full min-h-full overflow-hidden  text-[#111b21] dark:bg-[#0b141a] dark:text-[#e9edef]">
-    <main class="mx-auto flex h-full min-h-full w-full flex-col p-0 lg:p-5">
-      <div class="min-h-0 flex-1 overflow-hidden bg-white shadow-sm dark:bg-[#111b21] lg:rounded-md">
-        <div class="grid h-full min-h-0 lg:grid-cols-[390px_minmax(0,1fr)]">
-          <aside
+  <div class="min-h-0 overflow-hidden text-[#111b21] dark:text-[#e9edef]" :class="unifiedMode ? 'contents' : 'h-full dark:bg-[#0b141a]'">
+    <main class="mx-auto flex min-h-0 w-full flex-col" :class="unifiedMode ? 'contents' : 'h-full p-0 lg:p-5'">
+      <div class="min-h-0 overflow-hidden shadow-sm" :class="unifiedMode ? 'contents' : 'flex-1 bg-white dark:bg-[#111b21] lg:rounded-md'">
+        <div class="min-h-0" :class="unifiedMode ? 'contents' : 'grid h-full lg:grid-cols-[390px_minmax(0,1fr)]'">
+          <aside v-if="!unifiedMode"
             class="flex min-h-0 flex-col border-r border-[#e9edef] bg-white dark:border-[#222e35] dark:bg-[#111b21]"
             :class="{ hidden: mobileChatOpen, 'lg:flex': true }">
             <header class="flex h-[59px] shrink-0 items-center justify-between bg-[#f0f2f5] px-4 dark:bg-[#202c33]">
@@ -92,13 +92,13 @@
           </aside>
 
           <section
-            class="flex min-h-0 h-full flex-col overflow-hidden bg-[#efeae2] private-chat-wallpaper dark:bg-[#0b141a]"
-            :class="{ hidden: !mobileChatOpen, 'lg:flex': true }">
+            class="flex min-h-0 flex-col overflow-hidden bg-[#efeae2] private-chat-wallpaper dark:bg-[#0b141a]"
+            :class="unifiedMode ? 'flex-1 w-full' : 'h-full ' + (mobileChatOpen ? '' : 'hidden lg:flex')">
             <template v-if="selectedPeer">
               <header class="z-10 flex h-[59px] shrink-0 items-center gap-3 bg-[#f0f2f5] px-3 dark:bg-[#202c33]">
                 <button type="button"
                   class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10 lg:hidden"
-                  @click="backToPeerList">
+                  @click="unifiedMode ? emit('back') : backToPeerList">
                   <Icon icon="mdi:arrow-left" class="h-6 w-6" />
                 </button>
                 <button type="button" @click="openPeerProfile" class="flex min-w-0 flex-1 items-center gap-3 text-left">
@@ -208,6 +208,7 @@
                     </div>
                   </template>
                 </div>
+                <div ref="bottomAnchorRef" class="h-px w-full"></div>
               </div>
 
               <form ref="composerBarRef" @submit.prevent="sendMessage"
@@ -457,6 +458,13 @@ import { normalizePublicUrl } from "@/utils/url";
 import { useRealtimeStore } from "@/store/realtime";
 import { useSidebar } from "@/store/sidebar";
 
+const props = defineProps({
+  unifiedMode: { type: Boolean, default: false },
+  activePeerId: { type: Number, default: null }
+});
+
+const emit = defineEmits(['back']);
+
 const route = useRoute();
 const router = useRouter();
 const realtimeStore = useRealtimeStore();
@@ -474,6 +482,7 @@ const isSendingMessage = ref(false);
 const isSearchingContacts = ref(false);
 const mobileChatOpen = ref(false);
 const messageListRef = ref(null);
+const bottomAnchorRef = ref(null);
 const composerBarRef = ref(null);
 const attachmentInputRef = ref(null);
 const attachmentFile = ref(null);
@@ -696,9 +705,7 @@ const composerBarStyle = computed(() => ({
 }));
 
 const messageListStyle = computed(() => ({
-  paddingBottom: isMobileViewport.value
-    ? `calc(${viewportBottomInset.value}px + env(safe-area-inset-bottom, 0px) + ${Math.max(composerBarHeight.value, 104) + 20}px)`
-    : "",
+  paddingBottom: `calc(${viewportBottomInset.value}px + env(safe-area-inset-bottom, 0px) + ${Math.max(composerBarHeight.value, 104) + 24}px)`,
 }));
 
 const renderedMessages = computed(() => {
@@ -745,6 +752,21 @@ const syncPeersFromStore = () => {
 
 const scrollToBottom = async () => {
   await nextTick();
+  await new Promise((resolve) => {
+    if (typeof window === "undefined") {
+      resolve();
+      return;
+    }
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(resolve);
+    });
+  });
+
+  if (bottomAnchorRef.value) {
+    bottomAnchorRef.value.scrollIntoView({ block: "end" });
+    return;
+  }
+
   if (messageListRef.value) {
     messageListRef.value.scrollTop = messageListRef.value.scrollHeight;
   }
@@ -1017,6 +1039,11 @@ const loadMessages = async (peerUserId) => {
 };
 
 const selectPeer = async (peer) => {
+  if (selectedPeer.value?.user_id === peer.user_id) {
+    mobileChatOpen.value = true;
+    await scrollToBottom();
+    return;
+  }
   selectedPeer.value = peer;
   mobileChatOpen.value = true;
   clearReplyTarget();
@@ -1332,6 +1359,32 @@ onMounted(async () => {
   updateComposerBarMetrics();
 });
 
+watch(() => props.activePeerId, (newId) => {
+  if (newId) {
+    const peer = peers.value.find(p => Number(p.user_id) === Number(newId));
+    if (peer) selectPeer(peer);
+  } else {
+    selectedPeer.value = null;
+  }
+});
+
+watch(peers, (newPeers) => {
+  if (props.unifiedMode && props.activePeerId && selectedPeer.value?.user_id !== props.activePeerId) {
+    const peer = newPeers.find(p => Number(p.user_id) === Number(props.activePeerId));
+    if (peer) selectPeer(peer);
+  }
+});
+
+defineExpose({
+  visiblePeers,
+  peerInitial,
+  displayPeerName,
+  formatPeerTime,
+  latestPeerPreview,
+  peers,
+  selectPeer
+});
+
 onUnmounted(() => {
   clearAttachment();
   if (searchDebounceTimer.value) {
@@ -1383,6 +1436,17 @@ watch(
       await selectPeer(peer);
     }
   },
+);
+
+watch(
+  () => [selectedPeer.value?.user_id, renderedMessages.value.length],
+  async () => {
+    if (!selectedPeer.value || isLoadingMessages.value) {
+      return;
+    }
+    await scrollToBottom();
+  },
+  { flush: "post" },
 );
 </script>
 

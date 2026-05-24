@@ -32,7 +32,7 @@
           <div
             v-if="isChatLayoutRoute"
             :key="$route.name || $route.path"
-            class="h-full bg-[#d9dbd5] dark:bg-[#0b141a]"
+            class="h-full min-h-0 overflow-hidden bg-[#d9dbd5] dark:bg-[#0b141a]"
           >
             <component :is="Component" />
           </div>
@@ -98,7 +98,7 @@ export default {
       return Boolean(this.$route.meta.hideHeader || (this.$route.meta.hideHeaderOnMobile && !this.isDesktopViewport));
     },
     isChatLayoutRoute() {
-      return ["LearningChatTeacher", "LearningChatStudent", "PrivateChat"].includes(this.$route.name);
+      return ["ChatUnified", "LearningChatTeacher", "LearningChatStudent", "PrivateChat"].includes(this.$route.name);
     },
     hideHeaderOnMobileChat() {
       return this.isChatLayoutRoute && !this.isDesktopViewport;
