@@ -508,7 +508,7 @@
       </Transition>
     </div>
 
-    <audio ref="remoteAudioRef" autoplay playsinline class="hidden"></audio>
+    <audio ref="remoteAudioRef" autoplay playsinline class="fixed h-0 w-0 opacity-0"></audio>
   </div>
 </template>
 
@@ -563,6 +563,7 @@ const callPeerInfo = ref(null);
 const callCallId = ref("");
 const callPeerConnection = ref(null);
 const callLocalStream = ref(null);
+const callRemoteStream = ref(null);
 const callPendingCandidates = ref([]);
 const callMuted = ref(false);
 const callTimer = ref(null);
@@ -794,6 +795,7 @@ const callPeer = computed(() => {
 });
 
 const callPeerName = computed(() => displayPeerName(callPeer.value || {}));
+const isCallMuted = computed(() => callMuted.value);
 const callPeerAvatar = computed(() => {
   const image = String(callPeer.value?.profile_image || "").trim();
   return image ? normalizePublicUrl(image) : "";
@@ -1317,6 +1319,7 @@ const resetCallSession = (keepSelectedPeer = false) => {
   if (remoteAudioRef.value) {
     remoteAudioRef.value.srcObject = null;
   }
+  callRemoteStream.value = null;
   if (!keepSelectedPeer) {
     callPeerInfo.value = null;
   }
@@ -1380,6 +1383,72 @@ const sendCallSignal = async (signalType, extraPayload = {}) => {
   return response?.data || null;
 };
 
+const ensureRemoteAudioPlayback = async () => {
+  await nextTick();
+  const audioElement = remoteAudioRef.value;
+  if (!audioElement || !audioElement.srcObject) {
+    return false;
+  }
+
+  audioElement.autoplay = true;
+  audioElement.playsInline = true;
+  audioElement.muted = false;
+  audioElement.volume = 1;
+
+  try {
+    await audioElement.play?.();
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+const attachRemoteCallTrack = (event) => {
+  if (!remoteAudioRef.value) {
+    return;
+  }
+
+  const [eventStream] = event?.streams || [];
+  let remoteStream = eventStream || callRemoteStream.value;
+  if (!remoteStream) {
+    remoteStream = new MediaStream();
+  }
+
+  const track = event?.track || null;
+  if (track && !remoteStream.getTracks().some((item) => item.id === track.id)) {
+    remoteStream.addTrack(track);
+  }
+
+  callRemoteStream.value = remoteStream;
+  remoteAudioRef.value.srcObject = remoteStream;
+  ensureRemoteAudioPlayback().catch(() => undefined);
+};
+
+const handlePeerConnectionState = async (peerConnection) => {
+  const connectionState = String(peerConnection.connectionState || "").toLowerCase();
+  const iceState = String(peerConnection.iceConnectionState || "").toLowerCase();
+  const activeStates = ["connected", "completed"];
+  const failedStates = ["failed", "disconnected", "closed"];
+
+  if (callTeardownInProgress.value) {
+    return;
+  }
+
+  if (activeStates.includes(connectionState) || activeStates.includes(iceState)) {
+    if (callState.value === "connecting" || callState.value === "dialing") {
+      callState.value = "active";
+    }
+    await ensureRemoteAudioPlayback();
+    return;
+  }
+
+  if (failedStates.includes(connectionState) || failedStates.includes(iceState)) {
+    if (callState.value !== "idle") {
+      await endVoiceCall(true);
+    }
+  }
+};
+
 const createCallPeerConnection = (iceServers) => {
   closePeerConnection();
   const peerConnection = new RTCPeerConnection({ iceServers });
@@ -1391,31 +1460,13 @@ const createCallPeerConnection = (iceServers) => {
     sendCallSignal("candidate", { candidate: normalizeIceCandidate(event.candidate) }).catch(() => undefined);
   };
 
-  peerConnection.ontrack = (event) => {
-    const [stream] = event.streams || [];
-    if (remoteAudioRef.value && stream) {
-      remoteAudioRef.value.srcObject = stream;
-      remoteAudioRef.value.play?.().catch(() => undefined);
-    }
+  peerConnection.ontrack = attachRemoteCallTrack;
+
+  peerConnection.onconnectionstatechange = () => {
+    handlePeerConnectionState(peerConnection).catch(() => undefined);
   };
-
-  peerConnection.onconnectionstatechange = async () => {
-    const state = String(peerConnection.connectionState || "").toLowerCase();
-    if (callTeardownInProgress.value) {
-      return;
-    }
-    if (state === "connected" || state === "completed") {
-      if (callState.value === "connecting" || callState.value === "dialing") {
-        callState.value = "active";
-      }
-      return;
-    }
-
-    if (state === "failed" || state === "disconnected" || state === "closed") {
-      if (callState.value !== "idle") {
-        await endVoiceCall(true);
-      }
-    }
+  peerConnection.oniceconnectionstatechange = () => {
+    handlePeerConnectionState(peerConnection).catch(() => undefined);
   };
 
   callPeerConnection.value = peerConnection;
@@ -1539,6 +1590,7 @@ const acceptIncomingCall = async () => {
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
     await sendCallSignal("answer", { sdp: answer }).catch(() => undefined);
+    await ensureRemoteAudioPlayback();
     startCallTimer();
     callState.value = "active";
     incomingCall.value = null;

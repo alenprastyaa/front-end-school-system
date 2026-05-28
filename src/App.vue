@@ -190,6 +190,10 @@ export default {
         return;
       }
 
+      if (payload?.kind !== "call" && typeof document !== "undefined" && document.visibilityState === "visible") {
+        return;
+      }
+
       playNotificationSound(payload?.soundUrl || payload?.sound_url || payload?.sound || payload?.kind || "default");
     },
     async installPwa() {

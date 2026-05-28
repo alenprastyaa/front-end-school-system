@@ -1,5 +1,5 @@
-const CACHE_NAME = "school-system-pwa-v2";
-const RUNTIME_CACHE_NAME = "school-system-runtime-v2";
+const CACHE_NAME = "school-system-pwa-v3";
+const RUNTIME_CACHE_NAME = "school-system-runtime-v3";
 
 const getAssetUrl = (path) => {
   try {
@@ -101,6 +101,48 @@ const getNotificationPayload = (event) => {
       return { title: "School System", body: text };
     }
   }
+};
+
+const isVisibleWindowClient = (client) => {
+  return client?.focused || client?.visibilityState === "visible";
+};
+
+const showPushNotification = (payload, notificationPayload) => {
+  const { title, body, icon, badge, kind, isCall, notificationActions } = notificationPayload;
+  const tag = payload.tag || payload.group || (isCall ? `private-call:${payload.call_id || "incoming"}` : `${kind}:${payload.id || title}`);
+  const options = {
+    body,
+    icon,
+    badge,
+    silent: false,
+    vibrate: isCall ? [250, 120, 250, 120, 250] : [120, 60, 120],
+    requireInteraction: isCall,
+    data: {
+      url: normalizeUrl(payload.url || payload.click_action || payload.link || "./"),
+      id: payload.id || null,
+      kind,
+      tag,
+      call_id: payload.call_id || null,
+      call_from_user_id: payload.call_from_user_id || null,
+      call_to_user_id: payload.call_to_user_id || null,
+      call_peer_user_id: payload.call_peer_user_id || null,
+      call_peer_username: payload.call_peer_username || null,
+      call_peer_full_name: payload.call_peer_full_name || null,
+      call_offer: payload.call_offer || null,
+    },
+    tag,
+    renotify: Boolean(payload.renotify),
+    timestamp: Number(payload.timestamp || Date.now()),
+  };
+
+  if (notificationActions.length > 0) {
+    options.actions = notificationActions;
+  }
+
+  return self.registration.showNotification(title, options).catch(() => {
+    delete options.actions;
+    return self.registration.showNotification(title, options);
+  });
 };
 
 self.addEventListener("install", (event) => {
@@ -225,47 +267,38 @@ self.addEventListener("push", (event) => {
     : [];
 
   event.waitUntil(
-    Promise.all([
-      self.registration.showNotification(title, {
-        body,
-        icon,
-        badge,
-        silent: false,
-        vibrate: isCall ? [250, 120, 250, 120, 250] : [120, 60, 120],
-        requireInteraction: isCall,
-        actions: notificationActions,
-        data: {
-          url,
-          id: payload.id || null,
-          kind,
-          call_id: payload.call_id || null,
-          call_from_user_id: payload.call_from_user_id || null,
-          call_to_user_id: payload.call_to_user_id || null,
-          call_peer_user_id: payload.call_peer_user_id || null,
-          call_peer_username: payload.call_peer_username || null,
-          call_peer_full_name: payload.call_peer_full_name || null,
-          call_offer: payload.call_offer || null,
-        },
-        tag: payload.tag || payload.group || (isCall ? "private-call" : title),
-        renotify: Boolean(payload.renotify),
-      }),
-      clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
-        windowClients.forEach((client) => {
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+      const visibleClientExists = windowClients.some(isVisibleWindowClient);
+      const notificationPayload = { title, body, icon, badge, kind, isCall, notificationActions };
+
+      const clientMessages = Promise.all(
+        windowClients.map((client) => {
           client.postMessage({
             type: "push-notification",
             kind,
             sound: kind,
             soundUrl,
             payload: {
+              ...payload,
               title,
               body,
               url,
               kind,
             },
           });
-        });
-      }),
-    ]),
+          return undefined;
+        }),
+      );
+
+      if (!isCall && visibleClientExists) {
+        return clientMessages;
+      }
+
+      return Promise.all([
+        clientMessages,
+        showPushNotification(payload, notificationPayload),
+      ]);
+    }),
   );
 });
 
