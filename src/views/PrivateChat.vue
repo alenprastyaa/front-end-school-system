@@ -1365,6 +1365,23 @@ const resetCallSession = (keepSelectedPeer = false) => {
   callTeardownInProgress.value = false;
 };
 
+const normalizeIceServer = (server) => {
+  if (!server || typeof server !== "object") {
+    return null;
+  }
+
+  const urls = server.urls || server.url;
+  if (!urls || (Array.isArray(urls) && urls.length === 0)) {
+    return null;
+  }
+
+  return {
+    urls,
+    username: server.username || undefined,
+    credential: server.credential || server.password || undefined,
+  };
+};
+
 const loadTurnIceServers = async () => {
   const now = Date.now();
   if (callTurnServers.value.length > 0 && now - Number(callTurnServersLoadedAt.value || 0) < 45 * 60 * 1000) {
@@ -1372,7 +1389,14 @@ const loadTurnIceServers = async () => {
   }
 
   const response = await api.get("/private-chat/turn/ice-servers");
-  const iceServers = Array.isArray(response?.data?.ice_servers) ? response.data.ice_servers : [];
+  const rawIceServers = Array.isArray(response?.data?.ice_servers)
+    ? response.data.ice_servers
+    : Array.isArray(response?.data?.iceServers)
+      ? response.data.iceServers
+      : Array.isArray(response?.iceServers)
+        ? response.iceServers
+        : [];
+  const iceServers = rawIceServers.map(normalizeIceServer).filter(Boolean);
   if (iceServers.length === 0) {
     throw new Error("TURN server tidak tersedia");
   }
@@ -1552,7 +1576,12 @@ const handlePeerConnectionState = async (peerConnection) => {
 
 const createCallPeerConnection = (iceServers) => {
   closePeerConnection();
-  const peerConnection = new RTCPeerConnection({ iceServers });
+  const peerConnection = new RTCPeerConnection({
+    iceServers,
+    iceTransportPolicy: "all",
+    bundlePolicy: "balanced",
+    rtcpMuxPolicy: "require",
+  });
 
   peerConnection.onicecandidate = (event) => {
     if (!event.candidate) {
