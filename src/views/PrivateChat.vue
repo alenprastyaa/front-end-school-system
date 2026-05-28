@@ -117,6 +117,12 @@
                     </p>
                   </div>
                 </button>
+                <button type="button"
+                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#25d366] text-white transition hover:bg-[#20c15a] disabled:cursor-not-allowed disabled:opacity-40"
+                  :disabled="!selectedPeer || callState !== 'idle'"
+                  @click="startVoiceCall">
+                  <Icon icon="ph:phone-fill" class="h-4 w-4" />
+                </button>
               </header>
 
               <div ref="messageListRef" :style="messageListStyle"
@@ -442,6 +448,65 @@
         </button>
       </div>
     </div>
+
+    <div v-if="callState !== 'idle' || incomingCall" class="fixed inset-0 z-[90] flex items-center justify-center bg-[#111b21]/90 px-4 py-6 backdrop-blur-sm"
+      @click.self="callState === 'incoming' ? rejectIncomingCall() : null">
+      <div class="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b141a] text-white shadow-2xl">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(37,211,102,0.28),_transparent_45%),linear-gradient(180deg,rgba(17,27,33,0.98),rgba(11,20,26,0.98))]"></div>
+        <div class="relative p-6">
+          <div class="flex items-center justify-between">
+            <div class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
+              <span class="h-2 w-2 rounded-full" :class="callState === 'active' ? 'bg-emerald-400' : callState === 'incoming' ? 'bg-amber-400 animate-pulse' : 'bg-sky-400 animate-pulse'"></span>
+              {{ callStateLabel }}
+            </div>
+            <button v-if="callState === 'active'" type="button"
+              class="rounded-full bg-white/10 p-2 text-white transition hover:bg-white/15"
+              @click="toggleMute">
+              <Icon :icon="isCallMuted ? 'ph:microphone-slash-fill' : 'ph:microphone-fill'" class="h-5 w-5" />
+            </button>
+          </div>
+
+          <div class="mt-10 flex flex-col items-center text-center">
+            <div class="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/10 shadow-lg">
+              <img v-if="callPeerAvatar" :src="callPeerAvatar" :alt="callPeerName" class="h-full w-full object-cover" />
+              <span v-else class="text-3xl font-semibold">{{ callPeerInitial }}</span>
+            </div>
+            <h3 class="mt-6 text-2xl font-semibold tracking-tight">{{ callPeerName || "Panggilan suara" }}</h3>
+            <p class="mt-2 text-sm text-white/65">
+              {{ callStatusMessage }}
+            </p>
+            <p v-if="callState === 'active'" class="mt-3 text-sm font-medium text-emerald-300">
+              {{ callDurationLabel }}
+            </p>
+          </div>
+
+          <div class="mt-8 flex items-center justify-center gap-4">
+            <button v-if="callState === 'incoming'" type="button"
+              class="flex h-14 w-14 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg transition hover:bg-rose-400"
+              @click="rejectIncomingCall">
+              <Icon icon="ph:phone-x-fill" class="h-6 w-6" />
+            </button>
+            <button v-if="callState === 'incoming'" type="button"
+              class="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition hover:bg-emerald-400"
+              @click="acceptIncomingCall">
+              <Icon icon="ph:phone-call-fill" class="h-6 w-6" />
+            </button>
+            <button v-if="callState === 'dialing'" type="button"
+              class="flex h-14 w-14 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg transition hover:bg-rose-400"
+              @click="endVoiceCall">
+              <Icon icon="ph:phone-x-fill" class="h-6 w-6" />
+            </button>
+            <button v-if="callState === 'connecting' || callState === 'active'" type="button"
+              class="flex h-14 w-14 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg transition hover:bg-rose-400"
+              @click="endVoiceCall">
+              <Icon icon="ph:phone-x-fill" class="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <audio ref="remoteAudioRef" autoplay playsinline class="hidden"></audio>
   </div>
 </template>
 
@@ -488,6 +553,22 @@ const attachmentInputRef = ref(null);
 const attachmentFile = ref(null);
 const attachmentPreviewName = ref("");
 const recordedVoiceUrl = ref("");
+const remoteAudioRef = ref(null);
+const callState = ref("idle");
+const incomingCall = ref(null);
+const callPeerInfo = ref(null);
+const callCallId = ref("");
+const callPeerConnection = ref(null);
+const callLocalStream = ref(null);
+const callPendingCandidates = ref([]);
+const callMuted = ref(false);
+const callTimer = ref(null);
+const callSeconds = ref(0);
+const callTurnServers = ref([]);
+const callTurnServersLoadedAt = ref(0);
+const callTeardownInProgress = ref(false);
+const callToneAudioContext = ref(null);
+const callToneTimer = ref(null);
 const showPdfPreview = ref(false);
 const previewPdfUrl = ref("");
 const previewPdfName = ref("");
@@ -699,6 +780,54 @@ const recordingDurationLabel = computed(() => {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 });
 
+const callPeer = computed(() => {
+  if (callPeerInfo.value) {
+    return callPeerInfo.value;
+  }
+  return selectedPeer.value || null;
+});
+
+const callPeerName = computed(() => displayPeerName(callPeer.value || {}));
+const callPeerAvatar = computed(() => {
+  const image = String(callPeer.value?.profile_image || "").trim();
+  return image ? normalizePublicUrl(image) : "";
+});
+const callPeerInitial = computed(() => peerInitial(callPeer.value || {}));
+const callStateLabel = computed(() => {
+  switch (callState.value) {
+    case "incoming":
+      return "Panggilan masuk";
+    case "dialing":
+      return "Memanggil";
+    case "connecting":
+      return "Menyambungkan";
+    case "active":
+      return "Sedang menelepon";
+    default:
+      return "Panggilan";
+  }
+});
+const callStatusMessage = computed(() => {
+  switch (callState.value) {
+    case "incoming":
+      return "Ada panggilan suara masuk. Terima atau tolak.";
+    case "dialing":
+      return "Menunggu jawaban dari lawan bicara.";
+    case "connecting":
+      return "Menghubungkan audio...";
+    case "active":
+      return "Panggilan suara tersambung.";
+    default:
+      return "Siap memulai panggilan suara.";
+  }
+});
+const callDurationLabel = computed(() => {
+  const totalSeconds = Math.max(0, Number(callSeconds.value || 0));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+});
+
 const composerBarStyle = computed(() => ({
   bottom: `${viewportBottomInset.value}px`,
   paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)",
@@ -862,6 +991,544 @@ const openPeerProfile = () => {
 
 const closePeerProfile = () => {
   showProfileModal.value = false;
+};
+
+const findPeerByUserId = (userId) => {
+  const normalizedUserId = Number(userId || 0);
+  if (!normalizedUserId) {
+    return null;
+  }
+
+  return peers.value.find((item) => Number(item.user_id) === normalizedUserId) || null;
+};
+
+const setCallPeerInfo = (payload = {}) => {
+  const peerId = Number(payload?.from_user_id || payload?.peer_user_id || payload?.to_user_id || 0);
+  const existingPeer = findPeerByUserId(peerId);
+  callPeerInfo.value = existingPeer || {
+    user_id: peerId,
+    username: payload?.peer_username || payload?.from_username || "",
+    full_name: payload?.peer_full_name || payload?.from_full_name || payload?.sender_full_name || payload?.peer_username || "Pengguna",
+    profile_image: payload?.peer_profile_image || payload?.from_profile_image || "",
+    role: payload?.peer_role || payload?.from_role || "",
+    class_name: payload?.peer_class_name || "",
+  };
+  return callPeerInfo.value;
+};
+
+const clearCallTimer = () => {
+  if (callTimer.value) {
+    window.clearInterval(callTimer.value);
+    callTimer.value = null;
+  }
+  callSeconds.value = 0;
+};
+
+const stopCallStream = () => {
+  if (callLocalStream.value) {
+    callLocalStream.value.getTracks().forEach((track) => track.stop());
+    callLocalStream.value = null;
+  }
+};
+
+const closePeerConnection = () => {
+  if (callPeerConnection.value) {
+    try {
+      callPeerConnection.value.ontrack = null;
+      callPeerConnection.value.onicecandidate = null;
+      callPeerConnection.value.onconnectionstatechange = null;
+      callPeerConnection.value.close();
+    } catch (error) {
+      // Ignore closing failures.
+    }
+  }
+  callPeerConnection.value = null;
+};
+
+const stopCallTone = () => {
+  if (callToneTimer.value) {
+    window.clearTimeout(callToneTimer.value);
+    callToneTimer.value = null;
+  }
+
+  if (callToneAudioContext.value) {
+    try {
+      callToneAudioContext.value.close?.();
+    } catch (error) {
+      // ignore
+    }
+    callToneAudioContext.value = null;
+  }
+};
+
+const scheduleToneBurst = (audioContext, bursts, onComplete) => {
+  if (!audioContext || audioContext.state === "closed" || !Array.isArray(bursts) || bursts.length === 0) {
+    if (typeof onComplete === "function") {
+      onComplete();
+    }
+    return;
+  }
+
+  const now = audioContext.currentTime;
+  let offset = 0;
+
+  bursts.forEach((burst) => {
+    const frequency = Number(burst?.frequency || 0);
+    const durationMs = Math.max(40, Number(burst?.durationMs || 0));
+    const gapMs = Math.max(0, Number(burst?.gapMs || 0));
+    const volume = Math.min(0.16, Math.max(0.02, Number(burst?.volume || 0.08)));
+    if (!frequency) {
+      offset += (durationMs + gapMs) / 1000;
+      return;
+    }
+
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(frequency, now + offset);
+    gainNode.gain.setValueAtTime(0.0001, now + offset);
+    gainNode.gain.exponentialRampToValueAtTime(volume, now + offset + 0.02);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + offset + durationMs / 1000);
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.start(now + offset);
+    oscillator.stop(now + offset + durationMs / 1000 + 0.03);
+    offset += (durationMs + gapMs) / 1000;
+  });
+
+  callToneTimer.value = window.setTimeout(() => {
+    if (typeof onComplete === "function") {
+      onComplete();
+    }
+  }, Math.max(0, offset * 1000));
+};
+
+const startCallTone = (mode) => {
+  stopCallTone();
+
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) {
+    return;
+  }
+
+  const audioContext = new AudioContextClass();
+  callToneAudioContext.value = audioContext;
+
+  const incomingPattern = [
+    { frequency: 880, durationMs: 220, gapMs: 120, volume: 0.06 },
+    { frequency: 660, durationMs: 220, gapMs: 110, volume: 0.06 },
+  ];
+  const ringbackPattern = [
+    { frequency: 440, durationMs: 400, gapMs: 100, volume: 0.05 },
+    { frequency: 480, durationMs: 400, gapMs: 3000, volume: 0.05 },
+  ];
+
+  const pattern = mode === "incoming" ? incomingPattern : ringbackPattern;
+  const loop = () => {
+    if (!callToneAudioContext.value || callToneAudioContext.value.state === "closed") {
+      return;
+    }
+    scheduleToneBurst(callToneAudioContext.value, pattern, loop);
+  };
+
+  loop();
+};
+
+const resetCallSession = (keepSelectedPeer = false) => {
+  callTeardownInProgress.value = true;
+  stopCallTone();
+  clearCallTimer();
+  callPendingCandidates.value = [];
+  callCallId.value = "";
+  callMuted.value = false;
+  closePeerConnection();
+  stopCallStream();
+  if (remoteAudioRef.value) {
+    remoteAudioRef.value.srcObject = null;
+  }
+  if (!keepSelectedPeer) {
+    callPeerInfo.value = null;
+  }
+  incomingCall.value = null;
+  if (callState.value !== "idle") {
+    callState.value = "idle";
+  }
+  callTeardownInProgress.value = false;
+};
+
+const loadTurnIceServers = async () => {
+  const now = Date.now();
+  if (callTurnServers.value.length > 0 && now - Number(callTurnServersLoadedAt.value || 0) < 45 * 60 * 1000) {
+    return callTurnServers.value;
+  }
+
+  const response = await api.get("/private-chat/turn/ice-servers");
+  const iceServers = Array.isArray(response?.data?.ice_servers) ? response.data.ice_servers : [];
+  if (iceServers.length === 0) {
+    throw new Error("TURN server tidak tersedia");
+  }
+
+  callTurnServers.value = iceServers;
+  callTurnServersLoadedAt.value = now;
+  return iceServers;
+};
+
+const normalizeIceCandidate = (candidate) => {
+  if (!candidate) {
+    return null;
+  }
+
+  if (typeof candidate.toJSON === "function") {
+    return candidate.toJSON();
+  }
+
+  if (typeof candidate === "object") {
+    return {
+      candidate: candidate.candidate || candidate.candidateLine || "",
+      sdpMid: candidate.sdpMid || null,
+      sdpMLineIndex: candidate.sdpMLineIndex ?? null,
+      usernameFragment: candidate.usernameFragment || candidate.ufrag || null,
+    };
+  }
+
+  return candidate;
+};
+
+const sendCallSignal = async (signalType, extraPayload = {}) => {
+  const peerId = Number(callPeer.value?.user_id || selectedPeer.value?.user_id || 0);
+  const callId = String(callCallId.value || extraPayload.call_id || "").trim();
+  if (!peerId || !callId) {
+    return null;
+  }
+
+  const response = await api.post(`/private-chat/${peerId}/calls/${callId}/signal`, {
+    signal_type: signalType,
+    client_id: localClientId.value,
+    ...extraPayload,
+  });
+  return response?.data || null;
+};
+
+const createCallPeerConnection = (iceServers) => {
+  closePeerConnection();
+  const peerConnection = new RTCPeerConnection({ iceServers });
+
+  peerConnection.onicecandidate = (event) => {
+    if (!event.candidate) {
+      return;
+    }
+    sendCallSignal("candidate", { candidate: normalizeIceCandidate(event.candidate) }).catch(() => undefined);
+  };
+
+  peerConnection.ontrack = (event) => {
+    const [stream] = event.streams || [];
+    if (remoteAudioRef.value && stream) {
+      remoteAudioRef.value.srcObject = stream;
+      remoteAudioRef.value.play?.().catch(() => undefined);
+    }
+  };
+
+  peerConnection.onconnectionstatechange = async () => {
+    const state = String(peerConnection.connectionState || "").toLowerCase();
+    if (callTeardownInProgress.value) {
+      return;
+    }
+    if (state === "connected" || state === "completed") {
+      if (callState.value === "connecting" || callState.value === "dialing") {
+        callState.value = "active";
+      }
+      return;
+    }
+
+    if (state === "failed" || state === "disconnected" || state === "closed") {
+      if (callState.value !== "idle") {
+        await endVoiceCall(true);
+      }
+    }
+  };
+
+  callPeerConnection.value = peerConnection;
+  return peerConnection;
+};
+
+const attachLocalStreamToPeerConnection = (stream) => {
+  if (!callPeerConnection.value || !stream) {
+    return;
+  }
+
+  const existingSenders = new Set(callPeerConnection.value.getSenders().map((sender) => sender.track?.kind).filter(Boolean));
+  stream.getTracks().forEach((track) => {
+    if (!existingSenders.has(track.kind)) {
+      callPeerConnection.value.addTrack(track, stream);
+    }
+  });
+};
+
+const drainPendingCandidates = async () => {
+  if (!callPeerConnection.value || !callPeerConnection.value.remoteDescription) {
+    return;
+  }
+
+  const pending = [...callPendingCandidates.value];
+  callPendingCandidates.value = [];
+  for (const candidate of pending) {
+    try {
+      await callPeerConnection.value.addIceCandidate(candidate);
+    } catch (error) {
+      // ignore invalid stale candidates
+    }
+  }
+};
+
+const applyRemoteDescription = async (description) => {
+  if (!callPeerConnection.value || !description) {
+    return;
+  }
+
+  const normalizedDescription = typeof description === "string" ? { type: "offer", sdp: description } : description;
+  if (!normalizedDescription?.type || !normalizedDescription?.sdp) {
+    return;
+  }
+
+  await callPeerConnection.value.setRemoteDescription(new RTCSessionDescription(normalizedDescription));
+  await drainPendingCandidates();
+};
+
+const startCallTimer = () => {
+  clearCallTimer();
+  callSeconds.value = 0;
+  callTimer.value = window.setInterval(() => {
+    callSeconds.value += 1;
+  }, 1000);
+};
+
+const startVoiceCall = async () => {
+  if (!selectedPeer.value || callState.value !== "idle") {
+    return;
+  }
+
+  try {
+    setCallPeerInfo({ ...selectedPeer.value });
+    callCallId.value = `call-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    callState.value = "dialing";
+  if (isRecordingVoice.value) {
+    clearAttachment();
+  }
+  const iceServers = await loadTurnIceServers();
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    callLocalStream.value = stream;
+    const peerConnection = createCallPeerConnection(iceServers);
+    attachLocalStreamToPeerConnection(stream);
+    const offer = await peerConnection.createOffer({
+      offerToReceiveAudio: true,
+      offerToReceiveVideo: false,
+    });
+    await peerConnection.setLocalDescription(offer);
+    await api.post(`/private-chat/${selectedPeer.value.user_id}/calls`, {
+      call_id: callCallId.value,
+      client_id: localClientId.value,
+      offer: offer,
+      offer_type: "offer",
+    });
+    startCallTone("ringback");
+    callState.value = "dialing";
+  } catch (error) {
+    pushToast({
+      title: "Telepon Gagal Dimulai",
+      message: error.message || "Tidak berhasil memulai panggilan suara.",
+      type: "error",
+    });
+    await endVoiceCall(true);
+  }
+};
+
+const acceptIncomingCall = async () => {
+  if (!incomingCall.value || callState.value !== "incoming") {
+    return;
+  }
+
+  try {
+    const payload = incomingCall.value;
+    setCallPeerInfo(payload);
+    callCallId.value = String(payload?.call_id || "");
+    callState.value = "connecting";
+    stopCallTone();
+    const iceServers = await loadTurnIceServers();
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    callLocalStream.value = stream;
+    const peerConnection = createCallPeerConnection(iceServers);
+    attachLocalStreamToPeerConnection(stream);
+
+    const offer = payload?.offer && typeof payload.offer === "object" ? payload.offer : { type: "offer", sdp: payload?.sdp || payload?.offer_sdp || "" };
+    await applyRemoteDescription(offer);
+
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
+    await sendCallSignal("answer", { sdp: answer }).catch(() => undefined);
+    startCallTimer();
+    callState.value = "active";
+    incomingCall.value = null;
+  } catch (error) {
+    pushToast({
+      title: "Gagal Menerima Panggilan",
+      message: error.message || "Tidak berhasil menerima telepon.",
+      type: "error",
+    });
+    await endVoiceCall(true);
+  }
+};
+
+const rejectIncomingCall = async () => {
+  if (!incomingCall.value) {
+    resetCallSession();
+    return;
+  }
+
+  try {
+    await sendCallSignal("rejected", { reason: "declined" });
+  } catch (error) {
+    // Ignore signalling failures when rejecting.
+  }
+  resetCallSession();
+};
+
+const toggleMute = () => {
+  callMuted.value = !callMuted.value;
+  if (!callLocalStream.value) {
+    return;
+  }
+
+  callLocalStream.value.getAudioTracks().forEach((track) => {
+    track.enabled = !callMuted.value;
+  });
+};
+
+const endVoiceCall = async (silent = false) => {
+  if (callTeardownInProgress.value) {
+    return;
+  }
+  if (callState.value === "idle" && !incomingCall.value && !callCallId.value) {
+    return;
+  }
+
+  const currentCallId = String(callCallId.value || incomingCall.value?.call_id || "");
+  const shouldNotifyPeer = Boolean(currentCallId && (callState.value !== "idle" || incomingCall.value));
+
+  try {
+    if (shouldNotifyPeer) {
+      await sendCallSignal("ended", { reason: silent ? "silent" : "hangup" });
+    }
+  } catch (error) {
+    // Ignore signalling errors while hanging up.
+  }
+
+  resetCallSession();
+};
+
+const handleCallEvent = async (payload) => {
+  if (!payload || String(payload?.client_id || "") === localClientId.value) {
+    return;
+  }
+
+  const signalType = String(payload?.signal_type || "").toLowerCase();
+  const callId = String(payload?.call_id || "");
+  if (!callId) {
+    return;
+  }
+
+  if (signalType === "incoming") {
+    if (callState.value !== "idle") {
+      try {
+        const busyPeerId = Number(payload?.from_user_id || payload?.peer_user_id || 0);
+        if (busyPeerId) {
+          await api.post(`/private-chat/${busyPeerId}/calls/${callId}/signal`, {
+            signal_type: "busy",
+            client_id: localClientId.value,
+            reason: "on_call",
+          });
+        }
+      } catch (error) {
+        // Ignore busy responses.
+      }
+      return;
+    }
+
+    incomingCall.value = {
+      ...payload,
+      call_id: callId,
+    };
+    callCallId.value = callId;
+    setCallPeerInfo(payload);
+    callState.value = "incoming";
+    startCallTone("incoming");
+    if (selectedPeer.value?.user_id !== Number(payload?.from_user_id || 0)) {
+      const peer = findPeerByUserId(payload?.from_user_id) || {
+        user_id: Number(payload?.from_user_id || 0),
+        username: payload?.peer_username || "",
+        full_name: payload?.peer_full_name || payload?.peer_username || "Pengguna",
+        profile_image: payload?.peer_profile_image || "",
+        role: payload?.peer_role || "",
+        class_name: payload?.peer_class_name || "",
+      };
+      selectedPeer.value = peer;
+      mobileChatOpen.value = true;
+    }
+    return;
+  }
+
+  if (callId !== callCallId.value) {
+    return;
+  }
+
+  if (signalType === "answer") {
+    try {
+      await applyRemoteDescription(payload?.sdp);
+      stopCallTone();
+      callState.value = "active";
+      startCallTimer();
+    } catch (error) {
+      pushToast({
+        title: "Panggilan Gagal Tersambung",
+        message: error.message || "Sinyal audio belum tersambung.",
+        type: "error",
+      });
+      await endVoiceCall(true);
+    }
+    return;
+  }
+
+  if (signalType === "candidate") {
+    const candidate = payload?.candidate;
+    if (!candidate) {
+      return;
+    }
+
+    const normalizedCandidate = typeof candidate === "string"
+      ? { candidate }
+      : candidate;
+
+    if (callPeerConnection.value?.remoteDescription) {
+      try {
+        await callPeerConnection.value.addIceCandidate(normalizedCandidate);
+      } catch (error) {
+        // ignore malformed candidates
+      }
+    } else {
+      callPendingCandidates.value = [...callPendingCandidates.value, normalizedCandidate];
+    }
+    return;
+  }
+
+  if (signalType === "ended" || signalType === "rejected" || signalType === "busy") {
+    if (signalType === "busy") {
+      pushToast({
+        title: "Lawan Bicara Sedang Sibuk",
+        message: "Panggilan tidak dapat dihubungkan saat ini.",
+        type: "info",
+      });
+    }
+    resetCallSession();
+  }
 };
 
 const clearReplyTarget = () => {
@@ -1328,6 +1995,9 @@ const bindRealtime = () => {
         await refreshSummary(true);
       }
     }),
+    realtimeStore.on("private-chat:call-event", async (payload) => {
+      await handleCallEvent(payload);
+    }),
   ];
 };
 
@@ -1386,6 +2056,7 @@ defineExpose({
 });
 
 onUnmounted(() => {
+  void endVoiceCall(true);
   clearAttachment();
   if (searchDebounceTimer.value) {
     window.clearTimeout(searchDebounceTimer.value);

@@ -62,6 +62,7 @@ const ensureEventSource = (url) => {
     "learning-chat:typing",
     "private-chat:new-message",
     "private-chat:read-updated",
+    "private-chat:call-event",
     "learning-notification:new",
     "koperasi:order-created",
     "koperasi:order-updated",
