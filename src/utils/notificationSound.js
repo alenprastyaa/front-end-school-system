@@ -3,6 +3,8 @@ const SOUND_PRESETS = {
   chat: { frequency: 988, duration: 0.18, volume: 0.08 },
   announcement: { frequency: 784, duration: 0.24, volume: 0.08 },
   assignment: { frequency: 932, duration: 0.2, volume: 0.08 },
+  call: { frequency: 660, duration: 0.26, volume: 0.08 },
+  call_missed: { frequency: 494, duration: 0.3, volume: 0.08 },
   error: { frequency: 523, duration: 0.28, volume: 0.1 },
 };
 

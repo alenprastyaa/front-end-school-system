@@ -120,6 +120,18 @@ export default {
     ToastHost,
   },
   methods: {
+    resolveInternalRoutePath(url) {
+      if (!url || typeof url !== "string") {
+        return "";
+      }
+
+      try {
+        const parsed = new URL(url, window.location.origin);
+        return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+      } catch (error) {
+        return url;
+      }
+    },
     open() {
       this.sidebar = true;
     },
@@ -166,6 +178,15 @@ export default {
     handleServiceWorkerMessage(event) {
       const payload = event?.data || {};
       if (payload?.type !== "push-notification") {
+        if (payload?.type === "open-url") {
+          const routePath = typeof payload?.routePath === "string" && payload.routePath.trim()
+            ? payload.routePath.trim()
+            : this.resolveInternalRoutePath(payload?.url);
+
+          if (routePath) {
+            this.$router.push(routePath).catch(() => undefined);
+          }
+        }
         return;
       }
 

@@ -129,8 +129,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { Icon } from '@iconify/vue';
 import { normalizePublicUrl } from '@/utils/url';
 import { getStoredRole } from '@/utils/auth';
@@ -138,6 +138,7 @@ import LearningChat from './LearningChat.vue';
 import PrivateChat from './PrivateChat.vue';
 
 const router = useRouter();
+const route = useRoute();
 const role = getStoredRole();
 
 const learningChatRef = ref(null);
@@ -201,7 +202,25 @@ const selectTab = (tabType, id) => {
   mobileChatOpen.value = true;
 };
 
+const openPeerFromRoute = () => {
+  const requestedPeerId = Number(route.query?.user || 0);
+  if (!requestedPeerId) {
+    return;
+  }
+
+  activeTab.value = 'peer';
+  selectedPeerId.value = requestedPeerId;
+  mobileChatOpen.value = true;
+};
+
 onMounted(() => {
-  // You can auto select first group if you want, but wait for them to load.
+  openPeerFromRoute();
 });
+
+watch(
+  () => route.query?.user,
+  () => {
+    openPeerFromRoute();
+  },
+);
 </script>

@@ -21,6 +21,67 @@ const normalizeUrl = (value) => {
   }
 };
 
+const appendQueryParams = (baseUrl, params = {}) => {
+  try {
+    const url = new URL(baseUrl, self.location.origin);
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === "") {
+        return;
+      }
+      url.searchParams.set(key, String(value));
+    });
+    return url.toString();
+  } catch (error) {
+    return normalizeUrl(baseUrl);
+  }
+};
+
+const buildCallTargetUrl = (payload, action = "") => {
+  const peerUserId = payload?.call_peer_user_id || payload?.call_from_user_id || payload?.from_user_id || payload?.peer_user_id;
+  const baseUrl = payload?.url || "/chat";
+  const params = {
+    user: peerUserId || "",
+    call_id: payload?.call_id || "",
+    call_action: action || payload?.call_action || "view",
+  };
+
+  if (payload?.call_offer !== undefined && payload?.call_offer !== null && payload?.call_offer !== "") {
+    try {
+      params.call_offer = JSON.stringify(payload.call_offer);
+    } catch (error) {
+      params.call_offer = "";
+    }
+  }
+
+  if (payload?.call_peer_full_name) {
+    params.call_peer_full_name = payload.call_peer_full_name;
+  }
+  if (payload?.call_peer_username) {
+    params.call_peer_username = payload.call_peer_username;
+  }
+  if (payload?.call_from_user_id) {
+    params.call_from_user_id = payload.call_from_user_id;
+  }
+  if (payload?.call_to_user_id) {
+    params.call_to_user_id = payload.call_to_user_id;
+  }
+
+  return appendQueryParams(baseUrl, params);
+};
+
+const toAppRoutePath = (value) => {
+  if (!value) {
+    return "/";
+  }
+
+  try {
+    const url = new URL(value, self.location.origin);
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch (error) {
+    return String(value);
+  }
+};
+
 const getNotificationPayload = (event) => {
   if (!event?.data) {
     return {};
@@ -155,6 +216,13 @@ self.addEventListener("push", (event) => {
   const badge = payload.badge || getAssetUrl("logo.png");
   const kind = payload.kind || "default";
   const soundUrl = payload.sound_url || payload.soundUrl || null;
+  const isCall = kind === "call";
+  const notificationActions = isCall
+    ? [
+        { action: "accept", title: "Jawab" },
+        { action: "reject", title: "Tolak" },
+      ]
+    : [];
 
   event.waitUntil(
     Promise.all([
@@ -163,12 +231,22 @@ self.addEventListener("push", (event) => {
         icon,
         badge,
         silent: false,
-        vibrate: [120, 60, 120],
+        vibrate: isCall ? [250, 120, 250, 120, 250] : [120, 60, 120],
+        requireInteraction: isCall,
+        actions: notificationActions,
         data: {
           url,
           id: payload.id || null,
+          kind,
+          call_id: payload.call_id || null,
+          call_from_user_id: payload.call_from_user_id || null,
+          call_to_user_id: payload.call_to_user_id || null,
+          call_peer_user_id: payload.call_peer_user_id || null,
+          call_peer_username: payload.call_peer_username || null,
+          call_peer_full_name: payload.call_peer_full_name || null,
+          call_offer: payload.call_offer || null,
         },
-        tag: payload.tag || payload.group || title,
+        tag: payload.tag || payload.group || (isCall ? "private-call" : title),
         renotify: Boolean(payload.renotify),
       }),
       clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
@@ -194,13 +272,27 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  const targetUrl = normalizeUrl(event.notification?.data?.url || "/");
+  const payload = event.notification?.data || {};
+  const action = String(event.action || "").toLowerCase();
+  const isCall = String(payload.kind || "") === "call";
+  const targetUrl = isCall ? buildCallTargetUrl(payload, action || "view") : normalizeUrl(payload.url || "/");
+  const routePath = toAppRoutePath(targetUrl);
+
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
-      for (const client of windowClients) {
-        if ("focus" in client && client.url === targetUrl) {
-          return client.focus();
-        }
+      const client = windowClients[0] || null;
+
+      if (client && "focus" in client) {
+        client.focus();
+        client.postMessage({
+          type: isCall ? "open-url" : "push-notification-open",
+          url: targetUrl,
+          routePath,
+          action: action || "view",
+          kind: payload.kind || "default",
+          data: payload,
+        });
+        return client;
       }
 
       if (clients.openWindow) {

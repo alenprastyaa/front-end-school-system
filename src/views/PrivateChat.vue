@@ -451,9 +451,10 @@
 
     <div v-if="callState !== 'idle' || incomingCall" class="fixed inset-0 z-[90] flex items-center justify-center bg-[#111b21]/90 px-4 py-6 backdrop-blur-sm"
       @click.self="callState === 'incoming' ? rejectIncomingCall() : null">
-      <div class="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b141a] text-white shadow-2xl">
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(37,211,102,0.28),_transparent_45%),linear-gradient(180deg,rgba(17,27,33,0.98),rgba(11,20,26,0.98))]"></div>
-        <div class="relative p-6">
+      <Transition name="call-dialog" appear @after-enter="focusCallDialog">
+        <div ref="callDialogRef" tabindex="-1" role="dialog" aria-modal="true" class="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b141a] text-white shadow-2xl">
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(37,211,102,0.28),_transparent_45%),linear-gradient(180deg,rgba(17,27,33,0.98),rgba(11,20,26,0.98))]"></div>
+          <div class="relative p-6">
           <div class="flex items-center justify-between">
             <div class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
               <span class="h-2 w-2 rounded-full" :class="callState === 'active' ? 'bg-emerald-400' : callState === 'incoming' ? 'bg-amber-400 animate-pulse' : 'bg-sky-400 animate-pulse'"></span>
@@ -502,8 +503,9 @@
               <Icon icon="ph:phone-x-fill" class="h-6 w-6" />
             </button>
           </div>
+          </div>
         </div>
-      </div>
+      </Transition>
     </div>
 
     <audio ref="remoteAudioRef" autoplay playsinline class="hidden"></audio>
@@ -554,6 +556,7 @@ const attachmentFile = ref(null);
 const attachmentPreviewName = ref("");
 const recordedVoiceUrl = ref("");
 const remoteAudioRef = ref(null);
+const callDialogRef = ref(null);
 const callState = ref("idle");
 const incomingCall = ref(null);
 const callPeerInfo = ref(null);
@@ -564,11 +567,14 @@ const callPendingCandidates = ref([]);
 const callMuted = ref(false);
 const callTimer = ref(null);
 const callSeconds = ref(0);
+const incomingCallTimeout = ref(null);
+const outgoingCallTimeout = ref(null);
 const callTurnServers = ref([]);
 const callTurnServersLoadedAt = ref(0);
 const callTeardownInProgress = ref(false);
 const callToneAudioContext = ref(null);
 const callToneTimer = ref(null);
+const handledRouteCallActionId = ref("");
 const showPdfPreview = ref(false);
 const previewPdfUrl = ref("");
 const previewPdfName = ref("");
@@ -1016,12 +1022,175 @@ const setCallPeerInfo = (payload = {}) => {
   return callPeerInfo.value;
 };
 
+const parseRouteCallOffer = () => {
+  const rawOffer = String(route.query?.call_offer || "").trim();
+  if (!rawOffer) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(decodeURIComponent(rawOffer));
+  } catch (error) {
+    try {
+      return JSON.parse(rawOffer);
+    } catch (parseError) {
+      return null;
+    }
+  }
+};
+
+const buildRouteCallPayload = () => {
+  const peerId = Number(route.query?.user || 0);
+  const callId = String(route.query?.call_id || "").trim();
+  const callAction = String(route.query?.call_action || "").trim().toLowerCase();
+  if (!peerId || !callId || !callAction) {
+    return null;
+  }
+
+  return {
+    call_id: callId,
+    signal_type: "incoming",
+    from_user_id: Number(route.query?.call_from_user_id || peerId),
+    to_user_id: Number(route.query?.call_to_user_id || currentUserId || 0),
+    peer_user_id: peerId,
+    peer_username: String(route.query?.call_peer_username || ""),
+    peer_full_name: String(route.query?.call_peer_full_name || route.query?.call_peer_username || "Pengguna"),
+    offer: parseRouteCallOffer(),
+    client_id: localClientId.value,
+    call_action: callAction,
+  };
+};
+
+const handleRouteCallAction = async () => {
+  const payload = buildRouteCallPayload();
+  if (!payload) {
+    return;
+  }
+
+  if (handledRouteCallActionId.value === `${payload.call_id}:${payload.call_action}`) {
+    return;
+  }
+
+  handledRouteCallActionId.value = `${payload.call_id}:${payload.call_action}`;
+  const peerId = Number(payload.peer_user_id || 0);
+  const peer =
+    findPeerByUserId(peerId) ||
+    {
+      user_id: peerId,
+      username: payload.peer_username || "",
+      full_name: payload.peer_full_name || payload.peer_username || "Pengguna",
+      profile_image: "",
+      role: "",
+      class_name: "",
+    };
+
+  if (!selectedPeer.value || Number(selectedPeer.value.user_id || 0) !== peerId) {
+    await selectPeer(peer);
+  }
+
+  incomingCall.value = payload;
+  callCallId.value = payload.call_id;
+  setCallPeerInfo(payload);
+  callState.value = "incoming";
+  await focusCallDialog();
+
+  if (payload.call_action === "reject") {
+    await rejectIncomingCall();
+    return;
+  }
+
+  if (payload.call_action === "accept") {
+    await acceptIncomingCall();
+    return;
+  }
+
+  scheduleIncomingCallTimeout();
+};
+
 const clearCallTimer = () => {
   if (callTimer.value) {
     window.clearInterval(callTimer.value);
     callTimer.value = null;
   }
   callSeconds.value = 0;
+};
+
+const clearIncomingCallTimeout = () => {
+  if (incomingCallTimeout.value) {
+    window.clearTimeout(incomingCallTimeout.value);
+    incomingCallTimeout.value = null;
+  }
+};
+
+const clearOutgoingCallTimeout = () => {
+  if (outgoingCallTimeout.value) {
+    window.clearTimeout(outgoingCallTimeout.value);
+    outgoingCallTimeout.value = null;
+  }
+};
+
+const focusCallDialog = async () => {
+  await nextTick();
+  callDialogRef.value?.focus?.();
+};
+
+const scheduleIncomingCallTimeout = () => {
+  clearIncomingCallTimeout();
+
+  if (!incomingCall.value || callState.value !== "incoming") {
+    return;
+  }
+
+  const callId = String(incomingCall.value?.call_id || "");
+  if (!callId) {
+    return;
+  }
+
+  incomingCallTimeout.value = window.setTimeout(async () => {
+    if (callState.value !== "incoming" || String(incomingCall.value?.call_id || "") !== callId) {
+      return;
+    }
+
+    try {
+      await sendCallSignal("missed", { reason: "no_answer" });
+    } catch (error) {
+      // Ignore signalling failures if the call already disappeared.
+    }
+
+    pushToast({
+      title: "Panggilan suara tak terjawab",
+      message: `${callPeerName.value || "Kontak"} tidak menjawab panggilan.`,
+      type: "info",
+    });
+    resetCallSession();
+  }, 30000);
+};
+
+const scheduleOutgoingCallTimeout = () => {
+  clearOutgoingCallTimeout();
+
+  if (callState.value !== "dialing" && callState.value !== "connecting") {
+    return;
+  }
+
+  const callId = String(callCallId.value || "");
+  if (!callId) {
+    return;
+  }
+
+  outgoingCallTimeout.value = window.setTimeout(async () => {
+    if (!["dialing", "connecting"].includes(callState.value) || String(callCallId.value || "") !== callId) {
+      return;
+    }
+
+    try {
+      await sendCallSignal("missed", { reason: "caller_timeout" });
+    } catch (error) {
+      // Ignore signalling failures if the call already ended.
+    }
+
+    resetCallSession();
+  }, 30000);
 };
 
 const stopCallStream = () => {
@@ -1138,6 +1307,8 @@ const resetCallSession = (keepSelectedPeer = false) => {
   callTeardownInProgress.value = true;
   stopCallTone();
   clearCallTimer();
+  clearIncomingCallTimeout();
+  clearOutgoingCallTimeout();
   callPendingCandidates.value = [];
   callCallId.value = "";
   callMuted.value = false;
@@ -1331,6 +1502,7 @@ const startVoiceCall = async () => {
       offer_type: "offer",
     });
     startCallTone("ringback");
+    scheduleOutgoingCallTimeout();
     callState.value = "dialing";
   } catch (error) {
     pushToast({
@@ -1348,6 +1520,8 @@ const acceptIncomingCall = async () => {
   }
 
   try {
+    clearIncomingCallTimeout();
+    clearOutgoingCallTimeout();
     const payload = incomingCall.value;
     setCallPeerInfo(payload);
     callCallId.value = String(payload?.call_id || "");
@@ -1368,6 +1542,7 @@ const acceptIncomingCall = async () => {
     startCallTimer();
     callState.value = "active";
     incomingCall.value = null;
+    await focusCallDialog();
   } catch (error) {
     pushToast({
       title: "Gagal Menerima Panggilan",
@@ -1385,6 +1560,8 @@ const rejectIncomingCall = async () => {
   }
 
   try {
+    clearIncomingCallTimeout();
+    clearOutgoingCallTimeout();
     await sendCallSignal("rejected", { reason: "declined" });
   } catch (error) {
     // Ignore signalling failures when rejecting.
@@ -1413,6 +1590,8 @@ const endVoiceCall = async (silent = false) => {
 
   const currentCallId = String(callCallId.value || incomingCall.value?.call_id || "");
   const shouldNotifyPeer = Boolean(currentCallId && (callState.value !== "idle" || incomingCall.value));
+  clearIncomingCallTimeout();
+  clearOutgoingCallTimeout();
 
   try {
     if (shouldNotifyPeer) {
@@ -1461,6 +1640,7 @@ const handleCallEvent = async (payload) => {
     setCallPeerInfo(payload);
     callState.value = "incoming";
     startCallTone("incoming");
+    scheduleIncomingCallTimeout();
     if (selectedPeer.value?.user_id !== Number(payload?.from_user_id || 0)) {
       const peer = findPeerByUserId(payload?.from_user_id) || {
         user_id: Number(payload?.from_user_id || 0),
@@ -1473,6 +1653,7 @@ const handleCallEvent = async (payload) => {
       selectedPeer.value = peer;
       mobileChatOpen.value = true;
     }
+    focusCallDialog().catch(() => undefined);
     return;
   }
 
@@ -1482,6 +1663,8 @@ const handleCallEvent = async (payload) => {
 
   if (signalType === "answer") {
     try {
+      clearOutgoingCallTimeout();
+      clearIncomingCallTimeout();
       await applyRemoteDescription(payload?.sdp);
       stopCallTone();
       callState.value = "active";
@@ -1516,6 +1699,19 @@ const handleCallEvent = async (payload) => {
     } else {
       callPendingCandidates.value = [...callPendingCandidates.value, normalizedCandidate];
     }
+    return;
+  }
+
+  if (signalType === "missed" || (signalType === "ended" && String(payload?.reason || "").toLowerCase() === "missed")) {
+    clearIncomingCallTimeout();
+    clearOutgoingCallTimeout();
+    stopCallTone();
+    pushToast({
+      title: "Panggilan suara tak terjawab",
+      message: `${callPeerName.value || "Kontak"} tidak menjawab panggilan.`,
+      type: "info",
+    });
+    resetCallSession();
     return;
   }
 
@@ -2005,11 +2201,16 @@ onMounted(async () => {
   updateViewportInset();
   await refreshSummary(true);
 
-  const requestedPeerId = Number(route.query?.user || 0);
-  if (requestedPeerId) {
-    const peer = peers.value.find((item) => Number(item.user_id) === requestedPeerId);
-    if (peer) {
-      await selectPeer(peer);
+  const routeCallAction = String(route.query?.call_action || "").trim().toLowerCase();
+  if (routeCallAction) {
+    await handleRouteCallAction();
+  } else {
+    const requestedPeerId = Number(route.query?.user || 0);
+    if (requestedPeerId) {
+      const peer = peers.value.find((item) => Number(item.user_id) === requestedPeerId);
+      if (peer) {
+        await selectPeer(peer);
+      }
     }
   }
 
@@ -2037,6 +2238,27 @@ watch(() => props.activePeerId, (newId) => {
     selectedPeer.value = null;
   }
 });
+
+watch(
+  () => [route.query?.user, route.query?.call_id, route.query?.call_action, route.query?.call_offer],
+  async () => {
+    const routeCallAction = String(route.query?.call_action || "").trim().toLowerCase();
+    if (routeCallAction) {
+      await handleRouteCallAction();
+      return;
+    }
+
+    const requestedPeerId = Number(route.query?.user || 0);
+    if (!requestedPeerId) {
+      return;
+    }
+
+    const peer = peers.value.find((item) => Number(item.user_id) === requestedPeerId);
+    if (peer && Number(selectedPeer.value?.user_id || 0) !== requestedPeerId) {
+      await selectPeer(peer);
+    }
+  },
+);
 
 watch(peers, (newPeers) => {
   if (props.unifiedMode && props.activePeerId && selectedPeer.value?.user_id !== props.activePeerId) {
@@ -2186,5 +2408,22 @@ watch(
   .message-bubble {
     max-width: 86%;
   }
+}
+
+.call-dialog-enter-active,
+.call-dialog-leave-active {
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.call-dialog-enter-from,
+.call-dialog-leave-to {
+  opacity: 0;
+  transform: translateY(12px) scale(0.97);
+}
+
+.call-dialog-enter-to,
+.call-dialog-leave-from {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 </style>
