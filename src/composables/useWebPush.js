@@ -6,7 +6,9 @@ import { registerPwaServiceWorker } from "@/utils/serviceWorker";
 const supported = typeof window !== "undefined"
   && "Notification" in window
   && "serviceWorker" in navigator
-  && "PushManager" in window;
+  && "PushManager" in window
+  && typeof ServiceWorkerRegistration !== "undefined"
+  && "showNotification" in ServiceWorkerRegistration.prototype;
 
 const permission = ref(typeof Notification !== "undefined" ? Notification.permission : "unsupported");
 const registration = ref(null);
@@ -21,6 +23,47 @@ const isAuthenticated = () => {
   }
 
   return Boolean(String(localStorage.getItem("token") || "").trim());
+};
+
+const isIosDevice = () => {
+  if (typeof navigator === "undefined") {
+    return false;
+  }
+
+  const userAgent = String(navigator.userAgent || "");
+  return /iPad|iPhone|iPod/.test(userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+};
+
+const isStandalonePwa = () => {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator?.standalone === true;
+};
+
+const showSubscriptionTestNotification = async (swRegistration) => {
+  if (!swRegistration || permission.value !== "granted") {
+    return;
+  }
+
+  try {
+    await swRegistration.showNotification("Notifikasi Aktif", {
+      body: isIosDevice() && isStandalonePwa()
+        ? "iPhone ini sudah terdaftar untuk menerima notifikasi School System."
+        : "Perangkat ini sudah terdaftar untuk menerima notifikasi School System.",
+      icon: "/pwa-icon.svg",
+      badge: "/logo.png",
+      tag: "push-subscription-ready",
+      renotify: false,
+      data: {
+        kind: "system",
+        url: "/dashboard",
+      },
+    });
+  } catch (error) {
+    // Permission/subscription remains valid even if a local confirmation cannot be shown.
+  }
 };
 
 const resolveVapidPublicKey = async () => {
@@ -152,6 +195,7 @@ export const useWebPush = () => {
       if (currentSubscription) {
         subscription.value = currentSubscription;
         await syncBrowserSubscription();
+        await showSubscriptionTestNotification(swRegistration);
         pushToast({
           title: "Notifikasi Aktif",
           message: "Browser ini sudah siap menerima push notification.",
@@ -172,6 +216,7 @@ export const useWebPush = () => {
 
       subscription.value = newSubscription;
       await syncBrowserSubscription();
+      await showSubscriptionTestNotification(swRegistration);
       pushToast({
         title: "Notifikasi Aktif",
         message: "Subscription push berhasil tersimpan.",

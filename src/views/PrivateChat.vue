@@ -462,6 +462,13 @@
             </div>
             <button v-if="callState === 'active'" type="button"
               class="rounded-full bg-white/10 p-2 text-white transition hover:bg-white/15"
+              :title="isSpeakerEnabled ? 'Matikan loudspeaker' : 'Aktifkan loudspeaker'"
+              @click="toggleSpeaker">
+              <Icon :icon="isSpeakerEnabled ? 'mdi:volume-high' : 'mdi:volume-off'" class="h-5 w-5" />
+            </button>
+            <button v-if="callState === 'active'" type="button"
+              class="rounded-full bg-white/10 p-2 text-white transition hover:bg-white/15"
+              title="Mute mikrofon"
               @click="toggleMute">
               <Icon :icon="isCallMuted ? 'ph:microphone-slash-fill' : 'ph:microphone-fill'" class="h-5 w-5" />
             </button>
@@ -508,7 +515,7 @@
       </Transition>
     </div>
 
-    <audio ref="remoteAudioRef" autoplay playsinline class="fixed h-0 w-0 opacity-0"></audio>
+    <audio ref="remoteAudioRef" autoplay playsinline class="pointer-events-none fixed left-0 top-0 h-px w-px opacity-0"></audio>
   </div>
 </template>
 
@@ -566,6 +573,9 @@ const callLocalStream = ref(null);
 const callRemoteStream = ref(null);
 const callPendingCandidates = ref([]);
 const callMuted = ref(false);
+const callSpeakerEnabled = ref(true);
+const callSpeakerAudioContext = ref(null);
+const callSpeakerAudioNodes = ref(null);
 const callTimer = ref(null);
 const callSeconds = ref(0);
 const incomingCallTimeout = ref(null);
@@ -796,6 +806,7 @@ const callPeer = computed(() => {
 
 const callPeerName = computed(() => displayPeerName(callPeer.value || {}));
 const isCallMuted = computed(() => callMuted.value);
+const isSpeakerEnabled = computed(() => callSpeakerEnabled.value);
 const callPeerAvatar = computed(() => {
   const image = String(callPeer.value?.profile_image || "").trim();
   return image ? normalizePublicUrl(image) : "";
@@ -1216,6 +1227,28 @@ const closePeerConnection = () => {
   callPeerConnection.value = null;
 };
 
+const stopSpeakerAudioBoost = () => {
+  const nodes = callSpeakerAudioNodes.value;
+  if (nodes) {
+    try {
+      nodes.source?.disconnect?.();
+      nodes.gain?.disconnect?.();
+    } catch (error) {
+      // Ignore WebAudio cleanup errors.
+    }
+  }
+  callSpeakerAudioNodes.value = null;
+
+  if (callSpeakerAudioContext.value) {
+    try {
+      callSpeakerAudioContext.value.close?.();
+    } catch (error) {
+      // Ignore WebAudio cleanup errors.
+    }
+  }
+  callSpeakerAudioContext.value = null;
+};
+
 const stopCallTone = () => {
   if (callToneTimer.value) {
     window.clearTimeout(callToneTimer.value);
@@ -1314,6 +1347,8 @@ const resetCallSession = (keepSelectedPeer = false) => {
   callPendingCandidates.value = [];
   callCallId.value = "";
   callMuted.value = false;
+  callSpeakerEnabled.value = true;
+  stopSpeakerAudioBoost();
   closePeerConnection();
   stopCallStream();
   if (remoteAudioRef.value) {
@@ -1383,6 +1418,73 @@ const sendCallSignal = async (signalType, extraPayload = {}) => {
   return response?.data || null;
 };
 
+const startSpeakerAudioBoost = async () => {
+  if (!callSpeakerEnabled.value || !callRemoteStream.value) {
+    return false;
+  }
+
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) {
+    return false;
+  }
+
+  if (callSpeakerAudioContext.value && callSpeakerAudioNodes.value?.stream === callRemoteStream.value) {
+    try {
+      await callSpeakerAudioContext.value.resume?.();
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  stopSpeakerAudioBoost();
+  try {
+    const audioContext = new AudioContextClass();
+    const source = audioContext.createMediaStreamSource(callRemoteStream.value);
+    const gain = audioContext.createGain();
+    gain.gain.value = 1.35;
+    source.connect(gain);
+    gain.connect(audioContext.destination);
+    callSpeakerAudioContext.value = audioContext;
+    callSpeakerAudioNodes.value = { stream: callRemoteStream.value, source, gain };
+    await audioContext.resume?.();
+    return true;
+  } catch (error) {
+    stopSpeakerAudioBoost();
+    return false;
+  }
+};
+
+const applySpeakerOutput = async () => {
+  const audioElement = remoteAudioRef.value;
+  if (!audioElement) {
+    return false;
+  }
+
+  audioElement.playsInline = true;
+  audioElement.autoplay = true;
+
+  if (callSpeakerEnabled.value) {
+    if (typeof audioElement.setSinkId === "function") {
+      try {
+        await audioElement.setSinkId("default");
+      } catch (error) {
+        // iOS Safari does not expose audio output selection.
+      }
+    }
+
+    const boosted = await startSpeakerAudioBoost();
+    audioElement.volume = boosted ? 0 : 1;
+    audioElement.muted = boosted;
+    return true;
+  }
+
+  stopSpeakerAudioBoost();
+  audioElement.volume = 1;
+  audioElement.muted = false;
+  return true;
+};
+
 const ensureRemoteAudioPlayback = async () => {
   await nextTick();
   const audioElement = remoteAudioRef.value;
@@ -1392,8 +1494,7 @@ const ensureRemoteAudioPlayback = async () => {
 
   audioElement.autoplay = true;
   audioElement.playsInline = true;
-  audioElement.muted = false;
-  audioElement.volume = 1;
+  await applySpeakerOutput();
 
   try {
     await audioElement.play?.();
@@ -1630,6 +1731,12 @@ const toggleMute = () => {
   callLocalStream.value.getAudioTracks().forEach((track) => {
     track.enabled = !callMuted.value;
   });
+};
+
+const toggleSpeaker = () => {
+  callSpeakerEnabled.value = !callSpeakerEnabled.value;
+  applySpeakerOutput().catch(() => undefined);
+  ensureRemoteAudioPlayback().catch(() => undefined);
 };
 
 const endVoiceCall = async (silent = false) => {

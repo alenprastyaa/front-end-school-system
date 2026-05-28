@@ -50,6 +50,10 @@ export const registerPwaServiceWorker = async () => {
   const baseUrl = getServiceWorkerBaseUrl();
   registrationPromise = navigator.serviceWorker
     .register(`${baseUrl}sw.js`, { scope: baseUrl })
+    .then((registration) => {
+      registration.update?.().catch(() => undefined);
+      return registration;
+    })
     .catch((error) => {
       registrationPromise = null;
       throw error;

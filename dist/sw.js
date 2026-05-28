@@ -107,6 +107,8 @@ const isVisibleWindowClient = (client) => {
   return client?.focused || client?.visibilityState === "visible";
 };
 
+const isIosDevice = () => /iPad|iPhone|iPod/.test(String(self.navigator?.userAgent || ""));
+
 const showPushNotification = (payload, notificationPayload) => {
   const { title, body, icon, badge, kind, isCall, notificationActions } = notificationPayload;
   const tag = payload.tag || payload.group || (isCall ? `private-call:${payload.call_id || "incoming"}` : `${kind}:${payload.id || title}`);
@@ -290,7 +292,7 @@ self.addEventListener("push", (event) => {
         }),
       );
 
-      if (!isCall && visibleClientExists) {
+      if (!isCall && visibleClientExists && !isIosDevice()) {
         return clientMessages;
       }
 
