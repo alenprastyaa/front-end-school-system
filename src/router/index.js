@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { cancelPendingApiRequests } from "@/api";
 import { getStoredRole, getStoredUser, isAuthenticated } from "@/utils/auth";
-import { isChunkLoadError, lazyRoute, recoverFromChunkLoadError } from "./lazyRoute";
+import { clearChunkReloadAttempt, isChunkLoadError, lazyRoute, recoverFromChunkLoadError } from "./lazyRoute";
 import PublicLanding from "../views/PublicLanding.vue";
 import Dashboard from "../views/Dashboard.vue";
 import Login from "../views/layouts/auth/Login.vue";
@@ -563,6 +563,10 @@ router.onError((error) => {
   if (isChunkLoadError(error) && recoverFromChunkLoadError()) {
     return;
   }
+});
+
+router.afterEach(() => {
+  clearChunkReloadAttempt();
 });
 
 export default router;

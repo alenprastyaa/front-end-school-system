@@ -1,5 +1,5 @@
-const CACHE_NAME = "school-system-pwa-v3";
-const RUNTIME_CACHE_NAME = "school-system-runtime-v3";
+const CACHE_NAME = "school-system-pwa-v4";
+const RUNTIME_CACHE_NAME = "school-system-runtime-v4";
 
 const getAssetUrl = (path) => {
   try {
@@ -35,6 +35,8 @@ const appendQueryParams = (baseUrl, params = {}) => {
     return normalizeUrl(baseUrl);
   }
 };
+
+const fetchFresh = (request) => fetch(new Request(request, { cache: "no-store" }));
 
 const buildCallTargetUrl = (payload, action = "") => {
   const peerUserId = payload?.call_peer_user_id || payload?.call_from_user_id || payload?.from_user_id || payload?.peer_user_id;
@@ -193,7 +195,7 @@ self.addEventListener("fetch", (event) => {
 
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request)
+      fetchFresh(request)
         .then((response) => {
           const responseCopy = response.clone();
           caches.open(RUNTIME_CACHE_NAME)
@@ -212,7 +214,7 @@ self.addEventListener("fetch", (event) => {
   const networkFirstDestinations = ["script", "style", "document", "manifest"];
   if (networkFirstDestinations.includes(request.destination)) {
     event.respondWith(
-      fetch(request)
+      fetchFresh(request)
         .then((response) => {
           if (response && response.ok) {
             const responseCopy = response.clone();

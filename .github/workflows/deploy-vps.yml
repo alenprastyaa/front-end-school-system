@@ -57,8 +57,8 @@ jobs:
             fi
 
             sudo mkdir -p "$TARGET_DIR"
-            sudo rm -rf "$TARGET_DIR"/*
             sudo cp -r /tmp/school-system-fe-build/. "$TARGET_DIR"/
+            sudo find "$TARGET_DIR/js" "$TARGET_DIR/css" -type f -mtime +14 -delete 2>/dev/null || true
             sudo chown -R www-data:www-data "$TARGET_DIR"
             rm -rf /tmp/school-system-fe-build
 

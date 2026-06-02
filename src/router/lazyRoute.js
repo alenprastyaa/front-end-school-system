@@ -2,6 +2,7 @@ import { defineAsyncComponent, defineComponent, h } from "vue";
 
 const dotCount = 18;
 const chunkReloadKey = "school-system:chunk-reload-attempted";
+const pwaCachePrefixes = ["school-system-pwa-", "school-system-runtime-"];
 
 export const isChunkLoadError = (error) => {
   const message = String(error?.message || "");
@@ -26,7 +27,49 @@ const markReloadAttempted = () => {
   }
 };
 
-export const recoverFromChunkLoadError = () => false;
+const clearPwaCaches = async () => {
+  if (typeof caches === "undefined") {
+    return;
+  }
+
+  const keys = await caches.keys();
+  await Promise.all(
+    keys.map((key) => {
+      if (!pwaCachePrefixes.some((prefix) => key.startsWith(prefix))) {
+        return undefined;
+      }
+      return caches.delete(key);
+    }),
+  );
+};
+
+const refreshServiceWorkers = async () => {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+    return;
+  }
+
+  const registrations = await navigator.serviceWorker.getRegistrations();
+  await Promise.all(
+    registrations.map((registration) => registration.update?.().catch(() => undefined)),
+  );
+};
+
+export const recoverFromChunkLoadError = () => {
+  if (typeof window === "undefined" || hasReloadAttempted()) {
+    return false;
+  }
+
+  markReloadAttempted();
+
+  Promise.all([
+    clearPwaCaches().catch(() => undefined),
+    refreshServiceWorkers().catch(() => undefined),
+  ]).finally(() => {
+    window.location.reload();
+  });
+
+  return true;
+};
 
 export const clearChunkReloadAttempt = () => {
   try {
