@@ -580,7 +580,7 @@
                               <div v-for="(option, optionIndex) in item.options || []"
                                 :key="`${item.temp_id}-option-${optionIndex}`"
                                 class="rounded-xl border px-3 py-2 text-xs leading-5 sm:text-sm"
-                                :class="optionIndex === item.correct_option
+                                :class="optionIndex === Number(item.correct_option)
                                   ? 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300'
                                   : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300'">
                                 <div>{{ String.fromCharCode(65 + optionIndex) }}. {{
@@ -733,24 +733,27 @@
                     <h3 class="text-sm font-bold text-slate-900 dark:text-white">Opsi Jawaban</h3>
                   </div>
                   <div class="space-y-3">
-                    <div v-for="(option, index) in questionBankForm.options" :key="`option-${index}`"
-                      class="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
-                      <div class="flex items-start gap-3">
-                        <label
-                          class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white text-xs font-bold text-slate-700 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700">
-                          {{ String.fromCharCode(65 + index) }}
-                        </label>
-                        <input v-model="questionBankForm.options[index]" type="text"
-                          :placeholder="`Tulis opsi ${String.fromCharCode(65 + index)}`"
-                          class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
-                        <label
-                          class="mt-2 flex shrink-0 cursor-pointer items-center gap-2 text-xs font-semibold text-slate-600 transition hover:text-sky-700 dark:text-slate-400">
-                          <input v-model="questionBankForm.correct_option" type="radio" name="correct-bank"
-                            :value="index" class="h-4 w-4 text-sky-600 focus:ring-sky-600" />
-                          Benar
-                        </label>
-                      </div>
-                    </div>
+                    <label v-for="(option, index) in questionBankForm.options" :key="`option-${index}`"
+                      class="flex cursor-pointer items-center gap-3 rounded-xl border bg-white p-3 transition dark:bg-slate-900"
+                      :class="Number(questionBankForm.correct_option) === index
+                        ? 'border-sky-500 ring-2 ring-sky-500/20 dark:border-sky-400'
+                        : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600'">
+                      <span
+                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                        {{ String.fromCharCode(65 + index) }}
+                      </span>
+                      <input v-model="questionBankForm.options[index]" type="text"
+                        :placeholder="`Tulis pilihan ${String.fromCharCode(65 + index)}`"
+                        class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:outline-none dark:border-slate-600 dark:bg-slate-800/70 dark:text-white" />
+                      <input v-model="questionBankForm.correct_option" type="radio" name="correct-bank"
+                        :value="index" class="h-4 w-4 shrink-0 text-sky-600 focus:ring-sky-600" />
+                      <span class="hidden shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold sm:inline-flex"
+                        :class="Number(questionBankForm.correct_option) === index
+                          ? 'bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300'
+                          : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'">
+                        Benar
+                      </span>
+                    </label>
                   </div>
                 </section>
 
@@ -876,7 +879,7 @@
                       <tr v-for="item in quizOverviewModal.submittedStudents" :key="`submitted-${item.id}`">
                         <td class="px-5 py-3 font-medium text-slate-900 dark:text-white">{{ item.full_name ||
                           item.username }}</td>
-                        <td class="px-5 py-3 text-slate-500 dark:text-slate-400">{{ formatDateTime(item.submitted_at) }}
+                        <td class="px-5 py-3 text-slate-500 dark:text-slate-400">{{ formatStoredDateTime(item.submitted_at) }}
                         </td>
                         <td class="px-5 py-3 font-bold text-slate-700 dark:text-slate-300">{{ item.score ?? "-" }}</td>
                         <td class="px-5 py-3">
@@ -888,7 +891,7 @@
                             class="mt-1 space-y-1 text-xs text-slate-500 dark:text-slate-400">
                             <p v-for="log in item.violation_logs.slice(0, 3)"
                               :key="`submitted-log-${item.id}-${log.id}`">
-                              {{ formatViolationLabel(log.violation_type) }} • {{ formatDateTime(log.created_at) }}
+                              {{ formatViolationLabel(log.violation_type) }} • {{ formatStoredDateTime(log.created_at) }}
                             </p>
                           </div>
                         </td>
@@ -928,7 +931,7 @@
                           <div v-if="item.violation_logs?.length"
                             class="mt-1 space-y-1 text-xs text-slate-500 dark:text-slate-400">
                             <p v-for="log in item.violation_logs.slice(0, 3)" :key="`pending-log-${item.id}-${log.id}`">
-                              {{ formatViolationLabel(log.violation_type) }} • {{ formatDateTime(log.created_at) }}
+                              {{ formatViolationLabel(log.violation_type) }} • {{ formatStoredDateTime(log.created_at) }}
                             </p>
                           </div>
                         </td>
@@ -1056,25 +1059,29 @@
                       class="mt-2 max-h-56 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
                   </div>
 
-                  <div v-if="questionPreviewModal.question.question_type === 'MCQ'" class="grid gap-4 md:grid-cols-2">
-                    <div v-for="(option, optionIndex) in questionPreviewForm.options"
+                  <div v-if="questionPreviewModal.question.question_type === 'MCQ'" class="space-y-3">
+                    <label v-for="(option, optionIndex) in questionPreviewForm.options"
                       :key="`edit-option-${optionIndex}`"
-                      class="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
-                      <div class="mb-3 flex items-center justify-between">
-                        <span
-                          class="flex h-6 w-6 items-center justify-center rounded-md bg-white text-xs font-bold text-slate-600 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
-                          {{ String.fromCharCode(65 + optionIndex) }}
-                        </span>
-                        <label class="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
-                          <input v-model="questionPreviewForm.correct_option" type="radio" name="preview-correct-option"
-                            :value="optionIndex" class="h-4 w-4 text-sky-600 focus:ring-sky-600" />
-                          Jawaban Benar
-                        </label>
-                      </div>
+                      class="flex cursor-pointer items-center gap-3 rounded-xl border bg-white p-3 transition dark:bg-slate-900"
+                      :class="Number(questionPreviewForm.correct_option) === optionIndex
+                        ? 'border-sky-500 ring-2 ring-sky-500/20 dark:border-sky-400'
+                        : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600'">
+                      <span
+                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                        {{ String.fromCharCode(65 + optionIndex) }}
+                      </span>
                       <input v-model="questionPreviewForm.options[optionIndex]" type="text"
-                        :placeholder="`Opsi ${String.fromCharCode(65 + optionIndex)}`"
-                        class="block w-full rounded-lg border-0 bg-white py-2 px-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                    </div>
+                        :placeholder="`Tulis pilihan ${String.fromCharCode(65 + optionIndex)}`"
+                        class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:outline-none dark:border-slate-600 dark:bg-slate-800/70 dark:text-white" />
+                      <input v-model="questionPreviewForm.correct_option" type="radio" name="preview-correct-option"
+                        :value="optionIndex" class="h-4 w-4 shrink-0 text-sky-600 focus:ring-sky-600" />
+                      <span class="hidden shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold sm:inline-flex"
+                        :class="Number(questionPreviewForm.correct_option) === optionIndex
+                          ? 'bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300'
+                          : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'">
+                        Benar
+                      </span>
+                    </label>
                   </div>
 
                   <div v-else class="space-y-1.5">
@@ -1188,7 +1195,7 @@
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { formatDateTime, parseDateValue } from "@/utils/date";
+import { formatDateTime, formatStoredDateTime, parseDateValue } from "@/utils/date";
 import { useMasterDataStore } from "@/store/masterData";
 import { uploadFileDirect } from "@/api/upload";
 
@@ -1365,15 +1372,81 @@ const parseOptionItem = (option) => {
   };
 };
 
-const parseOptionsField = (value) => {
-  if (Array.isArray(value)) return value;
-  if (typeof value !== "string" || !value.trim()) return [];
+const tryParseJSON = (value) => {
   try {
-    const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed : [];
+    return {
+      parsed: true,
+      value: JSON.parse(value),
+    };
   } catch {
+    return {
+      parsed: false,
+      value: null,
+    };
+  }
+};
+
+const normalizeOptionArray = (options) => {
+  if (!Array.isArray(options)) {
     return [];
   }
+
+  return options.flatMap((option) => {
+    if (typeof option === "string") {
+      const trimmed = option.trim();
+      if (!trimmed) {
+        return [];
+      }
+
+      const parsedOption = tryParseJSON(trimmed);
+      if (parsedOption.parsed) {
+        if (Array.isArray(parsedOption.value)) {
+          return normalizeOptionArray(parsedOption.value);
+        }
+
+        if (parsedOption.value && typeof parsedOption.value === "object") {
+          const text = normalizePreviewText(parseOptionItem(parsedOption.value).text);
+          return text ? [text] : [];
+        }
+
+        if (typeof parsedOption.value === "string") {
+          const nestedOptions = parseOptionsField(parsedOption.value);
+          if (nestedOptions.length) {
+            return nestedOptions;
+          }
+
+          const text = normalizePreviewText(parsedOption.value);
+          return text ? [text] : [];
+        }
+      }
+    }
+
+    const text = normalizePreviewText(parseOptionItem(option).text);
+    return text ? [text] : [];
+  });
+};
+
+const parseOptionsField = (value) => {
+  let currentValue = value;
+
+  for (let depth = 0; depth < 4; depth += 1) {
+    if (Array.isArray(currentValue)) {
+      return normalizeOptionArray(currentValue);
+    }
+
+    if (typeof currentValue !== "string" || !currentValue.trim()) {
+      return [];
+    }
+
+    const parsed = tryParseJSON(currentValue.trim());
+    if (!parsed.parsed) {
+      return [];
+    }
+
+    currentValue = parsed.value;
+  }
+
+  return Array.isArray(currentValue) ? normalizeOptionArray(currentValue) : [];
 };
 
 const normalizeQuestionBankItem = (item) => ({
@@ -1523,7 +1596,7 @@ const selectedQuestionsForPublish = computed(() =>
 const selectedQuestionCount = computed(() => selectedQuestionsForPublish.value.length);
 const normalizedPreviewOptions = computed(() =>
   questionPreviewModal.question?.question_type === "MCQ"
-    ? questionPreviewForm.options.map((item) => String(item || "").trim())
+    ? questionPreviewForm.options.map((item) => parseOptionItem(item).text).filter(Boolean)
     : [],
 );
 const normalizedPreviewCorrectOption = computed(() =>

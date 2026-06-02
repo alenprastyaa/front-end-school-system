@@ -319,6 +319,7 @@ const isOfficialExamEnabled = computed(() => storedProfile.value?.official_exam_
 const isKoperasiEnabled = computed(() => storedProfile.value?.koperasi_module_enabled !== false);
 const isPrivateChatEnabled = computed(() => storedProfile.value?.private_chat_module_enabled !== false);
 const isTeachingModuleAIEnabled = computed(() => storedProfile.value?.teaching_module_ai_enabled !== false);
+const isPersonalTeacherModeEnabled = computed(() => storedProfile.value?.personal_teacher_mode_enabled === true);
 const shouldTrackKoperasi = computed(() => isKoperasiEnabled.value && (isAdminRole || isKoperasiRole));
 const shouldTrackPrivateChat = computed(() => isPrivateChatEnabled.value && ["ADMIN", "KOPERASI", "GURU", "SISWA"].includes(role));
 
@@ -500,6 +501,7 @@ const menuByRole = {
       icon: "ph:books",
       children: [
         { to: "/learning-admin", dataTour: "curriculum", label: "Mata Pelajaran", icon: "ph:book-open-text" },
+        { to: "/learning-subjects", label: "Guru Mapel", icon: "ph:user-focus" },
         { to: "/learning-admin/teacher-loads", label: "Beban Guru", icon: "ph:chalkboard-teacher" },
         { to: "/learning-admin/class-distributions", label: "Distribusi Guru ke Kelas", icon: "ph:git-branch" },
         { to: "/learning-admin/schedule", label: "Jadwal Pembelajaran", icon: "ph:calendar-blank" },
@@ -568,6 +570,20 @@ const menuByRole = {
 const filterMenuItems = (items = []) =>
   items
     .map((item) => {
+      if (isPersonalTeacherModeEnabled.value) {
+        const hiddenPersonalKeys = new Set([
+          "school-users",
+          "homeroom-students",
+          "inventory",
+          "koperasi",
+          "learning-exams-admin",
+          "announcements",
+          "billing",
+        ]);
+        if (hiddenPersonalKeys.has(item.key)) {
+          return null;
+        }
+      }
       if (item.key === "inventory" && !isInventoryEnabled.value) {
         return null;
       }
@@ -585,6 +601,20 @@ const filterMenuItems = (items = []) =>
       }
       if (item.children) {
         const children = item.children.filter((child) => {
+          if (isPersonalTeacherModeEnabled.value) {
+            const hiddenPersonalChildPaths = new Set([
+              "/learning-admin/teacher-loads",
+              "/learning-admin/class-distributions",
+              "/learning-admin/schedule",
+              "/learning-admin/generate",
+              "/learning-exams-teacher",
+              "/learning-exams-student",
+              "/learning-report-teacher",
+            ]);
+            if (hiddenPersonalChildPaths.has(child.to)) {
+              return false;
+            }
+          }
           if ((child.to === "/learning-exams-teacher" || child.to === "/learning-exams-student") && !isOfficialExamEnabled.value) {
             return false;
           }

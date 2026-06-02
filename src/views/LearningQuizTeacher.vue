@@ -102,114 +102,150 @@
                 </button>
             </div>
 
-            <section v-if="activeQuizMenu === 'bank'" class="rounded-xl border-2 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-              <div class="border-b border-slate-200 p-4 dark:border-slate-700">
-                <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <section v-if="activeQuizMenu === 'bank'"
+              class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+              <div class="border-b border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-slate-700 dark:bg-slate-800/30">
+                <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                   <div>
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Quiz</h3>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Pilih soal dari bank soal, lalu terbitkan lewat modal singkat.</p>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Bank Soal Quiz</h3>
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                      Pilih soal yang akan diterbitkan untuk {{ selectedSubject.name }}.
+                    </p>
                   </div>
-                  <div class="flex flex-wrap gap-2">
+                  <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                     <router-link to="/learning-question-bank-teacher"
-                      class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
-                      Kelola Bank Soal
+                      class="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                      Kelola Soal
                     </router-link>
                     <button @click="openAssignmentPublishFlow" type="button"
-                      class="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-700">
+                      class="inline-flex h-10 items-center justify-center rounded-lg bg-emerald-600 px-4 text-sm font-bold text-white transition hover:bg-emerald-700">
                       Buat Quiz
                     </button>
+                  </div>
+                </div>
+
+                <div class="mt-4 grid gap-3 sm:grid-cols-3">
+                  <div class="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Total Bank</p>
+                    <p class="mt-1 text-xl font-bold text-slate-900 dark:text-white">{{ questionBankTotal }}</p>
+                  </div>
+                  <div class="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 dark:border-sky-900/40 dark:bg-sky-500/10">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300">Dipilih</p>
+                    <p class="mt-1 text-xl font-bold text-sky-800 dark:text-sky-200">{{ selectedQuestionCount }}</p>
+                  </div>
+                  <div class="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Jenis Terpilih</p>
+                    <p class="mt-1 truncate text-sm font-bold text-slate-900 dark:text-white">{{ selectedQuestionTypeLabel }}</p>
                   </div>
                 </div>
               </div>
 
               <div class="border-b border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
-                <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-                  <div class="flex flex-col gap-3 md:flex-row md:items-center">
-                    <input v-model="bankSearch" type="text" placeholder="Cari soal..."
-                      class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white md:w-64" />
+                <div class="grid gap-3 xl:grid-cols-[1fr_auto] xl:items-center">
+                  <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_140px]">
+                    <input v-model="bankSearch" type="text" placeholder="Cari teks soal..."
+                      class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+                    <select v-model="bankTypeFilter"
+                      class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+                      <option value="ALL">Semua jenis</option>
+                      <option value="MCQ">Pilihan ganda</option>
+                      <option value="ESSAY">Uraian</option>
+                    </select>
                     <select v-model="bankPageSize"
-                      class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white md:w-32">
+                      class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
                       <option :value="10">10 soal</option>
                       <option :value="20">20 soal</option>
                       <option :value="50">50 soal</option>
                     </select>
                   </div>
-                  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between xl:justify-end">
-                    <span class="text-sm text-slate-500 dark:text-slate-400">
-                      {{ questionBankTotal }} soal &bull; {{ selectedQuestionCount }} dipilih
-                    </span>
+                  <div class="flex flex-wrap gap-2 xl:justify-end">
                     <button @click="generateRandomSelection" type="button"
-                      class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                      class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
                       Acak {{ randomQuestionCount }}
                     </button>
                     <button @click="selectAllCurrentBankPage" type="button"
-                      class="rounded-lg border border-blue-600 bg-white px-3 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-300">
+                      class="h-10 rounded-lg border border-blue-600 bg-white px-3 text-sm font-bold text-blue-700 transition hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-300">
                       Pilih Halaman Ini
                     </button>
                     <button v-if="assignmentForm.selected_question_bank_ids.length > 0" @click="clearSelectedQuestions" type="button"
-                      class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                      class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
                       Kosongkan
                     </button>
                   </div>
                 </div>
               </div>
 
-              <div class="overflow-x-auto">
-                <table class="min-w-full text-left text-sm">
-                  <thead class="bg-white text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-900">
-                    <tr>
-                      <th class="w-12 px-4 py-3 font-semibold">Pilih</th>
-                      <th class="px-4 py-3 font-semibold">Soal</th>
-                      <th class="px-4 py-3 font-semibold">Jenis</th>
-                      <th class="px-4 py-3 font-semibold text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-900">
-                    <tr v-for="item in paginatedQuestionBank" :key="item.id"
-                      class="align-top hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                      <td class="px-4 py-3">
-                        <input :checked="assignmentForm.selected_question_bank_ids.includes(item.id)" type="checkbox"
-                          @change="toggleQuestionSelection(item)"
-                          class="mt-1 h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-600 dark:border-slate-600 dark:bg-slate-800" />
-                      </td>
-                      <td class="px-4 py-3">
-                        <p class="max-w-3xl text-sm font-semibold leading-5 text-slate-900 dark:text-white">
-                          {{ parseQuestionContent(item.question_text).question_text }}
-                        </p>
-                        <img v-if="parseQuestionContent(item.question_text).question_image_url"
-                          :src="parseQuestionContent(item.question_text).question_image_url" alt="Gambar pertanyaan"
-                          class="mt-3 max-h-32 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
-                        <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
-                          Dibuat: {{ formatDateTime(item.created_at) }}
-                        </p>
-                      </td>
-                      <td class="px-4 py-3">
+              <div class="space-y-3 bg-slate-50/60 p-4 dark:bg-slate-950/20">
+                <article v-for="(item, index) in paginatedQuestionBank" :key="item.id"
+                  class="rounded-lg border bg-white p-4 shadow-sm transition dark:bg-slate-900"
+                  :class="assignmentForm.selected_question_bank_ids.includes(item.id)
+                    ? 'border-sky-500 ring-2 ring-sky-500/20 dark:border-sky-400'
+                    : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600'">
+                  <div class="flex flex-col gap-4 lg:flex-row lg:items-start">
+                    <div class="flex items-start gap-3 lg:w-16 lg:shrink-0">
+                      <input :checked="assignmentForm.selected_question_bank_ids.includes(item.id)" type="checkbox"
+                        @change="toggleQuestionSelection(item)"
+                        class="mt-1 h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-600 dark:border-slate-600 dark:bg-slate-800" />
+                      <span class="inline-flex h-7 min-w-7 items-center justify-center rounded-md bg-slate-100 px-2 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                        {{ bankStartRow + index }}
+                      </span>
+                    </div>
+
+                    <div class="min-w-0 flex-1 space-y-3">
+                      <div class="flex flex-wrap items-center gap-2">
                         <span class="inline-flex rounded-md border px-2.5 py-1 text-xs font-bold"
                           :class="item.question_type === 'MCQ'
                             ? 'border-blue-700 bg-blue-50 text-blue-800 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300'
                             : 'border-amber-700 bg-amber-50 text-amber-800 dark:border-amber-500 dark:bg-amber-900/30 dark:text-amber-300'">
                           {{ assignmentTypeLabel(item.question_type) }}
                         </span>
-                      </td>
-                      <td class="px-4 py-3 text-right">
-                        <button type="button" @click="openQuestionPreview(item, 'bank')"
-                          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
-                          Lihat
-                        </button>
-                      </td>
-                    </tr>
-                    <tr v-if="paginatedQuestionBank.length === 0">
-                      <td colspan="4" class="px-4 py-12 text-center">
-                        <p class="text-base font-semibold text-slate-500 dark:text-slate-400">Belum Ada Soal</p>
-                        <p class="mt-2 text-sm text-slate-500 dark:text-slate-500">Soal yang cocok dengan pencarian akan muncul di sini.</p>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                        <span v-if="assignmentForm.selected_question_bank_ids.includes(item.id)"
+                          class="inline-flex rounded-md bg-sky-100 px-2.5 py-1 text-xs font-bold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+                          Terpilih
+                        </span>
+                        <span class="text-xs text-slate-500 dark:text-slate-400">
+                          Dibuat {{ formatDateTime(item.created_at) }}
+                        </span>
+                      </div>
+
+                      <p class="text-sm font-semibold leading-6 text-slate-900 dark:text-white">
+                        {{ parseQuestionContent(item.question_text).question_text || "Soal tanpa teks" }}
+                      </p>
+
+                      <img v-if="parseQuestionContent(item.question_text).question_image_url"
+                        :src="parseQuestionContent(item.question_text).question_image_url" alt="Gambar pertanyaan"
+                        class="max-h-48 rounded-lg border border-slate-200 bg-white object-contain dark:border-slate-700 dark:bg-slate-950" />
+
+                      <div v-if="item.question_type === 'MCQ' && Array.isArray(item.options) && item.options.length"
+                        class="grid gap-2 md:grid-cols-2">
+                        <div v-for="(option, optionIndex) in item.options.slice(0, 4)"
+                          :key="`option-preview-${item.id}-${optionIndex}`"
+                          class="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300">
+                          <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded bg-white text-[11px] font-bold text-slate-600 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700">
+                            {{ String.fromCharCode(65 + optionIndex) }}
+                          </span>
+                          <span class="line-clamp-2">{{ parseOptionItem(option).text || "-" }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="flex shrink-0 justify-end">
+                      <button type="button" @click="openQuestionPreview(item, 'bank')"
+                        class="h-9 rounded-lg border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                        Lihat/Edit
+                      </button>
+                    </div>
+                  </div>
+                </article>
+
+                <div v-if="paginatedQuestionBank.length === 0" class="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-12 text-center dark:border-slate-700 dark:bg-slate-900">
+                  <p class="text-base font-semibold text-slate-600 dark:text-slate-300">Belum ada soal</p>
+                  <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Soal yang cocok dengan pencarian dan filter akan muncul di sini.</p>
+                </div>
               </div>
 
               <div
-                class="flex flex-col gap-3 border-t-2 border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
+                class="flex flex-col gap-3 border-t border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
                 <p class="text-sm text-slate-500 dark:text-slate-400">
                   Menampilkan {{ bankStartRow }} - {{ bankEndRow }} dari {{ questionBankTotal }} soal
                 </p>
@@ -542,25 +578,28 @@
                 </div>
               </div>
 
-              <div v-if="questionBankForm.question_type === 'MCQ'" class="grid gap-4 md:grid-cols-2">
-                <div v-for="(option, index) in questionBankForm.options" :key="`option-${index}`"
-                  class="rounded-xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                  <div class="mb-3 flex items-center justify-between">
-                    <span
-                      class="flex h-6 w-6 items-center justify-center rounded-md bg-slate-100 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                      {{ String.fromCharCode(65 + index) }}
-                    </span>
-                    <label
-                      class="flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-600 transition hover:text-sky-600 dark:text-slate-400">
-                      <input v-model="questionBankForm.correct_option" type="radio" name="correct-bank" :value="index"
-                        class="h-4 w-4 text-sky-600 focus:ring-sky-600" />
-                      Jawaban Benar
-                    </label>
-                  </div>
+              <div v-if="questionBankForm.question_type === 'MCQ'" class="space-y-3">
+                <label v-for="(option, index) in questionBankForm.options" :key="`option-${index}`"
+                  class="flex cursor-pointer items-center gap-3 rounded-xl border bg-white p-3 transition dark:bg-slate-900"
+                  :class="Number(questionBankForm.correct_option) === index
+                    ? 'border-sky-500 ring-2 ring-sky-500/20 dark:border-sky-400'
+                    : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600'">
+                  <span
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    {{ String.fromCharCode(65 + index) }}
+                  </span>
                   <input v-model="questionBankForm.options[index]" type="text"
-                    :placeholder="`Opsi ${String.fromCharCode(65 + index)}`"
-                    class="block w-full rounded-lg border-0 bg-slate-50 py-2 px-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50" />
-                </div>
+                    :placeholder="`Tulis pilihan ${String.fromCharCode(65 + index)}`"
+                    class="min-w-0 flex-1 rounded-lg border-0 bg-slate-50 px-3 py-2 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/70 dark:text-white dark:ring-slate-700" />
+                  <input v-model="questionBankForm.correct_option" type="radio" name="correct-bank" :value="index"
+                    class="h-4 w-4 shrink-0 text-sky-600 focus:ring-sky-600" />
+                  <span class="hidden shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold sm:inline-flex"
+                    :class="Number(questionBankForm.correct_option) === index
+                      ? 'bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300'
+                      : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'">
+                    Benar
+                  </span>
+                </label>
               </div>
 
               <div v-else class="space-y-1.5">
@@ -642,7 +681,7 @@
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                       <tr v-for="item in quizOverviewModal.submittedStudents" :key="`submitted-${item.id}`">
                         <td class="px-5 py-3 font-medium text-slate-900 dark:text-white">{{ item.full_name || item.username }}</td>
-                        <td class="px-5 py-3 text-slate-500 dark:text-slate-400">{{ formatDateTime(item.submitted_at) }}
+                        <td class="px-5 py-3 text-slate-500 dark:text-slate-400">{{ formatStoredDateTime(item.submitted_at) }}
                         </td>
                         <td class="px-5 py-3 font-bold text-slate-700 dark:text-slate-300">{{ item.score ?? "-" }}</td>
                         <td class="px-5 py-3">
@@ -651,7 +690,7 @@
                           </div>
                           <div v-if="item.violation_logs?.length" class="mt-1 space-y-1 text-xs text-slate-500 dark:text-slate-400">
                             <p v-for="log in item.violation_logs.slice(0, 3)" :key="`submitted-log-${item.id}-${log.id}`">
-                              {{ formatViolationLabel(log.violation_type) }} • {{ formatDateTime(log.created_at) }}
+                              {{ formatViolationLabel(log.violation_type) }} • {{ formatStoredDateTime(log.created_at) }}
                             </p>
                           </div>
                         </td>
@@ -688,7 +727,7 @@
                           </div>
                           <div v-if="item.violation_logs?.length" class="mt-1 space-y-1 text-xs text-slate-500 dark:text-slate-400">
                             <p v-for="log in item.violation_logs.slice(0, 3)" :key="`pending-log-${item.id}-${log.id}`">
-                              {{ formatViolationLabel(log.violation_type) }} • {{ formatDateTime(log.created_at) }}
+                              {{ formatViolationLabel(log.violation_type) }} • {{ formatStoredDateTime(log.created_at) }}
                             </p>
                           </div>
                         </td>
@@ -801,25 +840,29 @@
                       class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700" />
                   </div>
 
-                  <div v-if="questionPreviewModal.question.question_type === 'MCQ'" class="grid gap-4 md:grid-cols-2">
-                    <div v-for="(option, optionIndex) in questionPreviewForm.options"
+                  <div v-if="questionPreviewModal.question.question_type === 'MCQ'" class="space-y-3">
+                    <label v-for="(option, optionIndex) in questionPreviewForm.options"
                       :key="`edit-option-${optionIndex}`"
-                      class="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
-                      <div class="mb-3 flex items-center justify-between">
-                        <span
-                          class="flex h-6 w-6 items-center justify-center rounded-md bg-white text-xs font-bold text-slate-600 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700">
-                          {{ String.fromCharCode(65 + optionIndex) }}
-                        </span>
-                        <label class="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
-                          <input v-model="questionPreviewForm.correct_option" type="radio" name="preview-correct-option"
-                            :value="optionIndex" class="h-4 w-4 text-sky-600 focus:ring-sky-600" />
-                          Jawaban Benar
-                        </label>
-                      </div>
+                      class="flex cursor-pointer items-center gap-3 rounded-xl border bg-white p-3 transition dark:bg-slate-900"
+                      :class="Number(questionPreviewForm.correct_option) === optionIndex
+                        ? 'border-sky-500 ring-2 ring-sky-500/20 dark:border-sky-400'
+                        : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600'">
+                      <span
+                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                        {{ String.fromCharCode(65 + optionIndex) }}
+                      </span>
                       <input v-model="questionPreviewForm.options[optionIndex]" type="text"
-                        :placeholder="`Opsi ${String.fromCharCode(65 + optionIndex)}`"
-                        class="block w-full rounded-lg border-0 bg-white py-2 px-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                    </div>
+                        :placeholder="`Tulis pilihan ${String.fromCharCode(65 + optionIndex)}`"
+                        class="min-w-0 flex-1 rounded-lg border-0 bg-slate-50 px-3 py-2 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800/70 dark:text-white dark:ring-slate-700" />
+                      <input v-model="questionPreviewForm.correct_option" type="radio" name="preview-correct-option"
+                        :value="optionIndex" class="h-4 w-4 shrink-0 text-sky-600 focus:ring-sky-600" />
+                      <span class="hidden shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold sm:inline-flex"
+                        :class="Number(questionPreviewForm.correct_option) === optionIndex
+                          ? 'bg-sky-100 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300'
+                          : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'">
+                        Benar
+                      </span>
+                    </label>
                   </div>
 
                   <div v-else class="space-y-1.5">
@@ -890,7 +933,7 @@ import { VueDatePicker } from "@vuepic/vue-datepicker";
 import { id as indonesiaLocale } from "date-fns/locale/id";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { formatDateTime, formatDateTimeLocalInput, parseDateValue } from "@/utils/date";
+import { formatDateTime, formatDateTimeLocalInput, formatStoredDateTime, parseDateValue } from "@/utils/date";
 
 const subjects = ref([]);
 const selectedSubject = ref(null);
@@ -998,6 +1041,102 @@ const parseQuestionContent = (rawText) => {
   };
 };
 
+const parseOptionItem = (option) => {
+  if (option && typeof option === "object" && !Array.isArray(option)) {
+    return {
+      text: String(option.text || option.label || "").trim(),
+    };
+  }
+  return {
+    text: String(option || "").trim(),
+  };
+};
+
+const tryParseJSON = (value) => {
+  try {
+    return {
+      parsed: true,
+      value: JSON.parse(value),
+    };
+  } catch {
+    return {
+      parsed: false,
+      value: null,
+    };
+  }
+};
+
+const normalizeOptionText = (value) => String(value || "").trim();
+
+const normalizeOptionArray = (options) => {
+  if (!Array.isArray(options)) {
+    return [];
+  }
+
+  return options.flatMap((option) => {
+    if (typeof option === "string") {
+      const trimmed = option.trim();
+      if (!trimmed) {
+        return [];
+      }
+
+      const parsedOption = tryParseJSON(trimmed);
+      if (parsedOption.parsed) {
+        if (Array.isArray(parsedOption.value)) {
+          return normalizeOptionArray(parsedOption.value);
+        }
+
+        if (parsedOption.value && typeof parsedOption.value === "object") {
+          const text = normalizeOptionText(parseOptionItem(parsedOption.value).text);
+          return text ? [text] : [];
+        }
+
+        if (typeof parsedOption.value === "string") {
+          const nestedOptions = parseOptionsField(parsedOption.value);
+          if (nestedOptions.length) {
+            return nestedOptions;
+          }
+
+          const text = normalizeOptionText(parsedOption.value);
+          return text ? [text] : [];
+        }
+      }
+    }
+
+    const text = normalizeOptionText(parseOptionItem(option).text);
+    return text ? [text] : [];
+  });
+};
+
+const parseOptionsField = (value) => {
+  let currentValue = value;
+
+  for (let depth = 0; depth < 4; depth += 1) {
+    if (Array.isArray(currentValue)) {
+      return normalizeOptionArray(currentValue);
+    }
+
+    if (typeof currentValue !== "string" || !currentValue.trim()) {
+      return [];
+    }
+
+    const parsed = tryParseJSON(currentValue.trim());
+    if (!parsed.parsed) {
+      return [];
+    }
+
+    currentValue = parsed.value;
+  }
+
+  return Array.isArray(currentValue) ? normalizeOptionArray(currentValue) : [];
+};
+
+const normalizeQuestionBankItem = (item) => ({
+  ...item,
+  options: parseOptionsField(item?.options),
+  correct_option: Number.isInteger(Number(item?.correct_option)) ? Number(item.correct_option) : 0,
+});
+
 const assignmentTypeLabel = (type) => {
   if (type === "MCQ") return "Quiz Pilihan Ganda";
   if (type === "ESSAY") return "Quiz Uraian";
@@ -1064,7 +1203,7 @@ const selectedQuestionTypeLabel = computed(() => {
 });
 const normalizedPreviewOptions = computed(() =>
   questionPreviewModal.question?.question_type === "MCQ"
-    ? questionPreviewForm.options.map((item) => String(item || "").trim()).filter(Boolean)
+    ? questionPreviewForm.options.map((item) => parseOptionItem(item).text).filter(Boolean)
     : [],
 );
 const normalizedPreviewCorrectOption = computed(() =>
@@ -1237,18 +1376,19 @@ const closeQuizOverview = () => {
 };
 
 const openQuestionPreview = (question, source = "bank", questionNumber = null) => {
+  const normalizedQuestion = normalizeQuestionBankItem(question || {});
   questionPreviewModal.open = true;
-  questionPreviewModal.question = { ...question };
+  questionPreviewModal.question = { ...normalizedQuestion };
   questionPreviewModal.source = source;
   questionPreviewModal.sourceLabel = source === "selected" ? "Soal yang akan diterbitkan" : "Review sebelum dipilih";
   questionPreviewModal.questionNumber = questionNumber;
-  questionPreviewForm.question_text = question.question_text || "";
+  questionPreviewForm.question_text = normalizedQuestion.question_text || "";
   questionPreviewForm.options = Array.from(
-    { length: Math.max(5, Array.isArray(question.options) ? question.options.length : 0) },
-    (_, index) => question.options?.[index] || "",
+    { length: Math.max(5, Array.isArray(normalizedQuestion.options) ? normalizedQuestion.options.length : 0) },
+    (_, index) => parseOptionItem(normalizedQuestion.options?.[index]).text,
   );
-  questionPreviewForm.correct_option = Number(question.correct_option || 0);
-  questionPreviewForm.rubric = question.rubric || "";
+  questionPreviewForm.correct_option = Number(normalizedQuestion.correct_option || 0);
+  questionPreviewForm.rubric = normalizedQuestion.rubric || "";
 };
 
 const closeQuestionPreview = () => {
@@ -1282,15 +1422,15 @@ const saveQuestionPreviewChanges = async () => {
     }
 
     const response = await api.put(`/learning/question-bank/${questionPreviewModal.question.id}`, payload);
-    const updatedQuestion = response?.data;
+    const updatedQuestion = normalizeQuestionBankItem(response?.data || {});
 
     if (updatedQuestion) {
       questionPreviewModal.question = { ...updatedQuestion };
-      if (questionPreviewModal.source === "selected") {
+      if (questionPreviewModal.source === "selected" || questionPreviewModal.source === "bank") {
         questionPreviewForm.question_text = updatedQuestion.question_text || "";
         questionPreviewForm.options = Array.from(
           { length: Math.max(5, Array.isArray(updatedQuestion.options) ? updatedQuestion.options.length : 0) },
-          (_, index) => updatedQuestion.options?.[index] || "",
+          (_, index) => parseOptionItem(updatedQuestion.options?.[index]).text,
         );
         questionPreviewForm.correct_option = Number(updatedQuestion.correct_option || 0);
         questionPreviewForm.rubric = updatedQuestion.rubric || "";
@@ -1380,7 +1520,7 @@ const loadSubjectData = async () => {
   );
 
   assignments.value = assignmentsWithSubmissionCount;
-  questionBank.value = questionBankResponse?.data?.data || [];
+  questionBank.value = (questionBankResponse?.data?.data || []).map(normalizeQuestionBankItem);
   questionBankTotal.value = questionBankResponse?.data?.total || 0;
 };
 

@@ -205,6 +205,16 @@ const routes = [
     },
   },
   {
+    path: "/learning-subjects",
+    name: "LearningSubjectsAdmin",
+    component: lazyRoute(() => import("../views/LearningAdmin.vue")),
+    meta: {
+      title: "Guru Mapel" + appName,
+      requiresAuth: true,
+      roles: ["ADMIN"],
+    },
+  },
+  {
     path: "/learning-exams-admin",
     name: "LearningExamAdmin",
     component: lazyRoute(() => import("../views/LearningExamAdmin.vue")),
@@ -478,6 +488,23 @@ const router = createRouter({
   linkExactActiveClass: "exact-active",
 });
 
+const personalTeacherModeBlockedRoutes = new Set([
+  "Inventory",
+  "Koperasi",
+  "SchoolUsers",
+  "TeacherStudents",
+  "LearningAdminTeacherLoads",
+  "LearningAdminClassDistributions",
+  "LearningAdminSchedule",
+  "LearningAdminGenerate",
+  "LearningExamAdmin",
+  "LearningExamTeacher",
+  "LearningExamStudent",
+  "LearningReportTeacher",
+  "Announcements",
+  "Billing",
+]);
+
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title || appName;
 
@@ -516,6 +543,14 @@ router.beforeEach((to, from, next) => {
     const moduleFlag = moduleFlagByKey[to.meta.moduleKey];
     const moduleEnabled = moduleFlag ? storedUser[moduleFlag] !== false : true;
     if (!moduleEnabled) {
+      next({ name: "Dashboard" });
+      return;
+    }
+  }
+
+  if (personalTeacherModeBlockedRoutes.has(to.name)) {
+    const storedUser = getStoredUser() || {};
+    if (storedUser.personal_teacher_mode_enabled === true) {
       next({ name: "Dashboard" });
       return;
     }
