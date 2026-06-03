@@ -378,10 +378,4 @@ export default {
   }
 }
 
-@media (max-width: 1023px) {
-  .mobile-sidebar-shell {
-    top: calc(132px + env(safe-area-inset-top, 0px));
-    height: calc(100dvh - 132px - env(safe-area-inset-top, 0px));
-  }
-}
 </style>
