@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { cancelPendingApiRequests } from "@/api";
-import { getStoredRole, getStoredUser, isAuthenticated } from "@/utils/auth";
+import { clearSession, getStoredRole, getStoredUser, isAuthenticated } from "@/utils/auth";
 import { clearChunkReloadAttempt, isChunkLoadError, lazyRoute, recoverFromChunkLoadError } from "./lazyRoute";
 import PublicLanding from "../views/PublicLanding.vue";
 import Dashboard from "../views/Dashboard.vue";
@@ -518,6 +518,7 @@ router.beforeEach((to, from, next) => {
   }
 
   if (to.meta.requiresAuth && !isAuthenticated()) {
+    clearSession();
     next({ name: "Login" });
     return;
   }

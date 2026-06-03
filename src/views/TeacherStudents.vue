@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen bg-slate-50 p-4 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
-    <main class="mx-auto max-w-[1400px] space-y-4">
+  <div class="min-h-screen bg-slate-50 p-3 font-sans text-slate-900 sm:p-4 md:p-6 dark:bg-slate-950 dark:text-slate-100">
+    <main class="mx-auto max-w-[1280px] space-y-3">
 
       <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 -translate-y-2"
         enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-200"
@@ -16,76 +16,173 @@
       </Transition>
 
       <section
-        class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+        class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
 
         <div
-          class="flex flex-col gap-4 border-b border-slate-100 bg-slate-50/50 p-5 dark:border-slate-800 dark:bg-slate-800/30 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Daftar Siswa Kelas</h2>
-            <p class="text-sm text-slate-500 dark:text-slate-400">Data absensi dan administrasi untuk kelas {{
-              homeroomClass?.class_name || "-" }}.</p>
-          </div>
-          <div class="relative w-full sm:w-72">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-              </svg>
+          class="flex flex-col gap-2.5 border-b border-slate-100 bg-white p-3 dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between sm:p-4">
+          <div class="min-w-0">
+            <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400 sm:text-[11px] sm:tracking-[0.14em]">Wali Kelas</p>
+            <h2 class="mt-0.5 text-sm font-semibold text-slate-950 dark:text-white sm:mt-1 sm:text-base">Daftar Siswa {{
+              homeroomClass?.class_name || "-" }}</h2>
+            <div class="mt-1.5 flex flex-wrap items-center gap-1.5 sm:mt-2 sm:gap-2">
+              <button type="button" @click="openCheckedInModal"
+                class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/15 transition hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20 sm:gap-1.5 sm:px-2.5 sm:py-1 sm:text-[11px]">
+                <span class="h-1 w-1 rounded-full bg-emerald-500 sm:h-1.5 sm:w-1.5"></span>
+                {{ checkedInCount }} sudah absen
+              </button>
+              <button type="button" @click="openAbsentModal"
+                class="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold text-rose-700 ring-1 ring-inset ring-rose-600/15 transition hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20 sm:gap-1.5 sm:px-2.5 sm:py-1 sm:text-[11px]">
+                <span class="h-1 w-1 rounded-full bg-rose-500 sm:h-1.5 sm:w-1.5"></span>
+                {{ absentCount }} belum absen
+              </button>
+              <span class="text-[10px] text-slate-500 dark:text-slate-400 sm:text-xs">{{ students.length }} siswa terdaftar</span>
             </div>
-            <input v-model="search" type="text" placeholder="Cari nama, email, atau HP..."
-              class="block w-full rounded-xl border-0 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+          </div>
+          <div class="grid w-full gap-2 sm:w-auto sm:grid-cols-[minmax(240px,320px),112px]">
+            <div class="relative">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+              </div>
+              <input v-model="search" type="text" placeholder="Cari nama, kelas, email, atau HP..."
+                class="block h-10 w-full rounded-lg border-0 bg-slate-50 py-2 pl-9 pr-10 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 transition placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-inset focus:ring-sky-500 dark:bg-slate-800 dark:text-white dark:ring-slate-700 dark:focus:bg-slate-800" />
+              <button v-if="search" type="button" @click="search = ''"
+                class="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-200"
+                aria-label="Hapus pencarian">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <select v-model.number="pageSize"
+              class="block h-10 w-full rounded-lg border-0 bg-slate-50 py-2 pl-3 pr-8 text-sm font-medium text-slate-700 ring-1 ring-inset ring-slate-200 transition focus:bg-white focus:ring-2 focus:ring-inset focus:ring-sky-500 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700 dark:focus:bg-slate-800">
+              <option :value="10">10 / hal</option>
+              <option :value="25">25 / hal</option>
+              <option :value="50">50 / hal</option>
+            </select>
           </div>
         </div>
 
-        <div class="overflow-x-auto">
-          <table class="min-w-[1000px] w-full text-left text-sm">
+        <div class="block p-3 md:hidden">
+          <div class="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800">
+            <table class="w-full table-fixed text-left text-xs">
+              <colgroup>
+                <col />
+                <col class="w-[74px]" />
+                <col class="w-[76px]" />
+              </colgroup>
+              <thead class="bg-slate-50 text-[10px] uppercase tracking-[0.1em] text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
+                <tr>
+                  <th class="px-3 py-2.5 font-semibold">Siswa</th>
+                  <th class="px-2 py-2.5 font-semibold">Absen</th>
+                  <th class="px-2 py-2.5 text-right font-semibold">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-900">
+                <tr v-for="item in paginatedStudents" :key="`student-mobile-row-${item.id}`"
+                  class="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
+                  <td class="px-3 py-2.5">
+                    <div class="flex min-w-0 items-center gap-2.5">
+                      <div
+                        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-sky-50 text-[11px] font-semibold text-sky-700 ring-1 ring-inset ring-sky-600/15 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">
+                        {{ (item.full_name || item.username || "?").charAt(0).toUpperCase() }}
+                      </div>
+                      <div class="min-w-0">
+                        <p class="truncate font-medium text-slate-950 dark:text-white">
+                          {{ item.full_name || item.username }}
+                        </p>
+                        <p class="mt-0.5 truncate text-[11px] text-slate-500 dark:text-slate-400">
+                          {{ item.class_name || "-" }}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-2 py-2.5">
+                    <span
+                      class="inline-flex max-w-full items-center gap-1 rounded-full px-1.5 py-1 text-[10px] font-semibold ring-1 ring-inset"
+                      :class="item.checked_in_today ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20' : 'bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20'">
+                      <span class="h-1.5 w-1.5 rounded-full"
+                        :class="item.checked_in_today ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+                      {{ item.checked_in_today ? "Sudah" : "Belum" }}
+                    </span>
+                  </td>
+                  <td class="px-2 py-2.5">
+                    <div class="flex items-center justify-end gap-1.5">
+                      <button @click="openAttendance(item)" type="button" title="Riwayat kehadiran"
+                        aria-label="Riwayat kehadiran"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
+                        <Icon icon="ph:calendar-check" class="h-4 w-4" />
+                      </button>
+                      <button @click="openReceipt(item)" type="button" title="Bukti pembayaran"
+                        aria-label="Bukti pembayaran"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-sky-50 text-sky-700 transition hover:bg-sky-100 dark:bg-sky-500/10 dark:text-sky-300 dark:hover:bg-sky-500/20">
+                        <Icon icon="ph:receipt" class="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr v-if="paginatedStudents.length === 0">
+                  <td colspan="3" class="px-3 py-10 text-center">
+                    <p class="text-sm font-semibold text-slate-900 dark:text-white">Tidak ada data ditemukan</p>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Coba kata kunci pencarian lain.</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="hidden overflow-x-auto md:block">
+          <table class="min-w-[960px] w-full text-left text-sm">
             <thead
-              class="bg-white text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+              class="bg-slate-50/80 text-[11px] uppercase tracking-[0.12em] text-slate-500 dark:bg-slate-800/40 dark:text-slate-400">
               <tr class="border-b border-slate-100 dark:border-slate-800">
-                <th class="px-5 py-4 font-semibold">
+                <th class="px-4 py-3 font-semibold">
                   <button @click="handleStudentSort('full_name')"
                     class="group flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-200">
                     Nama Siswa <span class="text-slate-300 transition group-hover:text-slate-500">{{
                       sortIndicator(studentTableSort, 'full_name') }}</span>
                   </button>
                 </th>
-                <th class="px-5 py-4 font-semibold">Kontak Wali/Ortu</th>
-                <th class="px-5 py-4 font-semibold">
+                <th class="px-4 py-3 font-semibold">Kontak Wali/Ortu</th>
+                <th class="px-4 py-3 font-semibold">
                   <button @click="handleStudentSort('checked_in_today')"
                     class="group flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-200">
                     Status Hari Ini <span class="text-slate-300 transition group-hover:text-slate-500">{{
                       sortIndicator(studentTableSort, 'checked_in_today') }}</span>
                   </button>
                 </th>
-                <th class="px-5 py-4 font-semibold text-right">Aksi Manajemen</th>
+                <th class="px-4 py-3 font-semibold text-right">Aksi</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-              <tr v-for="item in sortedStudents" :key="item.id"
+              <tr v-for="item in paginatedStudents" :key="item.id"
                 class="group transition hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                <td class="px-5 py-4">
+                <td class="px-4 py-3">
                   <div class="flex items-center gap-3">
                     <div
-                      class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-sky-100 font-bold text-sky-700 dark:bg-sky-900/50 dark:text-sky-300">
+                      class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-sky-50 text-xs font-semibold text-sky-700 ring-1 ring-inset ring-sky-600/15 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20">
                       {{ (item.full_name || item.username || "?").charAt(0).toUpperCase() }}
                     </div>
-                    <div>
-                      <div class="font-bold text-slate-900 dark:text-white">{{ item.full_name || item.username }}</div>
+                    <div class="min-w-0">
+                      <div class="truncate font-medium text-slate-950 dark:text-white">{{ item.full_name || item.username }}</div>
                       <div class="text-xs text-slate-500">{{ item.class_name || "-" }}</div>
                     </div>
                   </div>
                 </td>
 
-                <td class="px-5 py-4">
-                  <div class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ item.parent_email || "-" }}
+                <td class="px-4 py-3">
+                  <div class="break-all text-sm font-medium text-slate-700 dark:text-slate-300">{{ item.parent_email || "-" }}
                   </div>
                   <div class="text-xs text-slate-500">{{ item.phone_number || "Tidak ada No. HP" }}</div>
                 </td>
 
-                <td class="px-5 py-4">
+                <td class="px-4 py-3">
                   <span
-                    class="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-bold ring-1 ring-inset"
+                    class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset"
                     :class="item.checked_in_today ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20' : 'bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20'">
                     <span class="h-1.5 w-1.5 rounded-full"
                       :class="item.checked_in_today ? 'bg-emerald-500' : 'bg-rose-500'"></span>
@@ -93,10 +190,10 @@
                   </span>
                 </td>
 
-                <td class="px-5 py-4 text-right">
+                <td class="px-4 py-3 text-right">
                   <div class="flex items-center justify-end gap-2">
                     <button @click="openAttendance(item)"
-                      class="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
+                      class="inline-flex h-8 items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
                       <svg class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke-width="2"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -105,7 +202,7 @@
                       Kehadiran
                     </button>
                     <button @click="openReceipt(item)"
-                      class="inline-flex items-center gap-1.5 rounded-lg bg-sky-50 px-3 py-2 text-xs font-bold text-sky-700 transition hover:bg-sky-100 dark:bg-sky-500/10 dark:text-sky-300 dark:hover:bg-sky-500/20">
+                      class="inline-flex h-8 items-center gap-1.5 rounded-lg bg-sky-50 px-2.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-100 dark:bg-sky-500/10 dark:text-sky-300 dark:hover:bg-sky-500/20">
                       <svg class="h-4 w-4 text-sky-500 dark:text-sky-400" fill="none" viewBox="0 0 24 24"
                         stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -117,7 +214,7 @@
                 </td>
               </tr>
 
-              <tr v-if="filteredStudents.length === 0">
+              <tr v-if="paginatedStudents.length === 0">
                 <td colspan="4" class="px-5 py-16 text-center">
                   <div class="mx-auto flex max-w-sm flex-col items-center">
                     <div
@@ -136,6 +233,34 @@
             </tbody>
           </table>
         </div>
+
+        <div
+          class="flex flex-col gap-3 border-t border-slate-100 px-4 py-4 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <p class="text-xs font-medium text-slate-500 dark:text-slate-400">
+            Menampilkan {{ pageStart }}-{{ pageEnd }} dari {{ sortedStudents.length }} siswa
+            <span v-if="search">untuk "{{ search.trim() }}"</span>
+          </p>
+          <div class="flex items-center justify-between gap-2 sm:justify-end">
+            <button @click="goToPrevPage" :disabled="currentPage === 1"
+              class="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 px-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+              Sebelumnya
+            </button>
+            <div class="hidden items-center gap-1 sm:flex">
+              <button v-for="page in paginationPages" :key="page" @click="goToPage(page)"
+                class="inline-flex h-9 min-w-9 items-center justify-center rounded-lg px-3 text-xs font-bold transition"
+                :class="page === currentPage ? 'bg-sky-600 text-white' : 'border border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'">
+                {{ page }}
+              </button>
+            </div>
+            <span class="text-xs font-semibold text-slate-500 sm:hidden">
+              {{ currentPage }} / {{ totalPages }}
+            </span>
+            <button @click="goToNextPage" :disabled="currentPage >= totalPages"
+              class="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 px-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+              Berikutnya
+            </button>
+          </div>
+        </div>
       </section>
     </main>
 
@@ -143,23 +268,23 @@
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="showCheckedInModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-4">
         <div
-          class="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          class="flex max-h-[92svh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10 sm:max-h-[90vh]"
           @click.stop>
-          <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
-            <div>
+          <div class="flex items-start justify-between gap-3 border-b border-slate-100 px-4 py-4 dark:border-slate-800 sm:px-6">
+            <div class="min-w-0">
               <h2 class="text-lg font-bold text-slate-900 dark:text-white">Detail Sudah Absen</h2>
               <p class="text-sm text-slate-500 dark:text-slate-400">Siswa yang sudah melakukan check-in hari ini.</p>
             </div>
             <button @click="showCheckedInModal = false"
-              class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+              class="shrink-0 rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
               <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <div class="flex-1 overflow-x-auto overflow-y-auto p-6">
+          <div class="flex-1 overflow-x-auto overflow-y-auto p-4 sm:p-6">
             <table class="min-w-full text-left text-sm">
               <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/50">
                 <tr>
@@ -205,23 +330,23 @@
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="showAbsentModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-4">
         <div
-          class="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          class="flex max-h-[92svh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10 sm:max-h-[90vh]"
           @click.stop>
-          <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
-            <div>
+          <div class="flex items-start justify-between gap-3 border-b border-slate-100 px-4 py-4 dark:border-slate-800 sm:px-6">
+            <div class="min-w-0">
               <h2 class="text-lg font-bold text-slate-900 dark:text-white">Detail Belum Absen</h2>
               <p class="text-sm text-slate-500 dark:text-slate-400">Siswa yang belum melakukan check-in hari ini.</p>
             </div>
             <button @click="showAbsentModal = false"
-              class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+              class="shrink-0 rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
               <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <div class="flex-1 overflow-x-auto overflow-y-auto p-6">
+          <div class="flex-1 overflow-x-auto overflow-y-auto p-4 sm:p-6">
             <table class="min-w-full text-left text-sm">
               <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/50">
                 <tr>
@@ -263,17 +388,17 @@
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="showAttendanceModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-4">
         <div
-          class="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          class="flex max-h-[92svh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10 sm:max-h-[90vh]"
           @click.stop>
-          <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
-            <div>
+          <div class="flex items-start justify-between gap-3 border-b border-slate-100 px-4 py-4 dark:border-slate-800 sm:px-6">
+            <div class="min-w-0">
               <h2 class="text-lg font-bold text-slate-900 dark:text-white">Riwayat Kehadiran: {{
                 selectedStudent?.full_name || selectedStudent?.username || "" }}</h2>
               <p class="text-sm text-slate-500 dark:text-slate-400">Catatan kehadiran siswa yang Anda walikan.</p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex shrink-0 items-center gap-2">
               <button v-if="selectedStudent" @click="openAttendance(selectedStudent)"
                 class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
                 Refresh
@@ -286,7 +411,7 @@
               </button>
             </div>
           </div>
-          <div class="flex-1 overflow-x-auto overflow-y-auto p-6">
+          <div class="flex-1 overflow-x-auto overflow-y-auto p-4 sm:p-6">
             <div v-if="attendanceError"
               class="mb-4 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-600 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-300">
               {{ attendanceError }}
@@ -330,18 +455,18 @@
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="showReceiptModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-4">
         <div
-          class="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          class="flex max-h-[92svh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10 sm:max-h-[90vh]"
           @click.stop>
-          <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
-            <div>
+          <div class="flex items-start justify-between gap-3 border-b border-slate-100 px-4 py-4 dark:border-slate-800 sm:px-6">
+            <div class="min-w-0">
               <h2 class="text-lg font-bold text-slate-900 dark:text-white">Receipt: {{ selectedStudent?.full_name ||
                 selectedStudent?.username || ""
                 }}</h2>
               <p class="text-sm text-slate-500 dark:text-slate-400">Riwayat bukti pembayaran/administrasi.</p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex shrink-0 items-center gap-2">
               <button v-if="selectedStudent" @click="openReceipt(selectedStudent)"
                 class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
                 Refresh
@@ -354,7 +479,7 @@
               </button>
             </div>
           </div>
-          <div class="flex-1 overflow-x-auto overflow-y-auto p-6">
+          <div class="flex-1 overflow-x-auto overflow-y-auto p-4 sm:p-6">
             <div v-if="receiptError"
               class="mb-4 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-600 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-300">
               {{ receiptError }}
@@ -407,7 +532,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
+import { Icon } from "@iconify/vue";
 import { api } from "@/api";
 import { formatDate, formatDateTime, formatTime } from "@/utils/date";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
@@ -415,6 +541,8 @@ import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 const homeroomClass = ref(null);
 const students = ref([]);
 const search = ref("");
+const currentPage = ref(1);
+const pageSize = ref(10);
 const selectedStudent = ref(null);
 const attendances = ref([]);
 const receipts = ref([]);
@@ -470,6 +598,34 @@ const sortedStudents = computed(() =>
   sortItems(filteredStudents.value, studentTableSort, studentAccessors),
 );
 
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(sortedStudents.value.length / pageSize.value)),
+);
+
+const pageStart = computed(() =>
+  sortedStudents.value.length === 0 ? 0 : ((currentPage.value - 1) * pageSize.value) + 1,
+);
+
+const pageEnd = computed(() =>
+  Math.min(currentPage.value * pageSize.value, sortedStudents.value.length),
+);
+
+const paginatedStudents = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  return sortedStudents.value.slice(start, start + pageSize.value);
+});
+
+const paginationPages = computed(() => {
+  const maxButtons = 5;
+  const total = totalPages.value;
+  const half = Math.floor(maxButtons / 2);
+  let start = Math.max(1, currentPage.value - half);
+  const end = Math.min(total, start + maxButtons - 1);
+
+  start = Math.max(1, end - maxButtons + 1);
+  return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+});
+
 const checkedInCount = computed(() =>
   students.value.filter((item) => item.checked_in_today).length,
 );
@@ -511,6 +667,7 @@ const sortedReceipts = computed(() =>
 
 const handleStudentSort = (key) => {
   toggleSort(studentTableSort, key);
+  currentPage.value = 1;
 };
 
 const handleCheckedInSort = (key) => {
@@ -536,6 +693,33 @@ const sortIndicator = (sortState, key) => {
 
   return sortState.direction === "asc" ? "▲" : "▼";
 };
+
+const goToPage = (page) => {
+  const nextPage = Number(page);
+  if (!Number.isFinite(nextPage)) {
+    return;
+  }
+
+  currentPage.value = Math.min(Math.max(1, nextPage), totalPages.value);
+};
+
+const goToPrevPage = () => {
+  goToPage(currentPage.value - 1);
+};
+
+const goToNextPage = () => {
+  goToPage(currentPage.value + 1);
+};
+
+watch([normalizedSearch, pageSize], () => {
+  currentPage.value = 1;
+});
+
+watch(totalPages, (nextTotalPages) => {
+  if (currentPage.value > nextTotalPages) {
+    currentPage.value = nextTotalPages;
+  }
+});
 
 const openCheckedInModal = () => {
   showCheckedInModal.value = true;

@@ -3,9 +3,9 @@
     class="learning-question-bank-page min-h-screen bg-slate-50 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
 
     <main class="min-h-screen">
-      <section class="border-b-2 border-slate-200 bg-white px-5 py-4 dark:border-slate-800 dark:bg-slate-900 md:px-7">
+      <section class="border-b border-slate-200 bg-white px-3 py-3 dark:border-slate-800 dark:bg-slate-900 sm:px-4 md:px-6">
         <div class="flex flex-col gap-1">
-          <h1 class="text-xl font-bold text-slate-900 dark:text-white">Bank Soal</h1>
+          <h1 class="text-base font-semibold text-slate-900 dark:text-white sm:text-lg">Bank Soal</h1>
         </div>
 
         <div v-if="subjectError"
@@ -13,87 +13,131 @@
           {{ subjectError }}
         </div>
 
-        <nav
-          class="mt-4 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <button v-for="item in subjects" :key="item.id" @click="selectSubject(item)"
-            class="group relative flex min-w-[240px] flex-none flex-col items-start overflow-hidden rounded-2xl p-4 text-left transition-all"
-            :class="selectedSubject?.id === item.id ? subjectCardClass(true) : subjectCardClass(false)">
-            <span :class="selectedSubject?.id === item.id ? 'text-white' : 'text-slate-900 dark:text-white'"
-              class="font-bold tracking-tight">{{ item.name }}</span>
-            <span :class="selectedSubject?.id === item.id ? 'text-sky-200' : 'text-slate-500 dark:text-slate-400'"
-              class="mt-1 text-xs font-medium">
-              {{ item.class_name }}
-            </span>
-            <div v-if="selectedSubject?.id === item.id"
-              class="absolute right-4 top-4 h-2 w-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
+        <div ref="subjectDropdownRef" class="relative mt-3 max-w-xl">
+          <label
+            class="mb-1.5 block text-[11px] font-semibold text-slate-500 dark:text-slate-400 sm:text-xs">
+            Mata pelajaran
+          </label>
+          <button type="button" @click="subjectDropdownOpen = !subjectDropdownOpen"
+            class="group flex w-full items-start justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition sm:px-5 sm:py-4"
+            :class="selectedSubject
+              ? 'bg-sky-600 shadow-md ring-1 ring-sky-600 dark:bg-sky-500'
+              : 'bg-white shadow-sm ring-1 ring-slate-900/5 hover:bg-slate-50 dark:bg-slate-900 dark:ring-white/10 dark:hover:bg-slate-800/80'">
+            <div class="min-w-0 flex-1">
+              <p class="line-clamp-1 text-sm font-semibold tracking-tight sm:text-lg"
+                :class="selectedSubject ? 'text-white' : 'text-slate-900 dark:text-white'">
+                {{ selectedSubject?.name || "Pilih mata pelajaran" }}
+              </p>
+              <p class="mt-1 line-clamp-2 text-[11px] leading-4 sm:text-sm"
+                :class="selectedSubject ? 'text-sky-100' : 'text-slate-500 dark:text-slate-400'">
+                {{ selectedSubject ? `${selectedSubject.class_name}${selectedSubject.description ? ` • ${selectedSubject.description}` : ""}` : "Ketuk untuk memilih dari daftar" }}
+              </p>
+            </div>
+            <svg class="mt-0.5 h-5 w-5 shrink-0 transition-transform duration-200"
+              :class="[selectedSubject ? 'text-sky-100' : 'text-slate-400', subjectDropdownOpen ? 'rotate-180' : '']"
+              fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>
           </button>
-        </nav>
+
+          <transition
+            enter-active-class="transition duration-150 ease-out"
+            enter-from-class="opacity-0 translate-y-1 scale-[0.99]"
+            enter-to-class="opacity-100 translate-y-0 scale-100"
+            leave-active-class="transition duration-120 ease-in"
+            leave-from-class="opacity-100 translate-y-0 scale-100"
+            leave-to-class="opacity-0 translate-y-1 scale-[0.99]">
+            <div v-if="subjectDropdownOpen"
+              class="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-2 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+              <button v-for="item in subjects" :key="item.id" type="button" @click="selectSubject(item)"
+                class="mb-2 flex w-full items-start gap-3 rounded-xl border p-3 text-left transition last:mb-0"
+                :class="selectedSubject?.id === item.id
+                  ? 'bg-sky-600 shadow-md ring-1 ring-sky-600 dark:bg-sky-500'
+                  : 'bg-white shadow-sm ring-1 ring-slate-900/5 hover:bg-slate-50 dark:bg-slate-900 dark:ring-white/10 dark:hover:bg-slate-800/80'">
+                <div class="min-w-0 flex-1">
+                  <p class="line-clamp-1 text-sm font-semibold tracking-tight"
+                    :class="selectedSubject?.id === item.id ? 'text-white' : 'text-slate-900 dark:text-white'">
+                    {{ item.name }}
+                  </p>
+                  <p class="mt-1 line-clamp-2 text-[11px] leading-4"
+                    :class="selectedSubject?.id === item.id ? 'text-sky-100' : 'text-slate-500 dark:text-slate-400'">
+                    {{ item.class_name }}{{ item.description ? ` • ${item.description}` : "" }}
+                  </p>
+                </div>
+                <svg v-if="selectedSubject?.id === item.id" class="mt-0.5 h-4 w-4 shrink-0 text-white"
+                  fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </button>
+            </div>
+          </transition>
+        </div>
       </section>
 
       <div v-if="selectedSubject">
-        <header class="border-b-2 border-slate-200 bg-white p-5 md:p-7 dark:border-slate-800 dark:bg-slate-900">
-          <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <header class="border-b border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900 sm:p-4 md:p-6">
+          <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ selectedSubject.name }}</h2>
-              <p class="mt-1.5 text-sm text-slate-600 dark:text-slate-300">
+              <h2 class="line-clamp-2 text-base font-semibold text-slate-900 dark:text-white sm:text-lg">{{ selectedSubject.name }}</h2>
+              <p class="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-300 sm:text-sm">
                 {{ selectedSubject.class_name }} &bull; {{ selectedSubject.description || "Tidak ada deskripsi." }}
               </p>
             </div>
-            <div class="flex flex-col gap-3 sm:flex-row">
-              <button @click="openAiGeneratorModal"
-                class="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+            <div class="flex flex-wrap gap-2 sm:justify-end">
+              <button @click="openAiGeneratorModal" aria-label="Buat soal dengan AI" title="Buat soal dengan AI"
+                class="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 text-xs font-semibold whitespace-nowrap text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:px-4 sm:text-sm">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round"
                     d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
                 </svg>
-                Buat Soal dengan AI
+                <span class="hidden sm:inline">Buat Soal dengan AI</span>
               </button>
-              <button @click="bulkImportModalOpen = true"
-                class="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-emerald-600 bg-white px-4 py-2.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50 dark:border-emerald-500 dark:bg-slate-800 dark:text-emerald-400 dark:hover:bg-slate-700">
+              <button @click="bulkImportModalOpen = true" aria-label="Import dari Word" title="Import dari Word"
+                class="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-emerald-600 bg-white px-3 text-xs font-semibold whitespace-nowrap text-emerald-700 transition hover:bg-emerald-50 dark:border-emerald-500 dark:bg-slate-800 dark:text-emerald-400 dark:hover:bg-slate-700 sm:px-4 sm:text-sm">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round"
                     d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                 </svg>
-                Import dari Word
+                <span class="hidden sm:inline">Import dari Word</span>
               </button>
-              <button @click="questionBankModalOpen = true"
-                class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700">
+              <button @click="questionBankModalOpen = true" aria-label="Tambah soal" title="Tambah soal"
+                class="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-xs font-semibold whitespace-nowrap text-white transition hover:bg-blue-700 sm:px-4 sm:text-sm">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
-                Tambah Soal
+                <span class="hidden sm:inline">Tambah Soal</span>
               </button>
             </div>
           </div>
         </header>
 
-        <div class="space-y-4 p-5 md:p-7">
+        <div class="space-y-3 p-3 sm:p-4 md:p-6">
           <section
-            class="overflow-hidden rounded-xl border-2 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-            <div class="border-b border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
-              <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-                <div class="flex flex-col gap-3 md:flex-row md:items-center">
+            class="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 sm:rounded-2xl">
+            <div class="border-b border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-900 sm:p-3">
+              <div class="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:flex xl:flex-row xl:items-center">
                   <input v-model="bankSearch" type="text" placeholder="Cari soal..."
-                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white md:w-64" />
+                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white sm:text-sm xl:w-64" />
                   <select v-model="bankTypeFilter"
-                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white md:w-44">
+                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white sm:text-sm xl:w-44">
                     <option value="ALL">Semua Jenis</option>
                     <option value="MCQ">Pilihan Ganda</option>
                     <option value="ESSAY">Uraian</option>
                   </select>
                   <select v-model="bankPageSize"
-                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white md:w-32">
+                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white sm:text-sm xl:w-32">
                     <option :value="10">10 soal</option>
                     <option :value="20">20 soal</option>
                     <option :value="50">50 soal</option>
                   </select>
                 </div>
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between xl:justify-end">
-                  <span class="text-sm text-slate-500 dark:text-slate-400">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between xl:justify-end">
+                  <span class="text-[11px] leading-4 text-slate-500 dark:text-slate-400 sm:text-xs">
                     {{ questionBankTotal }} soal &bull; {{ assignmentForm.selected_question_bank_ids.length }} dicentang
                   </span>
                   <button @click="selectAllCurrentBankPage" type="button"
-                    class="rounded-lg border border-blue-600 bg-white px-3 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-300">
+                    class="inline-flex h-9 items-center justify-center rounded-xl border border-blue-600 bg-white px-3 text-xs font-semibold text-blue-700 transition hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-300 sm:px-4 sm:text-sm">
                     Centang Halaman Ini
                   </button>
                 </div>
@@ -101,29 +145,78 @@
             </div>
 
             <div v-if="assignmentForm.selected_question_bank_ids.length > 0"
-              class="flex flex-col gap-3 border-b-2 border-slate-200 bg-blue-50 px-4 py-3 dark:border-slate-700 dark:bg-blue-500/10 md:flex-row md:items-center md:justify-between">
+              class="flex flex-col gap-2 border-b border-slate-200 bg-blue-50 px-3 py-2.5 dark:border-slate-700 dark:bg-blue-500/10 sm:px-4 md:flex-row md:items-center md:justify-between">
               <div>
-                <p class="text-sm font-bold text-blue-900 dark:text-blue-200">
+                <p class="text-xs font-semibold leading-4 text-blue-900 dark:text-blue-200 sm:text-sm">
                   {{ assignmentForm.selected_question_bank_ids.length }} soal sedang dicentang
                 </p>
-                <p class="mt-1 text-xs text-blue-700 dark:text-blue-300">
+                <p class="mt-1 text-[11px] leading-4 text-blue-700 dark:text-blue-300 sm:text-xs">
                   Kosongkan centang tidak menghapus soal. Hapus permanen akan meminta konfirmasi merah.
                 </p>
               </div>
               <div class="flex flex-col gap-2 sm:flex-row">
                 <button @click="clearSelectedQuestions" type="button"
-                  class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200">
+                  class="inline-flex h-9 items-center justify-center rounded-xl border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 sm:px-4 sm:text-sm">
                   Kosongkan Centang
                 </button>
                 <button @click="deleteSelectedQuestionBankItems" type="button" :disabled="isSavingQuestionPreview"
-                  class="rounded-lg bg-rose-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-rose-600 disabled:opacity-50">
+                  class="inline-flex h-9 items-center justify-center rounded-xl bg-rose-500 px-3 text-xs font-semibold text-white transition hover:bg-rose-600 disabled:opacity-50 sm:px-4 sm:text-sm">
                   Hapus Soal
                 </button>
               </div>
             </div>
 
-            <div class="overflow-x-auto">
-              <table class="min-w-full text-left text-sm">
+            <div class="space-y-2 p-2.5 md:hidden">
+              <article v-for="item in paginatedQuestionBank" :key="item.id"
+                class="rounded-lg border border-slate-200 bg-white p-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                <div class="flex items-start gap-2.5">
+                  <input v-model="assignmentForm.selected_question_bank_ids" type="checkbox" :value="item.id"
+                    class="mt-1 h-3.5 w-3.5 shrink-0 rounded border-slate-300 text-blue-600 focus:ring-blue-600 dark:border-slate-600 dark:bg-slate-800" />
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-start justify-between gap-2">
+                      <span class="inline-flex shrink-0 rounded-md border px-1.5 py-0.5 text-[9px] font-semibold"
+                        :class="item.question_type === 'MCQ'
+                          ? 'border-blue-700 bg-blue-50 text-blue-800 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300'
+                          : 'border-amber-700 bg-amber-50 text-amber-800 dark:border-amber-500 dark:bg-amber-900/30 dark:text-amber-300'">
+                        {{ assignmentTypeLabel(item.question_type) }}
+                      </span>
+                      <button type="button" @click="openQuestionPreview(item, 'bank')"
+                        class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-600 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                        title="Edit soal" aria-label="Edit soal">
+                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2.2"
+                          stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" />
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M19.5 7.125 16.862 4.487M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <p class="mt-2 line-clamp-4 text-xs font-semibold leading-5 text-slate-900 dark:text-white">
+                      {{ parseQuestionContent(item.question_text).question_text }}
+                    </p>
+                    <img v-if="parseQuestionContent(item.question_text).question_image_url"
+                      :src="parseQuestionContent(item.question_text).question_image_url" alt="Gambar pertanyaan"
+                      class="mt-2 max-h-36 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+                    <p class="mt-2 text-[10px] text-slate-500 dark:text-slate-400">
+                      Dibuat: {{ formatDateTime(item.created_at) }}
+                    </p>
+                  </div>
+                </div>
+              </article>
+
+              <div v-if="paginatedQuestionBank.length === 0"
+                class="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center dark:border-slate-700 dark:bg-slate-900">
+                <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Belum Ada Soal</p>
+                <p class="mt-1 text-xs text-slate-500 dark:text-slate-500">
+                  Soal yang cocok dengan pencarian akan muncul di sini.
+                </p>
+              </div>
+            </div>
+
+            <div class="hidden md:block">
+              <table class="w-full text-left text-sm">
                 <thead class="bg-white text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-900">
                   <tr>
                     <th class="w-12 px-4 py-3 font-semibold">Pilih</th>
@@ -177,18 +270,18 @@
             </div>
 
             <div
-              class="flex flex-col gap-3 border-t-2 border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
-              <p class="text-sm text-slate-500 dark:text-slate-400">
+              class="flex flex-col gap-3 border-t border-slate-200 bg-white px-3 py-3 dark:border-slate-700 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+              <p class="text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
                 Menampilkan {{ bankStartRow }} - {{ bankEndRow }} dari {{ questionBankTotal }} soal
               </p>
               <div class="flex gap-2">
                 <button @click="bankCurrentPage = Math.max(1, bankCurrentPage - 1)" :disabled="bankCurrentPage === 1"
-                  class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                  class="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 sm:flex-none sm:px-4 sm:text-sm">
                   Sebelumnya
                 </button>
                 <button @click="bankCurrentPage = Math.min(bankTotalPages, bankCurrentPage + 1)"
                   :disabled="bankCurrentPage === bankTotalPages"
-                  class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                  class="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 sm:flex-none sm:px-4 sm:text-sm">
                   Berikutnya
                 </button>
               </div>
@@ -218,22 +311,22 @@
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="bulkImportModalOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+        class="learning-bank-modal-overlay fixed inset-0 z-[230] flex items-end justify-center overflow-hidden bg-slate-900/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
         <div
-          class="flex h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          class="flex h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10 sm:h-auto sm:max-h-[92vh] sm:max-w-xl sm:rounded-2xl"
           @click.stop>
 
           <!-- Header -->
           <div
-            class="flex flex-none items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
-            <div>
-              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Import Soal dari Word</h2>
-              <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
-                Ikuti 3 langkah mudah di bawah — selesai dalam hitungan menit.
+            class="flex flex-none items-start justify-between gap-3 border-b border-slate-100 bg-slate-50/95 px-3 py-2.5 backdrop-blur dark:border-slate-800 dark:bg-slate-800/80 sm:items-center sm:px-6 sm:py-4">
+            <div class="min-w-0">
+              <h2 class="text-base font-bold text-slate-900 dark:text-white sm:text-lg">Import Soal dari Word</h2>
+              <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
+                Ikuti 2 langkah mudah di bawah.
               </p>
             </div>
             <button @click="closeBulkImportModal"
-              class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+              class="shrink-0 rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -241,35 +334,40 @@
           </div>
 
           <!-- Scrollable Content -->
-          <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+          <div
+            class="min-h-0 flex-1 space-y-2.5 overflow-y-auto overscroll-contain px-3 py-3 [-webkit-overflow-scrolling:touch] sm:space-y-4 sm:px-6 sm:py-5">
 
             <!-- ── LANGKAH 1: Download Template ── -->
-            <section class="rounded-xl border-2 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-              <div class="flex items-center gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+            <section class="rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+              <div class="flex items-center gap-2.5 border-b border-slate-100 px-3 py-2.5 dark:border-slate-800 sm:gap-3 sm:px-4 sm:py-3">
                 <span
-                  class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">1</span>
-                <div>
+                  class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-bold text-white sm:h-7 sm:w-7 sm:text-xs">1</span>
+                <div class="min-w-0">
                   <h3 class="text-sm font-bold text-slate-900 dark:text-white">Download Template</h3>
-                  <p class="text-xs text-slate-500 dark:text-slate-400">Pilih jenis soal yang ingin dibuat, lalu
+                  <p class="text-xs leading-4 text-slate-500 dark:text-slate-400">Pilih jenis soal yang ingin dibuat, lalu
                     download.</p>
                 </div>
               </div>
-              <div class="p-4">
-                <p class="mb-3 text-xs text-slate-500 dark:text-slate-400">
+              <div class="p-3 sm:p-4">
+                <p class="mb-2 text-xs leading-4 text-slate-500 dark:text-slate-400 sm:mb-3 sm:leading-5">
                   Template berisi contoh dan panduan pengisian yang sudah siap pakai.
                 </p>
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <button @click="downloadQuestionBankTemplate('MCQ')" :disabled="isDownloadingTemplate"
-                    class="flex flex-col items-center gap-2 rounded-xl border-2 border-blue-200 bg-blue-50 px-4 py-4 text-center transition hover:border-blue-400 hover:bg-blue-100 disabled:opacity-50 dark:border-blue-500/30 dark:bg-blue-500/10 dark:hover:border-blue-400">
-                    <span class="text-2xl">📄</span>
-                    <span class="text-sm font-bold text-blue-800 dark:text-blue-200">Pilihan Ganda</span>
-                    <span class="text-xs text-blue-600 dark:text-blue-400">Soal MCQ saja</span>
+                    class="flex min-h-[3.5rem] items-center justify-start gap-2 rounded-lg border-2 border-blue-200 bg-blue-50 px-3 py-2 text-left transition hover:border-blue-400 hover:bg-blue-100 disabled:opacity-50 dark:border-blue-500/30 dark:bg-blue-500/10 dark:hover:border-blue-400 sm:min-h-20 sm:flex-col sm:justify-center sm:gap-1 sm:rounded-xl sm:py-2.5 sm:text-center">
+                    <span class="shrink-0 text-base sm:text-xl">📄</span>
+                    <span class="min-w-0">
+                      <span class="block text-sm font-bold leading-4 text-blue-800 dark:text-blue-200">Pilihan Ganda</span>
+                      <span class="block text-[10px] leading-4 text-blue-600 dark:text-blue-400">Soal MCQ saja</span>
+                    </span>
                   </button>
                   <button @click="downloadQuestionBankTemplate('ESSAY')" :disabled="isDownloadingTemplate"
-                    class="flex flex-col items-center gap-2 rounded-xl border-2 border-amber-200 bg-amber-50 px-4 py-4 text-center transition hover:border-amber-400 hover:bg-amber-100 disabled:opacity-50 dark:border-amber-500/30 dark:bg-amber-500/10 dark:hover:border-amber-400">
-                    <span class="text-2xl">📝</span>
-                    <span class="text-sm font-bold text-amber-800 dark:text-amber-200">Uraian</span>
-                    <span class="text-xs text-amber-600 dark:text-amber-400">Soal Essay saja</span>
+                    class="flex min-h-[3.5rem] items-center justify-start gap-2 rounded-lg border-2 border-amber-200 bg-amber-50 px-3 py-2 text-left transition hover:border-amber-400 hover:bg-amber-100 disabled:opacity-50 dark:border-amber-500/30 dark:bg-amber-500/10 dark:hover:border-amber-400 sm:min-h-20 sm:flex-col sm:justify-center sm:gap-1 sm:rounded-xl sm:py-2.5 sm:text-center">
+                    <span class="shrink-0 text-base sm:text-xl">📝</span>
+                    <span class="min-w-0">
+                      <span class="block text-sm font-bold leading-4 text-amber-800 dark:text-amber-200">Uraian</span>
+                      <span class="block text-[10px] leading-4 text-amber-600 dark:text-amber-400">Soal Essay saja</span>
+                    </span>
                   </button>
                   <!-- <button @click="downloadQuestionBankTemplate('MIXED')" :disabled="isDownloadingTemplate"
                     class="flex flex-col items-center gap-2 rounded-xl border-2 border-emerald-200 bg-emerald-50 px-4 py-4 text-center transition hover:border-emerald-400 hover:bg-emerald-100 disabled:opacity-50 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:hover:border-emerald-400">
@@ -289,21 +387,21 @@
 
 
             <!-- ── LANGKAH 3: Upload ── -->
-            <section class="rounded-xl border-2 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-              <div class="flex items-center gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+            <section class="rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+              <div class="flex items-center gap-2.5 border-b border-slate-100 px-3 py-2.5 dark:border-slate-800 sm:gap-3 sm:px-4 sm:py-3">
                 <span
-                  class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">2</span>
-                <div>
+                  class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-bold text-white sm:h-7 sm:w-7 sm:text-xs">2</span>
+                <div class="min-w-0">
                   <h3 class="text-sm font-bold text-slate-900 dark:text-white">Upload File yang Sudah Diisi</h3>
-                  <p class="text-xs text-slate-500 dark:text-slate-400">Hanya file <strong>.docx</strong> yang diterima.
+                  <p class="text-xs leading-4 text-slate-500 dark:text-slate-400">Hanya file <strong>.docx</strong> yang diterima.
                   </p>
                 </div>
               </div>
-              <div class="p-4">
+              <div class="p-3 sm:p-4">
 
                 <!-- Drop area -->
                 <label
-                  class="flex flex-col items-center justify-center gap-3 w-full cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition"
+                  class="flex min-h-[8rem] w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-3 py-4 text-center transition sm:min-h-[11rem] sm:gap-3 sm:p-8"
                   :class="questionBankImportFile
                     ? 'border-emerald-400 bg-emerald-50 dark:border-emerald-500/40 dark:bg-emerald-500/10'
                     : 'border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50 dark:border-slate-600 dark:bg-slate-800/50 dark:hover:border-blue-500'">
@@ -312,22 +410,22 @@
 
                   <div v-if="!questionBankImportFile">
                     <div
-                      class="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 mx-auto">
-                      <svg class="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                      class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 sm:h-12 sm:w-12">
+                      <svg class="h-5 w-5 text-slate-400 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round"
                           d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                       </svg>
                     </div>
-                    <p class="mt-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    <p class="mt-2 text-sm font-semibold leading-4 text-slate-700 dark:text-slate-200">
                       Klik untuk pilih file
                     </p>
-                    <p class="text-xs text-slate-400 dark:text-slate-500">atau seret file .docx ke sini</p>
+                    <p class="hidden text-xs text-slate-400 dark:text-slate-500 sm:block">atau seret file .docx ke sini</p>
                   </div>
 
                   <div v-else class="w-full">
                     <div
-                      class="flex items-center gap-3 rounded-lg border border-emerald-300 bg-white px-4 py-3 dark:border-emerald-500/40 dark:bg-slate-900">
+                      class="flex items-center gap-3 rounded-lg border border-emerald-300 bg-white px-3 py-3 dark:border-emerald-500/40 dark:bg-slate-900 sm:px-4">
                       <div
                         class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
                         <svg class="h-5 w-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24"
@@ -355,7 +453,7 @@
                 <!-- Import button -->
                 <button v-if="questionBankImportFile" type="button" @click="importQuestionBankDocument"
                   :disabled="isImportingQuestionBank"
-                  class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60">
+                  class="mt-3 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 sm:mt-4 sm:text-sm">
                   <svg v-if="isImportingQuestionBank" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"
                     stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -382,7 +480,7 @@
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="aiGeneratorModalOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+        class="learning-bank-modal-overlay fixed inset-0 z-[230] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
 
         <div
           class="flex h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
@@ -628,7 +726,7 @@
       enter-to-class="opacity-100 scale-100" leave-active-class="transition ease-in duration-150"
       leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
       <div v-if="isGeneratingAiQuestions"
-        class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm">
+        class="learning-bank-modal-overlay fixed inset-0 z-[240] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm">
         <div
           class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl ring-1 ring-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:ring-white/10">
           <div class="flex items-start gap-4">
@@ -660,7 +758,7 @@
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="questionBankModalOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+        class="learning-bank-modal-overlay fixed inset-0 z-[230] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
 
         <div
           class="flex h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
@@ -795,78 +893,78 @@
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="quizOverviewModal.open"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+        class="learning-bank-modal-overlay fixed inset-0 z-[230] flex items-end justify-center bg-slate-900/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
 
         <div
-          class="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          class="quiz-overview-detail flex h-[100dvh] max-h-[100dvh] w-full max-w-6xl flex-col overflow-hidden rounded-none bg-white shadow-2xl ring-1 ring-slate-900/5 sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:rounded-2xl dark:bg-slate-900 dark:ring-white/10"
           @click.stop>
 
           <div
-            class="flex flex-none items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
-            <div>
-              <h2 class="text-lg font-bold text-slate-900 dark:text-white">Detail Quiz Berjalan</h2>
-              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            class="flex flex-none items-start justify-between gap-3 border-b border-slate-100 bg-slate-50/50 px-3 py-3 dark:border-slate-800 dark:bg-slate-800/30 sm:items-center sm:px-6 sm:py-4">
+            <div class="min-w-0">
+              <h2 class="text-base font-bold text-slate-900 dark:text-white sm:text-lg">Detail Quiz Berjalan</h2>
+              <p class="mt-1 line-clamp-2 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
                 {{ quizOverviewModal.assignment?.title || "-" }} • {{
                   assignmentTypeLabel(quizOverviewModal.assignment?.assignment_type) }}
               </p>
             </div>
             <button @click="closeQuizOverview"
-              class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              class="shrink-0 rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+              <svg class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          <div v-if="quizOverviewModal.loading" class="p-12 text-center">
+          <div v-if="quizOverviewModal.loading" class="min-h-0 flex-1 p-8 text-center sm:p-12">
             <div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-sky-600"></div>
             <p class="mt-4 text-sm text-slate-500">Memuat detail quiz...</p>
           </div>
 
-          <div v-else class="flex-1 overflow-y-auto p-6">
-            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
-              <div class="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+          <div v-else class="min-h-0 flex-1 overflow-y-auto p-3 sm:p-6">
+            <div class="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-6">
+              <div class="rounded-lg bg-slate-50 p-3 ring-1 ring-slate-200 sm:rounded-xl sm:p-4 dark:bg-slate-800 dark:ring-slate-700">
                 <div class="text-xs text-slate-500 dark:text-slate-400">Total Siswa</div>
-                <div class="mt-1 text-2xl font-bold text-slate-900 dark:text-white">{{
+                <div class="mt-1 text-lg font-bold text-slate-900 dark:text-white sm:text-2xl">{{
                   quizOverviewModal.analytics.total_students || 0 }}</div>
               </div>
               <div
-                class="rounded-xl bg-emerald-50 p-4 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:ring-emerald-500/20">
+                class="rounded-lg bg-emerald-50 p-3 ring-1 ring-emerald-200 sm:rounded-xl sm:p-4 dark:bg-emerald-500/10 dark:ring-emerald-500/20">
                 <div class="text-xs text-emerald-700 dark:text-emerald-300">Sudah Submit</div>
-                <div class="mt-1 text-2xl font-bold text-emerald-900 dark:text-emerald-200">{{
+                <div class="mt-1 text-lg font-bold text-emerald-900 dark:text-emerald-200 sm:text-2xl">{{
                   quizOverviewModal.analytics.submitted_count || 0 }}</div>
               </div>
-              <div class="rounded-xl bg-red-50 p-4 ring-1 ring-red-200 dark:bg-red-500/10 dark:ring-red-500/20">
+              <div class="rounded-lg bg-red-50 p-3 ring-1 ring-red-200 sm:rounded-xl sm:p-4 dark:bg-red-500/10 dark:ring-red-500/20">
                 <div class="text-xs text-red-700 dark:text-red-300">Belum Submit</div>
-                <div class="mt-1 text-2xl font-bold text-red-900 dark:text-red-200">{{
+                <div class="mt-1 text-lg font-bold text-red-900 dark:text-red-200 sm:text-2xl">{{
                   quizOverviewModal.analytics.pending_count || 0 }}</div>
               </div>
-              <div class="rounded-xl bg-sky-50 p-4 ring-1 ring-sky-200 dark:bg-sky-500/10 dark:ring-sky-500/20">
+              <div class="rounded-lg bg-sky-50 p-3 ring-1 ring-sky-200 sm:rounded-xl sm:p-4 dark:bg-sky-500/10 dark:ring-sky-500/20">
                 <div class="text-xs text-sky-700 dark:text-sky-300">Rata-rata Nilai</div>
-                <div class="mt-1 text-2xl font-bold text-sky-900 dark:text-sky-200">{{
+                <div class="mt-1 text-lg font-bold text-sky-900 dark:text-sky-200 sm:text-2xl">{{
                   quizOverviewModal.analytics.average_score ?? "-" }}</div>
               </div>
-              <div class="rounded-xl bg-amber-50 p-4 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:ring-amber-500/20">
+              <div class="rounded-lg bg-amber-50 p-3 ring-1 ring-amber-200 sm:rounded-xl sm:p-4 dark:bg-amber-500/10 dark:ring-amber-500/20">
                 <div class="text-xs text-amber-700 dark:text-amber-300">Total Pelanggaran</div>
-                <div class="mt-1 text-2xl font-bold text-amber-900 dark:text-amber-200">{{
+                <div class="mt-1 text-lg font-bold text-amber-900 dark:text-amber-200 sm:text-2xl">{{
                   quizOverviewModal.analytics.total_violations || 0 }}</div>
               </div>
               <div
-                class="rounded-xl bg-violet-50 p-4 ring-1 ring-violet-200 dark:bg-violet-500/10 dark:ring-violet-500/20">
+                class="rounded-lg bg-violet-50 p-3 ring-1 ring-violet-200 sm:rounded-xl sm:p-4 dark:bg-violet-500/10 dark:ring-violet-500/20">
                 <div class="text-xs text-violet-700 dark:text-violet-300">Siswa Terflag</div>
-                <div class="mt-1 text-2xl font-bold text-violet-900 dark:text-violet-200">{{
+                <div class="mt-1 text-lg font-bold text-violet-900 dark:text-violet-200 sm:text-2xl">{{
                   quizOverviewModal.analytics.flagged_students_count || 0 }}</div>
               </div>
             </div>
 
-            <div class="mt-6 grid gap-6 xl:grid-cols-2">
+            <div class="mt-3 grid gap-3 sm:mt-6 sm:gap-6 xl:grid-cols-2">
               <section
                 class="overflow-hidden rounded-xl border border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900">
-                <div class="border-b border-slate-100 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/50">
-                  <h3 class="font-semibold text-slate-900 dark:text-white">Sudah Submit</h3>
+                <div class="border-b border-slate-100 bg-slate-50 px-3 py-3 dark:border-slate-800 dark:bg-slate-800/50 sm:px-5 sm:py-4">
+                  <h3 class="text-sm font-semibold text-slate-900 dark:text-white sm:text-base">Sudah Submit</h3>
                 </div>
-                <div class="max-h-72 overflow-y-auto">
-                  <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-sm text-left">
+                <div class="max-h-72 overflow-auto">
+                  <table class="min-w-[640px] divide-y divide-slate-100 text-left text-xs dark:divide-slate-800 sm:min-w-full sm:text-sm">
                     <thead class="bg-white dark:bg-slate-900">
                       <tr>
                         <th class="px-5 py-3 font-semibold text-slate-500">Siswa</th>
@@ -906,11 +1004,11 @@
 
               <section
                 class="overflow-hidden rounded-xl border border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900">
-                <div class="border-b border-slate-100 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/50">
-                  <h3 class="font-semibold text-slate-900 dark:text-white">Belum Submit</h3>
+                <div class="border-b border-slate-100 bg-slate-50 px-3 py-3 dark:border-slate-800 dark:bg-slate-800/50 sm:px-5 sm:py-4">
+                  <h3 class="text-sm font-semibold text-slate-900 dark:text-white sm:text-base">Belum Submit</h3>
                 </div>
-                <div class="max-h-72 overflow-y-auto">
-                  <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-sm text-left">
+                <div class="max-h-72 overflow-auto">
+                  <table class="min-w-[560px] divide-y divide-slate-100 text-left text-xs dark:divide-slate-800 sm:min-w-full sm:text-sm">
                     <thead class="bg-white dark:bg-slate-900">
                       <tr>
                         <th class="px-5 py-3 font-semibold text-slate-500">Siswa</th>
@@ -946,12 +1044,12 @@
             </div>
 
             <section v-if="quizOverviewModal.analytics.question_breakdown?.length"
-              class="mt-6 overflow-hidden rounded-xl border border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900">
-              <div class="border-b border-slate-100 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/50">
-                <h3 class="font-semibold text-slate-900 dark:text-white">Analitik Soal</h3>
+              class="mt-3 overflow-hidden rounded-xl border border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900 sm:mt-6">
+              <div class="border-b border-slate-100 bg-slate-50 px-3 py-3 dark:border-slate-800 dark:bg-slate-800/50 sm:px-5 sm:py-4">
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white sm:text-base">Analitik Soal</h3>
               </div>
               <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-sm text-left">
+                <table class="min-w-[760px] divide-y divide-slate-100 text-left text-xs dark:divide-slate-800 sm:text-sm">
                   <thead class="bg-white dark:bg-slate-900">
                     <tr>
                       <th class="px-5 py-3 font-semibold text-slate-500">No</th>
@@ -986,10 +1084,10 @@
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="questionPreviewModal.open"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+        class="learning-bank-modal-overlay fixed inset-0 z-[260] flex items-center justify-center bg-slate-900/60 p-3 backdrop-blur-sm sm:p-4">
 
         <div
-          class="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          class="flex max-h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
           @click.stop>
 
           <div
@@ -1132,19 +1230,20 @@
           </div>
 
           <div
-            class="flex flex-none items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/80 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/50">
+            class="grid flex-none grid-cols-3 items-center gap-2 border-t border-slate-100 bg-slate-50/80 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/50 sm:flex sm:justify-end sm:gap-3 sm:px-6 sm:py-4">
             <button v-if="questionPreviewModal.source === 'bank'" type="button" @click="deleteQuestionFromPreview"
               :disabled="isSavingQuestionPreview"
-              class="mr-auto rounded-xl bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20">
+              class="inline-flex min-h-10 items-center justify-center rounded-lg bg-rose-50 px-3 py-2 text-xs font-semibold leading-none text-rose-700 transition hover:bg-rose-100 disabled:opacity-50 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20 sm:mr-auto sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm">
               Hapus Soal
             </button>
             <button @click="closeQuestionPreview" type="button"
-              class="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+              class="inline-flex min-h-10 items-center justify-center rounded-lg px-3 py-2 text-xs font-semibold leading-none text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm">
               Tutup
             </button>
             <button type="button" @click="saveQuestionPreviewChanges" :disabled="isSavingQuestionPreview"
-              class="rounded-xl bg-sky-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-sky-500 disabled:opacity-50">
-              {{ isSavingQuestionPreview ? "Menyimpan..." : "Simpan Perubahan" }}
+              class="inline-flex min-h-10 items-center justify-center rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-sky-500 disabled:opacity-50 sm:rounded-xl sm:px-6 sm:py-2.5 sm:text-sm sm:font-bold">
+              <span class="sm:hidden">{{ isSavingQuestionPreview ? "..." : "Simpan" }}</span>
+              <span class="hidden sm:inline">{{ isSavingQuestionPreview ? "Menyimpan..." : "Simpan Perubahan" }}</span>
             </button>
           </div>
         </div>
@@ -1155,7 +1254,7 @@
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="deleteQuestionConfirmModal.open"
-        class="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        class="learning-bank-modal-overlay fixed inset-0 z-[270] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
         <div
           class="w-full max-w-md overflow-hidden rounded-2xl border-2 border-rose-200 bg-white shadow-2xl dark:border-rose-500/30 dark:bg-slate-900">
           <div class="border-b border-rose-100 bg-rose-50 px-6 py-5 dark:border-rose-500/20 dark:bg-rose-500/10">
@@ -1202,6 +1301,8 @@ import { uploadFileDirect } from "@/api/upload";
 const subjects = ref([]);
 const masterDataStore = useMasterDataStore();
 const selectedSubject = ref(null);
+const subjectDropdownOpen = ref(false);
+const subjectDropdownRef = ref(null);
 const assignments = ref([]);
 const questionBank = ref([]);
 const questionBankForAssignment = ref([]);
@@ -1265,6 +1366,11 @@ const questionPreviewForm = reactive({
 
 const questionBankImportFileName = computed(() => questionBankImportFile.value?.name || "");
 
+const slugifyFilename = (value, fallback = "file") => {
+  const normalized = String(value || fallback).trim().toLowerCase().replace(/\s+/g, "-");
+  return normalized.replace(/[^a-z0-9_-]/g, "") || fallback;
+};
+
 // Fitur: Body Scroll Lock saat modal aktif
 const isAnyModalOpen = computed(() =>
   aiGeneratorModalOpen.value
@@ -1285,6 +1391,10 @@ watch(isAnyModalOpen, (isOpen) => {
 
 onUnmounted(() => {
   document.body.style.overflow = '';
+  if (typeof document !== "undefined") {
+    document.removeEventListener("click", handleSubjectDropdownOutsideClick);
+    document.removeEventListener("keydown", handleSubjectDropdownKeydown);
+  }
   if (aiGenerationStageInterval) {
     clearInterval(aiGenerationStageInterval);
     aiGenerationStageInterval = null;
@@ -1461,12 +1571,6 @@ const firstSubjectValue = (subject, keys) => {
     if (value) return value;
   }
   return "";
-};
-
-const subjectCardClass = (active = false) => {
-  return active
-    ? "bg-sky-600 shadow-md ring-1 ring-sky-600 dark:bg-sky-500"
-    : "bg-white shadow-sm ring-1 ring-slate-900/5 hover:bg-slate-50 dark:bg-slate-900 dark:ring-white/10 dark:hover:bg-slate-800/80";
 };
 
 const extractGradeNumber = (label) => {
@@ -1995,6 +2099,7 @@ const loadAssignmentQuestionBank = async () => {
 
 const selectSubject = async (subject) => {
   selectedSubject.value = subject;
+  subjectDropdownOpen.value = false;
   message.value = "";
   bankSearch.value = "";
   bankTypeFilter.value = "ALL";
@@ -2006,6 +2111,19 @@ const selectSubject = async (subject) => {
   closeQuestionPreview();
   closeQuizOverview();
   await loadSubjectData();
+};
+
+const handleSubjectDropdownOutsideClick = (event) => {
+  const container = subjectDropdownRef.value;
+  if (!container) return;
+  if (container.contains(event.target)) return;
+  subjectDropdownOpen.value = false;
+};
+
+const handleSubjectDropdownKeydown = (event) => {
+  if (event.key === "Escape") {
+    subjectDropdownOpen.value = false;
+  }
 };
 
 const openAiGeneratorModal = () => {
@@ -2083,7 +2201,9 @@ const downloadQuestionBankTemplate = async (questionType) => {
     const downloadUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = downloadUrl;
-    link.download = `template-bank-soal-${selectedSubject.value.name || "mapel"}.docx`;
+    const subjectPart = slugifyFilename(selectedSubject.value.name, "mapel");
+    const classPart = slugifyFilename(selectedSubject.value.class_name, "kelas");
+    link.download = `template-bank-soal-${subjectPart}-${classPart}.docx`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -2423,7 +2543,13 @@ const submitAssignment = async () => {
   }
 };
 
-onMounted(loadSubjects);
+onMounted(async () => {
+  if (typeof document !== "undefined") {
+    document.addEventListener("click", handleSubjectDropdownOutsideClick);
+    document.addEventListener("keydown", handleSubjectDropdownKeydown);
+  }
+  await loadSubjects();
+});
 
 watch(subjectError, (value) => {
   if (!value) return;
@@ -2439,3 +2565,45 @@ watch(message, (value) => {
   });
 });
 </script>
+
+<style scoped>
+@media (min-width: 1024px) {
+  .learning-bank-modal-overlay {
+    left: 320px;
+  }
+}
+
+@media (max-width: 768px) {
+  .quiz-overview-detail :deep(th),
+  .quiz-overview-detail :deep(td) {
+    padding: 0.625rem 0.75rem !important;
+    vertical-align: top;
+  }
+
+  .quiz-overview-detail :deep(th) {
+    white-space: nowrap;
+  }
+
+  .learning-question-bank-page :deep(.text-2xl),
+  .learning-question-bank-page :deep(.text-xl),
+  .learning-question-bank-page :deep(.text-lg) {
+    font-size: 0.875rem !important;
+    line-height: 1.25rem !important;
+  }
+
+  .learning-question-bank-page :deep(.text-base) {
+    font-size: 0.8125rem !important;
+    line-height: 1.2rem !important;
+  }
+
+  .learning-question-bank-page :deep(.text-sm) {
+    font-size: 0.75rem !important;
+    line-height: 1.1rem !important;
+  }
+
+  .learning-question-bank-page :deep(.text-xs) {
+    font-size: 0.6875rem !important;
+    line-height: 1rem !important;
+  }
+}
+</style>

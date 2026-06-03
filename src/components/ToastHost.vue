@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div class="pointer-events-none fixed right-4 top-4 z-[100] flex w-full max-w-sm flex-col gap-3">
+    <div class="pointer-events-none fixed inset-x-3 top-3 z-[240] flex flex-col gap-3 sm:left-auto sm:right-4 sm:top-4 sm:w-full sm:max-w-sm">
       <TransitionGroup
         enter-active-class="transform transition duration-200 ease-out"
         enter-from-class="translate-y-2 opacity-0"

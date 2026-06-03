@@ -1,6 +1,6 @@
 <template>
   <header
-    class="app-header sticky top-0 z-40 shrink-0 border-b-2 bg-white/95 p-4 backdrop-blur dark:border-gray-700 dark:bg-gray-800/95">
+    class="app-header sticky top-0 z-[200] shrink-0 overflow-visible border-b-2 bg-white/95 p-4 backdrop-blur dark:border-gray-700 dark:bg-gray-800/95">
     <div class="flex items-center justify-between gap-4 flex-wrap">
       <div class="flex items-center gap-4">
         <button class="text-gray-500 block" @click="$emit('sidebarToggle')">
@@ -64,7 +64,7 @@
           <span class="hidden sm:inline">{{ pushNotificationLabel }}</span>
         </button>
 
-        <div class="relative">
+        <div class="relative z-[210]">
           <button @click="menu = !menu" data-tour="profile" class="flex items-center gap-3 rounded-md p-1">
             <img :src="avatarSrc" class="rounded-full w-10 h-10 p-1 ring-1 ring-gray-300 dark:ring-gray-500"
               alt="avatar" />
@@ -77,7 +77,7 @@
 
           <transition name="fade">
             <div v-show="menu"
-              class="absolute right-0 mt-2 z-50 w-56 border dark:border-gray-700 bg-white dark:bg-gray-800 rounded divide-y dark:divide-gray-700 divide-gray-100 shadow">
+              class="absolute right-0 z-[220] mt-2 w-56 divide-y divide-gray-100 rounded border border-gray-100 bg-white shadow-lg dark:divide-gray-700 dark:border-gray-700 dark:bg-gray-800">
               <div class="py-3 px-4 text-sm text-gray-900 dark:text-gray-200">
                 <div>{{ userProfile.full_name || userProfile.username || "-" }}</div>
                 <div class="font-medium truncate">{{ userProfile.role || "-" }}</div>

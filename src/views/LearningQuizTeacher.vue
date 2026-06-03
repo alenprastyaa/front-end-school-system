@@ -1,32 +1,36 @@
 <template>
-  <div class="min-h-screen bg-slate-50 p-4 font-sans text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
+  <div class="learning-quiz-teacher-page min-h-screen bg-slate-50 p-2 font-sans text-slate-900 sm:p-4 md:p-6 dark:bg-slate-950 dark:text-slate-100">
 
 
-    <main class="mx-auto mt-8 max-w-[1400px]">
+    <main class="mx-auto mt-2 max-w-[1400px] sm:mt-4 md:mt-6">
 
-      <section class="mb-8">
+      <section class="mb-3 sm:mb-5">
 
 
         <div v-if="subjectError"
-          class="mb-4 rounded-xl bg-red-50 p-4 text-sm font-medium text-red-600 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-300">
+          class="mb-3 rounded-xl bg-red-50 p-3 text-xs font-medium text-red-600 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-300 sm:text-sm">
           {{ subjectError }}
         </div>
 
         <div
-          class="flex flex-nowrap gap-3 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          class="flex flex-nowrap gap-2 overflow-x-auto pb-2 pt-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-3 sm:pb-4 [&::-webkit-scrollbar]:hidden">
           <button v-for="item in subjects" :key="item.id" @click="selectSubject(item)"
-            class="group relative flex min-w-[240px] flex-none snap-start flex-col items-start overflow-hidden rounded-2xl p-4 text-left transition-all"
+            class="group relative flex min-w-[180px] flex-none snap-start flex-col items-start overflow-hidden rounded-xl p-3 text-left transition-all sm:min-w-[240px] sm:rounded-2xl sm:p-4"
             :class="selectedSubject?.id === item.id
               ? 'bg-sky-600 shadow-md ring-1 ring-sky-600 dark:bg-sky-500'
               : 'bg-white shadow-sm ring-1 ring-slate-900/5 hover:bg-slate-50 dark:bg-slate-900 dark:ring-white/10 dark:hover:bg-slate-800/80'">
             <span :class="selectedSubject?.id === item.id ? 'text-white' : 'text-slate-900 dark:text-white'"
-              class="font-bold tracking-tight">{{ item.name }}</span>
+              class="line-clamp-1 text-xs font-bold tracking-tight sm:text-sm">{{ item.name }}</span>
             <span :class="selectedSubject?.id === item.id ? 'text-sky-200' : 'text-slate-500 dark:text-slate-400'"
-              class="mt-1 text-xs font-medium">
+              class="mt-1 text-[11px] font-medium sm:text-xs">
               {{ item.class_name }}
             </span>
-            <div v-if="selectedSubject?.id === item.id"
-              class="absolute right-4 top-4 h-2 w-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
+            <span v-if="selectedSubject?.id === item.id"
+              class="absolute right-2 top-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/95 text-sky-600 shadow-sm ring-1 ring-white/70 sm:right-3 sm:top-3">
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </span>
           </button>
         </div>
       </section>
@@ -35,9 +39,9 @@
         <div v-if="selectedSubject"
           class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
 
-          <div class="border-b border-slate-100 bg-slate-50/50 px-6 pt-6 dark:border-slate-800 dark:bg-slate-800/20">
-            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">{{ selectedSubject.name }}</h2>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <div class="border-b border-slate-100 bg-slate-50/50 px-3 py-3 dark:border-slate-800 dark:bg-slate-800/20 sm:px-6 sm:pt-6 sm:pb-0">
+            <h2 class="line-clamp-2 text-base font-bold text-slate-900 dark:text-white sm:text-2xl">{{ selectedSubject.name }}</h2>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
               {{ selectedSubject.class_name }} &bull; {{ selectedSubject.description || "Tidak ada deskripsi." }}
             </p>
 
@@ -47,7 +51,7 @@
             enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-200"
             leave-from-class="opacity-100" leave-to-class="opacity-0">
             <div v-if="message"
-              class="mx-6 mt-6 flex items-center gap-3 rounded-xl p-4 text-sm font-medium ring-1 ring-inset"
+              class="mx-3 mt-3 flex items-center gap-2 rounded-xl p-3 text-xs font-medium ring-1 ring-inset sm:mx-6 sm:mt-6 sm:gap-3 sm:p-4 sm:text-sm"
               :class="isError ? 'bg-red-50 text-red-700 ring-red-600/20' : 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'">
               <svg v-if="isError" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
                 stroke="currentColor">
@@ -62,12 +66,12 @@
             </div>
           </Transition>
 
-          <div class="space-y-4 p-6">
-            <div class="mt-2 flex flex-col gap-3 sm:flex-row">
+          <div class="space-y-3 p-2.5 sm:space-y-4 sm:p-6">
+            <div class="mt-1 grid grid-cols-2 gap-2 sm:mt-2 sm:flex sm:gap-3">
                 <button
                   type="button"
                   @click="activeQuizMenu = 'bank'"
-                  class="flex flex-1 items-center justify-between rounded-2xl border-2 px-5 py-3 text-left text-sm font-semibold transition-all"
+                  class="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-xl border-2 px-3 py-2 text-left text-xs font-semibold transition-all sm:rounded-2xl sm:px-5 sm:py-3 sm:text-sm"
                   :class="activeQuizMenu === 'bank'
                     ? 'border-sky-600 bg-sky-600 text-white'
                     : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'"
@@ -85,7 +89,7 @@
                 <button
                   type="button"
                   @click="activeQuizMenu = 'running'"
-                  class="flex flex-1 items-center justify-between rounded-2xl border-2 px-5 py-3 text-left text-sm font-semibold transition-all"
+                  class="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-xl border-2 px-3 py-2 text-left text-xs font-semibold transition-all sm:rounded-2xl sm:px-5 sm:py-3 sm:text-sm"
                   :class="activeQuizMenu === 'running'
                     ? 'border-sky-600 bg-sky-600 text-white'
                     : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'"
@@ -104,55 +108,55 @@
 
             <section v-if="activeQuizMenu === 'bank'"
               class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-              <div class="border-b border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-slate-700 dark:bg-slate-800/30">
-                <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div class="border-b border-slate-200 bg-slate-50/70 px-3 py-3 dark:border-slate-700 dark:bg-slate-800/30 sm:px-5 sm:py-4">
+                <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                   <div>
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Bank Soal Quiz</h3>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white sm:text-lg">Bank Soal Quiz</h3>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
                       Pilih soal yang akan diterbitkan untuk {{ selectedSubject.name }}.
                     </p>
                   </div>
                   <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                     <router-link to="/learning-question-bank-teacher"
-                      class="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                      class="inline-flex h-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 sm:h-10 sm:px-4 sm:text-sm">
                       Kelola Soal
                     </router-link>
                     <button @click="openAssignmentPublishFlow" type="button"
-                      class="inline-flex h-10 items-center justify-center rounded-lg bg-emerald-600 px-4 text-sm font-bold text-white transition hover:bg-emerald-700">
+                      class="inline-flex h-9 items-center justify-center rounded-lg bg-emerald-600 px-3 text-xs font-bold text-white transition hover:bg-emerald-700 sm:h-10 sm:px-4 sm:text-sm">
                       Buat Quiz
                     </button>
                   </div>
                 </div>
 
-                <div class="mt-4 grid gap-3 sm:grid-cols-3">
-                  <div class="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
+                <div class="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:grid-cols-3 sm:gap-3">
+                  <div class="rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-900 sm:px-4 sm:py-3">
                     <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Total Bank</p>
-                    <p class="mt-1 text-xl font-bold text-slate-900 dark:text-white">{{ questionBankTotal }}</p>
+                    <p class="mt-1 text-base font-bold text-slate-900 dark:text-white sm:text-xl">{{ questionBankTotal }}</p>
                   </div>
-                  <div class="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 dark:border-sky-900/40 dark:bg-sky-500/10">
+                  <div class="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 dark:border-sky-900/40 dark:bg-sky-500/10 sm:px-4 sm:py-3">
                     <p class="text-[11px] font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300">Dipilih</p>
-                    <p class="mt-1 text-xl font-bold text-sky-800 dark:text-sky-200">{{ selectedQuestionCount }}</p>
+                    <p class="mt-1 text-base font-bold text-sky-800 dark:text-sky-200 sm:text-xl">{{ selectedQuestionCount }}</p>
                   </div>
-                  <div class="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
+                  <div class="col-span-2 rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-900 sm:col-span-1 sm:px-4 sm:py-3">
                     <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Jenis Terpilih</p>
-                    <p class="mt-1 truncate text-sm font-bold text-slate-900 dark:text-white">{{ selectedQuestionTypeLabel }}</p>
+                    <p class="mt-1 truncate text-xs font-bold text-slate-900 dark:text-white sm:text-sm">{{ selectedQuestionTypeLabel }}</p>
                   </div>
                 </div>
               </div>
 
-              <div class="border-b border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+              <div class="border-b border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900 sm:p-4">
                 <div class="grid gap-3 xl:grid-cols-[1fr_auto] xl:items-center">
                   <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_140px]">
                     <input v-model="bankSearch" type="text" placeholder="Cari teks soal..."
-                      class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+                      class="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white sm:h-10 sm:text-sm" />
                     <select v-model="bankTypeFilter"
-                      class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+                      class="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white sm:h-10 sm:text-sm">
                       <option value="ALL">Semua jenis</option>
                       <option value="MCQ">Pilihan ganda</option>
                       <option value="ESSAY">Uraian</option>
                     </select>
                     <select v-model="bankPageSize"
-                      class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+                      class="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white sm:h-10 sm:text-sm">
                       <option :value="10">10 soal</option>
                       <option :value="20">20 soal</option>
                       <option :value="50">50 soal</option>
@@ -160,55 +164,69 @@
                   </div>
                   <div class="flex flex-wrap gap-2 xl:justify-end">
                     <button @click="generateRandomSelection" type="button"
-                      class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                      class="h-9 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 sm:h-10 sm:text-sm">
                       Acak {{ randomQuestionCount }}
                     </button>
                     <button @click="selectAllCurrentBankPage" type="button"
-                      class="h-10 rounded-lg border border-blue-600 bg-white px-3 text-sm font-bold text-blue-700 transition hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-300">
+                      class="h-9 rounded-lg border border-blue-600 bg-white px-3 text-xs font-bold text-blue-700 transition hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-300 sm:h-10 sm:text-sm">
                       Pilih Halaman Ini
                     </button>
                     <button v-if="assignmentForm.selected_question_bank_ids.length > 0" @click="clearSelectedQuestions" type="button"
-                      class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                      class="h-9 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 sm:h-10 sm:text-sm">
                       Kosongkan
                     </button>
                   </div>
                 </div>
               </div>
 
-              <div class="space-y-3 bg-slate-50/60 p-4 dark:bg-slate-950/20">
+              <div class="space-y-2 bg-slate-50/60 p-2.5 dark:bg-slate-950/20 sm:space-y-3 sm:p-4">
                 <article v-for="(item, index) in paginatedQuestionBank" :key="item.id"
-                  class="rounded-lg border bg-white p-4 shadow-sm transition dark:bg-slate-900"
+                  class="relative rounded-lg border bg-white p-3 pr-12 shadow-sm transition dark:bg-slate-900 sm:p-4 sm:pr-14"
                   :class="assignmentForm.selected_question_bank_ids.includes(item.id)
                     ? 'border-sky-500 ring-2 ring-sky-500/20 dark:border-sky-400'
                     : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600'">
-                  <div class="flex flex-col gap-4 lg:flex-row lg:items-start">
-                    <div class="flex items-start gap-3 lg:w-16 lg:shrink-0">
+                  <button type="button" @click="openQuestionPreview(item, 'bank')" title="Lihat/Edit"
+                    aria-label="Lihat/Edit soal"
+                    class="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-lg border transition sm:right-4 sm:top-4"
+                    :class="assignmentForm.selected_question_bank_ids.includes(item.id)
+                      ? 'border-sky-600 bg-sky-600 text-white shadow-sm'
+                      : 'border-slate-300 bg-white text-slate-500 hover:border-sky-400 hover:text-sky-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300'">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2.2"
+                      stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" />
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M19.5 7.125 16.862 4.487M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                    </svg>
+                  </button>
+                  <div class="flex flex-col gap-3 lg:flex-row lg:items-start">
+                    <div class="flex flex-wrap items-start gap-2 lg:w-64 lg:shrink-0 sm:gap-3">
                       <input :checked="assignmentForm.selected_question_bank_ids.includes(item.id)" type="checkbox"
                         @change="toggleQuestionSelection(item)"
-                        class="mt-1 h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-600 dark:border-slate-600 dark:bg-slate-800" />
-                      <span class="inline-flex h-7 min-w-7 items-center justify-center rounded-md bg-slate-100 px-2 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                        class="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600 dark:border-slate-600 dark:bg-slate-800 sm:h-5 sm:w-5" />
+                      <span class="inline-flex h-6 min-w-6 items-center justify-center rounded-md bg-slate-100 px-2 text-[11px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300 sm:h-7 sm:min-w-7 sm:text-xs">
                         {{ bankStartRow + index }}
+                      </span>
+                      <span class="inline-flex rounded-md border px-2.5 py-1 text-xs font-bold"
+                        :class="item.question_type === 'MCQ'
+                          ? 'border-blue-700 bg-blue-50 text-blue-800 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300'
+                          : 'border-amber-700 bg-amber-50 text-amber-800 dark:border-amber-500 dark:bg-amber-900/30 dark:text-amber-300'">
+                        {{ assignmentTypeLabel(item.question_type) }}
                       </span>
                     </div>
 
-                    <div class="min-w-0 flex-1 space-y-3">
+                    <div class="min-w-0 flex-1 space-y-2 sm:space-y-3">
                       <div class="flex flex-wrap items-center gap-2">
-                        <span class="inline-flex rounded-md border px-2.5 py-1 text-xs font-bold"
-                          :class="item.question_type === 'MCQ'
-                            ? 'border-blue-700 bg-blue-50 text-blue-800 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300'
-                            : 'border-amber-700 bg-amber-50 text-amber-800 dark:border-amber-500 dark:bg-amber-900/30 dark:text-amber-300'">
-                          {{ assignmentTypeLabel(item.question_type) }}
-                        </span>
                         <span v-if="assignmentForm.selected_question_bank_ids.includes(item.id)"
                           class="inline-flex rounded-md bg-sky-100 px-2.5 py-1 text-xs font-bold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
                           Terpilih
                         </span>
-                        <span class="text-xs text-slate-500 dark:text-slate-400">
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400 sm:text-xs">
                           Dibuat {{ formatDateTime(item.created_at) }}
                         </span>
                       </div>
 
-                      <p class="text-sm font-semibold leading-6 text-slate-900 dark:text-white">
+                      <p class="text-xs font-semibold leading-5 text-slate-900 dark:text-white sm:text-sm sm:leading-6">
                         {{ parseQuestionContent(item.question_text).question_text || "Soal tanpa teks" }}
                       </p>
 
@@ -229,34 +247,28 @@
                       </div>
                     </div>
 
-                    <div class="flex shrink-0 justify-end">
-                      <button type="button" @click="openQuestionPreview(item, 'bank')"
-                        class="h-9 rounded-lg border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
-                        Lihat/Edit
-                      </button>
-                    </div>
                   </div>
                 </article>
 
-                <div v-if="paginatedQuestionBank.length === 0" class="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-12 text-center dark:border-slate-700 dark:bg-slate-900">
-                  <p class="text-base font-semibold text-slate-600 dark:text-slate-300">Belum ada soal</p>
-                  <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Soal yang cocok dengan pencarian dan filter akan muncul di sini.</p>
+                <div v-if="paginatedQuestionBank.length === 0" class="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-8 text-center dark:border-slate-700 dark:bg-slate-900 sm:py-12">
+                  <p class="text-sm font-semibold text-slate-600 dark:text-slate-300 sm:text-base">Belum ada soal</p>
+                  <p class="mt-2 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">Soal yang cocok dengan pencarian dan filter akan muncul di sini.</p>
                 </div>
               </div>
 
               <div
-                class="flex flex-col gap-3 border-t border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
-                <p class="text-sm text-slate-500 dark:text-slate-400">
+                class="flex flex-col gap-2 border-t border-slate-200 bg-white px-3 py-3 dark:border-slate-700 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                <p class="text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
                   Menampilkan {{ bankStartRow }} - {{ bankEndRow }} dari {{ questionBankTotal }} soal
                 </p>
                 <div class="flex gap-2">
                   <button @click="bankCurrentPage = Math.max(1, bankCurrentPage - 1)" :disabled="bankCurrentPage === 1"
-                    class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                    class="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 sm:flex-none sm:px-4 sm:text-sm">
                     Sebelumnya
                   </button>
                   <button @click="bankCurrentPage = Math.min(bankTotalPages, bankCurrentPage + 1)"
                     :disabled="bankCurrentPage === bankTotalPages"
-                    class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                    class="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 sm:flex-none sm:px-4 sm:text-sm">
                     Berikutnya
                   </button>
                 </div>
@@ -264,20 +276,20 @@
             </section>
 
             <section v-else class="overflow-hidden rounded-xl border-2 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-              <div class="border-b border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-slate-700 dark:bg-slate-800/30">
-                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div class="border-b border-slate-200 bg-slate-50/70 px-3 py-3 dark:border-slate-700 dark:bg-slate-800/30 sm:px-5 sm:py-4">
+                <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Quiz Berjalan</h3>
-                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Daftar quiz yang sudah diterbitkan untuk mapel ini.</p>
+                    <h3 class="text-sm font-bold text-slate-900 dark:text-white sm:text-lg">Quiz Berjalan</h3>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">Daftar quiz yang sudah diterbitkan untuk mapel ini.</p>
                   </div>
-                  <div class="flex flex-wrap gap-3">
-                    <div class="rounded-xl border border-slate-200 bg-white px-4 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-800/70">
+                  <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
+                    <div class="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-800/70 sm:px-4">
                       <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Total Quiz</div>
-                      <div class="mt-1 text-lg font-bold text-slate-900 dark:text-white">{{ runningAssignments.length }}</div>
+                      <div class="mt-1 text-base font-bold text-slate-900 dark:text-white sm:text-lg">{{ runningAssignments.length }}</div>
                     </div>
-                    <div class="rounded-xl border border-sky-200 bg-sky-50 px-4 py-2 shadow-sm dark:border-sky-900/40 dark:bg-sky-500/10">
+                    <div class="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 shadow-sm dark:border-sky-900/40 dark:bg-sky-500/10 sm:px-4">
                       <div class="text-[11px] font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300">Total Submit</div>
-                      <div class="mt-1 text-lg font-bold text-sky-800 dark:text-sky-200">{{ totalRunningSubmissions }}</div>
+                      <div class="mt-1 text-base font-bold text-sky-800 dark:text-sky-200 sm:text-lg">{{ totalRunningSubmissions }}</div>
                     </div>
                   </div>
                 </div>
@@ -314,14 +326,23 @@
                         </div>
                       </td>
                       <td class="px-4 py-3 text-right">
-                        <button @click="openQuizOverview(item)"
-                          class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
-                          Detail
-                        </button>
+                        <div class="flex items-center justify-end gap-1.5">
+                          <button @click="openQuizOverview(item)" type="button"
+                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-sky-600 bg-sky-50 text-sky-700 transition hover:bg-sky-100 dark:border-sky-500 dark:bg-sky-500/10 dark:text-sky-300 dark:hover:bg-sky-500/20"
+                            title="Detail quiz" aria-label="Detail quiz">
+                            <Icon icon="ph:chart-line-up" class="h-4 w-4" />
+                          </button>
+                          <button @click="openDeleteQuizModal(item)" type="button"
+                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-rose-600 bg-rose-50 text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-rose-500 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20"
+                            :disabled="isDeletingQuiz && deleteQuizModal.assignment?.id === item.id"
+                            title="Hapus quiz" aria-label="Hapus quiz">
+                            <Icon icon="ph:trash" class="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                     <tr v-if="runningAssignments.length === 0">
-                      <td colspan="2" class="p-6 text-center text-sm text-slate-500">Belum ada quiz yang diterbitkan.</td>
+                      <td colspan="3" class="p-6 text-center text-sm text-slate-500">Belum ada quiz yang diterbitkan.</td>
                     </tr>
                   </tbody>
                 </table>
@@ -331,16 +352,16 @@
         </div>
 
         <div v-else
-          class="flex min-h-[500px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white/50 px-6 py-12 text-center dark:border-slate-800 dark:bg-slate-900/50">
-          <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-            <svg class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+          class="flex min-h-[320px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white/50 px-4 py-8 text-center dark:border-slate-800 dark:bg-slate-900/50 sm:min-h-[500px] sm:px-6 sm:py-12">
+          <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 sm:mb-4 sm:h-16 sm:w-16">
+            <svg class="h-6 w-6 text-slate-400 sm:h-8 sm:w-8" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round"
                 d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
             </svg>
           </div>
-          <h3 class="text-lg font-bold text-slate-900 dark:text-white">Pilih Mata Pelajaran</h3>
-          <p class="mt-2 max-w-sm text-sm text-slate-500 dark:text-slate-400">Silakan pilih mata pelajaran dari menu di
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white sm:text-lg">Pilih Mata Pelajaran</h3>
+          <p class="mt-2 max-w-sm text-xs text-slate-500 dark:text-slate-400 sm:text-sm">Silakan pilih mata pelajaran dari menu di
             atas untuk mulai mengelola bank soal dan menerbitkan quiz.</p>
         </div>
       </div>
@@ -350,7 +371,7 @@
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="assignmentGuideModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+        class="fixed inset-0 z-[230] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
         <div
           class="flex w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
           @click.stop>
@@ -392,7 +413,7 @@
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="assignmentPublishModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+        class="fixed inset-0 z-[230] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
         <div
           class="flex w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
           @click.stop>
@@ -541,7 +562,7 @@
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="questionBankModalOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+        class="fixed inset-0 z-[230] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
 
         <div
           class="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
@@ -633,43 +654,43 @@
         enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
         leave-to-class="opacity-0">
         <div v-if="quizOverviewModal.open"
-          class="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+          class="quiz-overview-modal-overlay fixed inset-y-0 left-0 right-0 z-[230] flex items-end justify-center bg-slate-900/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
 
           <div
-            class="flex max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+            class="quiz-overview-detail flex h-[100dvh] max-h-[100dvh] w-full max-w-6xl flex-col overflow-hidden rounded-none bg-white shadow-2xl ring-1 ring-slate-900/5 sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:rounded-2xl dark:bg-slate-900 dark:ring-white/10"
             @click.stop>
 
           <div
-            class="flex flex-none items-center justify-between border-b border-slate-200 bg-slate-50/80 px-6 py-5 dark:border-slate-800 dark:bg-slate-800/40">
-            <div>
-              <h2 class="text-xl font-bold text-slate-900 dark:text-white">Detail Quiz Berjalan</h2>
-              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            class="flex flex-none items-start justify-between gap-3 border-b border-slate-200 bg-slate-50/80 px-3 py-3 dark:border-slate-800 dark:bg-slate-800/40 sm:items-center sm:px-6 sm:py-5">
+            <div class="min-w-0">
+              <h2 class="text-base font-bold text-slate-900 dark:text-white sm:text-xl">Detail Quiz Berjalan</h2>
+              <p class="mt-1 line-clamp-2 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
                 {{ quizOverviewModal.assignment?.title || "-" }} • {{
                   assignmentTypeLabel(quizOverviewModal.assignment?.assignment_type) }}
               </p>
             </div>
             <button @click="closeQuizOverview"
-              class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              class="shrink-0 rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+              <svg class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-            <div v-if="quizOverviewModal.loading" class="p-12 text-center">
+            <div v-if="quizOverviewModal.loading" class="min-h-0 flex-1 p-8 text-center sm:p-12">
               <div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-sky-600"></div>
               <p class="mt-4 text-sm text-slate-500">Memuat detail quiz...</p>
             </div>
 
-            <div v-else class="flex-1 overflow-y-auto bg-slate-50/40 p-6 dark:bg-slate-950/30">
-              <div class="mt-6 grid gap-6 xl:grid-cols-2">
+            <div v-else class="min-h-0 flex-1 overflow-y-auto bg-slate-50/40 p-3 dark:bg-slate-950/30 sm:p-6">
+              <div class="grid gap-3 sm:gap-6 xl:grid-cols-2">
                 <section
-                  class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <div class="border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/50">
-                  <h3 class="font-semibold text-slate-900 dark:text-white">Sudah Submit</h3>
+                  class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:rounded-2xl dark:border-slate-800 dark:bg-slate-900">
+                <div class="border-b border-slate-200 bg-slate-50 px-3 py-3 dark:border-slate-800 dark:bg-slate-800/50 sm:px-5 sm:py-4">
+                  <h3 class="text-sm font-semibold text-slate-900 dark:text-white sm:text-base">Sudah Submit</h3>
                 </div>
-                <div class="max-h-72 overflow-y-auto">
-                  <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-sm text-left">
+                <div class="max-h-72 overflow-auto">
+                  <table class="min-w-[640px] divide-y divide-slate-100 text-left text-xs dark:divide-slate-800 sm:min-w-full sm:text-sm">
                     <thead class="bg-white dark:bg-slate-900">
                       <tr>
                         <th class="px-5 py-3 font-semibold text-slate-500">Siswa</th>
@@ -704,12 +725,12 @@
                 </section>
 
                 <section
-                  class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <div class="border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/50">
-                  <h3 class="font-semibold text-slate-900 dark:text-white">Belum Submit</h3>
+                  class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:rounded-2xl dark:border-slate-800 dark:bg-slate-900">
+                <div class="border-b border-slate-200 bg-slate-50 px-3 py-3 dark:border-slate-800 dark:bg-slate-800/50 sm:px-5 sm:py-4">
+                  <h3 class="text-sm font-semibold text-slate-900 dark:text-white sm:text-base">Belum Submit</h3>
                 </div>
-                <div class="max-h-72 overflow-y-auto">
-                  <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-sm text-left">
+                <div class="max-h-72 overflow-auto">
+                  <table class="min-w-[560px] divide-y divide-slate-100 text-left text-xs dark:divide-slate-800 sm:min-w-full sm:text-sm">
                     <thead class="bg-white dark:bg-slate-900">
                       <tr>
                         <th class="px-5 py-3 font-semibold text-slate-500">Siswa</th>
@@ -742,12 +763,12 @@
               </div>
 
               <section v-if="quizOverviewModal.analytics.question_breakdown?.length"
-                class="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <div class="border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/50">
-                  <h3 class="font-semibold text-slate-900 dark:text-white">Analitik Soal</h3>
+                class="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:mt-6 sm:rounded-2xl dark:border-slate-800 dark:bg-slate-900">
+                <div class="border-b border-slate-200 bg-slate-50 px-3 py-3 dark:border-slate-800 dark:bg-slate-800/50 sm:px-5 sm:py-4">
+                  <h3 class="text-sm font-semibold text-slate-900 dark:text-white sm:text-base">Analitik Soal</h3>
                 </div>
                 <div class="overflow-x-auto">
-                  <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-sm text-left">
+                  <table class="min-w-[760px] divide-y divide-slate-100 text-left text-xs dark:divide-slate-800 sm:text-sm">
                     <thead class="bg-white dark:bg-slate-900">
                       <tr>
                         <th class="px-5 py-3 font-semibold text-slate-500">No</th>
@@ -779,14 +800,54 @@
       </Transition>
     </teleport>
 
-    <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
-      enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
-      leave-to-class="opacity-0">
-      <div v-if="questionPreviewModal.open"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+    <teleport to="body">
+      <Transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0"
+        enter-to-class="opacity-100" leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100"
+        leave-to-class="opacity-0">
+        <div v-if="deleteQuizModal.open"
+          class="quiz-delete-modal-overlay fixed inset-y-0 left-0 right-0 z-[270] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+          <div
+            class="w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl ring-1 ring-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:ring-white/10"
+            @click.stop>
+            <div class="px-4 pt-4 sm:px-5 sm:pt-5">
+              <div class="flex items-start gap-3">
+                <span
+                  class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-600 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
+                  <Icon icon="ph:trash" class="h-4 w-4" />
+                </span>
+                <div class="min-w-0">
+                  <h3 class="text-sm font-bold text-slate-900 dark:text-white sm:text-base">Hapus Quiz Berjalan?</h3>
+                  <p class="mt-1.5 text-xs leading-5 text-slate-600 dark:text-slate-300 sm:text-sm">
+                    Quiz <span class="font-semibold text-slate-900 dark:text-white">{{ deleteQuizModal.assignment?.title || "-" }}</span>
+                    akan dihapus beserta data submission dan log pelanggaran siswa.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 flex items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/80 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/50 sm:px-5">
+              <button type="button" @click="closeDeleteQuizModal" :disabled="isDeletingQuiz"
+                class="inline-flex h-9 items-center justify-center rounded-lg px-3 text-xs font-semibold text-slate-600 transition hover:bg-white disabled:opacity-60 dark:text-slate-300 dark:hover:bg-slate-700 sm:px-4 sm:text-sm">
+                Batal
+              </button>
+              <button type="button" @click="confirmDeleteQuiz" :disabled="isDeletingQuiz"
+                class="inline-flex h-9 items-center justify-center rounded-lg bg-rose-600 px-3 text-xs font-bold text-white shadow-sm transition hover:bg-rose-700 disabled:opacity-60 sm:px-4 sm:text-sm">
+                {{ isDeletingQuiz ? "Menghapus..." : "Hapus Quiz" }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </teleport>
+
+    <teleport to="body">
+      <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
+        enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+        leave-to-class="opacity-0">
+        <div v-if="questionPreviewModal.open"
+          class="quiz-review-modal-overlay fixed inset-y-0 left-0 right-0 z-[260] flex items-center justify-center bg-slate-900/60 p-3 backdrop-blur-sm sm:p-4">
 
         <div
-          class="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          class="flex max-h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
           @click.stop>
 
           <div
@@ -922,13 +983,15 @@
             </button>
           </div>
         </div>
-      </div>
-    </Transition>
+        </div>
+      </Transition>
+    </teleport>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
+import { Icon } from "@iconify/vue";
 import { VueDatePicker } from "@vuepic/vue-datepicker";
 import { id as indonesiaLocale } from "date-fns/locale/id";
 import { api } from "@/api";
@@ -946,6 +1009,7 @@ const isError = ref(false);
 const isSavingAssignment = ref(false);
 const isSavingQuestionBank = ref(false);
 const isSavingQuestionPreview = ref(false);
+const isDeletingQuiz = ref(false);
 const isDownloadingTemplate = ref(false);
 const isImportingQuestionBank = ref(false);
 const questionBankModalOpen = ref(false);
@@ -967,6 +1031,10 @@ const quizOverviewModal = reactive({
   submittedStudents: [],
   pendingStudents: [],
 });
+const deleteQuizModal = reactive({
+  open: false,
+  assignment: null,
+});
 const questionPreviewModal = reactive({
   open: false,
   question: null,
@@ -985,7 +1053,7 @@ const questionBankImportFileName = computed(() => questionBankImportFile.value?.
 
 // Fitur: Body Scroll Lock saat modal aktif
 const isAnyModalOpen = computed(() =>
-  assignmentGuideModal.value || assignmentPublishModal.value || questionBankModalOpen.value || quizOverviewModal.open || questionPreviewModal.open,
+  assignmentGuideModal.value || assignmentPublishModal.value || questionBankModalOpen.value || quizOverviewModal.open || questionPreviewModal.open || deleteQuizModal.open,
 );
 
 watch(isAnyModalOpen, (isOpen) => {
@@ -1375,6 +1443,51 @@ const closeQuizOverview = () => {
   quizOverviewModal.pendingStudents = [];
 };
 
+const openDeleteQuizModal = (assignment) => {
+  deleteQuizModal.open = true;
+  deleteQuizModal.assignment = assignment;
+};
+
+const closeDeleteQuizModal = () => {
+  if (isDeletingQuiz.value) return;
+  deleteQuizModal.open = false;
+  deleteQuizModal.assignment = null;
+};
+
+const confirmDeleteQuiz = async () => {
+  if (!deleteQuizModal.assignment?.id) return;
+
+  const assignmentId = deleteQuizModal.assignment.id;
+  isDeletingQuiz.value = true;
+  message.value = "";
+  isError.value = false;
+
+  try {
+    const response = await api.delete(`/learning/assignments/${assignmentId}`);
+    if (quizOverviewModal.assignment?.id === assignmentId) {
+      closeQuizOverview();
+    }
+    deleteQuizModal.open = false;
+    deleteQuizModal.assignment = null;
+    await loadSubjectData();
+    pushToast({
+      title: "Quiz Dihapus",
+      message: response?.message || "Quiz berjalan berhasil dihapus.",
+      type: "success",
+    });
+  } catch (error) {
+    isError.value = true;
+    message.value = error.message;
+    pushToast({
+      title: "Gagal Hapus Quiz",
+      message: error.message || "Quiz gagal dihapus.",
+      type: "error",
+    });
+  } finally {
+    isDeletingQuiz.value = false;
+  }
+};
+
 const openQuestionPreview = (question, source = "bank", questionNumber = null) => {
   const normalizedQuestion = normalizeQuestionBankItem(question || {});
   questionPreviewModal.open = true;
@@ -1706,8 +1819,8 @@ const submitAssignment = async () => {
 onMounted(loadSubjects);
 </script>
 
-<style>
-.quiz-deadline-picker {
+<style scoped>
+:deep(.quiz-deadline-picker) {
   width: 100%;
   min-height: 44px;
   border-radius: 0.5rem;
@@ -1719,15 +1832,79 @@ onMounted(loadSubjects);
   color: rgb(15 23 42);
 }
 
-.quiz-deadline-picker:focus {
+:deep(.quiz-deadline-picker:focus) {
   border-color: rgb(37 99 235);
   outline: none;
   box-shadow: 0 0 0 1px rgb(37 99 235);
 }
 
-.dark .quiz-deadline-picker {
+:deep(.dark .quiz-deadline-picker) {
   border-color: rgb(71 85 105);
   background: rgb(15 23 42);
   color: rgb(248 250 252);
+}
+
+@media (min-width: 1024px) {
+  .quiz-overview-modal-overlay {
+    left: 320px;
+  }
+
+  .quiz-review-modal-overlay {
+    left: 320px;
+  }
+
+  .quiz-delete-modal-overlay {
+    left: 320px;
+  }
+}
+
+@media (max-width: 768px) {
+  .quiz-overview-detail :deep(th),
+  .quiz-overview-detail :deep(td) {
+    padding: 0.625rem 0.75rem !important;
+    vertical-align: top;
+  }
+
+  .quiz-overview-detail :deep(th) {
+    white-space: nowrap;
+  }
+
+  .learning-quiz-teacher-page :deep(.text-2xl),
+  .learning-quiz-teacher-page :deep(.text-xl),
+  .learning-quiz-teacher-page :deep(.text-lg) {
+    font-size: 0.875rem !important;
+    line-height: 1.25rem !important;
+  }
+
+  .learning-quiz-teacher-page :deep(.text-base) {
+    font-size: 0.8125rem !important;
+    line-height: 1.2rem !important;
+  }
+
+  .learning-quiz-teacher-page :deep(.text-sm) {
+    font-size: 0.75rem !important;
+    line-height: 1.1rem !important;
+  }
+
+  .learning-quiz-teacher-page :deep(.text-xs) {
+    font-size: 0.6875rem !important;
+    line-height: 1rem !important;
+  }
+
+  .learning-quiz-teacher-page :deep(.px-6) {
+    padding-left: 0.875rem !important;
+    padding-right: 0.875rem !important;
+  }
+
+  .learning-quiz-teacher-page :deep(.p-6) {
+    padding: 0.875rem !important;
+  }
+
+  :deep(.quiz-deadline-picker) {
+    min-height: 38px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
 }
 </style>

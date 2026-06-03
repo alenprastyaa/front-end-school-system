@@ -4,175 +4,216 @@
     class="learning-teacher-page min-h-screen bg-slate-50 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
 
     <main class="min-h-screen">
-      <section class="border-b-2 border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900 md:px-6">
+      <section class="border-b border-slate-200 bg-white px-3 py-3 dark:border-slate-800 dark:bg-slate-900 sm:px-4 md:px-6">
         <div class="flex flex-col gap-1">
-          <h1 class="text-xl font-bold text-slate-900 dark:text-white">Papan Kelas</h1>
-          <p class="text-sm text-slate-500 dark:text-slate-400">Pilih kelas yang ingin dikelola</p>
+          <h1 class="text-base font-semibold text-slate-900 dark:text-white sm:text-lg">Papan Kelas</h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400 sm:text-sm">Pilih kelas yang ingin dikelola</p>
         </div>
 
-        <nav
-          class="mt-4 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <nav class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
           <button v-for="item in subjects" :key="item.id" @click="selectSubject(item)"
-            class="group relative flex min-w-[220px] flex-none flex-col items-start overflow-hidden rounded-2xl p-3.5 text-left transition-all"
+            class="group relative flex min-w-0 flex-col items-start overflow-hidden rounded-xl p-2.5 text-left transition-all sm:rounded-2xl sm:p-3.5"
             :class="selectedSubject?.id === item.id
               ? 'bg-sky-600 shadow-md ring-1 ring-sky-600 dark:bg-sky-500'
               : 'bg-white shadow-sm ring-1 ring-slate-900/5 hover:bg-slate-50 dark:bg-slate-900 dark:ring-white/10 dark:hover:bg-slate-800/80'">
             <span :class="selectedSubject?.id === item.id ? 'text-white' : 'text-slate-900 dark:text-white'"
-              class="font-bold tracking-tight">{{ item.name }}</span>
+              class="line-clamp-2 text-xs font-semibold tracking-tight sm:text-sm">{{ item.name }}</span>
             <span :class="selectedSubject?.id === item.id ? 'text-sky-200' : 'text-slate-500 dark:text-slate-400'"
-              class="mt-1 text-xs font-medium">
+              class="mt-1 text-[11px] font-medium sm:text-xs">
               {{ item.class_name }}
             </span>
             <div v-if="selectedSubject?.id === item.id"
-              class="absolute right-4 top-4 h-2 w-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"></div>
+              class="absolute right-3 top-3 h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)] sm:right-4 sm:top-4 sm:h-2 sm:w-2"></div>
           </button>
         </nav>
       </section>
 
       <div v-if="selectedSubject">
         <!-- HEADER KELAS -->
-        <header class="border-b-2 border-slate-200 bg-white p-4 md:p-6 dark:border-slate-800 dark:bg-slate-900">
-          <h2 class="text-3xl font-bold text-slate-900 dark:text-white">{{ selectedSubject.name }}</h2>
-          <p class="mt-2 text-lg text-slate-600 dark:text-slate-300">
+        <header class="border-b border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900 sm:p-4 md:p-6">
+          <h2 class="line-clamp-2 text-lg font-semibold text-slate-900 dark:text-white sm:text-xl">{{ selectedSubject.name }}</h2>
+          <p class="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-300 sm:mt-2 sm:text-sm">
             {{ selectedSubject.class_name }} &bull; {{ selectedSubject.description || "Tidak ada deksripsi khusus." }}
           </p>
 
           <!-- TAB SIMPEL -->
-          <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+          <div class="mt-3 grid grid-cols-2 gap-2 sm:mt-5 sm:flex sm:flex-row sm:gap-3">
             <button @click="switchTab('materials')" type="button"
-              class="flex-1 rounded-2xl border-2 px-5 py-3 text-lg font-semibold transition-all"
+              class="inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-all sm:flex-1 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
               :class="activeTab === 'materials'
                 ? 'border-sky-600 bg-sky-600 text-white'
                 : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'">
-              Materi Pelajaran
+              <Icon icon="ph:book-open-text" class="h-4 w-4" />
+              Materi
             </button>
 
             <button @click="switchTab('assignments')" type="button"
-              class="flex-1 rounded-2xl border-2 px-5 py-3 text-lg font-semibold transition-all"
+              class="inline-flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-all sm:flex-1 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm"
               :class="activeTab === 'assignments'
                 ? 'border-sky-600 bg-sky-600 text-white'
                 : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'">
-              Tugas & Nilai
+              <Icon icon="ph:clipboard-text" class="h-4 w-4" />
+              Tugas
             </button>
           </div>
         </header>
 
         <!-- KONTEN: MATERI -->
-        <div v-if="activeTab === 'materials'" class="p-4 md:p-6">
-          <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Daftar Materi</h3>
+        <div v-if="activeTab === 'materials'" class="p-3 sm:p-4 md:p-6">
+          <div class="mb-3 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
+            <h3 class="text-base font-semibold text-slate-900 dark:text-white sm:text-lg">Daftar Materi</h3>
             <div class="flex flex-col gap-3 sm:flex-row">
-              <!-- <button @click="openMaterialModal('ai-pptx')"
-                class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3.5 text-base font-bold text-white transition hover:bg-emerald-700">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M4.5 7.5h15m-15 4.5h15m-15 4.5h9M6 4.5v15m12-15v15" />
-                </svg>
-                Buat Presentasi (AI)
-              </button> -->
               <button @click="openMaterialModal('manual')"
-                class="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-5 py-3 text-base font-bold text-white transition hover:bg-sky-700">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                Tambah Materi Manual
+                class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-sky-700 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm">
+                <Icon icon="ph:plus" class="h-4 w-4" />
+                Tambah Materi
               </button>
             </div>
           </div>
 
+          <div class="space-y-2 md:hidden">
+            <article v-for="item in materials" :key="item.id"
+              class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <h4 class="line-clamp-2 text-sm font-semibold text-slate-900 dark:text-white">{{ item.title }}</h4>
+                  <p class="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                    {{ formatDateTime(item.created_at) }}
+                  </p>
+                </div>
+                <span
+                  class="shrink-0 rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+                  Materi
+                </span>
+              </div>
+
+              <p class="mt-2 line-clamp-3 text-xs leading-5 text-slate-600 dark:text-slate-300">
+                {{ item.content || "Tidak ada deksripsi khusus." }}
+              </p>
+
+              <div class="mt-3 flex items-center justify-between gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
+                <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
+                  rel="noreferrer"
+                  class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-blue-700 bg-blue-50 text-blue-800 transition hover:bg-blue-100 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300"
+                  title="Buka lampiran" aria-label="Buka lampiran">
+                  <Icon icon="ph:paperclip" class="h-4 w-4" />
+                </a>
+                <span v-else class="text-[11px] text-slate-400 dark:text-slate-500">Tanpa lampiran</span>
+
+                <div class="flex shrink-0 justify-end gap-1.5">
+                  <button @click="openMaterialEditModal(item)"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                    title="Edit materi" aria-label="Edit materi">
+                    <Icon icon="ph:pencil-simple" class="h-4 w-4" />
+                  </button>
+                  <button @click="openDeleteModal('material', item)"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-rose-700 bg-rose-600 text-white transition hover:bg-rose-700"
+                    title="Hapus materi" aria-label="Hapus materi">
+                    <Icon icon="ph:trash" class="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <div v-if="materials.length === 0"
+              class="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center dark:border-slate-700 dark:bg-slate-900">
+              <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Belum Ada Materi</p>
+              <p class="mt-1 text-xs text-slate-500 dark:text-slate-500">Klik tombol "Tambah Materi" di atas.</p>
+            </div>
+          </div>
+
           <div
-            class="overflow-hidden rounded-2xl border-2 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-slate-200 text-left dark:divide-slate-700">
+            class="hidden overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800 sm:rounded-2xl md:block">
+              <table class="w-full divide-y divide-slate-200 text-left text-xs dark:divide-slate-700 sm:text-sm">
                 <thead class="bg-slate-50 dark:bg-slate-900/40">
-                  <tr class="text-sm uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
-                    <th class="px-5 py-4 font-semibold">Judul</th>
-                    <th class="px-5 py-4 font-semibold">Dipublikasi</th>
-                    <th class="px-5 py-4 font-semibold">Isi / Ringkasan</th>
-                    <th class="px-5 py-4 font-semibold">Lampiran</th>
-                    <th class="px-5 py-4 font-semibold text-right">Aksi</th>
+                  <tr class="text-[10px] uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400 sm:text-xs">
+                    <th class="px-3 py-3 font-semibold sm:px-5 sm:py-4">Judul</th>
+                    <th class="px-3 py-3 font-semibold sm:px-5 sm:py-4">Dipublikasi</th>
+                    <th class="px-3 py-3 font-semibold sm:px-5 sm:py-4">Isi / Ringkasan</th>
+                    <th class="px-3 py-3 font-semibold sm:px-5 sm:py-4">Lampiran</th>
+                    <th class="px-3 py-3 font-semibold text-right sm:px-5 sm:py-4">Aksi</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
                   <tr v-for="item in materials" :key="item.id"
                     class="align-top hover:bg-slate-50 dark:hover:bg-slate-900/40">
-                    <td class="px-5 py-4">
-                      <div class="text-base font-semibold text-slate-900 dark:text-white">{{ item.title }}</div>
+                    <td class="px-3 py-3 sm:px-5 sm:py-4">
+                      <div class="text-sm font-semibold text-slate-900 dark:text-white">{{ item.title }}</div>
                     </td>
-                    <td class="px-5 py-4">
-                      <div class="text-sm text-slate-600 dark:text-slate-300">{{ formatDateTime(item.created_at) }}
+                    <td class="px-3 py-3 sm:px-5 sm:py-4">
+                      <div class="text-xs text-slate-600 dark:text-slate-300 sm:text-sm">{{ formatDateTime(item.created_at) }}
                       </div>
                     </td>
-                    <td class="px-5 py-4">
-                      <p class="max-w-xl text-base leading-6 text-slate-700 dark:text-slate-300">
+                    <td class="px-3 py-3 sm:px-5 sm:py-4">
+                      <p class="max-w-xl text-xs leading-5 text-slate-700 dark:text-slate-300 sm:text-sm sm:leading-6">
                         {{ item.content || "Tidak ada deksripsi khusus." }}
                       </p>
                     </td>
-                    <td class="px-5 py-4">
+                    <td class="px-3 py-3 sm:px-5 sm:py-4">
                       <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
                         rel="noreferrer"
-                        class="inline-flex items-center rounded-md border border-blue-700 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-800 transition hover:bg-blue-100 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300">
-                        Buka Lampiran
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-blue-700 bg-blue-50 text-blue-800 transition hover:bg-blue-100 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300"
+                        title="Buka lampiran" aria-label="Buka lampiran">
+                        <Icon icon="ph:paperclip" class="h-4 w-4" />
                       </a>
-                      <span v-else class="text-sm text-slate-400 dark:text-slate-500">-</span>
+                      <span v-else class="text-xs text-slate-400 dark:text-slate-500">-</span>
                     </td>
-                    <td class="px-5 py-4">
-                      <div class="flex justify-end gap-2">
+                    <td class="px-3 py-3 sm:px-5 sm:py-4">
+                      <div class="flex justify-end gap-1.5">
                         <button @click="openMaterialEditModal(item)"
-                          class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white">
-                          Edit
+                          class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                          title="Edit materi" aria-label="Edit materi">
+                          <Icon icon="ph:pencil-simple" class="h-4 w-4" />
                         </button>
                         <button @click="openDeleteModal('material', item)"
-                          class="rounded-md border border-rose-700 bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-rose-700">
-                          Hapus
+                          class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-rose-700 bg-rose-600 text-white transition hover:bg-rose-700"
+                          title="Hapus materi" aria-label="Hapus materi">
+                          <Icon icon="ph:trash" class="h-4 w-4" />
                         </button>
                       </div>
                     </td>
                   </tr>
 
                   <tr v-if="materials.length === 0">
-                    <td colspan="5" class="px-5 py-14 text-center">
-                      <p class="text-base font-semibold text-slate-500 dark:text-slate-400">Belum Ada Materi</p>
-                      <p class="mt-2 text-sm text-slate-500 dark:text-slate-500">Silakan klik tombol "Tambah Materi" di
+                    <td colspan="5" class="px-5 py-10 text-center sm:py-14">
+                      <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Belum Ada Materi</p>
+                      <p class="mt-2 text-xs text-slate-500 dark:text-slate-500 sm:text-sm">Silakan klik tombol "Tambah Materi" di
                         atas.</p>
                     </td>
                   </tr>
                 </tbody>
               </table>
-            </div>
           </div>
         </div>
 
         <!-- KONTEN: TUGAS & PENILAIAN -->
-        <div v-if="activeTab === 'assignments'" class="p-4 md:p-6">
+        <div v-if="activeTab === 'assignments'" class="p-3 sm:p-4 md:p-6">
 
           <!-- State 1: Daftar Tugas -->
           <div v-if="!gradingAssignment">
-            <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Daftar Tugas & Ujian</h3>
+            <div class="mb-3 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
+              <h3 class="text-base font-semibold text-slate-900 dark:text-white sm:text-lg">Daftar Tugas & Ujian</h3>
               <button @click="assignmentModalOpen = true"
-                class="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-5 py-3 text-base font-bold text-white transition hover:bg-sky-700">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                Buat Tugas Baru
+                class="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-sky-700 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm">
+                <Icon icon="ph:plus" class="h-4 w-4" />
+                Buat Tugas
               </button>
             </div>
 
             <!-- Filter -->
             <div
-              class="mb-6 rounded-2xl border-2 border-slate-200 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-800">
-              <div class="grid gap-4 md:grid-cols-3">
+              class="mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800 sm:mb-5 sm:rounded-2xl sm:p-4 md:p-6">
+              <div class="grid gap-2 sm:gap-3 md:grid-cols-3">
                 <input v-model="assignmentSearch" type="text" placeholder="Cari nama tugas..."
-                  class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+                  class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm" />
                 <select v-model="assignmentTypeFilter"
-                  class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+                  class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm">
                   <option value="ALL">Tampilkan Semua</option>
                   <option value="FILE">Tugas Kumpul Online</option>
                   <option value="MANUAL">Tugas Penilaian Langsung</option>
                 </select>
                 <select v-model="assignmentSort"
-                  class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+                  class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm">
                   <option value="NEWEST">Paling Baru Dibuat</option>
                   <option value="DUE_ASC">Batas Waktu Terdekat</option>
                   <option value="DUE_DESC">Batas Waktu Terjauh</option>
@@ -181,59 +222,130 @@
             </div>
 
             <!-- List Tugas -->
+            <div class="space-y-2 md:hidden">
+              <article v-for="item in filteredAssignments" :key="item.id"
+                class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <h4 class="line-clamp-2 text-sm font-semibold text-slate-900 dark:text-white">{{ item.title }}</h4>
+                    <div class="mt-2 flex flex-wrap gap-1.5">
+                      <span
+                        class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                        <Icon icon="ph:clock" class="h-3.5 w-3.5" />
+                        {{ formatDateTime(item.due_date) }}
+                      </span>
+                      <span
+                        class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">
+                        <Icon icon="ph:users-three" class="h-3.5 w-3.5" />
+                        {{ item.submission_count ?? item.submissions?.length ?? 0 }} siswa
+                      </span>
+                    </div>
+                  </div>
+                  <span
+                    class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                    :class="assignmentTypeBadgeClass(item.assignment_type)">
+                    {{ assignmentTypeLabel(item.assignment_type) }}
+                  </span>
+                </div>
+
+                <p class="mt-2 line-clamp-2 text-xs leading-5 text-slate-600 dark:text-slate-300">
+                  {{ item.description || "Tidak ada instruksi tambahan." }}
+                </p>
+
+                <div class="mt-3 flex items-center justify-between gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
+                  <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
+                    rel="noreferrer"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-blue-700 bg-blue-50 text-blue-800 transition hover:bg-blue-100 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300"
+                    title="Buka lampiran" aria-label="Buka lampiran">
+                    <Icon icon="ph:paperclip" class="h-4 w-4" />
+                  </a>
+                  <span v-else class="text-[11px] text-slate-400">Tanpa lampiran</span>
+
+                  <div class="flex shrink-0 justify-end gap-1.5">
+                    <button @click="loadSubmissions(item)" type="button"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-blue-700 bg-blue-600 text-white transition hover:bg-blue-700"
+                      title="Beri nilai" aria-label="Beri nilai">
+                      <Icon icon="ph:exam" class="h-4 w-4" />
+                    </button>
+                    <button @click="openAssignmentEditModal(item)" type="button"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+                      title="Edit tugas" aria-label="Edit tugas">
+                      <Icon icon="ph:pencil-simple" class="h-4 w-4" />
+                    </button>
+                    <button @click="openDeleteModal('assignment', item)" type="button"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-rose-700 bg-rose-600 text-white transition hover:bg-rose-700"
+                      title="Hapus tugas" aria-label="Hapus tugas">
+                      <Icon icon="ph:trash" class="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </article>
+
+              <div v-if="filteredAssignments.length === 0"
+                class="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center dark:border-slate-700 dark:bg-slate-900">
+                <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Belum Ada Tugas</p>
+                <p class="mt-1 text-xs text-slate-500">Tugas yang Anda buat akan muncul di sini.</p>
+              </div>
+            </div>
+
             <div
-              class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-              <table class="min-w-full text-left text-sm">
+              class="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:rounded-2xl md:block">
+              <table class="w-full text-left text-xs sm:text-sm">
                 <thead
-                  class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/60 dark:text-slate-300">
+                  class="bg-slate-50 text-[10px] uppercase tracking-[0.1em] text-slate-500 dark:bg-slate-800/60 dark:text-slate-300 sm:text-xs">
                   <tr>
-                    <th class="px-5 py-4 font-semibold">Tugas / Ujian</th>
-                    <th class="px-5 py-4 font-semibold">Tenggat</th>
-                    <th class="px-5 py-4 font-semibold">Terkumpul</th>
-                    <th class="px-5 py-4 font-semibold">Lampiran</th>
-                    <th class="px-5 py-4 font-semibold text-right">Aksi</th>
+                    <th class="px-3 py-3 font-semibold sm:px-5 sm:py-4">Tugas / Ujian</th>
+                    <th class="px-3 py-3 font-semibold sm:px-5 sm:py-4">Tenggat</th>
+                    <th class="px-3 py-3 font-semibold sm:px-5 sm:py-4">Terkumpul</th>
+                    <th class="px-3 py-3 font-semibold sm:px-5 sm:py-4">Lampiran</th>
+                    <th class="px-3 py-3 font-semibold text-right sm:px-5 sm:py-4">Aksi</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                   <tr v-for="item in filteredAssignments" :key="item.id"
                     class="align-top hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                    <td class="px-5 py-4">
+                    <td class="px-3 py-3 sm:px-5 sm:py-4">
                       <div class="font-semibold text-slate-900 dark:text-white">{{ item.title }}</div>
                     </td>
-                    <td class="px-5 py-4 text-sm text-slate-700 dark:text-slate-300">
+                    <td class="px-3 py-3 text-xs text-slate-700 dark:text-slate-300 sm:px-5 sm:py-4 sm:text-sm">
                       {{ formatDateTime(item.due_date) }}
                     </td>
-                    <td class="px-5 py-4 text-sm font-semibold text-blue-700 dark:text-blue-400">
+                    <td class="px-3 py-3 text-xs font-semibold text-blue-700 dark:text-blue-400 sm:px-5 sm:py-4 sm:text-sm">
                       {{ item.submission_count ?? item.submissions?.length ?? 0 }} Siswa
                     </td>
-                    <td class="px-5 py-4 text-sm">
+                    <td class="px-3 py-3 text-xs sm:px-5 sm:py-4 sm:text-sm">
                       <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
                         rel="noreferrer"
-                        class="inline-flex items-center rounded-md border border-blue-700 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-800 transition hover:bg-blue-100 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300">
-                        Buka Lampiran
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-blue-700 bg-blue-50 text-blue-800 transition hover:bg-blue-100 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300"
+                        title="Buka lampiran" aria-label="Buka lampiran">
+                        <Icon icon="ph:paperclip" class="h-4 w-4" />
                       </a>
                       <span v-else class="text-slate-400">-</span>
                     </td>
-                    <td class="px-5 py-4 text-right">
+                    <td class="px-3 py-3 text-right sm:px-5 sm:py-4">
                       <div class="relative inline-block">
                         <button @click="toggleAssignmentActions(item.id, $event)" type="button"
-                          class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
-                          Aksi
+                          class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                          title="Aksi tugas" aria-label="Aksi tugas">
+                          <Icon icon="ph:dots-three-vertical-bold" class="h-4 w-4" />
                         </button>
 
                         <div v-if="openAssignmentActionId === item.id"
                           class="fixed z-50 w-44 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-900"
                           :style="assignmentActionMenuStyle">
                           <button @click="handleAssignmentAction('grade', item)" type="button"
-                            class="flex w-full items-center rounded-lg px-3 py-2 text-left text-xs font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-500/10">
+                            class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-500/10">
+                            <Icon icon="ph:exam" class="h-4 w-4" />
                             Beri Nilai
                           </button>
                           <button @click="handleAssignmentAction('edit', item)" type="button"
-                            class="flex w-full items-center rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
+                            class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
+                            <Icon icon="ph:pencil-simple" class="h-4 w-4" />
                             Edit
                           </button>
                           <button @click="handleAssignmentAction('delete', item)" type="button"
-                            class="flex w-full items-center rounded-lg px-3 py-2 text-left text-xs font-semibold text-rose-600 transition hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/10">
+                            class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-rose-600 transition hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/10">
+                            <Icon icon="ph:trash" class="h-4 w-4" />
                             Hapus
                           </button>
                         </div>
@@ -244,9 +356,9 @@
                   </tr>
 
                   <tr v-if="filteredAssignments.length === 0">
-                    <td colspan="5" class="px-5 py-14 text-center">
-                      <p class="text-base font-semibold text-slate-500 dark:text-slate-400">Belum Ada Tugas</p>
-                      <p class="mt-2 text-sm text-slate-500">Tugas yang Anda buat akan muncul di sini.</p>
+                    <td colspan="5" class="px-5 py-10 text-center sm:py-14">
+                      <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Belum Ada Tugas</p>
+                      <p class="mt-2 text-xs text-slate-500 sm:text-sm">Tugas yang Anda buat akan muncul di sini.</p>
                     </td>
                   </tr>
                 </tbody>
@@ -258,22 +370,23 @@
           <div v-else>
             <!-- Tombol Kembali yang sangat jelas -->
             <button @click="gradingAssignment = null"
-              class="mb-6 flex items-center gap-2 rounded-xl bg-slate-200 px-6 py-3 text-lg font-bold text-slate-800 transition hover:bg-slate-300 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700">
-              Kembali ke Daftar Tugas
+              class="mb-3 inline-flex items-center gap-2 rounded-lg bg-slate-200 px-3 py-2 text-xs font-semibold text-slate-800 transition hover:bg-slate-300 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700 sm:mb-5 sm:rounded-xl sm:px-4 sm:text-sm">
+              <Icon icon="ph:arrow-left" class="h-4 w-4" />
+              Kembali
             </button>
 
             <div
-              class="rounded-2xl border-2 border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+              class="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:rounded-2xl">
               <div
-                class="border-b-2 border-slate-200 bg-slate-50 p-6 md:p-8 dark:border-slate-800 dark:bg-slate-800/50">
-                <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Menilai: {{ gradingAssignment.title }}
+                class="border-b border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-800/50 sm:p-4 md:p-6">
+                <h3 class="line-clamp-2 text-base font-semibold text-slate-900 dark:text-white sm:text-lg">Menilai: {{ gradingAssignment.title }}
                 </h3>
 
-                <div class="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center">
+                <div class="mt-3 flex flex-col gap-2 sm:mt-5 sm:flex-row sm:items-center sm:gap-3">
                   <input v-model="submissionSearch" type="text" placeholder="Cari nama siswa..."
-                    class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white sm:max-w-xs" />
+                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white sm:max-w-xs sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm" />
                   <select v-model="submissionFilter"
-                    class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white sm:max-w-xs">
+                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white sm:max-w-xs sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm">
                     <option value="ALL">Semua Siswa</option>
                     <option value="UNGRADED">Belum Dinilai</option>
                     <option value="GRADED">Sudah Dinilai</option>
@@ -281,20 +394,73 @@
                 </div>
               </div>
 
-              <!-- Tabel Nilai Lebar dan Lega -->
-              <div class="overflow-x-auto">
-                <table class="min-w-full text-left text-base">
+              <div class="space-y-2 p-3 md:hidden">
+                <article v-for="item in filteredSubmissions" :key="item.id"
+                  class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <h4 class="line-clamp-2 text-sm font-semibold text-slate-900 dark:text-white">{{ item.student_name }}</h4>
+                      <p class="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                        Waktu: {{ formatDateTime(item.submitted_at) }}
+                      </p>
+                    </div>
+                    <span v-if="item.scoreDraft !== '' && item.scoreDraft !== null"
+                      class="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                      {{ item.scoreDraft }}/100
+                    </span>
+                  </div>
+
+                  <div class="mt-3 rounded-lg bg-slate-50 p-3 dark:bg-slate-800/70">
+                    <p v-if="item.submission_text" class="line-clamp-4 text-xs leading-5 text-slate-700 dark:text-slate-300">
+                      {{ item.submission_text }}
+                    </p>
+                    <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
+                      rel="noreferrer"
+                      class="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-800 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300">
+                      <Icon icon="ph:file" class="h-4 w-4" />
+                      File Jawaban
+                    </a>
+                    <span v-else-if="item.assignment_type === 'MANUAL'"
+                      class="inline-flex rounded-lg bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-800">
+                      Penilaian Langsung
+                    </span>
+                    <span v-else class="text-xs italic text-slate-500">Belum mengumpulkan file</span>
+                  </div>
+
+                  <div class="mt-3 grid gap-2">
+                    <input v-model="item.scoreDraft" type="number" min="0" max="100" step="0.01"
+                      placeholder="Nilai"
+                      class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+                    <textarea v-model="item.feedbackDraft" rows="2" placeholder="Catatan (opsional)"
+                      class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white"></textarea>
+                    <button @click="submitGrade(item)"
+                      class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-700">
+                      <Icon icon="ph:floppy-disk" class="h-4 w-4" />
+                      Simpan
+                    </button>
+                  </div>
+                </article>
+
+                <div v-if="filteredSubmissions.length === 0"
+                  class="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm font-semibold text-slate-500 dark:border-slate-700 dark:bg-slate-900">
+                  Tidak ada siswa yang sesuai dengan pencarian Anda.
+                </div>
+              </div>
+
+              <!-- Tabel Nilai Desktop -->
+              <div class="hidden md:block">
+                <table class="w-full text-left text-xs sm:text-sm">
                   <thead class="bg-slate-100 dark:bg-slate-800">
-                    <tr class="text-base text-slate-700 dark:text-slate-300">
-                      <th class="border-b-2 border-slate-200 px-6 py-5 font-bold dark:border-slate-700">Nama Siswa</th>
-                      <th class="border-b-2 border-slate-200 px-6 py-5 font-bold dark:border-slate-700">Jawaban / File
+                    <tr class="text-xs text-slate-700 dark:text-slate-300 sm:text-sm">
+                      <th class="border-b border-slate-200 px-3 py-3 font-semibold dark:border-slate-700 sm:px-5 sm:py-4">Nama Siswa</th>
+                      <th class="border-b border-slate-200 px-3 py-3 font-semibold dark:border-slate-700 sm:px-5 sm:py-4">Jawaban / File
                       </th>
-                      <th class="border-b-2 border-slate-200 px-6 py-5 font-bold dark:border-slate-700 w-48">Nilai
+                      <th class="w-40 border-b border-slate-200 px-3 py-3 font-semibold dark:border-slate-700 sm:w-48 sm:px-5 sm:py-4">Nilai
                         (0-100)</th>
-                      <th class="border-b-2 border-slate-200 px-6 py-5 font-bold dark:border-slate-700">Pesan / Koreksi
+                      <th class="border-b border-slate-200 px-3 py-3 font-semibold dark:border-slate-700 sm:px-5 sm:py-4">Pesan / Koreksi
                       </th>
                       <th
-                        class="border-b-2 border-slate-200 px-6 py-5 font-bold dark:border-slate-700 w-32 text-center">
+                        class="w-24 border-b border-slate-200 px-3 py-3 text-center font-semibold dark:border-slate-700 sm:w-32 sm:px-5 sm:py-4">
                         Aksi</th>
                     </tr>
                   </thead>
@@ -302,49 +468,51 @@
                     <tr v-for="item in filteredSubmissions" :key="item.id"
                       class="hover:bg-blue-50/50 dark:hover:bg-slate-800/50">
 
-                      <td class="px-6 py-6 align-top">
-                        <div class="text-lg font-bold text-slate-900 dark:text-white">{{ item.student_name }}</div>
-                        <div class="mt-2 text-sm text-slate-500">Waktu: {{ formatDateTime(item.submitted_at) }}</div>
+                      <td class="px-3 py-3 align-top sm:px-5 sm:py-4">
+                        <div class="text-sm font-semibold text-slate-900 dark:text-white">{{ item.student_name }}</div>
+                        <div class="mt-1 text-xs text-slate-500">Waktu: {{ formatDateTime(item.submitted_at) }}</div>
                       </td>
 
-                      <td class="px-6 py-6 align-top">
+                      <td class="px-3 py-3 align-top sm:px-5 sm:py-4">
                         <p v-if="item.submission_text"
-                          class="mb-3 max-w-sm text-base text-slate-700 dark:text-slate-300">
+                          class="mb-2 max-w-sm text-xs text-slate-700 dark:text-slate-300 sm:text-sm">
                           {{ item.submission_text }}
                         </p>
                         <a v-if="item.attachment_url" :href="normalizePublicUrl(item.attachment_url)" target="_blank"
                           rel="noreferrer"
-                          class="inline-flex items-center gap-2 rounded-xl bg-blue-100 px-4 py-2 text-base font-bold text-blue-800 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300">
-                          📄 Buka File Jawaban
+                          class="inline-flex items-center gap-1.5 rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-800 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300">
+                          <Icon icon="ph:file" class="h-4 w-4" />
+                          File Jawaban
                         </a>
                         <span v-else-if="item.assignment_type === 'MANUAL'"
-                          class="inline-flex rounded-xl bg-amber-100 px-4 py-2 text-base font-bold text-amber-800">
+                          class="inline-flex rounded-lg bg-amber-100 px-3 py-1.5 text-xs font-semibold text-amber-800">
                           Penilaian Langsung
                         </span>
-                        <span v-else class="text-slate-500 italic">Belum mengumpulkan file</span>
+                        <span v-else class="text-xs italic text-slate-500">Belum mengumpulkan file</span>
                       </td>
 
-                      <td class="px-6 py-6 align-top">
+                      <td class="px-3 py-3 align-top sm:px-5 sm:py-4">
                         <input v-model="item.scoreDraft" type="number" min="0" max="100" step="0.01"
                           placeholder="Kosong"
-                          class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-lg font-bold text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+                          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
                       </td>
 
-                      <td class="px-6 py-6 align-top">
+                      <td class="px-3 py-3 align-top sm:px-5 sm:py-4">
                         <textarea v-model="item.feedbackDraft" rows="2" placeholder="Tulis catatan (Opsional)..."
-                          class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white"></textarea>
+                          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white sm:text-sm"></textarea>
                       </td>
 
-                      <td class="px-6 py-6 align-top text-center">
+                      <td class="px-3 py-3 align-top text-center sm:px-5 sm:py-4">
                         <button @click="submitGrade(item)"
-                          class="w-full rounded-xl bg-blue-600 px-4 py-3 text-base font-bold text-white transition hover:bg-blue-700">
-                          Simpan
+                          class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white transition hover:bg-blue-700"
+                          title="Simpan nilai" aria-label="Simpan nilai">
+                          <Icon icon="ph:floppy-disk" class="h-4 w-4" />
                         </button>
                       </td>
                     </tr>
 
                     <tr v-if="filteredSubmissions.length === 0">
-                      <td colspan="5" class="py-20 text-center text-lg font-bold text-slate-500">
+                      <td colspan="5" class="py-12 text-center text-sm font-semibold text-slate-500 sm:py-20">
                         Tidak ada siswa yang sesuai dengan pencarian Anda.
                       </td>
                     </tr>
@@ -358,16 +526,12 @@
       </div>
 
       <!-- TAMPILAN AWAL JIKA BELUM PILIH KELAS -->
-      <div v-else class="flex h-full flex-col items-center justify-center p-10 text-center">
-        <div class="rounded-full bg-blue-100 p-8 dark:bg-blue-900/30">
-          <svg class="h-16 w-16 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-            stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-          </svg>
+      <div v-else class="flex h-full flex-col items-center justify-center p-6 text-center sm:p-10">
+        <div class="rounded-full bg-blue-100 p-5 dark:bg-blue-900/30 sm:p-7">
+          <Icon icon="ph:book-open-text" class="h-10 w-10 text-blue-600 dark:text-blue-400 sm:h-14 sm:w-14" />
         </div>
-        <h2 class="mt-8 text-3xl font-bold text-slate-900 dark:text-white">Selamat Datang!</h2>
-        <p class="mt-3 text-xl text-slate-600 dark:text-slate-400">Silakan klik salah satu kelas di papan atas
+        <h2 class="mt-5 text-lg font-semibold text-slate-900 dark:text-white sm:mt-7 sm:text-xl">Selamat Datang!</h2>
+        <p class="mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">Silakan klik salah satu kelas di papan atas
           untuk mulai mengajar.</p>
       </div>
     </main>
@@ -401,31 +565,6 @@
           <div class="overflow-y-auto px-5 py-5 md:px-6">
             <form @submit.prevent="submitMaterial" class="space-y-5">
 
-              <!-- Pilihan Mode -->
-              <div class="space-y-2">
-                <label
-                  class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Pilih
-                  cara membuat</label>
-                <div class="grid gap-3 md:grid-cols-2">
-                  <button type="button" @click="materialCreationMode = 'manual'"
-                    class="rounded-lg border-2 p-4 text-left transition"
-                    :class="materialCreationMode === 'manual' ? 'border-blue-700 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/15' : 'border-slate-300 bg-white hover:border-blue-500 dark:border-slate-600 dark:bg-slate-800'">
-                    <h3 class="text-base font-bold text-blue-800 dark:text-blue-300">Tulis & Upload Sendiri</h3>
-                    <p class="mt-1.5 text-sm leading-6 text-slate-600 dark:text-slate-300">Ketik deskripsi manual dan
-                      lampirkan file (PDF/Word/Excel).</p>
-                  </button>
-                  <button type="button" @click="materialCreationMode = 'ai-pptx'"
-                    class="rounded-lg border-2 p-4 text-left transition"
-                    :class="materialCreationMode === 'ai-pptx' ? 'border-emerald-700 bg-emerald-50 dark:border-emerald-400 dark:bg-emerald-900/15' : 'border-slate-300 bg-white hover:border-emerald-500 dark:border-slate-600 dark:bg-slate-800'">
-                    <h3 class="text-base font-bold text-emerald-800 dark:text-emerald-300">Dibantu Sistem AI (Otomatis)
-                    </h3>
-                    <p class="mt-1.5 text-sm leading-6 text-slate-600 dark:text-slate-300">Cukup beritahu topik, sistem
-                      akan
-                      otomatis membuatkan file presentasi (PPT).</p>
-                  </button>
-                </div>
-              </div>
-
               <!-- Input Judul -->
               <div class="space-y-2">
                 <label
@@ -444,8 +583,7 @@
                   class="block w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none transition focus:border-blue-700 focus:ring-2 focus:ring-blue-700/10 dark:border-slate-600 dark:bg-slate-800 dark:text-white" />
               </div>
 
-              <!-- Mode Manual -->
-              <div v-if="materialCreationMode === 'manual'"
+              <div
                 class="space-y-2 rounded-lg border-2 border-slate-300 bg-slate-50 p-4 dark:border-slate-600 dark:bg-slate-800/80">
                 <label
                   class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Upload
@@ -455,57 +593,10 @@
                   class="block w-full text-sm text-slate-700 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-blue-700 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-blue-800 dark:text-slate-300" />
               </div>
 
-              <!-- Mode AI -->
-              <div v-else
-                class="space-y-4 rounded-lg border-2 border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-700 dark:bg-emerald-900/10">
-                <h3 class="text-base font-bold text-emerald-900 dark:text-emerald-300">Pengaturan Presentasi Otomatis
-                </h3>
-                <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <div class="space-y-1.5">
-                    <label
-                      class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Topik
-                      pembahasan</label>
-                    <input v-model="materialAiForm.topic" required placeholder="Contoh: Sejarah Kemerdekaan RI"
-                      class="block w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/10 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
-                  </div>
-                  <div class="space-y-1.5">
-                    <label
-                      class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Jumlah
-                      halaman (slide)</label>
-                    <input v-model.number="materialAiForm.slide_count" type="number" min="3" max="15"
-                      class="block w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/10 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
-                  </div>
-                </div>
-                <div class="space-y-1.5">
-                  <label
-                    class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Tujuan
-                    belajar / pesan khusus (opsional)</label>
-                  <textarea v-model="materialAiForm.learning_goals" rows="3"
-                    placeholder="Contoh: Fokuskan pada nama-nama tokoh penting..."
-                    class="block w-full rounded-md border-2 border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/10 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
-                </div>
-
-                <div v-if="materialAiPreview"
-                  class="mt-3 rounded-lg border-2 border-emerald-600 bg-emerald-600 p-4 text-white">
-                  <p class="text-base font-bold">Rancangan siap</p>
-                  <p class="mt-1 text-sm leading-6 text-emerald-50">Silakan klik tombol simpan jika sudah sesuai.</p>
-                </div>
-              </div>
-
               <div class="flex items-center justify-end gap-3 pt-2">
-                <button v-if="materialCreationMode === 'ai-pptx' && materialAiPreview" type="button"
-                  @click="generateAiMaterialPreview" :disabled="isGeneratingAiMaterial || isPublishingAiMaterial"
-                  class="rounded-md border border-slate-300 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
-                  {{ isGeneratingAiMaterial ? "Merancang Ulang..." : "Rancang Ulang PPT" }}
-                </button>
-                <button :disabled="isSavingMaterial || isGeneratingAiMaterial || isPublishingAiMaterial" type="submit"
-                  class="rounded-md border border-blue-800 px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-60"
-                  :class="materialCreationMode === 'ai-pptx' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'">
-                  {{ materialCreationMode === 'ai-pptx'
-                    ? materialAiPreview
-                      ? (isPublishingAiMaterial ? "Menyimpan..." : "Simpan & Publikasikan")
-                      : (isGeneratingAiMaterial ? "Sedang Diproses..." : "Minta AI Buatkan Rancangan")
-                    : (isSavingMaterial ? "Menyimpan..." : "Simpan Materi") }}
+                <button :disabled="isSavingMaterial" type="submit"
+                  class="rounded-md border border-blue-800 bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60">
+                  {{ isSavingMaterial ? "Menyimpan..." : "Simpan Materi" }}
                 </button>
               </div>
             </form>
@@ -521,7 +612,7 @@
       <div v-if="assignmentModalOpen"
         class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/75 p-4 backdrop-blur-sm">
         <div
-          class="modal-shell w-full max-w-3xl overflow-hidden border-2 border-slate-500 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.22)] dark:border-slate-600 dark:bg-slate-900"
+          class="modal-shell flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden border-2 border-slate-500 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.22)] dark:border-slate-600 dark:bg-slate-900"
           @click.stop>
           <div
             class="flex items-start justify-between border-b-2 border-slate-300 bg-slate-50 px-5 py-4 dark:border-slate-700 dark:bg-slate-800">
@@ -538,7 +629,7 @@
               </svg>
             </button>
           </div>
-          <div class="overflow-y-auto px-5 py-5 md:px-6">
+          <div class="min-h-0 flex-1 overflow-y-auto px-5 py-5 md:px-6">
             <form @submit.prevent="submitAssignment" class="space-y-5">
 
               <div class="space-y-2">
@@ -659,6 +750,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue";
+import { Icon } from "@iconify/vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatDateTime, formatDateTimeLocalInput as formatJakartaDateTimeLocalInput, parseDateValue } from "@/utils/date";

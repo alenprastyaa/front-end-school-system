@@ -1,4 +1,4 @@
-import { clearSession, persistForcedLogoutNotice } from "@/utils/auth";
+import { clearSessionAndRedirectToLogin, persistForcedLogoutNotice } from "@/utils/auth";
 import { beginGlobalLoading } from "@/composables/useGlobalLoading";
 
 const API_BASE_URL = (process.env.VUE_APP_API_BASE_URL || "https://alentest.my.id/school/api").replace(/\/$/, "");
@@ -181,7 +181,7 @@ export const apiRequest = async (path, options = {}) => {
         });
       }
       cancelPendingApiRequests();
-      clearSession();
+      clearSessionAndRedirectToLogin();
     }
 
     throw error;

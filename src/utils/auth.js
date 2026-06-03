@@ -44,7 +44,20 @@ export const getStoredRole = () => {
   return normalizeRole(localStorage.getItem("role"));
 };
 
-export const isAuthenticated = () => Boolean(localStorage.getItem("token"));
+const isTokenUsable = (token) => {
+  const payload = decodeJwtPayload(token);
+  if (!payload) {
+    return false;
+  }
+
+  if (payload.exp && Number(payload.exp) * 1000 <= Date.now()) {
+    return false;
+  }
+
+  return true;
+};
+
+export const isAuthenticated = () => isTokenUsable(localStorage.getItem("token"));
 
 export const persistSession = (payload) => {
   const data = payload?.data || payload;
