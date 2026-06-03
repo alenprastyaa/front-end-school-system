@@ -5,12 +5,12 @@
     :class="isChatLayoutRoute ? 'bg-[#d9dbd5] dark:bg-[#0b141a]' : 'bg-slate-100 dark:bg-[#0b141a]'"
   >
     <div v-if="!shouldHideChrome"
-      class="pointer-events-none fixed inset-y-0 left-0 z-[60] w-sidebar max-w-[86vw] transition-transform duration-300 ease-out lg:pointer-events-auto lg:static lg:max-w-none"
+      class="pointer-events-none fixed inset-y-0 left-0 z-[230] w-sidebar max-w-[86vw] transition-transform duration-300 ease-out lg:pointer-events-auto lg:static lg:z-auto lg:max-w-none"
       :class="sidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
-      <button v-if="sidebar && !isDesktopViewport" type="button" class="fixed inset-0 z-50 backdrop-blur-[2px]"
+      <button v-if="sidebar && !isDesktopViewport" type="button" class="fixed inset-0 z-0 backdrop-blur-[2px]"
         style="background-color: rgba(0, 0, 0, 0.45);" aria-label="Tutup sidebar" @click="close"></button>
       <div
-        class="mobile-sidebar-offset pointer-events-auto relative z-[60] h-full w-sidebar overflow-hidden border-r border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900 lg:shadow-none">
+        class="mobile-sidebar-offset pointer-events-auto relative z-10 h-full w-sidebar overflow-hidden border-r border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900 lg:shadow-none">
         <div class="h-full overflow-y-auto overscroll-contain">
           <Sidebar v-if="!shouldHideChrome" @sidebarToggle="close" />
           <!-- <sidebarlist

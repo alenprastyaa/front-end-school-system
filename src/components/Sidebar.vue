@@ -61,9 +61,9 @@
 
       </div>
 
-      <div class="min-h-0 flex-1 overflow-y-auto p-4">
+      <div class="sidebar-menu-scroll min-h-0 flex-1 overflow-y-auto p-4">
         <p class="px-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Menu</p>
-        <div class="mt-4 space-y-2 pb-5">
+        <div class="mt-4 space-y-2 pb-8">
           <template v-for="item in visibleMenu" :key="item.key">
             <router-link v-if="!item.children" :to="item.to" :data-tour="item.dataTour"
               class="flex w-full items-center gap-3 rounded-2xl border border-transparent px-3 py-3 text-left text-gray-700 transition hover:border-slate-200 hover:bg-slate-100 dark:text-gray-200 dark:hover:border-slate-700 dark:hover:bg-gray-700/80"
@@ -987,3 +987,11 @@ onUnmounted(() => {
   realtimeUnsubscribers.value = [];
 });
 </script>
+
+<style scoped>
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .sidebar-menu-scroll {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+}
+</style>
