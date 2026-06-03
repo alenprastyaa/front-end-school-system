@@ -17,6 +17,7 @@
   "author": "Mohammad Sahrullah",
   "license": "MIT",
   "dependencies": {
+    "@mediapipe/tasks-vision": "^0.10.35",
     "@vuepic/vue-datepicker": "^12.1.0",
     "apexcharts": "^3.34.0",
     "autoprefixer": "^10.4.14",
