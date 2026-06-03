@@ -61,7 +61,7 @@
 
       </div>
 
-      <div class="sidebar-menu-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-8 pt-[132px]">
+      <div class="sidebar-menu-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-8 pt-4">
         <p class="px-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Menu</p>
         <div class="mt-4 space-y-2 pb-8">
           <template v-for="item in visibleMenu" :key="item.key">
