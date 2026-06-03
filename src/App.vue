@@ -5,7 +5,7 @@
     :class="isChatLayoutRoute ? 'bg-[#d9dbd5] dark:bg-[#0b141a]' : 'bg-slate-100 dark:bg-[#0b141a]'"
   >
     <div v-if="!shouldHideChrome"
-      class="pointer-events-none fixed inset-y-0 left-0 z-[230] w-sidebar max-w-[86vw] transition-transform duration-300 ease-out lg:pointer-events-auto lg:static lg:z-auto lg:max-w-none"
+      class="mobile-sidebar-shell pointer-events-none fixed inset-y-0 left-0 z-[230] w-sidebar max-w-[86vw] transition-transform duration-300 ease-out lg:pointer-events-auto lg:static lg:z-auto lg:max-w-none"
       :class="sidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
       <button v-if="sidebar && !isDesktopViewport" type="button" class="fixed inset-0 z-0 backdrop-blur-[2px]"
         style="background-color: rgba(0, 0, 0, 0.45);" aria-label="Tutup sidebar" @click="close"></button>
@@ -375,6 +375,13 @@ export default {
 @supports (padding-top: env(safe-area-inset-top)) {
   .mobile-sidebar-offset {
     padding-top: env(safe-area-inset-top);
+  }
+}
+
+@media (max-width: 1023px) {
+  .mobile-sidebar-shell {
+    top: calc(132px + env(safe-area-inset-top, 0px));
+    height: calc(100dvh - 132px - env(safe-area-inset-top, 0px));
   }
 }
 </style>
