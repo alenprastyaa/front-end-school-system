@@ -32,6 +32,12 @@
             <p class="mt-0.5 text-base font-black tabular-nums text-slate-900 dark:text-white">{{ clockOutLabel }}</p>
           </div>
         </div>
+        <div class="px-4 pt-2">
+          <p class="rounded-2xl bg-slate-50 px-3.5 py-2.5 text-xs leading-5 text-slate-500 dark:bg-[#0b141a] dark:text-slate-400">
+            Batas terlambat: <span class="font-bold text-slate-700 dark:text-slate-200">{{ lateAfterLabel }}</span>
+            · Jam pulang minimal: <span class="font-bold text-slate-700 dark:text-slate-200">{{ checkoutDeadlineLabel }}</span>
+          </p>
+        </div>
 
         <!-- Viewfinder + capture flow -->
         <div v-if="!hasCheckedInToday" class="px-4 pt-4">
@@ -133,17 +139,62 @@
 
       <!-- History -->
       <section class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#111b21]">
-        <div class="flex items-center justify-between">
-          <h2 class="text-sm font-bold text-slate-900 dark:text-white">Riwayat Kehadiran</h2>
-          <button type="button" @click="loadAttendance"
-            class="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/5 dark:hover:text-white">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-            </svg>
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h2 class="text-sm font-bold text-slate-900 dark:text-white">Riwayat Kehadiran</h2>
+              <p class="mt-0.5 text-xs text-slate-400">{{ attendanceTotal }} data</p>
+            </div>
+            <button type="button" @click="loadAttendance()" :disabled="isLoadingAttendance"
+              class="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50 dark:hover:bg-white/5 dark:hover:text-white">
+              <svg class="h-4 w-4" :class="{ 'animate-spin': isLoadingAttendance }" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+            </button>
+          </div>
+
+          <form class="grid gap-2 sm:grid-cols-[1fr,auto]" @submit.prevent="applyAttendanceSearch">
+            <input
+              v-model="attendanceSearchInput"
+              type="search"
+              placeholder="Cari tanggal, status, jam, catatan"
+              class="h-11 rounded-2xl border-0 bg-slate-50 px-3.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-indigo-600 dark:bg-[#0b141a] dark:text-white dark:ring-white/10"
+            />
+            <div class="grid grid-cols-[1fr,auto] gap-2 sm:flex">
+              <select
+                v-model.number="attendanceLimit"
+                class="h-11 rounded-2xl border-0 bg-slate-50 px-3.5 text-sm font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-indigo-600 dark:bg-[#0b141a] dark:text-slate-200 dark:ring-white/10"
+                @change="changeAttendanceLimit"
+              >
+                <option :value="5">5</option>
+                <option :value="10">10</option>
+                <option :value="20">20</option>
+                <option :value="50">50</option>
+              </select>
+              <button
+                type="submit"
+                class="h-11 rounded-2xl bg-indigo-600 px-4 text-sm font-bold text-white transition hover:bg-indigo-500"
+              >
+                Cari
+              </button>
+            </div>
+          </form>
+
+          <button
+            v-if="attendanceSearch"
+            type="button"
+            class="self-start text-xs font-bold text-indigo-600 dark:text-indigo-300"
+            @click="clearAttendanceSearch"
+          >
+            Hapus filter "{{ attendanceSearch }}"
           </button>
         </div>
 
-        <p v-if="recentAttendances.length === 0" class="py-8 text-center text-sm text-slate-400">
+        <p v-if="isLoadingAttendance" class="py-8 text-center text-sm text-slate-400">
+          Memuat riwayat kehadiran...
+        </p>
+
+        <p v-else-if="recentAttendances.length === 0" class="py-8 text-center text-sm text-slate-400">
           Belum ada riwayat kehadiran.
         </p>
 
@@ -163,6 +214,9 @@
               <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                 {{ formatChatTime(item.clock_in) || "--" }} – {{ formatChatTime(item.clock_out) || "--" }}
               </p>
+              <p v-if="item.checkout_note" class="mt-1 text-xs font-semibold text-amber-600 dark:text-amber-300">
+                {{ item.checkout_note }}
+              </p>
             </div>
             <span class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold" :class="{
               'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300': item.status?.toLowerCase() === 'hadir',
@@ -171,6 +225,28 @@
             }">{{ item.status || "Hadir" }}</span>
           </li>
         </ul>
+
+        <div v-if="attendanceTotalPages > 1" class="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-4 dark:border-white/10">
+          <button
+            type="button"
+            :disabled="attendancePage <= 1 || isLoadingAttendance"
+            class="rounded-2xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5"
+            @click="goAttendancePage(attendancePage - 1)"
+          >
+            Prev
+          </button>
+          <p class="text-center text-xs font-semibold text-slate-500 dark:text-slate-400">
+            {{ attendanceRangeLabel }} · Halaman {{ attendancePage }} / {{ attendanceTotalPages }}
+          </p>
+          <button
+            type="button"
+            :disabled="attendancePage >= attendanceTotalPages || isLoadingAttendance"
+            class="rounded-2xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5"
+            @click="goAttendancePage(attendancePage + 1)"
+          >
+            Next
+          </button>
+        </div>
       </section>
     </div>
   </div>
@@ -208,8 +284,10 @@ const updateClock = () => {
 const selectedFile = ref(null);
 const selectedPreviewUrl = ref("");
 const attendances = ref([]);
+const todayAttendance = ref(null);
 const isCheckingIn = ref(false);
 const isCheckingOut = ref(false);
+const isLoadingAttendance = ref(false);
 const isVerifyingFace = ref(false);
 const isCameraLoading = ref(false);
 const cameraActive = ref(false);
@@ -228,6 +306,12 @@ const faceVerification = ref({
 });
 const tableSort = createSortState("attendance_date", "desc");
 const profileStore = useProfileStore();
+const attendancePage = ref(1);
+const attendanceLimit = ref(10);
+const attendanceSearch = ref("");
+const attendanceSearchInput = ref("");
+const attendanceTotal = ref(0);
+const attendanceTotalPages = ref(0);
 
 // Computed properti untuk mendeteksi status kehadiran hari ini
 const formatLocalDate = (value) => {
@@ -237,6 +321,9 @@ const formatLocalDate = (value) => {
 const todayStr = formatLocalDate(new Date());
 
 const todayRecord = computed(() => {
+  if (todayAttendance.value) {
+    return todayAttendance.value;
+  }
   return attendances.value.find(item => {
     const recordDate = formatLocalDate(item.attendance_date);
     return recordDate === todayStr;
@@ -248,9 +335,17 @@ const hasCheckedOutToday = computed(() => hasCheckedInToday.value && !!todayReco
 const storedReferenceDescriptor = computed(() => profileStore.profile?.face_reference_descriptor || "");
 const hasProfileReference = computed(() => Boolean(String(storedReferenceDescriptor.value || "").trim()));
 const canSubmitCheckIn = computed(() => hasProfileReference.value && faceVerification.value.status === "matched" && Boolean(selectedFile.value));
+const lateAfterLabel = computed(() => profileStore.profile?.attendance_late_after_time || "Tidak dibatasi");
+const checkoutDeadlineLabel = computed(() => profileStore.profile?.attendance_checkout_deadline || "Tidak dibatasi");
 
 const sortedAttendances = computed(() => sortItems(attendances.value, tableSort));
-const recentAttendances = computed(() => sortedAttendances.value.slice(0, 5));
+const recentAttendances = computed(() => sortedAttendances.value);
+const attendanceRangeLabel = computed(() => {
+  if (attendanceTotal.value === 0) return "0 data";
+  const start = (attendancePage.value - 1) * attendanceLimit.value + 1;
+  const end = Math.min(attendancePage.value * attendanceLimit.value, attendanceTotal.value);
+  return `${start}-${end} dari ${attendanceTotal.value}`;
+});
 const clockInLabel = computed(() => (todayRecord.value?.clock_in ? formatChatTime(todayRecord.value.clock_in) : "--:--"));
 const clockOutLabel = computed(() => (todayRecord.value?.clock_out ? formatChatTime(todayRecord.value.clock_out) : "--:--"));
 const todayStatusLabel = computed(() => {
@@ -505,7 +600,7 @@ const submitCheckIn = async () => {
       type: "success",
     });
     stopCamera();
-    await loadAttendance();
+    await Promise.all([loadTodayAttendance(), loadAttendance({ page: 1 })]);
   } catch (error) {
     stopCamera();
     liveConsecutiveMatches = 0;
@@ -614,17 +709,66 @@ const startLiveRecognition = async () => {
   liveRafId = requestAnimationFrame(loop);
 };
 
-const loadAttendance = async () => {
+const loadTodayAttendance = async () => {
   try {
-    const response = await api.get("/attendance");
-    attendances.value = response?.data?.data || [];
+    const response = await api.get("/dashboard/siswa", { silentLoading: true });
+    todayAttendance.value = response?.data?.todayAttendance || null;
+  } catch (error) {
+    todayAttendance.value = null;
+  }
+};
+
+const loadAttendance = async ({ page = attendancePage.value } = {}) => {
+  isLoadingAttendance.value = true;
+  try {
+    const response = await api.get("/attendance", {
+      params: {
+        page,
+        limit: attendanceLimit.value,
+        search: attendanceSearch.value || undefined,
+      },
+    });
+    const payload = response?.data || {};
+    attendances.value = Array.isArray(payload.data) ? payload.data : [];
+    attendancePage.value = Number(payload.page || page || 1);
+    attendanceLimit.value = Number(payload.limit || attendanceLimit.value || 10);
+    attendanceTotal.value = Number(payload.total || 0);
+    attendanceTotalPages.value = Number(payload.total_pages || 0);
   } catch (error) {
     pushToast({
       title: "Gagal Memuat Absensi",
       message: error.message,
       type: "error",
     });
+  } finally {
+    isLoadingAttendance.value = false;
   }
+};
+
+const applyAttendanceSearch = async () => {
+  attendanceSearch.value = String(attendanceSearchInput.value || "").trim();
+  attendancePage.value = 1;
+  await loadAttendance({ page: 1 });
+};
+
+const clearAttendanceSearch = async () => {
+  attendanceSearchInput.value = "";
+  attendanceSearch.value = "";
+  attendancePage.value = 1;
+  await loadAttendance({ page: 1 });
+};
+
+const changeAttendanceLimit = async () => {
+  attendancePage.value = 1;
+  await loadAttendance({ page: 1 });
+};
+
+const goAttendancePage = async (page) => {
+  const nextPage = Math.max(1, Math.min(Number(page || 1), attendanceTotalPages.value || 1));
+  if (nextPage === attendancePage.value || isLoadingAttendance.value) {
+    return;
+  }
+  await loadAttendance({ page: nextPage });
 };
 
 const submitCheckOut = async () => {
@@ -637,7 +781,7 @@ const submitCheckOut = async () => {
       message: response?.message || "Check-out berhasil dicatat. Sampai jumpa besok!",
       type: "success",
     });
-    await loadAttendance();
+    await Promise.all([loadTodayAttendance(), loadAttendance()]);
   } catch (error) {
     pushToast({
       title: "Check-out Gagal",
@@ -652,6 +796,7 @@ const submitCheckOut = async () => {
 onMounted(() => {
   updateClock();
   timer = setInterval(updateClock, 1000);
+  loadTodayAttendance();
   loadAttendance();
   profileStore.loadProfile().then(() => {
     if (hasProfileReference.value) {

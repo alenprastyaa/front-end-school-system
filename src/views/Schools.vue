@@ -114,6 +114,26 @@
                   />
                 </div>
               </div>
+              <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Batas Terlambat</label>
+                  <input
+                    v-model="form.attendance_late_after_time"
+                    type="time"
+                    class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700"
+                  />
+                  <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Check-in setelah jam ini otomatis berstatus terlambat.</p>
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jam Pulang Minimal</label>
+                  <input
+                    v-model="form.attendance_checkout_deadline"
+                    type="time"
+                    class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700"
+                  />
+                  <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Check-out sebelum jam ini tetap dicatat dengan catatan kepulangan tidak sesuai.</p>
+                </div>
+              </div>
             </div>
 
             <div
@@ -270,6 +290,9 @@
                     <div class="font-semibold text-slate-900 dark:text-white">{{ item.name }}</div>
                     <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
                       Tahun aktif: {{ item.active_academic_years || 0 }}
+                    </div>
+                    <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      Terlambat: {{ item.attendance_late_after_time || "-" }} · Pulang minimal: {{ item.attendance_checkout_deadline || "-" }}
                     </div>
                   </td>
                   <td class="px-4 py-4 text-slate-600 dark:text-slate-300 sm:px-6">{{ item.total_admins || 0 }}</td>
@@ -522,6 +545,8 @@ const form = reactive({
   attendance_latitude: "",
   attendance_longitude: "",
   attendance_radius_meters: "",
+  attendance_late_after_time: "",
+  attendance_checkout_deadline: "",
   official_exam_module_enabled: true,
   koperasi_module_enabled: true,
   private_chat_module_enabled: true,
@@ -570,6 +595,8 @@ const resetForm = () => {
   form.attendance_latitude = "";
   form.attendance_longitude = "";
   form.attendance_radius_meters = "";
+  form.attendance_late_after_time = "";
+  form.attendance_checkout_deadline = "";
   form.official_exam_module_enabled = true;
   form.koperasi_module_enabled = true;
   form.private_chat_module_enabled = true;
@@ -608,6 +635,8 @@ const loadSchools = async () => {
           ...item,
           inventory_module_enabled: item.inventory_module_enabled !== false,
           attendance_module_enabled: item.attendance_module_enabled !== false,
+          attendance_late_after_time: item.attendance_late_after_time || "",
+          attendance_checkout_deadline: item.attendance_checkout_deadline || "",
           official_exam_module_enabled: item.official_exam_module_enabled !== false,
           koperasi_module_enabled: item.koperasi_module_enabled !== false,
           private_chat_module_enabled: item.private_chat_module_enabled !== false,
@@ -648,6 +677,16 @@ const submitSchool = async () => {
     } else if (editingId.value) {
       payload.append("clear_attendance_radius_meters", "true");
     }
+    if (String(form.attendance_late_after_time || "").trim() !== "") {
+      payload.append("attendance_late_after_time", String(form.attendance_late_after_time).trim());
+    } else if (editingId.value) {
+      payload.append("clear_attendance_late_after_time", "true");
+    }
+    if (String(form.attendance_checkout_deadline || "").trim() !== "") {
+      payload.append("attendance_checkout_deadline", String(form.attendance_checkout_deadline).trim());
+    } else if (editingId.value) {
+      payload.append("clear_attendance_checkout_deadline", "true");
+    }
     payload.append("koperasi_module_enabled", String(Boolean(form.koperasi_module_enabled)));
     payload.append("private_chat_module_enabled", String(Boolean(form.private_chat_module_enabled)));
     payload.append("official_exam_module_enabled", String(Boolean(form.official_exam_module_enabled)));
@@ -682,6 +721,8 @@ const editSchool = (item) => {
   form.attendance_latitude = item.attendance_latitude == null ? "" : String(item.attendance_latitude);
   form.attendance_longitude = item.attendance_longitude == null ? "" : String(item.attendance_longitude);
   form.attendance_radius_meters = item.attendance_radius_meters == null ? "" : String(item.attendance_radius_meters);
+  form.attendance_late_after_time = item.attendance_late_after_time || "";
+  form.attendance_checkout_deadline = item.attendance_checkout_deadline || "";
   form.koperasi_module_enabled = item.koperasi_module_enabled !== false;
   form.private_chat_module_enabled = item.private_chat_module_enabled !== false;
   form.official_exam_module_enabled = item.official_exam_module_enabled !== false;

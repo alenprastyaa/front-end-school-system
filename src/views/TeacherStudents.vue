@@ -312,7 +312,10 @@
                   </td>
                   <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ item.class_name || "-" }}</td>
                   <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ formatTime(item.clock_in) }}</td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ formatTime(item.clock_out) }}</td>
+                  <td class="px-4 py-3 text-slate-600 dark:text-slate-400">
+                    <p>{{ formatTime(item.clock_out) }}</p>
+                    <p v-if="item.checkout_note" class="mt-1 text-xs font-semibold text-amber-600 dark:text-amber-300">{{ item.checkout_note }}</p>
+                  </td>
                   <td class="px-4 py-3 font-medium text-emerald-600 dark:text-emerald-400">{{ item.attendance_status ||
                     "-" }}</td>
                 </tr>
@@ -438,7 +441,10 @@
                   class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                   <td class="px-4 py-3 text-slate-900 dark:text-white">{{ formatDate(item.attendance_date) }}</td>
                   <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ formatTime(item.clock_in) }}</td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ formatTime(item.clock_out) }}</td>
+                  <td class="px-4 py-3 text-slate-600 dark:text-slate-400">
+                    <p>{{ formatTime(item.clock_out) }}</p>
+                    <p v-if="item.checkout_note" class="mt-1 text-xs font-semibold text-amber-600 dark:text-amber-300">{{ item.checkout_note }}</p>
+                  </td>
                   <td class="px-4 py-3 font-medium text-slate-900 dark:text-white">{{ item.status }}</td>
                 </tr>
                 <tr v-if="attendances.length === 0">

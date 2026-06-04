@@ -238,6 +238,26 @@
                   @update:radiusMeters="(v) => (schoolEditForm.attendance_radius_meters = String(v ?? ''))"
                 />
               </div>
+              <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Batas Terlambat</label>
+                  <input
+                    v-model="schoolEditForm.attendance_late_after_time"
+                    type="time"
+                    class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700"
+                  />
+                  <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Check-in setelah jam ini otomatis berstatus terlambat.</p>
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jam Pulang Minimal</label>
+                  <input
+                    v-model="schoolEditForm.attendance_checkout_deadline"
+                    type="time"
+                    class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700"
+                  />
+                  <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Check-out sebelum jam ini tetap dicatat dengan catatan kepulangan tidak sesuai.</p>
+                </div>
+              </div>
             </div>
 
             <div class="flex justify-end gap-3 border-t border-slate-100 pt-5 dark:border-slate-800">
@@ -305,6 +325,8 @@ const schoolEditForm = reactive({
   attendance_latitude: "",
   attendance_longitude: "",
   attendance_radius_meters: "",
+  attendance_late_after_time: "",
+  attendance_checkout_deadline: "",
 });
 let toastIdCounter = 0;
 
@@ -391,6 +413,8 @@ const openSchoolEditModal = () => {
   schoolEditForm.attendance_latitude = storedProfile.value?.attendance_latitude == null ? "" : String(storedProfile.value.attendance_latitude);
   schoolEditForm.attendance_longitude = storedProfile.value?.attendance_longitude == null ? "" : String(storedProfile.value.attendance_longitude);
   schoolEditForm.attendance_radius_meters = storedProfile.value?.attendance_radius_meters == null ? "" : String(storedProfile.value.attendance_radius_meters);
+  schoolEditForm.attendance_late_after_time = storedProfile.value?.attendance_late_after_time || "";
+  schoolEditForm.attendance_checkout_deadline = storedProfile.value?.attendance_checkout_deadline || "";
   schoolEditLogoFile.value = null;
   schoolEditLogoPreview.value = normalizePublicUrl(storedProfile.value?.school_logo) || "";
   removeSchoolEditLogo.value = false;
@@ -444,6 +468,16 @@ const submitSchoolEdit = async () => {
     } else {
       formData.append("clear_attendance_radius_meters", "true");
     }
+    if (String(schoolEditForm.attendance_late_after_time || "").trim() !== "") {
+      formData.append("attendance_late_after_time", String(schoolEditForm.attendance_late_after_time).trim());
+    } else {
+      formData.append("clear_attendance_late_after_time", "true");
+    }
+    if (String(schoolEditForm.attendance_checkout_deadline || "").trim() !== "") {
+      formData.append("attendance_checkout_deadline", String(schoolEditForm.attendance_checkout_deadline).trim());
+    } else {
+      formData.append("clear_attendance_checkout_deadline", "true");
+    }
     if (schoolEditLogoFile.value) {
       formData.append("logo", schoolEditLogoFile.value);
     }
@@ -460,6 +494,8 @@ const submitSchoolEdit = async () => {
       attendance_latitude: updatedSchool.attendance_latitude ?? storedProfile.value?.attendance_latitude ?? null,
       attendance_longitude: updatedSchool.attendance_longitude ?? storedProfile.value?.attendance_longitude ?? null,
       attendance_radius_meters: updatedSchool.attendance_radius_meters ?? storedProfile.value?.attendance_radius_meters ?? null,
+      attendance_late_after_time: updatedSchool.attendance_late_after_time || "",
+      attendance_checkout_deadline: updatedSchool.attendance_checkout_deadline || "",
     });
     isSchoolEditModalOpen.value = false;
     pushToast({

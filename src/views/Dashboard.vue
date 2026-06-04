@@ -128,6 +128,9 @@
                   <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
                     {{ dashboardData?.todayAttendance?.clock_in ? `Masuk ${formatTime(dashboardData.todayAttendance.clock_in)}` : "Menunggu check-in" }}
                   </p>
+                  <p v-if="dashboardData?.todayAttendance?.checkout_note" class="mt-1 text-xs font-semibold text-amber-600 dark:text-amber-300">
+                    {{ dashboardData.todayAttendance.checkout_note }}
+                  </p>
                 </div>
                 <div class="rounded-2xl bg-white px-4 py-3 text-right shadow-sm ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-700">
                   <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 dark:text-slate-400">Anak Aktif</p>
@@ -269,6 +272,9 @@
                       Masuk {{ item.clock_in ? formatTime(item.clock_in) : "-" }}
                       <span class="mx-1">•</span>
                       Pulang {{ item.clock_out ? formatTime(item.clock_out) : "-" }}
+                    </p>
+                    <p v-if="item.checkout_note" class="mt-1 text-xs font-semibold text-amber-600 dark:text-amber-300">
+                      {{ item.checkout_note }}
                     </p>
                   </div>
                 </div>
@@ -928,6 +934,7 @@ const primaryPanel = computed(() => {
       { key: "clock_in", label: "Jam Masuk", format: (value) => formatTime(value) },
       { key: "clock_out", label: "Jam Pulang", format: (value) => formatTime(value) },
       { key: "status", label: "Keterangan" },
+      { key: "checkout_note", label: "Catatan Pulang" },
     ],
     rows: dashboardData.value?.recentAttendance || [],
     emptyMessage: "Belum ada riwayat absensi.",
