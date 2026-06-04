@@ -195,8 +195,8 @@ let cameraStream = null;
 const FACE_API_SCRIPT_URL = "/vendor/face-api/face-api.min.js";
 const FACE_API_MODEL_URL = "/vendor/face-api/models";
 const FACE_MATCH_THRESHOLD = 0.5;
-const LIVE_SCAN_INTERVAL_MS = 260;
-const LIVE_MATCH_REQUIRED = 3;
+const LIVE_SCAN_INTERVAL_MS = 360;
+const LIVE_MATCH_REQUIRED = 2;
 
 const updateClock = () => {
   const now = new Date();
@@ -247,7 +247,7 @@ const hasCheckedInToday = computed(() => !!todayRecord.value);
 const hasCheckedOutToday = computed(() => hasCheckedInToday.value && !!todayRecord.value.clock_out);
 const storedReferenceDescriptor = computed(() => profileStore.profile?.face_reference_descriptor || "");
 const hasProfileReference = computed(() => Boolean(String(storedReferenceDescriptor.value || "").trim()));
-const canSubmitCheckIn = computed(() => hasProfileReference.value && faceVerification.value.status === "matched");
+const canSubmitCheckIn = computed(() => hasProfileReference.value && faceVerification.value.status === "matched" && Boolean(selectedFile.value));
 
 const sortedAttendances = computed(() => sortItems(attendances.value, tableSort));
 const recentAttendances = computed(() => sortedAttendances.value.slice(0, 5));
@@ -275,11 +275,11 @@ const verificationScorePercent = computed(() => {
 });
 const faceVerificationTitle = computed(() => {
   if (!hasProfileReference.value) return "Enrol wajah diperlukan";
-  if (faceVerification.value.status === "matched") return "Wajah terverifikasi";
+  if (faceVerification.value.status === "matched") return "Wajah cocok";
   if (faceVerification.value.status === "mismatch") return "Wajah tidak cocok";
   if (faceVerification.value.status === "error") return "Verifikasi gagal";
   if (faceVerification.value.status === "loading") return "Memeriksa wajah";
-  return "Verifikasi wajah";
+  return "Absensi wajah";
 });
 const faceVerificationMessage = computed(() => {
   if (!hasProfileReference.value) return "Simpan foto referensi dari menu Enrol Wajah sebelum check-in.";
@@ -447,10 +447,8 @@ const loadFaceApi = async () => {
     });
   }
 
-  const faceapi = await faceApiModelsPromise;
-  return faceapi;
+  return await faceApiModelsPromise;
 };
-
 
 const captureEvidenceFromVideo = async () => {
   const video = cameraVideoRef.value;
@@ -527,7 +525,7 @@ const startLiveRecognition = async () => {
   }
 
   stopLiveRecognition();
-  resetFaceVerification("loading", "Menyiapkan deteksi wajah...");
+  resetFaceVerification("loading", "Memuat model verifikasi wajah...");
 
   let referenceDescriptor;
   try {
@@ -548,7 +546,6 @@ const startLiveRecognition = async () => {
     const nowMs = typeof timestamp === "number" ? timestamp : performance.now();
     liveRafId = requestAnimationFrame(loop);
     if (isCheckingIn.value) return;
-
     if (liveScanInFlight) return;
     if (nowMs - liveScanLastAt < LIVE_SCAN_INTERVAL_MS) return;
 
@@ -559,7 +556,6 @@ const startLiveRecognition = async () => {
     try {
       const faceapi = liveFaceApiInstance;
       const video = cameraVideoRef.value;
-
       const detection = await faceapi
         .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }))
         .withFaceLandmarks()
@@ -577,19 +573,14 @@ const startLiveRecognition = async () => {
 
       const distance = faceapi.euclideanDistance(referenceDescriptor, detection.descriptor);
       const matched = distance <= FACE_MATCH_THRESHOLD;
-
-      if (matched) {
-        liveConsecutiveMatches += 1;
-      } else {
-        liveConsecutiveMatches = 0;
-      }
+      liveConsecutiveMatches = matched ? liveConsecutiveMatches + 1 : 0;
 
       faceVerification.value = {
         status: matched ? "matched" : "mismatch",
         distance,
         message: matched
           ? `Wajah cocok. Menstabilkan deteksi (${liveConsecutiveMatches}/${LIVE_MATCH_REQUIRED})...`
-          : "Wajah tidak cocok. Coba dekatkan wajah dan hadap kamera lurus.",
+          : "Wajah tidak cocok dengan foto referensi. Hadap kamera lurus dan coba lagi.",
       };
 
       if (matched && liveConsecutiveMatches >= LIVE_MATCH_REQUIRED) {
@@ -599,10 +590,11 @@ const startLiveRecognition = async () => {
           liveConsecutiveMatches = 0;
           return;
         }
+
         faceVerification.value = {
           status: "matched",
           distance,
-          message: "Wajah terverifikasi. Mengirim check-in...",
+          message: "Wajah sesuai foto referensi. Mengirim check-in...",
         };
         await submitCheckIn();
       }
@@ -660,10 +652,12 @@ const submitCheckOut = async () => {
 onMounted(() => {
   updateClock();
   timer = setInterval(updateClock, 1000);
-  profileStore.loadProfile().catch(() => { });
   loadAttendance();
-  // Preload model di background agar siap sebelum kamera dinyalakan
-  loadFaceApi().catch(() => { });
+  profileStore.loadProfile().then(() => {
+    if (hasProfileReference.value) {
+      loadFaceApi().catch(() => { });
+    }
+  }).catch(() => { });
 });
 
 onUnmounted(() => {
