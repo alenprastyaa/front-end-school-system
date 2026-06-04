@@ -18,6 +18,21 @@
           </p>
         </div>
 
+        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-gray-700 dark:bg-gray-900/60">
+          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Akses Cepat</p>
+          <div class="mt-3 grid grid-cols-3 gap-2">
+            <button
+              v-for="preset in quickLoginPresets"
+              :key="preset.role"
+              type="button"
+              class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-sky-500/40 dark:hover:bg-sky-500/10 dark:hover:text-sky-200"
+              @click="fillQuickLogin(preset)"
+            >
+              {{ preset.label }}
+            </button>
+          </div>
+        </div>
+
         <div v-if="loginMode === 'password'">
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
           <input v-model="form.password" type="password" required
@@ -79,6 +94,7 @@ const isParentLoading = ref(false);
 const loginIdentifier = ref("");
 const otpSent = ref(false);
 const lockRemainingSeconds = ref(0);
+const isApplyingQuickLogin = ref(false);
 let lockCountdownTimer = null;
 const form = reactive({
   password: "",
@@ -86,6 +102,11 @@ const form = reactive({
 const otpForm = reactive({
   otp: "",
 });
+const quickLoginPresets = [
+  { role: "siswa", label: "Siswa", username: "budiman", password: "masuk123" },
+  { role: "guru", label: "Guru", username: "gurubudi", password: "masuk123" },
+  { role: "admin", label: "Admin", username: "mas", password: "masuk123" },
+];
 
 const isPhoneNumberLike = (value) => {
   const raw = String(value || "").trim();
@@ -155,6 +176,16 @@ const stopLockCountdown = () => {
 const resetOtpFlow = () => {
   otpSent.value = false;
   otpForm.otp = "";
+};
+
+const fillQuickLogin = (preset) => {
+  isApplyingQuickLogin.value = true;
+  resetOtpFlow();
+  loginIdentifier.value = preset.username;
+  form.password = preset.password;
+  window.setTimeout(() => {
+    isApplyingQuickLogin.value = false;
+  }, 0);
 };
 
 const finishLogin = (response, message = "Selamat datang, Anda berhasil masuk ke School System.") => {
@@ -341,6 +372,9 @@ const handleSubmit = async () => {
 };
 
 watch(loginIdentifier, () => {
+  if (isApplyingQuickLogin.value) {
+    return;
+  }
   otpSent.value = false;
   otpForm.otp = "";
   form.password = "";
