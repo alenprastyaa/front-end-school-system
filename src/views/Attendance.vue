@@ -1204,7 +1204,7 @@ const startLiveRecognition = async () => {
   }
 
   resetFaceVerification("loading", "Arahkan wajah ke kamera. Sistem akan mencocokkan secara otomatis.");
-  liveWarmupUntilMs = performance.now() + 5000;
+  liveWarmupUntilMs = performance.now() + 3000;
 
   const loop = async (timestamp) => {
     if (!cameraActive.value || hasCheckedInToday.value || !cameraVideoRef.value) {
@@ -1347,6 +1347,9 @@ onMounted(() => {
   timer = setInterval(updateClock, 1000);
   profileStore.loadProfile().catch(() => { });
   loadAttendance();
+  // Preload model di background agar siap sebelum kamera dinyalakan
+  loadFaceApi().catch(() => { });
+  ensureMediapipeFaceLandmarker().catch(() => { });
 });
 
 onUnmounted(() => {
