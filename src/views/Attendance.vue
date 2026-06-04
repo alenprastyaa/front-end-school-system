@@ -390,9 +390,9 @@ class FaceMeshPainter {
     const band = maxR * FaceMeshPainter.bandFrac;
     const twoBandSq = 2 * band * band;
     const accent = this.accentColor || "#38bdf8";
-    const dimColor = this._rgba("#ffffff", this.fullBright ? 0.22 : 0.09);
-    const glowColor = this._rgba(accent, 0.55);
-    const peakColor = this._rgba("#ffffff", 0.75);
+    const dimColor = this._rgba("#ffffff", this.fullBright ? 0.15 : 0.07);
+    const glowColor = this._rgba(accent, 0.4);
+    const peakColor = this._rgba("#ffffff", 0.6);
 
     const amt = new Array(points.length).fill(progressFloor);
     const ringR = [];
@@ -509,11 +509,11 @@ class FaceMeshPainter {
         }
       };
 
-      drawConnections(meshConnections, 0.26, 0.4);
-      drawConnections(faceOval, 0.22, 0.65);
-      drawConnections(lips, 0.18, 0.5);
-      drawConnections(leftEye, 0.15, 0.45);
-      drawConnections(rightEye, 0.15, 0.45);
+      drawConnections(meshConnections.filter((_, i) => i % 3 === 0), 0.22, 0.35);
+      drawConnections(faceOval, 0.18, 0.5);
+      drawConnections(lips, 0.15, 0.4);
+      drawConnections(leftEye, 0.13, 0.38);
+      drawConnections(rightEye, 0.13, 0.38);
 
       if (!hasMediaPipeMesh && points.length >= 68) {
         const drawLoop = (indices, alphaBoost, strokeWidth) => {
@@ -593,8 +593,10 @@ class FaceMeshPainter {
       ctx.restore();
     }
 
-    const baseDotR = this._clamp(Math.min(size.width, size.height) / 560, 0.7, 1.1);
+    const isMediaPipeDots = points.length > 200;
+    const baseDotR = this._clamp(Math.min(size.width, size.height) / 620, 0.6, 0.9);
     for (let i = 0; i < points.length; i += 1) {
+      if (isMediaPipeDots && i % 3 !== 0 && regionHighlight[i] === 0) continue;
       const point = mapped[i];
       if (!inScreen(point)) continue;
       const w = this._clamp(amt[i], 0, 1.2);
@@ -610,7 +612,7 @@ class FaceMeshPainter {
         }
       }
 
-      const radius = baseDotR + w * 0.75;
+      const radius = baseDotR + w * 0.55;
 
       ctx.beginPath();
       ctx.fillStyle = color;
