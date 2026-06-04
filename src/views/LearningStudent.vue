@@ -327,14 +327,16 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, watch } from "vue";
 import { Icon } from "@iconify/vue";
 import { useRoute } from "vue-router";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatDateTime } from "@/utils/date";
 import { normalizePublicUrl } from "@/utils/url";
-import { useMasterDataStore } from "@/store/masterData";
+import { storeToRefs } from "pinia";
+import { useStudentStore } from "@/store/student";
+import { useStudentLearningStore } from "@/store/studentLearning";
 
 const props = defineProps({
   mode: {
@@ -344,21 +346,19 @@ const props = defineProps({
 });
 
 const route = useRoute();
-const subjects = ref([]);
-const masterDataStore = useMasterDataStore();
-const selectedSubject = ref(null);
-const materials = ref([]);
-const assignments = ref([]);
-const submissionTarget = ref(null);
-const submissionFile = ref(null);
-const isSubmitting = ref(false);
-const subjectError = ref("");
-const message = ref("");
-const isError = ref(false);
-
-const submissionForm = reactive({
-  submission_text: "",
-});
+const studentStore = useStudentStore();
+const studentLearningStore = useStudentLearningStore();
+const { subjects, selectedSubject, subjectError } = storeToRefs(studentStore);
+const {
+  materials,
+  assignments,
+  submissionTarget,
+  submissionFile,
+  isSubmitting,
+  message,
+  isError,
+} = storeToRefs(studentLearningStore);
+const submissionForm = studentLearningStore.submissionForm;
 
 const isMaterialsMode = computed(() => props.mode !== "assignments");
 const isAssignmentsMode = computed(() => props.mode === "assignments");
@@ -396,7 +396,7 @@ const loadSubjects = async () => {
   subjectError.value = "";
 
   try {
-    subjects.value = await masterDataStore.getStudentSubjects();
+    subjects.value = await studentStore.loadStudentSubjects();
     const requestedSubject = subjects.value.find((item) => Number(item.id) === routeSubjectId());
     if (requestedSubject) {
       await selectSubject(requestedSubject);
@@ -449,7 +449,7 @@ const loadSubjectData = async () => {
 };
 
 const selectSubject = async (subject) => {
-  selectedSubject.value = subject;
+  studentStore.setSelectedSubject(subject);
   submissionTarget.value = null;
   submissionForm.submission_text = "";
   submissionFile.value = null;

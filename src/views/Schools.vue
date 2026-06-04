@@ -199,7 +199,15 @@
                     type="checkbox"
                     class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
                   />
-                  Absensi
+                  Absensi Siswa
+                </label>
+                <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <input
+                    v-model="form.attendance_teacher_module_enabled"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                  />
+                  Absensi Guru
                 </label>
                 <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
                   <input
@@ -542,6 +550,7 @@ const form = reactive({
   name: "",
   inventory_module_enabled: true,
   attendance_module_enabled: true,
+  attendance_teacher_module_enabled: true,
   attendance_latitude: "",
   attendance_longitude: "",
   attendance_radius_meters: "",
@@ -592,6 +601,7 @@ const resetForm = () => {
   form.name = "";
   form.inventory_module_enabled = true;
   form.attendance_module_enabled = true;
+  form.attendance_teacher_module_enabled = true;
   form.attendance_latitude = "";
   form.attendance_longitude = "";
   form.attendance_radius_meters = "";
@@ -635,6 +645,7 @@ const loadSchools = async () => {
           ...item,
           inventory_module_enabled: item.inventory_module_enabled !== false,
           attendance_module_enabled: item.attendance_module_enabled !== false,
+          attendance_teacher_module_enabled: item.attendance_teacher_module_enabled !== false,
           attendance_late_after_time: item.attendance_late_after_time || "",
           attendance_checkout_deadline: item.attendance_checkout_deadline || "",
           official_exam_module_enabled: item.official_exam_module_enabled !== false,
@@ -662,6 +673,7 @@ const submitSchool = async () => {
     payload.append("name", form.name);
     payload.append("inventory_module_enabled", String(Boolean(form.inventory_module_enabled)));
     payload.append("attendance_module_enabled", String(Boolean(form.attendance_module_enabled)));
+    payload.append("attendance_teacher_module_enabled", String(Boolean(form.attendance_teacher_module_enabled)));
     if (String(form.attendance_latitude || "").trim() !== "") {
       payload.append("attendance_latitude", String(form.attendance_latitude).trim());
     } else if (editingId.value) {
@@ -718,6 +730,7 @@ const editSchool = (item) => {
   form.name = item.name || "";
   form.inventory_module_enabled = item.inventory_module_enabled !== false;
   form.attendance_module_enabled = item.attendance_module_enabled !== false;
+  form.attendance_teacher_module_enabled = item.attendance_teacher_module_enabled !== false;
   form.attendance_latitude = item.attendance_latitude == null ? "" : String(item.attendance_latitude);
   form.attendance_longitude = item.attendance_longitude == null ? "" : String(item.attendance_longitude);
   form.attendance_radius_meters = item.attendance_radius_meters == null ? "" : String(item.attendance_radius_meters);

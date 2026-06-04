@@ -1295,11 +1295,12 @@ import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatDateTime, formatStoredDateTime, parseDateValue } from "@/utils/date";
-import { useMasterDataStore } from "@/store/masterData";
+import { useTeacherStore } from "@/store/teacher";
+import { storeToRefs } from "pinia";
 import { uploadFileDirect } from "@/api/upload";
 
-const subjects = ref([]);
-const masterDataStore = useMasterDataStore();
+const teacherStore = useTeacherStore();
+const { subjects } = storeToRefs(teacherStore);
 const selectedSubject = ref(null);
 const subjectDropdownOpen = ref(false);
 const subjectDropdownRef = ref(null);
@@ -1363,7 +1364,31 @@ const questionPreviewForm = reactive({
   correct_option: 0,
   rubric: "",
 });
-
+const assignmentForm = reactive({
+  title: "",
+  description: "",
+  due_date: "",
+  assignment_type: "MCQ",
+  shuffle_questions: false,
+  question_duration_seconds: 10,
+  selected_question_bank_ids: [],
+});
+const questionBankForm = reactive({
+  question_type: "MCQ",
+  question_text: "",
+  question_image_url: "",
+  options: ["", "", "", "", ""],
+  correct_option: 0,
+  rubric: "",
+});
+const aiGeneratorForm = reactive({
+  question_type: "MCQ",
+  question_count: 5,
+  difficulty: "MENENGAH",
+  topic: "",
+  include_illustration: false,
+  additional_instructions: "",
+});
 const questionBankImportFileName = computed(() => questionBankImportFile.value?.name || "");
 
 const slugifyFilename = (value, fallback = "file") => {
@@ -1399,25 +1424,6 @@ onUnmounted(() => {
     clearInterval(aiGenerationStageInterval);
     aiGenerationStageInterval = null;
   }
-});
-
-const assignmentForm = reactive({
-  title: "",
-  description: "",
-  due_date: "",
-  assignment_type: "MCQ",
-  shuffle_questions: false,
-  question_duration_seconds: 10,
-  selected_question_bank_ids: [],
-});
-
-const questionBankForm = reactive({
-  question_type: "MCQ",
-  question_text: "",
-  question_image_url: "",
-  options: ["", "", "", "", ""],
-  correct_option: 0,
-  rubric: "",
 });
 
 const QUESTION_IMAGE_MARKER = "[[QUESTION_IMAGE_URL]]";
@@ -1606,14 +1612,6 @@ const inferPhaseFromGrade = (grade) => {
   return "Fase belum terbaca";
 };
 
-const aiGeneratorForm = reactive({
-  question_type: "MCQ",
-  question_count: 5,
-  difficulty: "MENENGAH",
-  topic: "",
-  include_illustration: false,
-  additional_instructions: "",
-});
 const generatedAiQuestions = ref([]);
 const selectedGeneratedAiQuestionIds = ref([]);
 const aiGenerationStageIndex = ref(0);
@@ -2055,7 +2053,7 @@ const openQuizOverview = async (assignment) => {
 const loadSubjects = async () => {
   subjectError.value = "";
   try {
-    subjects.value = await masterDataStore.getTeacherSubjects();
+    subjects.value = await teacherStore.loadTeacherSubjects();
     if (!selectedSubject.value && subjects.value.length > 0) {
       await selectSubject(subjects.value[0]);
     }

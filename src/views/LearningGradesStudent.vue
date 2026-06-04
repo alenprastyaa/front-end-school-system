@@ -113,50 +113,22 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted } from "vue";
 import VueApexCharts from "vue3-apexcharts";
-import { api } from "@/api";
 import { formatDateTime } from "@/utils/date";
-import { pushToast } from "@/composables/useToast";
+import { storeToRefs } from "pinia";
+import { useStudentGradesStore } from "@/store/studentGrades";
 
-const rows = ref([]);
-const summary = ref({
-  total_assignments: 0,
-  submitted_count: 0,
-  pending_count: 0,
-  graded_count: 0,
-  average_score: null,
-});
-
-const keyword = ref("");
-const subjectFilter = ref("");
-const statusFilter = ref("");
-
-const subjectOptions = computed(() => {
-  const set = new Set(rows.value.map((item) => item.subject_name).filter(Boolean));
-  return Array.from(set).sort((a, b) => String(a).localeCompare(String(b)));
-});
-
-const filteredRows = computed(() => {
-  const q = keyword.value.trim().toLowerCase();
-  return rows.value.filter((item) => {
-    const matchKeyword = !q
-      || String(item.subject_name || "").toLowerCase().includes(q)
-      || String(item.title || "").toLowerCase().includes(q);
-    const matchSubject = !subjectFilter.value || item.subject_name === subjectFilter.value;
-
-    let matchStatus = true;
-    if (statusFilter.value === "graded") {
-      matchStatus = item.score !== null && item.score !== undefined;
-    } else if (statusFilter.value === "submitted") {
-      matchStatus = isSubmittedRow(item) && (item.score === null || item.score === undefined);
-    } else if (statusFilter.value === "pending") {
-      matchStatus = !isSubmittedRow(item);
-    }
-
-    return matchKeyword && matchSubject && matchStatus;
-  });
-});
+const studentGradesStore = useStudentGradesStore();
+const {
+  rows,
+  summary,
+  keyword,
+  subjectFilter,
+  statusFilter,
+  subjectOptions,
+  filteredRows,
+} = storeToRefs(studentGradesStore);
 
 const chartData = computed(() => {
   const gradedItems = filteredRows.value
@@ -233,22 +205,8 @@ const chartOptions = computed(() => {
   };
 });
 
-const loadGrades = async () => {
-  try {
-    const response = await api.get("/learning/grades/student");
-    rows.value = Array.isArray(response?.data?.data) ? response.data.data : [];
-    summary.value = response?.data?.summary || summary.value;
-  } catch (error) {
-    pushToast({
-      title: "Gagal Memuat Nilai",
-      message: error.message || "Terjadi kesalahan.",
-      type: "error",
-    });
-  }
-};
-
 const isSubmittedRow = (row) =>
   Boolean(row?.is_submitted || row?.submitted_at || row?.submission_id);
 
-onMounted(loadGrades);
+onMounted(() => studentGradesStore.loadGrades());
 </script>

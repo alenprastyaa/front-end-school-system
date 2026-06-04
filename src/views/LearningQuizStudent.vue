@@ -720,13 +720,15 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, watch } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import { api } from "@/api";
 import { formatDateTime, parseDateValue } from "@/utils/date";
 import { pushToast } from "@/composables/useToast";
 import { setLayoutChromeHidden } from "@/composables/useLayoutChrome";
-import { useMasterDataStore } from "@/store/masterData";
+import { storeToRefs } from "pinia";
+import { useStudentStore } from "@/store/student";
+import { useStudentLearningStore } from "@/store/studentLearning";
 
 const props = defineProps({
   mode: {
@@ -736,27 +738,30 @@ const props = defineProps({
 });
 
 const route = useRoute();
-const subjects = ref([]);
-const masterDataStore = useMasterDataStore();
-const selectedSubject = ref(null);
-const assignments = ref([]);
-const submissionTarget = ref(null);
-const isSubmitting = ref(false);
-const subjectError = ref("");
-const message = ref("");
-const isError = ref(false);
-const activeQuestionIndex = ref(0);
-const questionTimeLeftMs = ref(0);
-const violationCount = ref(0);
-const antiCheatMessage = ref("");
-const fullscreenRecoveryRequired = ref(false);
-const pseudoFullscreenActive = ref(false);
-const pseudoViewportHeight = ref(null);
-const examCodeModalOpen = ref(false);
-const confirmSubmitModalOpen = ref(false);
-const pendingExamAssignmentForCode = ref(null);
-const reviewTarget = ref(null);
-const maxViolations = ref(3);
+const studentStore = useStudentStore();
+const studentLearningStore = useStudentLearningStore();
+const { subjects, selectedSubject, subjectError } = storeToRefs(studentStore);
+const {
+  assignments,
+  submissionTarget,
+  isSubmitting,
+  message,
+  isError,
+  activeQuestionIndex,
+  questionTimeLeftMs,
+  violationCount,
+  antiCheatMessage,
+  fullscreenRecoveryRequired,
+  pseudoFullscreenActive,
+  pseudoViewportHeight,
+  examCodeModalOpen,
+  confirmSubmitModalOpen,
+  pendingExamAssignmentForCode,
+  reviewTarget,
+  maxViolations,
+} = storeToRefs(studentLearningStore);
+const submissionForm = studentLearningStore.submissionForm;
+const examCodeForm = studentLearningStore.examCodeForm;
 let questionTimerInterval = null;
 let antiCheatListenersBound = false;
 let lastViolationAt = 0;
@@ -780,13 +785,7 @@ const resolveViolationType = (reason) => {
   return "OTHER";
 };
 
-const submissionForm = reactive({
-  answers: [],
-});
-
-const examCodeForm = reactive({
-  code: "",
-});
+submissionForm.answers = [];
 
 const isExamPage = computed(() => props.mode === "exam");
 const listTitle = computed(() => (isExamPage.value ? "Pilih Mata Pelajaran Ujian" : "Pilih Mata Pelajaran"));
@@ -1615,7 +1614,7 @@ const initializeAttemptSession = (assignment, startPayload) => {
 const loadSubjects = async () => {
   subjectError.value = "";
   try {
-    subjects.value = await masterDataStore.getStudentSubjects();
+    subjects.value = await studentStore.loadStudentSubjects();
     const requestedSubject = subjects.value.find((item) => Number(item.id) === routeSubjectId());
     if (requestedSubject) {
       await selectSubject(requestedSubject);
@@ -1648,7 +1647,7 @@ const loadSubjectData = async () => {
 };
 
 const selectSubject = async (subject) => {
-  selectedSubject.value = subject;
+  studentStore.setSelectedSubject(subject);
   stopQuestionTimer();
   unbindLockedNavigation();
   unbindAntiCheatListeners();

@@ -540,33 +540,39 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
 import { Icon } from "@iconify/vue";
+import { storeToRefs } from "pinia";
 import { api } from "@/api";
 import { formatDate, formatDateTime, formatTime } from "@/utils/date";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
+import { useTeacherStudentsStore } from "@/store/teacherStudents";
 
-const homeroomClass = ref(null);
-const students = ref([]);
-const search = ref("");
-const currentPage = ref(1);
-const pageSize = ref(10);
-const selectedStudent = ref(null);
-const attendances = ref([]);
-const receipts = ref([]);
-const showAttendanceModal = ref(false);
-const showReceiptModal = ref(false);
-const showCheckedInModal = ref(false);
-const showAbsentModal = ref(false);
-const summaryError = ref("");
-const listError = ref("");
-const attendanceError = ref("");
-const receiptError = ref("");
+const teacherStudentsStore = useTeacherStudentsStore();
+const {
+  homeroomClass,
+  students,
+  search,
+  currentPage,
+  pageSize,
+  selectedStudent,
+  attendances,
+  receipts,
+  showAttendanceModal,
+  showReceiptModal,
+  showCheckedInModal,
+  showAbsentModal,
+  summaryError,
+  listError,
+  attendanceError,
+  receiptError,
+  studentTableSort,
+  checkedInTableSort,
+  absentTableSort,
+  attendanceTableSort,
+  receiptTableSort,
+} = storeToRefs(teacherStudentsStore);
 
 // Table Sort States
-const studentTableSort = createSortState("full_name");
-const checkedInTableSort = createSortState("clock_in", "desc");
-const absentTableSort = createSortState("full_name");
-const attendanceTableSort = createSortState("attendance_date", "desc");
-const receiptTableSort = createSortState("created_at", "desc");
+// State lives in Pinia; helper functions keep working with the same object shape.
 
 const normalizedSearch = computed(() => search.value.trim().toLowerCase());
 

@@ -240,181 +240,85 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { api } from "@/api";
-import { pushToast } from "@/composables/useToast";
-import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 import SuccessModal from "@/components/SuccessModal.vue";
-import { useMasterDataStore } from "@/store/masterData";
+import { useAdminStore } from "@/store/admin";
+import { storeToRefs } from "pinia";
 
 const successModal = ref(null);
-const masterDataStore = useMasterDataStore();
-const className = ref("");
-const waliGuruId = ref("");
-const classes = ref([]);
-const currentPage = ref(1);
-const pageSize = 10;
-const totalClasses = ref(0);
-const teachers = ref([]);
-const editingClassId = ref(null);
-const showModal = ref(false);
-const isSubmitting = ref(false);
-const tableSort = createSortState("class_name");
+const adminStore = useAdminStore();
+const {
+  classesForm,
+  classes,
+  classesTeachers: teachers,
+  classesPage: currentPage,
+  classesPageSize: pageSize,
+  classesTotal: totalClasses,
+  classesEditingId: editingClassId,
+  classesShowModal: showModal,
+  classesSubmitting: isSubmitting,
+  classesDeleteModalOpen: isDeleteModalOpen,
+  classesDeleting: isDeletingClass,
+  classesToDelete: classToDelete,
+  classesPaginated: paginatedClasses,
+  classesTotalPages: totalPages,
+  classesSortKey: sortKey,
+  classesSortDirection: sortDirection,
+} = storeToRefs(adminStore);
 
-// Delete state
-const isDeleteModalOpen = ref(false);
-const isDeletingClass = ref(false);
-const classToDelete = ref(null);
+const className = computed({
+  get: () => classesForm.value.className,
+  set: (value) => {
+    classesForm.value.className = value;
+  },
+});
 
-const sortedClasses = computed(() =>
-  sortItems(classes.value, tableSort, {
-    wali_guru_name: (item) => item.wali_guru_name || "",
-    wali_guru_email: (item) => item.wali_guru_email || "",
-    wali_guru_phone_number: (item) => item.wali_guru_phone_number || "",
-  }),
-);
+const waliGuruId = computed({
+  get: () => classesForm.value.waliGuruId,
+  set: (value) => {
+    classesForm.value.waliGuruId = value;
+  },
+});
 
-const totalPages = computed(() =>
-  Math.max(1, Math.ceil(totalClasses.value / pageSize)),
-);
-
-const paginatedClasses = computed(() => sortedClasses.value);
-
-const handleSort = (key) => { toggleSort(tableSort, key); };
-const goToPrevPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value -= 1;
-    loadClasses();
-  }
+const handleSort = (key) => {
+  adminStore.toggleClassSort(key);
 };
+
+const goToPrevPage = () => {
+  adminStore.goToClassPage(Number(currentPage.value) - 1);
+};
+
 const goToNextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value += 1;
-    loadClasses();
-  }
+  adminStore.goToClassPage(Number(currentPage.value) + 1);
 };
 
 const sortIndicator = (key) => {
-  if (tableSort.key !== key) return "↕";
-  return tableSort.direction === "asc" ? "▲" : "▼";
+  if (sortKey.value !== key) return "↕";
+  return sortDirection.value === "asc" ? "▲" : "▼";
 };
 
-const loadClasses = async () => {
-  try {
-    const response = await api.get("/class", {
-      params: {
-        paginate: 1,
-        page: currentPage.value,
-        limit: pageSize,
-      },
-    });
-    classes.value = response?.data?.data || [];
-    totalClasses.value = Number(response?.data?.total || 0);
-  } catch (error) {
-    pushToast({
-      title: "Gagal Memuat Data Kelas",
-      message: error.message,
-      type: "error",
-    });
-  }
-};
-
-const loadTeachers = async () => {
-  teachers.value = await masterDataStore.getTeacherUsers();
-};
-
-const resetForm = () => {
-  className.value = "";
-  waliGuruId.value = "";
-  editingClassId.value = null;
-};
-
-const closeModal = () => {
-  showModal.value = false;
-  resetForm();
-};
-
-const openCreateModal = () => {
-  resetForm();
-  showModal.value = true;
-};
-
-const startEdit = (item) => {
-  editingClassId.value = item.id;
-  className.value = item.class_name;
-  waliGuruId.value = item.wali_guru_id || "";
-  showModal.value = true;
-};
-
-const openDeleteModal = (item) => {
-  classToDelete.value = item;
-  isDeleteModalOpen.value = true;
-};
-
-const closeDeleteModal = () => {
-  if (isDeletingClass.value) return;
-  isDeleteModalOpen.value = false;
-  classToDelete.value = null;
-};
-
+const loadClasses = () => adminStore.loadClasses();
+const loadTeachers = () => adminStore.loadClassTeachers();
+const resetForm = () => adminStore.resetClassForm();
+const closeModal = () => adminStore.closeClassModal();
+const openCreateModal = () => adminStore.openClassCreateModal();
+const startEdit = (item) => adminStore.startEditClass(item);
+const openDeleteModal = (item) => adminStore.openClassDeleteModal(item);
+const closeDeleteModal = () => adminStore.closeClassDeleteModal();
 const confirmDeleteClass = async () => {
-  if (!classToDelete.value?.id) return;
-  isDeletingClass.value = true;
-  try {
-    const res = await api.delete(`/class/${classToDelete.value.id}`);
-    successModal.value.show(res?.message || "Kelas berhasil dihapus");
-    isDeleteModalOpen.value = false;
-    classToDelete.value = null;
-    masterDataStore.invalidate(["classes"]);
-    await loadClasses();
-  } catch (error) {
-    isDeleteModalOpen.value = false;
-    pushToast({
-      title: "Gagal Menghapus Kelas",
-      message: error.message,
-      type: "error",
-    });
-  } finally {
-    isDeletingClass.value = false;
+  const response = await adminStore.deleteClass();
+  if (response) {
+    successModal.value.show(response?.message || "Kelas berhasil dihapus");
   }
 };
-
 const submitClass = async () => {
-  isSubmitting.value = true;
-
-  try {
-    const payload = {
-      class_name: className.value,
-      wali_guru_id: waliGuruId.value ? Number(waliGuruId.value) : null,
-    };
-
-    const response = editingClassId.value
-      ? await api.put(`/class/${editingClassId.value}`, payload)
-      : await api.post("/class", payload);
-
-    successModal.value.show(response?.message || (editingClassId.value ? "Kelas berhasil diupdate" : "Kelas berhasil dibuat"));
-    masterDataStore.invalidate(["classes"]);
-    await loadClasses();
-    closeModal();
-  } catch (error) {
-    pushToast({
-      title: editingClassId.value ? "Gagal Memperbarui Kelas" : "Gagal Membuat Kelas",
-      message: error.message,
-      type: "error",
-    });
-  } finally {
-    isSubmitting.value = false;
+  const isEditing = !!editingClassId.value;
+  const response = await adminStore.saveClass();
+  if (response) {
+    successModal.value.show(response?.message || (isEditing ? "Kelas berhasil diupdate" : "Kelas berhasil dibuat"));
   }
 };
 
 onMounted(async () => {
-  try {
-    await Promise.all([loadClasses(), loadTeachers()]);
-  } catch (error) {
-    pushToast({
-      title: "Gagal Memuat Halaman Kelas",
-      message: error.message,
-      type: "error",
-    });
-  }
+  await Promise.all([loadClasses(), loadTeachers()]);
 });
 </script>

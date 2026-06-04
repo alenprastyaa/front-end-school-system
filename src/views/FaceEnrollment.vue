@@ -107,15 +107,20 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from "vue";
+import { storeToRefs } from "pinia";
 import { useProfileStore } from "@/store/profile";
+import { useStudentFaceEnrollmentStore } from "@/store/studentFaceEnrollment";
 import { pushToast } from "@/composables/useToast";
 
 const profileStore = useProfileStore();
-const faceReferenceFile = ref(null);
-const faceReferencePreview = ref("");
-const isSaving = ref(false);
-const isCameraLoading = ref(false);
-const cameraActive = ref(false);
+const faceEnrollmentStore = useStudentFaceEnrollmentStore();
+const {
+  faceReferenceFile,
+  faceReferencePreview,
+  isSaving,
+  isCameraLoading,
+  cameraActive,
+} = storeToRefs(faceEnrollmentStore);
 const cameraVideoRef = ref(null);
 const captureCanvasRef = ref(null);
 let faceApiLoadPromise = null;

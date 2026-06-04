@@ -1,18 +1,16 @@
 <template>
-  <div class="min-h-0 overflow-hidden text-[#111b21] dark:text-[#e9edef]" :class="unifiedMode ? 'contents' : 'h-full dark:bg-[#0b141a]'">
+  <div class="min-h-0 overflow-hidden text-[#111b21] dark:text-[#e9edef]"
+    :class="unifiedMode ? 'contents' : 'h-full dark:bg-[#0b141a]'">
     <main class="mx-auto flex min-h-0 w-full flex-col" :class="unifiedMode ? 'contents' : 'h-full p-0 lg:p-5'">
-      <div class="min-h-0 overflow-hidden shadow-sm" :class="unifiedMode ? 'contents' : 'flex-1 bg-white dark:bg-[#111b21] lg:rounded-md'">
+      <div class="min-h-0 overflow-hidden shadow-sm"
+        :class="unifiedMode ? 'contents' : 'flex-1 bg-white dark:bg-[#111b21] lg:rounded-md'">
         <div class="min-h-0" :class="unifiedMode ? 'contents' : 'grid h-full lg:grid-cols-[390px_minmax(0,1fr)]'">
           <aside v-if="!unifiedMode"
             class="flex min-h-0 flex-col border-r border-[#e9edef] bg-white dark:border-[#222e35] dark:bg-[#111b21]"
             :class="{ hidden: mobileChatOpen, 'lg:flex': true }">
             <header class="flex h-[59px] shrink-0 items-center justify-between bg-[#f0f2f5] px-4 dark:bg-[#202c33]">
               <div class="flex min-w-0 items-center gap-3">
-                <button type="button"
-                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
-                  aria-label="Kembali ke dashboard" @click="backToDashboard">
-                  <Icon icon="mdi:arrow-left" class="h-5 w-5" />
-                </button>
+
                 <div
                   class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#00a884] text-sm font-bold text-white">
                   <Icon icon="ph:chat-circle-dots-fill" class="h-5 w-5" />
@@ -91,12 +89,11 @@
             </div>
           </aside>
 
-          <section
-            class="flex min-h-0 flex-col overflow-hidden bg-[#efeae2] private-chat-wallpaper dark:bg-[#0b141a]"
+          <section class="flex min-h-0 flex-col overflow-hidden bg-[#efeae2] private-chat-wallpaper dark:bg-[#0b141a]"
             :class="unifiedMode ? 'flex-1 w-full' : 'h-full ' + (mobileChatOpen ? '' : 'hidden lg:flex')">
             <template v-if="selectedPeer">
               <header class="z-10 flex h-[59px] shrink-0 items-center gap-3 bg-[#f0f2f5] px-3 dark:bg-[#202c33]">
-                <button type="button"
+                <button v-if="!unifiedMode" type="button"
                   class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10 lg:hidden"
                   @click="unifiedMode ? emit('back') : backToPeerList">
                   <Icon icon="mdi:arrow-left" class="h-6 w-6" />
@@ -119,8 +116,7 @@
                 </button>
                 <button type="button"
                   class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#25d366] text-white transition hover:bg-[#20c15a] disabled:cursor-not-allowed disabled:opacity-40"
-                  :disabled="!selectedPeer || callState !== 'idle'"
-                  @click="startVoiceCall">
+                  :disabled="!selectedPeer || callState !== 'idle'" @click="startVoiceCall">
                   <Icon icon="ph:phone-fill" class="h-4 w-4" />
                 </button>
               </header>
@@ -449,73 +445,80 @@
       </div>
     </div>
 
-    <div v-if="callState !== 'idle' || incomingCall" class="fixed inset-0 z-[90] flex items-center justify-center bg-[#111b21]/90 px-4 py-6 backdrop-blur-sm"
+    <div v-if="callState !== 'idle' || incomingCall"
+      class="fixed inset-0 z-[90] flex items-center justify-center bg-[#111b21]/90 px-4 py-6 backdrop-blur-sm"
       @click.self="callState === 'incoming' ? rejectIncomingCall() : null">
       <Transition name="call-dialog" appear @after-enter="focusCallDialog">
-        <div ref="callDialogRef" tabindex="-1" role="dialog" aria-modal="true" class="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b141a] text-white shadow-2xl">
-          <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(37,211,102,0.28),_transparent_45%),linear-gradient(180deg,rgba(17,27,33,0.98),rgba(11,20,26,0.98))]"></div>
+        <div ref="callDialogRef" tabindex="-1" role="dialog" aria-modal="true"
+          class="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b141a] text-white shadow-2xl">
+          <div
+            class="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(37,211,102,0.28),_transparent_45%),linear-gradient(180deg,rgba(17,27,33,0.98),rgba(11,20,26,0.98))]">
+          </div>
           <div class="relative p-6">
-          <div class="flex items-center justify-between">
-            <div class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
-              <span class="h-2 w-2 rounded-full" :class="callState === 'active' ? 'bg-emerald-400' : callState === 'incoming' ? 'bg-amber-400 animate-pulse' : 'bg-sky-400 animate-pulse'"></span>
-              {{ callStateLabel }}
+            <div class="flex items-center justify-between">
+              <div
+                class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
+                <span class="h-2 w-2 rounded-full"
+                  :class="callState === 'active' ? 'bg-emerald-400' : callState === 'incoming' ? 'bg-amber-400 animate-pulse' : 'bg-sky-400 animate-pulse'"></span>
+                {{ callStateLabel }}
+              </div>
+              <button v-if="callState === 'active'" type="button"
+                class="rounded-full bg-white/10 p-2 text-white transition hover:bg-white/15"
+                :title="isSpeakerEnabled ? 'Matikan loudspeaker' : 'Aktifkan loudspeaker'" @click="toggleSpeaker">
+                <Icon :icon="isSpeakerEnabled ? 'mdi:volume-high' : 'mdi:volume-off'" class="h-5 w-5" />
+              </button>
+              <button v-if="callState === 'active'" type="button"
+                class="rounded-full bg-white/10 p-2 text-white transition hover:bg-white/15" title="Mute mikrofon"
+                @click="toggleMute">
+                <Icon :icon="isCallMuted ? 'ph:microphone-slash-fill' : 'ph:microphone-fill'" class="h-5 w-5" />
+              </button>
             </div>
-            <button v-if="callState === 'active'" type="button"
-              class="rounded-full bg-white/10 p-2 text-white transition hover:bg-white/15"
-              :title="isSpeakerEnabled ? 'Matikan loudspeaker' : 'Aktifkan loudspeaker'"
-              @click="toggleSpeaker">
-              <Icon :icon="isSpeakerEnabled ? 'mdi:volume-high' : 'mdi:volume-off'" class="h-5 w-5" />
-            </button>
-            <button v-if="callState === 'active'" type="button"
-              class="rounded-full bg-white/10 p-2 text-white transition hover:bg-white/15"
-              title="Mute mikrofon"
-              @click="toggleMute">
-              <Icon :icon="isCallMuted ? 'ph:microphone-slash-fill' : 'ph:microphone-fill'" class="h-5 w-5" />
-            </button>
-          </div>
 
-          <div class="mt-10 flex flex-col items-center text-center">
-            <div class="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/10 shadow-lg">
-              <img v-if="callPeerAvatar" :src="callPeerAvatar" :alt="callPeerName" class="h-full w-full object-cover" />
-              <span v-else class="text-3xl font-semibold">{{ callPeerInitial }}</span>
+            <div class="mt-10 flex flex-col items-center text-center">
+              <div
+                class="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/10 shadow-lg">
+                <img v-if="callPeerAvatar" :src="callPeerAvatar" :alt="callPeerName"
+                  class="h-full w-full object-cover" />
+                <span v-else class="text-3xl font-semibold">{{ callPeerInitial }}</span>
+              </div>
+              <h3 class="mt-6 text-2xl font-semibold tracking-tight">{{ callPeerName || "Panggilan suara" }}</h3>
+              <p class="mt-2 text-sm text-white/65">
+                {{ callStatusMessage }}
+              </p>
+              <p v-if="callState === 'active'" class="mt-3 text-sm font-medium text-emerald-300">
+                {{ callDurationLabel }}
+              </p>
             </div>
-            <h3 class="mt-6 text-2xl font-semibold tracking-tight">{{ callPeerName || "Panggilan suara" }}</h3>
-            <p class="mt-2 text-sm text-white/65">
-              {{ callStatusMessage }}
-            </p>
-            <p v-if="callState === 'active'" class="mt-3 text-sm font-medium text-emerald-300">
-              {{ callDurationLabel }}
-            </p>
-          </div>
 
-          <div class="mt-8 flex items-center justify-center gap-4">
-            <button v-if="callState === 'incoming'" type="button"
-              class="flex h-14 w-14 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg transition hover:bg-rose-400"
-              @click="rejectIncomingCall">
-              <Icon icon="ph:phone-x-fill" class="h-6 w-6" />
-            </button>
-            <button v-if="callState === 'incoming'" type="button"
-              class="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition hover:bg-emerald-400"
-              @click="acceptIncomingCall">
-              <Icon icon="ph:phone-call-fill" class="h-6 w-6" />
-            </button>
-            <button v-if="callState === 'dialing'" type="button"
-              class="flex h-14 w-14 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg transition hover:bg-rose-400"
-              @click="endVoiceCall">
-              <Icon icon="ph:phone-x-fill" class="h-6 w-6" />
-            </button>
-            <button v-if="callState === 'connecting' || callState === 'active'" type="button"
-              class="flex h-14 w-14 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg transition hover:bg-rose-400"
-              @click="endVoiceCall">
-              <Icon icon="ph:phone-x-fill" class="h-6 w-6" />
-            </button>
-          </div>
+            <div class="mt-8 flex items-center justify-center gap-4">
+              <button v-if="callState === 'incoming'" type="button"
+                class="flex h-14 w-14 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg transition hover:bg-rose-400"
+                @click="rejectIncomingCall">
+                <Icon icon="ph:phone-x-fill" class="h-6 w-6" />
+              </button>
+              <button v-if="callState === 'incoming'" type="button"
+                class="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition hover:bg-emerald-400"
+                @click="acceptIncomingCall">
+                <Icon icon="ph:phone-call-fill" class="h-6 w-6" />
+              </button>
+              <button v-if="callState === 'dialing'" type="button"
+                class="flex h-14 w-14 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg transition hover:bg-rose-400"
+                @click="endVoiceCall">
+                <Icon icon="ph:phone-x-fill" class="h-6 w-6" />
+              </button>
+              <button v-if="callState === 'connecting' || callState === 'active'" type="button"
+                class="flex h-14 w-14 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg transition hover:bg-rose-400"
+                @click="endVoiceCall">
+                <Icon icon="ph:phone-x-fill" class="h-6 w-6" />
+              </button>
+            </div>
           </div>
         </div>
       </Transition>
     </div>
 
-    <audio ref="remoteAudioRef" autoplay playsinline class="pointer-events-none fixed left-0 top-0 h-px w-px opacity-0"></audio>
+    <audio ref="remoteAudioRef" autoplay playsinline
+      class="pointer-events-none fixed left-0 top-0 h-px w-px opacity-0"></audio>
   </div>
 </template>
 
@@ -531,6 +534,7 @@ import { formatChatDateKey, formatChatDateSeparator, formatChatShortDate, format
 import { normalizePublicUrl } from "@/utils/url";
 import { useRealtimeStore } from "@/store/realtime";
 import { useSidebar } from "@/store/sidebar";
+import { useTeacherChatStore } from "@/store/teacherChat";
 
 const props = defineProps({
   unifiedMode: { type: Boolean, default: false },
@@ -544,76 +548,78 @@ const router = useRouter();
 const realtimeStore = useRealtimeStore();
 const sidebarStore = useSidebar();
 const { privateChatSummaryItems } = storeToRefs(sidebarStore);
-
-const search = ref("");
-const peers = ref([]);
-const searchedPeers = ref([]);
-const selectedPeer = ref(null);
-const messages = ref([]);
-const composer = ref("");
-const isLoadingMessages = ref(false);
-const isSendingMessage = ref(false);
-const isSearchingContacts = ref(false);
-const mobileChatOpen = ref(false);
-const messageListRef = ref(null);
-const bottomAnchorRef = ref(null);
-const composerBarRef = ref(null);
-const attachmentInputRef = ref(null);
-const attachmentFile = ref(null);
-const attachmentPreviewName = ref("");
-const recordedVoiceUrl = ref("");
-const remoteAudioRef = ref(null);
-const callDialogRef = ref(null);
-const callState = ref("idle");
-const incomingCall = ref(null);
-const callPeerInfo = ref(null);
-const callCallId = ref("");
-const callPeerConnection = ref(null);
-const callLocalStream = ref(null);
-const callRemoteStream = ref(null);
-const callPendingCandidates = ref([]);
-const callMuted = ref(false);
-const callSpeakerEnabled = ref(true);
-const callSpeakerAudioContext = ref(null);
-const callSpeakerAudioNodes = ref(null);
-const callTimer = ref(null);
-const callSeconds = ref(0);
-const incomingCallTimeout = ref(null);
-const outgoingCallTimeout = ref(null);
-const callTurnServers = ref([]);
-const callTurnServersLoadedAt = ref(0);
-const callTeardownInProgress = ref(false);
-const callToneAudioContext = ref(null);
-const callToneTimer = ref(null);
-const handledRouteCallActionId = ref("");
-const showPdfPreview = ref(false);
-const previewPdfUrl = ref("");
-const previewPdfName = ref("");
-const showProfileModal = ref(false);
-const replyTarget = ref(null);
-const replyHighlightMessageId = ref(null);
-const showMessageActionSheet = ref(false);
-const actionSheetMessage = ref(null);
-const editTarget = ref(null);
-const longPressTimer = ref(null);
-const touchStartPoint = ref({ x: 0, y: 0 });
-const touchCanReply = ref(false);
-const touchedMessageId = ref(null);
-const touchActionHandled = ref(false);
-const isRecordingVoice = ref(false);
-const recordingSeconds = ref(0);
-const recordingTimer = ref(null);
-const mediaRecorder = ref(null);
-const mediaStream = ref(null);
-const recordedChunks = ref([]);
-const emojiPanelOpen = ref(false);
-const realtimeUnsubscribers = ref([]);
-const localClientId = ref(`private-chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
-const searchDebounceTimer = ref(null);
-const viewportBottomInset = ref(0);
-const isMobileViewport = ref(false);
-const composerBarHeight = ref(0);
-const composerResizeObserver = ref(null);
+const chatStore = useTeacherChatStore();
+const {
+  search,
+  peers,
+  searchedPeers,
+  selectedPeer,
+  messages,
+  composer,
+  isLoadingMessages,
+  isSendingMessage,
+  isSearchingContacts,
+  mobileChatOpen,
+  messageListRef,
+  bottomAnchorRef,
+  composerBarRef,
+  attachmentInputRef,
+  attachmentFile,
+  attachmentPreviewName,
+  recordedVoiceUrl,
+  remoteAudioRef,
+  callDialogRef,
+  callState,
+  incomingCall,
+  callPeerInfo,
+  callCallId,
+  callPeerConnection,
+  callLocalStream,
+  callRemoteStream,
+  callPendingCandidates,
+  callMuted,
+  callSpeakerEnabled,
+  callSpeakerAudioContext,
+  callSpeakerAudioNodes,
+  callTimer,
+  callSeconds,
+  incomingCallTimeout,
+  outgoingCallTimeout,
+  callTurnServers,
+  callTurnServersLoadedAt,
+  callTeardownInProgress,
+  callToneAudioContext,
+  callToneTimer,
+  handledRouteCallActionId,
+  showPdfPreview,
+  previewPdfUrl,
+  previewPdfName,
+  showProfileModal,
+  replyTarget,
+  replyHighlightMessageId,
+  showMessageActionSheet,
+  actionSheetMessage,
+  editTarget,
+  longPressTimer,
+  touchStartPoint,
+  touchCanReply,
+  touchedMessageId,
+  touchActionHandled,
+  isRecordingVoice,
+  recordingSeconds,
+  recordingTimer,
+  mediaRecorder,
+  mediaStream,
+  recordedChunks,
+  emojiPanelOpen,
+  realtimeUnsubscribers,
+  localClientId,
+  searchDebounceTimer,
+  viewportBottomInset,
+  isMobileViewport,
+  composerBarHeight,
+  composerResizeObserver,
+} = storeToRefs(chatStore);
 const chatEmojis = ["😀", "😂", "😍", "🙏", "👍", "🔥", "🎉", "😊", "😢", "😎", "🤔", "👏", "💯", "📚", "✅", "❤️"];
 const AUDIO_MIME_EXTENSION_MAP = {
   "audio/webm": ".webm",
@@ -1663,10 +1669,10 @@ const startVoiceCall = async () => {
     setCallPeerInfo({ ...selectedPeer.value });
     callCallId.value = `call-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     callState.value = "dialing";
-  if (isRecordingVoice.value) {
-    clearAttachment();
-  }
-  const iceServers = await loadTurnIceServers();
+    if (isRecordingVoice.value) {
+      clearAttachment();
+    }
+    const iceServers = await loadTurnIceServers();
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     callLocalStream.value = stream;
     const peerConnection = createCallPeerConnection(iceServers);

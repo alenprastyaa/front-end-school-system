@@ -428,38 +428,21 @@ import { formatDateKey, formatDateTime, parseDateValue } from "@/utils/date";
 import { normalizePublicUrl } from "@/utils/url";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 import { downloadExcelWorksheet } from "@/utils/excelExport";
-import { useMasterDataStore } from "@/store/masterData";
+import { useTeacherStore } from "@/store/teacher";
+import { useTeacherGradesStore } from "@/store/teacherGrades";
+import { storeToRefs } from "pinia";
 
 const fieldClass = "block h-10 w-full rounded-lg border-0 bg-slate-50 pl-3 pr-9 text-xs text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 sm:h-11 sm:rounded-xl sm:pl-4 sm:pr-10 sm:text-sm dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50";
 
-const subjects = ref([]);
-const masterDataStore = useMasterDataStore();
-const assignments = ref([]);
-const rows = ref([]);
-const totalRows = ref(0);
-const loadError = ref("");
-const message = ref("");
-const isError = ref(false);
-const reviewRow = ref(null);
-const gradeModal = reactive({
-  open: false,
-  row: null,
-  scoreDraft: "",
-  feedbackDraft: "",
-  saving: false,
-});
+const teacherStore = useTeacherStore();
+const gradesStore = useTeacherGradesStore();
+const { subjects } = storeToRefs(teacherStore);
+const { assignments, rows, totalRows, loadError, message, isError, reviewRow, currentPage, pageSize } = storeToRefs(gradesStore);
+const gradeModal = gradesStore.gradeModal;
 const tableSort = createSortState("submitted_at", "desc");
-const currentPage = ref(1);
-const pageSize = ref(20);
 let keywordSearchTimer = null;
 
-const filters = reactive({
-  subjectId: "",
-  assignmentId: "",
-  gradeStatus: "",
-  assignmentType: "",
-  keyword: "",
-});
+const filters = gradesStore.filters;
 
 const messageClass = computed(() =>
   isError.value
@@ -862,7 +845,7 @@ const canOpenFileReview = (row) =>
   row?.assignment_type === "FILE" && !!row?.attachment_url;
 
 const loadSubjects = async () => {
-  subjects.value = await masterDataStore.getTeacherSubjects();
+  subjects.value = await teacherStore.loadTeacherSubjects();
 };
 
 const loadRowsForSubject = async (subjectId) => {

@@ -328,35 +328,32 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
-import { api } from "@/api";
-import { pushToast } from "@/composables/useToast";
+import { computed, onMounted } from "vue";
 import { formatDate, formatDateTime } from "@/utils/date";
-import { convertHeicToJpegIfPossible, isHeicLikeFile } from "@/utils/fileImage";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
+import { storeToRefs } from "pinia";
+import { useStudentReceiptsStore } from "@/store/studentReceipts";
 
-const baseForm = () => ({
-  payment_date: "",
-  description: "",
-});
-
-const form = reactive(baseForm());
-const selectedFile = ref(null);
-const receipts = ref([]);
-const isSubmitting = ref(false);
-const isUpdating = ref(false);
-const isDeleting = ref(false);
-const showCreateModal = ref(false);
-const showPreviewModal = ref(false);
-const showEditModal = ref(false);
-const showDeleteModal = ref(false);
-const selectedReceipt = ref(null);
-const previewReceipt = ref(null);
-const receiptToDelete = ref(null);
-const editForm = reactive(baseForm());
-const editFile = ref(null);
+const receiptsStore = useStudentReceiptsStore();
+const {
+  form,
+  selectedFile,
+  receipts,
+  isSubmitting,
+  isUpdating,
+  isDeleting,
+  showCreateModal,
+  showPreviewModal,
+  showEditModal,
+  showDeleteModal,
+  selectedReceipt,
+  previewReceipt,
+  receiptToDelete,
+  editForm,
+  editFile,
+  activeActionId,
+} = storeToRefs(receiptsStore);
 const tableSort = createSortState("created_at", "desc");
-const activeActionId = ref(null);
 
 const sortedReceipts = computed(() =>
   sortItems(receipts.value, tableSort, {
@@ -387,233 +384,48 @@ const sortIndicator = (key) => {
 };
 
 const loadReceipts = async () => {
-  try {
-    const response = await api.get("/receipt");
-    receipts.value = response?.data || [];
-  } catch (error) {
-    pushToast({
-      title: "Gagal Memuat Bukti Pembayaran",
-      message: error.message,
-      type: "error",
-    });
-  }
+  await receiptsStore.loadReceipts();
 };
 
 const handleFileChange = async (event) => {
   const file = event.target.files?.[0] || null;
-  if (!file) {
-    selectedFile.value = null;
-    return;
-  }
-
-  try {
-    selectedFile.value = await convertHeicToJpegIfPossible(file);
-    if (isHeicLikeFile(file)) {
-      pushToast({
-        title: "HEIC Dikonversi",
-        message: "File HEIC diubah ke JPG agar bisa dipreview di Chrome.",
-        type: "success",
-      });
-    }
-  } catch (error) {
-    selectedFile.value = file;
-    pushToast({
-      title: "HEIC Tidak Bisa Dikonversi",
-      message: "Gunakan JPG/PNG agar preview tampil di Chrome.",
-      type: "error",
-    });
-  }
+  await receiptsStore.setSelectedFile(file);
 };
 
-const openCreateModal = () => {
-  showCreateModal.value = true;
-};
-
-const closeCreateModal = () => {
-  showCreateModal.value = false;
-  Object.assign(form, baseForm());
-  selectedFile.value = null;
-};
-
-const openPreviewModal = (item) => {
-  previewReceipt.value = item;
-  showPreviewModal.value = true;
-};
-
-const closePreviewModal = () => {
-  showPreviewModal.value = false;
-  previewReceipt.value = null;
-};
-
-const toggleActionMenu = (item) => {
-  selectedReceipt.value = item;
-  activeActionId.value = activeActionId.value === item.id ? null : item.id;
-};
-
-const closeActionMenu = () => {
-  activeActionId.value = null;
-};
-
+const openCreateModal = () => receiptsStore.openCreateModal();
+const closeCreateModal = () => receiptsStore.closeCreateModal();
+const openPreviewModal = (item) => receiptsStore.openPreviewModal(item);
+const closePreviewModal = () => receiptsStore.closePreviewModal();
+const toggleActionMenu = (item) => receiptsStore.toggleActionMenu(item);
+const closeActionMenu = () => receiptsStore.closeActionMenu();
 const handlePreviewAction = (item) => {
   closeActionMenu();
   openPreviewModal(item);
 };
-
 const handleEditAction = (item) => {
   closeActionMenu();
-  openEditModal(item);
+  receiptsStore.openEditModal(item);
 };
-
 const handleDeleteAction = (item) => {
   closeActionMenu();
-  openDeleteModal(item);
+  receiptsStore.openDeleteModal(item);
 };
-
-const openEditModal = (item) => {
-  selectedReceipt.value = item;
-  editForm.payment_date = item.payment_date ? String(item.payment_date).slice(0, 10) : "";
-  editForm.description = item.description || "";
-  editFile.value = null;
-  showEditModal.value = true;
-};
-
-const closeEditModal = () => {
-  showEditModal.value = false;
-  selectedReceipt.value = null;
-  Object.assign(editForm, baseForm());
-  editFile.value = null;
-};
-
+const openEditModal = (item) => receiptsStore.openEditModal(item);
+const closeEditModal = () => receiptsStore.closeEditModal();
 const handleEditFileChange = async (event) => {
   const file = event.target.files?.[0] || null;
-  if (!file) {
-    editFile.value = null;
-    return;
-  }
-
-  try {
-    editFile.value = await convertHeicToJpegIfPossible(file);
-    if (isHeicLikeFile(file)) {
-      pushToast({
-        title: "HEIC Dikonversi",
-        message: "File HEIC diubah ke JPG agar bisa dipreview di Chrome.",
-        type: "success",
-      });
-    }
-  } catch (error) {
-    editFile.value = file;
-    pushToast({
-      title: "HEIC Tidak Bisa Dikonversi",
-      message: "Gunakan JPG/PNG agar preview tampil di Chrome.",
-      type: "error",
-    });
-  }
+  await receiptsStore.setEditFile(file);
 };
-
 const submitUpdateReceipt = async () => {
-  if (!selectedReceipt.value) {
-    return;
-  }
-
-  isUpdating.value = true;
-  try {
-    const formData = new FormData();
-    formData.append("payment_date", editForm.payment_date);
-    formData.append("description", editForm.description || "");
-    if (editFile.value) {
-      formData.append("image", editFile.value);
-    }
-
-    const response = await api.put(`/receipt/${selectedReceipt.value.id}`, formData);
-    pushToast({
-      title: "Bukti Pembayaran Diupdate",
-      message: response?.message || "Bukti pembayaran berhasil diperbarui",
-      type: "success",
-    });
-    closeEditModal();
-    await loadReceipts();
-  } catch (error) {
-    pushToast({
-      title: "Gagal Update Bukti Pembayaran",
-      message: error.message,
-      type: "error",
-    });
-  } finally {
-    isUpdating.value = false;
-  }
+  await receiptsStore.submitUpdateReceipt();
 };
-
-const openDeleteModal = (item) => {
-  receiptToDelete.value = item;
-  showDeleteModal.value = true;
-};
-
-const closeDeleteModal = () => {
-  showDeleteModal.value = false;
-  receiptToDelete.value = null;
-};
-
+const openDeleteModal = (item) => receiptsStore.openDeleteModal(item);
+const closeDeleteModal = () => receiptsStore.closeDeleteModal();
 const confirmDeleteReceipt = async () => {
-  if (!receiptToDelete.value) {
-    return;
-  }
-
-  isDeleting.value = true;
-  try {
-    const response = await api.delete(`/receipt/${receiptToDelete.value.id}`);
-    pushToast({
-      title: "Bukti Pembayaran Dihapus",
-      message: response?.message || "Bukti pembayaran berhasil dihapus",
-      type: "success",
-    });
-    closeDeleteModal();
-    await loadReceipts();
-  } catch (error) {
-    pushToast({
-      title: "Gagal Hapus Bukti Pembayaran",
-      message: error.message,
-      type: "error",
-    });
-  } finally {
-    isDeleting.value = false;
-  }
+  await receiptsStore.confirmDeleteReceipt();
 };
-
 const submitReceipt = async () => {
-  if (!selectedFile.value) {
-    pushToast({
-      title: "Upload Bukti Diperlukan",
-      message: "Bukti pembayaran wajib diunggah",
-      type: "error",
-    });
-    return;
-  }
-
-  isSubmitting.value = true;
-
-  try {
-    const formData = new FormData();
-    formData.append("image", selectedFile.value);
-    formData.append("payment_date", form.payment_date);
-    formData.append("description", form.description || "");
-
-    const response = await api.post("/receipt", formData);
-    pushToast({
-      title: "Bukti Pembayaran Terkirim",
-      message: response?.message || "Bukti pembayaran berhasil dikirim",
-      type: "success",
-    });
-    closeCreateModal();
-    await loadReceipts();
-  } catch (error) {
-    pushToast({
-      title: "Gagal Mengirim Bukti Pembayaran",
-      message: error.message,
-      type: "error",
-    });
-  } finally {
-    isSubmitting.value = false;
-  }
+  await receiptsStore.submitReceipt();
 };
 
 onMounted(loadReceipts);

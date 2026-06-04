@@ -243,21 +243,18 @@ import { pushToast } from "@/composables/useToast";
 import { downloadExcelWorksheet } from "@/utils/excelExport";
 import { formatDate, formatDateKey } from "@/utils/date";
 import { useMasterDataStore } from "@/store/masterData";
+import { useTeacherStore } from "@/store/teacher";
+import { useTeacherReportStore } from "@/store/teacherReport";
+import { storeToRefs } from "pinia";
 
-const subjects = ref([]);
-const periods = ref([]);
-const report = ref(null);
+const teacherStore = useTeacherStore();
 const masterDataStore = useMasterDataStore();
-const currentPage = ref(1);
-const pageSize = ref(20);
-const totalRows = ref(0);
+const { subjects } = storeToRefs(teacherStore);
+const reportStore = useTeacherReportStore();
+const { periods, report, currentPage, pageSize, totalRows } = storeToRefs(reportStore);
 let keywordSearchTimer = null;
 
-const filters = reactive({
-  subjectId: "",
-  semesterId: "",
-  keyword: "",
-});
+const filters = reportStore.filters;
 
 const assignments = computed(() => report.value?.assignments || []);
 const reportStudents = computed(() => report.value?.students || []);
@@ -337,7 +334,7 @@ const scoreBadgeClass = (value) => {
 };
 
 const loadSubjects = async () => {
-  subjects.value = await masterDataStore.getTeacherSubjects();
+  subjects.value = await teacherStore.loadTeacherSubjects();
   if (!filters.subjectId && subjects.value.length > 0) {
     filters.subjectId = String(subjects.value[0].id);
   }

@@ -541,7 +541,7 @@
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="materialModalOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/75 p-4 backdrop-blur-sm">
+        class="fixed inset-0 z-[250] flex items-center justify-center bg-slate-900/75 p-4 backdrop-blur-sm">
         <div
           class="modal-shell flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden border-2 border-slate-500 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.22)] dark:border-slate-600 dark:bg-slate-900"
           @click.stop>
@@ -610,7 +610,7 @@
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="assignmentModalOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/75 p-4 backdrop-blur-sm">
+        class="fixed inset-0 z-[250] flex items-center justify-center bg-slate-900/75 p-4 backdrop-blur-sm">
         <div
           class="modal-shell flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden border-2 border-slate-500 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.22)] dark:border-slate-600 dark:bg-slate-900"
           @click.stop>
@@ -712,7 +712,7 @@
       enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
       leave-to-class="opacity-0">
       <div v-if="isDeleteModalOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/75 p-4 backdrop-blur-sm">
+        class="fixed inset-0 z-[250] flex items-center justify-center bg-slate-900/75 p-4 backdrop-blur-sm">
         <div
           class="modal-shell w-full max-w-md overflow-hidden border-2 border-slate-500 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.22)] dark:border-slate-600 dark:bg-slate-900"
           @click.stop>
@@ -755,59 +755,55 @@ import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatDateTime, formatDateTimeLocalInput as formatJakartaDateTimeLocalInput, parseDateValue } from "@/utils/date";
 import { normalizePublicUrl } from "@/utils/url";
-import { useMasterDataStore } from "@/store/masterData";
+import { useTeacherStore } from "@/store/teacher";
+import { useTeacherLearningStore } from "@/store/teacherLearning";
+import { storeToRefs } from "pinia";
 
 // STATE UTAMA
-const masterDataStore = useMasterDataStore();
-const subjects = ref([]);
-const selectedSubject = ref(null);
-const activeTab = ref("materials");
+const teacherStore = useTeacherStore();
+const learningStore = useTeacherLearningStore();
+const { subjects } = storeToRefs(teacherStore);
+const {
+  selectedSubject,
+  activeTab,
+  materials,
+  assignments,
+  submissions,
+  gradingAssignment,
+  subjectError,
+  message,
+  isError,
+  materialModalOpen,
+  assignmentModalOpen,
+  isSavingMaterial,
+  isSavingAssignment,
+  isGeneratingAiMaterial,
+  isPublishingAiMaterial,
+  materialFile,
+  assignmentFile,
+  materialCreationMode,
+  materialAiPreview,
+  editingMaterialId,
+  editingAssignmentId,
+  currentAssignmentAttachmentUrl,
+  isDeleteModalOpen,
+  isDeletingItem,
+  deleteTargetType,
+  deleteTargetItem,
+  submissionSearch,
+  submissionFilter,
+  assignmentSearch,
+  assignmentTypeFilter,
+  assignmentSort,
+  openAssignmentActionId,
+  assignmentActionMenuStyle,
+} = storeToRefs(learningStore);
 
 // STATE DATA
-const materials = ref([]);
-const assignments = ref([]);
-const submissions = ref([]);
-const gradingAssignment = ref(null); // Jika null berarti menampilkan list tugas. Jika ada isinya, tampilkan layar Penilaian.
-
-// STATE FEEDBACK
-const subjectError = ref("");
-const message = ref("");
-const isError = ref(false);
-
-// STATE MODAL
-const materialModalOpen = ref(false);
-const assignmentModalOpen = ref(false);
-const isSavingMaterial = ref(false);
-const isSavingAssignment = ref(false);
-const isGeneratingAiMaterial = ref(false);
-const isPublishingAiMaterial = ref(false);
-
-const materialFile = ref(null);
-const assignmentFile = ref(null);
-const materialCreationMode = ref("manual");
-const materialAiPreview = ref(null);
-const editingMaterialId = ref(null);
-const editingAssignmentId = ref(null);
-const currentAssignmentAttachmentUrl = ref("");
-
-const isDeleteModalOpen = ref(false);
-const isDeletingItem = ref(false);
-const deleteTargetType = ref("");
-const deleteTargetItem = ref(null);
-
-// STATE PENCARIAN & FILTER
-const submissionSearch = ref("");
-const submissionFilter = ref("ALL");
-const assignmentSearch = ref("");
-const assignmentTypeFilter = ref("ALL");
-const assignmentSort = ref("NEWEST");
-const openAssignmentActionId = ref(null);
-const assignmentActionMenuStyle = ref({ top: "0px", right: "0px" });
-
 // FORM DATA
-const materialForm = reactive({ title: "", content: "" });
-const materialAiForm = reactive({ topic: "", slide_count: 8, learning_goals: "", additional_instructions: "" });
-const assignmentForm = reactive({ title: "", description: "", due_date: "", assignment_type: "FILE" });
+const materialForm = learningStore.materialForm;
+const materialAiForm = learningStore.materialAiForm;
+const assignmentForm = learningStore.assignmentForm;
 
 // =======================
 // FUNGSI KOMPUTASI
@@ -983,7 +979,7 @@ const closeDeleteModal = () => {
 const loadSubjects = async () => {
   subjectError.value = "";
   try {
-    subjects.value = await masterDataStore.getTeacherSubjects({ force: true });
+    subjects.value = await teacherStore.loadTeacherSubjects({ force: true });
     if (!selectedSubject.value && subjects.value.length > 0) {
       await selectSubject(subjects.value[0]);
     }

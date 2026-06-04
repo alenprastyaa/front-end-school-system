@@ -26,7 +26,7 @@ const routes = [
     meta: {
       title: "Dashboard" + appName,
       requiresAuth: true,
-      roles: ["SUPER_ADMIN", "ADMIN", "KOPERASI", "SARPRAS", "GURU", "SISWA", "ORANG_TUA"],
+      roles: ["SUPER_ADMIN", "ADMIN", "KOPERASI", "BENDAHARA", "SARPRAS", "GURU", "SISWA", "ORANG_TUA"],
     },
   },
   {
@@ -50,6 +50,43 @@ const routes = [
       roles: ["ADMIN", "KOPERASI", "SARPRAS", "GURU", "SISWA"],
       moduleKey: "koperasi",
       hideHeaderOnMobile: true,
+    },
+  },
+  {
+    path: "/payroll",
+    redirect: "/payroll/slips",
+  },
+  {
+    path: "/payroll/slips",
+    name: "PayrollSlips",
+    component: lazyRoute(() => import("../views/PayrollSlips.vue")),
+    meta: {
+      title: "Daftar Slip Gaji" + appName,
+      requiresAuth: true,
+      roles: ["BENDAHARA"],
+      moduleKey: "payroll",
+    },
+  },
+  {
+    path: "/payroll/components",
+    name: "PayrollComponents",
+    component: lazyRoute(() => import("../views/PayrollComponents.vue")),
+    meta: {
+      title: "Komponen Gaji" + appName,
+      requiresAuth: true,
+      roles: ["BENDAHARA"],
+      moduleKey: "payroll",
+    },
+  },
+  {
+    path: "/payroll/settings",
+    name: "PayrollSettings",
+    component: lazyRoute(() => import("../views/PayrollSettings.vue")),
+    meta: {
+      title: "Setting Tarif" + appName,
+      requiresAuth: true,
+      roles: ["BENDAHARA"],
+      moduleKey: "payroll",
     },
   },
   {
@@ -110,7 +147,7 @@ const routes = [
     meta: {
       title: "Absensi" + appName,
       requiresAuth: true,
-      roles: ["SISWA"],
+      roles: ["GURU", "SISWA"],
       moduleKey: "attendance",
     },
   },
@@ -121,7 +158,7 @@ const routes = [
     meta: {
       title: "Enrol Wajah" + appName,
       requiresAuth: true,
-      roles: ["SISWA"],
+      roles: ["GURU", "SISWA"],
       moduleKey: "attendance",
     },
   },
@@ -142,7 +179,7 @@ const routes = [
     meta: {
       title: "Pesan" + appName,
       requiresAuth: true,
-      roles: ["ADMIN", "KOPERASI", "GURU", "SISWA"],
+      roles: ["ADMIN", "KOPERASI", "BENDAHARA", "GURU", "SISWA"],
     },
   },
   {
@@ -535,11 +572,12 @@ router.beforeEach((to, from, next) => {
     const storedUser = getStoredUser() || {};
     const moduleFlagByKey = {
       inventory: "inventory_module_enabled",
-      attendance: "attendance_module_enabled",
+      attendance: getStoredRole() === "GURU" ? "attendance_teacher_module_enabled" : "attendance_module_enabled",
       official_exam: "official_exam_module_enabled",
       koperasi: "koperasi_module_enabled",
       private_chat: "private_chat_module_enabled",
       teaching_module_ai: "teaching_module_ai_enabled",
+      payroll: "payroll_module_enabled",
     };
     const moduleFlag = moduleFlagByKey[to.meta.moduleKey];
     const moduleEnabled = moduleFlag ? storedUser[moduleFlag] !== false : true;

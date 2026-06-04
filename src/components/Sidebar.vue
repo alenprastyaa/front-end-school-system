@@ -337,13 +337,15 @@ const schoolNameLabel = computed(() => storedProfile.value?.school_name || "Scho
 const schoolLogoSrc = computed(() => normalizePublicUrl(storedProfile.value?.school_logo) || "");
 const isInventoryEnabled = computed(() => storedProfile.value?.inventory_module_enabled !== false);
 const isAttendanceEnabled = computed(() => storedProfile.value?.attendance_module_enabled !== false);
+const isTeacherAttendanceEnabled = computed(() => storedProfile.value?.attendance_teacher_module_enabled !== false);
 const isOfficialExamEnabled = computed(() => storedProfile.value?.official_exam_module_enabled !== false);
 const isKoperasiEnabled = computed(() => storedProfile.value?.koperasi_module_enabled !== false);
 const isPrivateChatEnabled = computed(() => storedProfile.value?.private_chat_module_enabled !== false);
 const isTeachingModuleAIEnabled = computed(() => storedProfile.value?.teaching_module_ai_enabled !== false);
+const isPayrollEnabled = computed(() => storedProfile.value?.payroll_module_enabled !== false);
 const isPersonalTeacherModeEnabled = computed(() => storedProfile.value?.personal_teacher_mode_enabled === true);
 const shouldTrackKoperasi = computed(() => isKoperasiEnabled.value && (isAdminRole || isKoperasiRole));
-const shouldTrackPrivateChat = computed(() => isPrivateChatEnabled.value && ["ADMIN", "KOPERASI", "GURU", "SISWA"].includes(role));
+const shouldTrackPrivateChat = computed(() => isPrivateChatEnabled.value && ["ADMIN", "KOPERASI", "BENDAHARA", "GURU", "SISWA"].includes(role));
 
 const getCurrentUserId = () => {
   try {
@@ -553,6 +555,8 @@ const menuByRole = {
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     { key: "homeroom-students", to: "/homeroom-students", dataTour: "students", label: "Siswa Wali Kelas", icon: "mdi:account-school-outline" },
     { key: "chat", to: "/chat", label: "Pesan", icon: "ph:chats-circle" },
+    { key: "attendance", to: "/attendance", dataTour: "attendance", label: "Absensi", icon: "mdi:calendar-check-outline" },
+    { key: "face-enrollment", to: "/face-enrollment", label: "Enrol Wajah", icon: "mdi:face-recognition" },
     {
       key: "learning-module",
       label: "Modul Pembelajaran",
@@ -598,6 +602,20 @@ const menuByRole = {
     { key: "koperasi", to: "/koperasi", label: "Koperasi", icon: "ph:shopping-cart" },
     { key: "chat", to: "/chat", label: "Pesan", icon: "ph:chats-circle" },
   ],
+  BENDAHARA: [
+    { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
+    {
+      key: "payroll",
+      label: "Penggajian Guru",
+      icon: "ph:money",
+      children: [
+        { to: "/payroll/slips", label: "Daftar Slip", icon: "ph:receipt" },
+        { to: "/payroll/components", label: "Komponen Gaji", icon: "ph:list-plus" },
+        { to: "/payroll/settings", label: "Setting Tarif", icon: "ph:sliders" },
+      ],
+    },
+    { key: "chat", to: "/chat", label: "Pesan", icon: "ph:chats-circle" },
+  ],
   ORANG_TUA: [
     { key: "dashboard", to: "/dashboard", label: "Pantauan Anak", icon: "bxs:dashboard" },
   ],
@@ -623,10 +641,14 @@ const filterMenuItems = (items = []) =>
       if (item.key === "inventory" && !isInventoryEnabled.value) {
         return null;
       }
-      if ((item.key === "attendance" || item.key === "face-enrollment") && !isAttendanceEnabled.value) {
+      const attendanceEnabledForRole = role === "GURU" ? isTeacherAttendanceEnabled.value : isAttendanceEnabled.value;
+      if ((item.key === "attendance" || item.key === "face-enrollment") && !attendanceEnabledForRole) {
         return null;
       }
       if (item.key === "koperasi" && !isKoperasiEnabled.value) {
+        return null;
+      }
+      if (item.key === "payroll" && !isPayrollEnabled.value) {
         return null;
       }
       if (item.key === "chat" && !isPrivateChatEnabled.value && !shouldTrackLiveChat) {

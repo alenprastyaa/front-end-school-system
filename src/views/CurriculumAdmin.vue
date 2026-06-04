@@ -550,7 +550,8 @@
             <div class="relative border-b border-slate-200 px-6 py-5 dark:border-slate-800">
               <div class="flex items-start justify-between gap-4 pr-12">
                 <div class="min-w-0">
-                  <div class="inline-flex items-center gap-2 rounded-full bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+                  <div
+                    class="inline-flex items-center gap-2 rounded-full bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
                     <span class="h-1.5 w-1.5 rounded-full bg-sky-500"></span>
                     Input Data
                   </div>
@@ -558,11 +559,11 @@
                     {{ formModal.title }}
                   </h3>
                 </div>
-              <button @click="closeFormModal"
-                class="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-rose-200 bg-rose-50 text-rose-600 transition hover:border-rose-300 hover:bg-rose-100 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 dark:border-rose-900/50 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20 dark:focus:ring-offset-slate-900">
-                <span class="text-xl font-black leading-none">×</span>
-              </button>
-            </div>
+                <button @click="closeFormModal"
+                  class="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-rose-200 bg-rose-50 text-rose-600 transition hover:border-rose-300 hover:bg-rose-100 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 dark:border-rose-900/50 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20 dark:focus:ring-offset-slate-900">
+                  <span class="text-xl font-black leading-none">×</span>
+                </button>
+              </div>
             </div>
 
             <div class="max-h-[calc(88vh-140px)] overflow-y-auto px-6 py-6">
@@ -573,23 +574,25 @@
                   <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Data mata pelajaran</p>
                 </div>
                 <div class="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Kode Mapel</label>
-                  <input v-model="subjectForm.code" type="text" placeholder="Contoh: MTK"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Kode
+                      Mapel</label>
+                    <input v-model="subjectForm.code" type="text" placeholder="Contoh: MTK"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">JP / Minggu per
+                      Rombel</label>
+                    <input v-model="subjectForm.weekly_hours" type="number" min="1" max="20"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Nama
+                      Mapel</label>
+                    <input v-model="subjectForm.name" type="text" placeholder="Contoh: Matematika"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
                 </div>
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">JP / Minggu per
-                    Rombel</label>
-                  <input v-model="subjectForm.weekly_hours" type="number" min="1" max="20"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                </div>
-                <div class="md:col-span-2">
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Nama Mapel</label>
-                  <input v-model="subjectForm.name" type="text" placeholder="Contoh: Matematika"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                </div>
-              </div>
               </div>
 
               <div v-else-if="formModal.type === 'teacher-load'"
@@ -599,33 +602,34 @@
                   <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Beban guru</p>
                 </div>
                 <div class="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Guru</label>
-                  <select v-model="teacherLoadForm.teacher_id"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
-                    <option value="">-- Pilih Guru --</option>
-                    <option v-for="item in teachers" :key="item.id" :value="String(item.id)">
-                      {{ item.full_name || item.username }}
-                    </option>
-                  </select>
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Guru</label>
+                    <select v-model="teacherLoadForm.teacher_id"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                      <option value="">-- Pilih Guru --</option>
+                      <option v-for="item in teachers" :key="item.id" :value="String(item.id)">
+                        {{ item.full_name || item.username }}
+                      </option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Mapel</label>
+                    <select v-model="teacherLoadForm.curriculum_subject_id"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                      <option value="">-- Pilih Mapel --</option>
+                      <option v-for="item in overview.subjects" :key="item.id" :value="String(item.id)">
+                        {{ item.name }}{{ item.code ? ` (${item.code})` : "" }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Total Kapasitas
+                      JP
+                      / Minggu</label>
+                    <input v-model="teacherLoadForm.max_weekly_hours" type="number" min="1" max="60"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
                 </div>
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Mapel</label>
-                  <select v-model="teacherLoadForm.curriculum_subject_id"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
-                    <option value="">-- Pilih Mapel --</option>
-                    <option v-for="item in overview.subjects" :key="item.id" :value="String(item.id)">
-                      {{ item.name }}{{ item.code ? ` (${item.code})` : "" }}
-                    </option>
-                  </select>
-                </div>
-                <div class="md:col-span-2">
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Total Kapasitas JP
-                    / Minggu</label>
-                  <input v-model="teacherLoadForm.max_weekly_hours" type="number" min="1" max="60"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                </div>
-              </div>
               </div>
 
               <div v-else-if="formModal.type === 'distribution'"
@@ -635,34 +639,35 @@
                   <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Distribusi kelas</p>
                 </div>
                 <div class="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Beban Guru</label>
-                  <select v-model="distributionForm.curriculum_teacher_load_id"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
-                    <option value="">-- Pilih Beban Guru --</option>
-                    <option v-for="item in overview.teacher_loads" :key="item.id" :value="String(item.id)">
-                      {{ item.teacher_name }} • {{ item.subject_name }} • kapasitas {{ item.max_weekly_hours }} JP
-                    </option>
-                  </select>
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Beban
+                      Guru</label>
+                    <select v-model="distributionForm.curriculum_teacher_load_id"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                      <option value="">-- Pilih Beban Guru --</option>
+                      <option v-for="item in overview.teacher_loads" :key="item.id" :value="String(item.id)">
+                        {{ item.teacher_name }} • {{ item.subject_name }} • kapasitas {{ item.max_weekly_hours }} JP
+                      </option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Kelas /
+                      Rombel</label>
+                    <select v-model="distributionForm.class_id"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                      <option value="">-- Pilih Kelas --</option>
+                      <option v-for="item in classes" :key="item.id" :value="String(item.id)">
+                        {{ item.class_name }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">JP untuk Kelas
+                      Ini</label>
+                    <input v-model="distributionForm.weekly_hours" type="number" min="1" max="20"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
                 </div>
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Kelas /
-                    Rombel</label>
-                  <select v-model="distributionForm.class_id"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
-                    <option value="">-- Pilih Kelas --</option>
-                    <option v-for="item in classes" :key="item.id" :value="String(item.id)">
-                      {{ item.class_name }}
-                    </option>
-                  </select>
-                </div>
-                <div class="md:col-span-2">
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">JP untuk Kelas
-                    Ini</label>
-                  <input v-model="distributionForm.weekly_hours" type="number" min="1" max="20"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                </div>
-              </div>
               </div>
 
               <div v-else-if="formModal.type === 'slot'"
@@ -672,216 +677,225 @@
                   <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Slot jadwal</p>
                 </div>
                 <div class="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Hari</label>
-                  <select v-model="slotForm.day_name"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
-                    <option v-for="day in dayOptions" :key="day.name" :value="day.name">{{ day.name }}</option>
-                  </select>
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Hari</label>
+                    <select v-model="slotForm.day_name"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                      <option v-for="day in dayOptions" :key="day.name" :value="day.name">{{ day.name }}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Urutan
+                      Hari</label>
+                    <input v-model="slotForm.day_order" type="number" min="1" max="7"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Sesi Ke</label>
+                    <input v-model="slotForm.session_order" type="number" min="1" max="20"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Label
+                      Slot</label>
+                    <input v-model="slotForm.label" type="text" placeholder="Contoh: Jam 1"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Mulai</label>
+                    <input v-model="slotForm.start_time" type="time"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Selesai</label>
+                    <input v-model="slotForm.end_time" type="time"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
                 </div>
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Urutan Hari</label>
-                  <input v-model="slotForm.day_order" type="number" min="1" max="7"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                </div>
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Sesi Ke</label>
-                  <input v-model="slotForm.session_order" type="number" min="1" max="20"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                </div>
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Label Slot</label>
-                  <input v-model="slotForm.label" type="text" placeholder="Contoh: Jam 1"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                </div>
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Mulai</label>
-                  <input v-model="slotForm.start_time" type="time"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                </div>
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Selesai</label>
-                  <input v-model="slotForm.end_time" type="time"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                </div>
-              </div>
               </div>
 
               <div v-else-if="formModal.type === 'slot-bulk'" class="space-y-4">
-              <div
+                <div
                   class="rounded-2xl border border-slate-200 bg-sky-50/60 p-4 text-sm leading-6 text-slate-700 dark:border-slate-700 dark:bg-sky-500/10 dark:text-slate-200">
-                Pilih hari, jumlah sesi, dan jam mulai. Sistem akan membuat slot otomatis per hari berdasarkan durasi
-                dan jeda.
-              </div>
+                  Pilih hari, jumlah sesi, dan jam mulai. Sistem akan membuat slot otomatis per hari berdasarkan durasi
+                  dan jeda.
+                </div>
 
-              <div>
+                <div>
                   <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Hari</p>
-                <div class="mt-3 grid grid-cols-2 gap-2">
-                  <label v-for="day in dayOptions" :key="day.name"
+                  <div class="mt-3 grid grid-cols-2 gap-2">
+                    <label v-for="day in dayOptions" :key="day.name"
                       class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800/70">
-                    <input v-model="bulkSlotForm.days" type="checkbox"
-                      class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                      :value="day.name" />
-                    <span>{{ day.name }}</span>
-                  </label>
-                </div>
-              </div>
-
-              <div class="grid gap-4 md:grid-cols-3">
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Sesi per
-                    Hari</label>
-                  <input v-model="bulkSlotForm.sessions_per_day" type="number" min="1" max="20"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                </div>
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Mulai</label>
-                  <input v-model="bulkSlotForm.start_time" type="time"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                </div>
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Durasi
-                    (menit)</label>
-                  <input v-model="bulkSlotForm.duration_minutes" type="number" min="10" max="180"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                </div>
-              </div>
-
-              <div class="grid gap-4 md:grid-cols-3">
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jeda antar sesi
-                    (menit)</label>
-                  <input v-model="bulkSlotForm.gap_minutes" type="number" min="0" max="60"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                </div>
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jumlah
-                    Istirahat</label>
-                  <select v-model="bulkSlotForm.break_count"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
-                    <option :value="0">Tanpa istirahat</option>
-                    <option :value="1">1 kali istirahat</option>
-                    <option :value="2">2 kali istirahat</option>
-                  </select>
-                </div>
-                <div>
-                  <div
-                      class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                    Istirahat dihitung setelah sesi yang dipilih selesai.
+                      <input v-model="bulkSlotForm.days" type="checkbox"
+                        class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        :value="day.name" />
+                      <span>{{ day.name }}</span>
+                    </label>
                   </div>
                 </div>
-              </div>
 
-              <div v-if="bulkSlotForm.break_count >= 1" class="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Istirahat 1 setelah
-                    sesi ke</label>
-                  <input v-model="bulkSlotForm.break1_after_session" type="number" min="1"
-                    :max="Math.max(1, Number(bulkSlotForm.sessions_per_day || 1) - 1)"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                <div class="grid gap-4 md:grid-cols-3">
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Sesi per
+                      Hari</label>
+                    <input v-model="bulkSlotForm.sessions_per_day" type="number" min="1" max="20"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Mulai</label>
+                    <input v-model="bulkSlotForm.start_time" type="time"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Durasi
+                      (menit)</label>
+                    <input v-model="bulkSlotForm.duration_minutes" type="number" min="10" max="180"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
                 </div>
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Durasi istirahat 1
-                    (menit)</label>
-                  <input v-model="bulkSlotForm.break1_minutes" type="number" min="0" max="120"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                </div>
-              </div>
 
-              <div v-if="bulkSlotForm.break_count >= 2" class="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Istirahat 2 setelah
-                    sesi ke</label>
-                  <input v-model="bulkSlotForm.break2_after_session" type="number" min="1"
-                    :max="Math.max(1, Number(bulkSlotForm.sessions_per_day || 1) - 1)"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                <div class="grid gap-4 md:grid-cols-3">
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jeda antar sesi
+                      (menit)</label>
+                    <input v-model="bulkSlotForm.gap_minutes" type="number" min="0" max="60"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jumlah
+                      Istirahat</label>
+                    <select v-model="bulkSlotForm.break_count"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                      <option :value="0">Tanpa istirahat</option>
+                      <option :value="1">1 kali istirahat</option>
+                      <option :value="2">2 kali istirahat</option>
+                    </select>
+                  </div>
+                  <div>
+                    <div
+                      class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                      Istirahat dihitung setelah sesi yang dipilih selesai.
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Durasi istirahat 2
-                    (menit)</label>
-                  <input v-model="bulkSlotForm.break2_minutes" type="number" min="0" max="120"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                </div>
-              </div>
 
-              <div class="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Label</label>
-                  <select v-model="bulkSlotForm.label_mode"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
-                    <option value="jam">Jam 1, Jam 2, ...</option>
-                    <option value="sesi">Sesi 1, Sesi 2, ...</option>
-                    <option value="none">Tanpa label</option>
-                  </select>
+                <div v-if="bulkSlotForm.break_count >= 1" class="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Istirahat 1
+                      setelah
+                      sesi ke</label>
+                    <input v-model="bulkSlotForm.break1_after_session" type="number" min="1"
+                      :max="Math.max(1, Number(bulkSlotForm.sessions_per_day || 1) - 1)"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Durasi istirahat
+                      1
+                      (menit)</label>
+                    <input v-model="bulkSlotForm.break1_minutes" type="number" min="0" max="120"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
                 </div>
-                <div class="flex items-end">
-                  <label
-                    class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800/70">
-                    <input v-model="bulkSlotForm.overwrite_existing" type="checkbox"
-                      class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
-                    <span>Timpa slot yang sudah ada</span>
-                  </label>
-                </div>
-              </div>
 
-              <div
+                <div v-if="bulkSlotForm.break_count >= 2" class="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Istirahat 2
+                      setelah
+                      sesi ke</label>
+                    <input v-model="bulkSlotForm.break2_after_session" type="number" min="1"
+                      :max="Math.max(1, Number(bulkSlotForm.sessions_per_day || 1) - 1)"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Durasi istirahat
+                      2
+                      (menit)</label>
+                    <input v-model="bulkSlotForm.break2_minutes" type="number" min="0" max="120"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
+                </div>
+
+                <div class="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Label</label>
+                    <select v-model="bulkSlotForm.label_mode"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                      <option value="jam">Jam 1, Jam 2, ...</option>
+                      <option value="sesi">Sesi 1, Sesi 2, ...</option>
+                      <option value="none">Tanpa label</option>
+                    </select>
+                  </div>
+                  <div class="flex items-end">
+                    <label
+                      class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800/70">
+                      <input v-model="bulkSlotForm.overwrite_existing" type="checkbox"
+                        class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                      <span>Timpa slot yang sudah ada</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div
                   class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                Perkiraan slot dibuat: <strong class="text-slate-900 dark:text-white">{{ bulkSlotPreviewCount
-                }}</strong>
-              </div>
+                  Perkiraan slot dibuat: <strong class="text-slate-900 dark:text-white">{{ bulkSlotPreviewCount
+                    }}</strong>
+                </div>
               </div>
 
               <div v-else-if="formModal.type === 'slot-day-detail'" class="space-y-4">
-              <div
+                <div
                   class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    Menampilkan slot untuk <strong class="text-slate-900 dark:text-white">{{ selectedScheduleDayName
-                    }}</strong>.
+                  <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      Menampilkan slot untuk <strong class="text-slate-900 dark:text-white">{{ selectedScheduleDayName
+                        }}</strong>.
+                    </div>
+                    <button @click="removeScheduleDaySlots([selectedScheduleDayName])"
+                      :disabled="selectedScheduleDaySlots.length === 0"
+                      class="rounded-xl bg-red-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
+                      Hapus Semua Hari Ini
+                    </button>
                   </div>
-                  <button @click="removeScheduleDaySlots([selectedScheduleDayName])"
-                    :disabled="selectedScheduleDaySlots.length === 0"
-                    class="rounded-xl bg-red-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
-                    Hapus Semua Hari Ini
-                  </button>
                 </div>
-              </div>
 
-              <div class="max-h-[55vh] overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-800">
-                <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
-                  <thead
-                    class="bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">
-                    <tr>
-                      <th class="px-4 py-3 font-semibold">Sesi</th>
-                      <th class="px-4 py-3 font-semibold">Jam</th>
-                      <th class="px-4 py-3 font-semibold text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                    <tr v-for="slot in selectedScheduleDaySlots" :key="slot.id">
-                      <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
-                        <div class="font-semibold">{{ slot.label || `Sesi ${slot.session_order}` }}</div>
-                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">Urutan hari {{ slot.day_order }} ·
-                          sesi {{ slot.session_order }}</div>
-                      </td>
-                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ slot.start_time }} - {{ slot.end_time
-                      }}</td>
-                      <td class="px-4 py-3">
-                        <div class="flex justify-end gap-2">
-                          <button @click="openSlotModal(slot)"
-                            class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
-                          <button @click="removeSlot(slot)"
-                            class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700">Hapus</button>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr v-if="selectedScheduleDaySlots.length === 0">
-                      <td colspan="3" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">Belum ada
-                        slot pada hari ini.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                <div class="max-h-[55vh] overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+                  <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
+                    <thead
+                      class="bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">
+                      <tr>
+                        <th class="px-4 py-3 font-semibold">Sesi</th>
+                        <th class="px-4 py-3 font-semibold">Jam</th>
+                        <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                      <tr v-for="slot in selectedScheduleDaySlots" :key="slot.id">
+                        <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
+                          <div class="font-semibold">{{ slot.label || `Sesi ${slot.session_order}` }}</div>
+                          <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">Urutan hari {{ slot.day_order }}
+                            ·
+                            sesi {{ slot.session_order }}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ slot.start_time }} - {{
+                          slot.end_time
+                          }}</td>
+                        <td class="px-4 py-3">
+                          <div class="flex justify-end gap-2">
+                            <button @click="openSlotModal(slot)"
+                              class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
+                            <button @click="removeSlot(slot)"
+                              class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700">Hapus</button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr v-if="selectedScheduleDaySlots.length === 0">
+                        <td colspan="3" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">Belum
+                          ada
+                          slot pada hari ini.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
 
@@ -923,11 +937,12 @@
         <div v-if="detailModal.open" class="fixed inset-0 z-[140] flex items-center justify-center p-4"
           style="background-color: rgba(15, 23, 42, 0.5); backdrop-filter: blur(14px);">
           <div
-            class="w-full max-w-5xl max-h-[88vh] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.22)] dark:border-slate-800 dark:bg-slate-900">
+            class="w-full max-h-[88vh] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.22)] dark:border-slate-800 dark:bg-slate-900">
             <div class="relative border-b border-slate-200 px-6 py-5 dark:border-slate-800">
               <div class="flex items-start justify-between gap-4 pr-12">
                 <div class="min-w-0">
-                  <div class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  <div
+                    class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                     Detail Data
                   </div>
                   <h3 class="mt-3 truncate text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
@@ -936,294 +951,309 @@
                   <p v-if="detailModal.subtitle" class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{
                     detailModal.subtitle }}</p>
                 </div>
-              <button @click="closeDetailModal"
-                class="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-rose-200 bg-rose-50 text-rose-600 transition hover:border-rose-300 hover:bg-rose-100 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 dark:border-rose-900/50 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20 dark:focus:ring-offset-slate-900">
-                <span class="text-xl font-black leading-none">×</span>
-              </button>
-            </div>
+                <button @click="closeDetailModal"
+                  class="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-rose-200 bg-rose-50 text-rose-600 transition hover:border-rose-300 hover:bg-rose-100 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 dark:border-rose-900/50 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20 dark:focus:ring-offset-slate-900">
+                  <span class="text-xl font-black leading-none">×</span>
+                </button>
+              </div>
             </div>
 
             <div class="max-h-[calc(88vh-96px)] overflow-y-auto px-6 py-6">
-            <div v-if="detailModal.type === 'subject'" class="space-y-4">
-              <div class="grid gap-3 sm:grid-cols-3">
-                <div
-                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p class="text-xs font-semibold uppercase text-slate-400">Nama Mapel</p>
-                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.name || "-" }}
-                  </p>
-                </div>
-                <div
-                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p class="text-xs font-semibold uppercase text-slate-400">Kode</p>
-                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.code || "-" }}
-                  </p>
-                </div>
-                <div
-                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p class="text-xs font-semibold uppercase text-slate-400">JP / Minggu</p>
-                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{
-                    formatHours(detailModal.data?.weekly_hours) }}</p>
-                </div>
-              </div>
-              <div class="flex flex-wrap justify-end gap-2">
-                <button @click="openSubjectModal(detailModal.data); closeDetailModal()"
-                  class="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
-                <button @click="removeSubject(detailModal.data)"
-                  class="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-700">Hapus</button>
-              </div>
-            </div>
-
-            <div v-else-if="detailModal.type === 'teacher-load'" class="space-y-4">
-              <div class="grid gap-3 sm:grid-cols-4">
-                <div
-                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p class="text-xs font-semibold uppercase text-slate-400">Beban</p>
-                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.item_count || 0
-                  }}</p>
-                </div>
-                <div
-                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p class="text-xs font-semibold uppercase text-slate-400">Kapasitas</p>
-                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{
-                    formatHours(detailModal.data?.max_weekly_hours) }}</p>
-                </div>
-                <div
-                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p class="text-xs font-semibold uppercase text-slate-400">Terdistribusi</p>
-                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{
-                    formatHours(detailModal.data?.distributed_hours) }}</p>
-                </div>
-                <div
-                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p class="text-xs font-semibold uppercase text-slate-400">Sisa</p>
-                  <p class="mt-2 text-sm font-bold" :class="remainingHoursClass(detailModal.data?.remaining_hours)">{{
-                    formatHours(detailModal.data?.remaining_hours) }}</p>
-                </div>
-              </div>
-
-              <div class="max-h-[55vh] overflow-auto rounded-2xl border border-slate-200 dark:border-slate-800">
-                <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
-                  <thead
-                    class="sticky top-0 z-10 bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                    <tr>
-                      <th class="px-4 py-3 font-semibold">Mapel</th>
-                      <th class="px-4 py-3 font-semibold">Kapasitas</th>
-                      <th class="px-4 py-3 font-semibold">Terdistribusi</th>
-                      <th class="px-4 py-3 font-semibold">Sisa</th>
-                      <th class="px-4 py-3 font-semibold text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                    <tr v-for="item in detailItems" :key="item.id">
-                      <td class="px-4 py-3">
-                        <div class="font-semibold text-slate-900 dark:text-white">{{ item.subject_name }}</div>
-                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.subject_code || "-" }}
-                        </div>
-                      </td>
-                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ formatHours(item.max_weekly_hours) }}
-                      </td>
-                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ formatHours(item.distributed_hours) }}
-                      </td>
-                      <td class="px-4 py-3 font-semibold" :class="remainingHoursClass(item.remaining_hours)">{{
-                        formatHours(item.remaining_hours) }}</td>
-                      <td class="px-4 py-3">
-                        <div class="flex justify-end gap-2">
-                          <button @click="openTeacherLoadModal(item); closeDetailModal()"
-                            class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
-                          <button @click="removeTeacherLoad(item)"
-                            class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700">Hapus</button>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div v-else-if="detailModal.type === 'distribution'" class="space-y-4">
-              <div class="grid gap-3 sm:grid-cols-4">
-                <div
-                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p class="text-xs font-semibold uppercase text-slate-400">Distribusi</p>
-                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.item_count || 0
-                  }}</p>
-                </div>
-                <div
-                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p class="text-xs font-semibold uppercase text-slate-400">Mapel</p>
-                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.subject_count ||
-                    0 }}</p>
-                </div>
-                <div
-                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p class="text-xs font-semibold uppercase text-slate-400">Kelas</p>
-                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.class_count || 0
-                  }}</p>
-                </div>
-                <div
-                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p class="text-xs font-semibold uppercase text-slate-400">Total JP</p>
-                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{
-                    formatHours(detailModal.data?.total_weekly_hours) }}</p>
-                </div>
-              </div>
-
-              <div class="max-h-[55vh] overflow-auto rounded-2xl border border-slate-200 dark:border-slate-800">
-                <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
-                  <thead
-                    class="sticky top-0 z-10 bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                    <tr>
-                      <th class="px-4 py-3 font-semibold">Mapel</th>
-                      <th class="px-4 py-3 font-semibold">Kelas</th>
-                      <th class="px-4 py-3 font-semibold">JP</th>
-                      <th class="px-4 py-3 font-semibold">Kapasitas Beban</th>
-                      <th class="px-4 py-3 font-semibold text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                    <tr v-for="item in detailItems" :key="item.id">
-                      <td class="px-4 py-3">
-                        <div class="font-semibold text-slate-900 dark:text-white">{{ item.subject_name }}</div>
-                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.subject_code || "-" }}
-                        </div>
-                      </td>
-                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.class_name }}</td>
-                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ formatHours(item.weekly_hours) }}</td>
-                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ formatHours(item.load_capacity) }}
-                      </td>
-                      <td class="px-4 py-3">
-                        <div class="flex justify-end gap-2">
-                          <button @click="openDistributionModal(item); closeDetailModal()"
-                            class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
-                          <button @click="removeDistribution(item)"
-                            class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700">Hapus</button>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div v-else-if="detailModal.type === 'schedule-day'" class="space-y-4">
-              <div
-                class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    Menampilkan slot untuk <strong class="text-slate-900 dark:text-white">{{ detailModal.data?.day_name
-                    }}</strong>.
+              <div v-if="detailModal.type === 'subject'" class="space-y-4">
+                <div class="grid gap-3 sm:grid-cols-3">
+                  <div
+                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                    <p class="text-xs font-semibold uppercase text-slate-400">Nama Mapel</p>
+                    <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.name || "-" }}
+                    </p>
                   </div>
-                  <button @click="removeScheduleDaySlots([detailModal.data?.day_name])"
-                    :disabled="detailItems.length === 0"
-                    class="rounded-xl bg-red-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
-                    Hapus Semua Hari Ini
-                  </button>
+                  <div
+                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                    <p class="text-xs font-semibold uppercase text-slate-400">Kode</p>
+                    <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.code || "-" }}
+                    </p>
+                  </div>
+                  <div
+                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                    <p class="text-xs font-semibold uppercase text-slate-400">JP / Minggu</p>
+                    <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{
+                      formatHours(detailModal.data?.weekly_hours) }}</p>
+                  </div>
+                </div>
+                <div class="flex flex-wrap justify-end gap-2">
+                  <button @click="openSubjectModal(detailModal.data); closeDetailModal()"
+                    class="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
+                  <button @click="removeSubject(detailModal.data)"
+                    class="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-700">Hapus</button>
                 </div>
               </div>
 
-              <div class="max-h-[55vh] overflow-auto rounded-2xl border border-slate-200 dark:border-slate-800">
-                <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
-                  <thead
-                    class="sticky top-0 z-10 bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                    <tr>
-                      <th class="px-4 py-3 font-semibold">Sesi</th>
-                      <th class="px-4 py-3 font-semibold">Jam</th>
-                      <th class="px-4 py-3 font-semibold text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                    <tr v-for="slot in detailItems" :key="slot.id">
-                      <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
-                        <div class="font-semibold">{{ slot.label || `Sesi ${slot.session_order}` }}</div>
-                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">Urutan hari {{ slot.day_order }} ·
-                          sesi {{ slot.session_order }}</div>
-                      </td>
-                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ slot.start_time }} - {{ slot.end_time
-                      }}</td>
-                      <td class="px-4 py-3">
-                        <div class="flex justify-end gap-2">
-                          <button @click="openSlotModal(slot); closeDetailModal()"
-                            class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
-                          <button @click="removeSlot(slot)"
-                            class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700">Hapus</button>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr v-if="detailItems.length === 0">
-                      <td colspan="3" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">Belum ada
-                        slot pada hari ini.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+              <div v-else-if="detailModal.type === 'teacher-load'" class="space-y-4">
+                <div class="grid gap-3 sm:grid-cols-4">
+                  <div
+                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                    <p class="text-xs font-semibold uppercase text-slate-400">Beban</p>
+                    <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.item_count ||
+                      0
+                      }}</p>
+                  </div>
+                  <div
+                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                    <p class="text-xs font-semibold uppercase text-slate-400">Kapasitas</p>
+                    <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{
+                      formatHours(detailModal.data?.max_weekly_hours) }}</p>
+                  </div>
+                  <div
+                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                    <p class="text-xs font-semibold uppercase text-slate-400">Terdistribusi</p>
+                    <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{
+                      formatHours(detailModal.data?.distributed_hours) }}</p>
+                  </div>
+                  <div
+                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                    <p class="text-xs font-semibold uppercase text-slate-400">Sisa</p>
+                    <p class="mt-2 text-sm font-bold" :class="remainingHoursClass(detailModal.data?.remaining_hours)">{{
+                      formatHours(detailModal.data?.remaining_hours) }}</p>
+                  </div>
+                </div>
 
-            <div v-else-if="detailModal.type === 'generated'" class="space-y-4">
-              <div class="grid gap-3 sm:grid-cols-4">
-                <div
-                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p class="text-xs font-semibold uppercase text-slate-400">Jadwal</p>
-                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.item_count || 0
-                  }}</p>
-                </div>
-                <div
-                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p class="text-xs font-semibold uppercase text-slate-400">Kelas</p>
-                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.class_count || 0
-                  }}</p>
-                </div>
-                <div
-                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p class="text-xs font-semibold uppercase text-slate-400">Mapel</p>
-                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.subject_count ||
-                    0 }}</p>
-                </div>
-                <div
-                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p class="text-xs font-semibold uppercase text-slate-400">Hari</p>
-                  <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.day_count || 0
-                  }}</p>
+                <div class="max-h-[55vh] overflow-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+                  <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
+                    <thead
+                      class="sticky top-0 z-10 bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                      <tr>
+                        <th class="px-4 py-3 font-semibold">Mapel</th>
+                        <th class="px-4 py-3 font-semibold">Kapasitas</th>
+                        <th class="px-4 py-3 font-semibold">Terdistribusi</th>
+                        <th class="px-4 py-3 font-semibold">Sisa</th>
+                        <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                      <tr v-for="item in detailItems" :key="item.id">
+                        <td class="px-4 py-3">
+                          <div class="font-semibold text-slate-900 dark:text-white">{{ item.subject_name }}</div>
+                          <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.subject_code || "-" }}
+                          </div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ formatHours(item.max_weekly_hours)
+                          }}
+                        </td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ formatHours(item.distributed_hours)
+                          }}
+                        </td>
+                        <td class="px-4 py-3 font-semibold" :class="remainingHoursClass(item.remaining_hours)">{{
+                          formatHours(item.remaining_hours) }}</td>
+                        <td class="px-4 py-3">
+                          <div class="flex justify-end gap-2">
+                            <button @click="openTeacherLoadModal(item); closeDetailModal()"
+                              class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
+                            <button @click="removeTeacherLoad(item)"
+                              class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700">Hapus</button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
-              <div class="max-h-[55vh] overflow-auto rounded-2xl border border-slate-200 dark:border-slate-800">
-                <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
-                  <thead
-                    class="sticky top-0 z-10 bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                    <tr>
-                      <th class="px-4 py-3 font-semibold">Kelas</th>
-                      <th class="px-4 py-3 font-semibold">Hari / Jam</th>
-                      <th class="px-4 py-3 font-semibold">Mapel</th>
-                      <th class="px-4 py-3 font-semibold">LMS</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                    <tr v-for="item in detailItems" :key="item.id">
-                      <td class="px-4 py-3 font-semibold text-slate-900 dark:text-white">{{ item.class_name }}</td>
-                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
-                        <div>{{ item.day_name }} · {{ item.slot_label || `Sesi ${item.session_order}` }}</div>
-                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.start_time }} - {{
-                          item.end_time }}</div>
-                      </td>
-                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
-                        <div>{{ item.subject_name }}</div>
-                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.subject_code || "-" }}
-                        </div>
-                      </td>
-                      <td class="px-4 py-3 text-slate-600 dark:text-slate-300">Subject ID: {{ item.learning_subject_id
-                        || "-" }}</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div v-else-if="detailModal.type === 'distribution'" class="space-y-4">
+                <div class="grid gap-3 sm:grid-cols-4">
+                  <div
+                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                    <p class="text-xs font-semibold uppercase text-slate-400">Distribusi</p>
+                    <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.item_count ||
+                      0
+                      }}</p>
+                  </div>
+                  <div
+                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                    <p class="text-xs font-semibold uppercase text-slate-400">Mapel</p>
+                    <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.subject_count
+                      ||
+                      0 }}</p>
+                  </div>
+                  <div
+                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                    <p class="text-xs font-semibold uppercase text-slate-400">Kelas</p>
+                    <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.class_count ||
+                      0
+                      }}</p>
+                  </div>
+                  <div
+                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                    <p class="text-xs font-semibold uppercase text-slate-400">Total JP</p>
+                    <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{
+                      formatHours(detailModal.data?.total_weekly_hours) }}</p>
+                  </div>
+                </div>
+
+                <div class="max-h-[55vh] overflow-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+                  <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
+                    <thead
+                      class="sticky top-0 z-10 bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                      <tr>
+                        <th class="px-4 py-3 font-semibold">Mapel</th>
+                        <th class="px-4 py-3 font-semibold">Kelas</th>
+                        <th class="px-4 py-3 font-semibold">JP</th>
+                        <th class="px-4 py-3 font-semibold">Kapasitas Beban</th>
+                        <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                      <tr v-for="item in detailItems" :key="item.id">
+                        <td class="px-4 py-3">
+                          <div class="font-semibold text-slate-900 dark:text-white">{{ item.subject_name }}</div>
+                          <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.subject_code || "-" }}
+                          </div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.class_name }}</td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ formatHours(item.weekly_hours) }}
+                        </td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ formatHours(item.load_capacity) }}
+                        </td>
+                        <td class="px-4 py-3">
+                          <div class="flex justify-end gap-2">
+                            <button @click="openDistributionModal(item); closeDetailModal()"
+                              class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
+                            <button @click="removeDistribution(item)"
+                              class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700">Hapus</button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
+
+              <div v-else-if="detailModal.type === 'schedule-day'" class="space-y-4">
+                <div
+                  class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-200">
+                  <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      Menampilkan slot untuk <strong class="text-slate-900 dark:text-white">{{
+                        detailModal.data?.day_name
+                        }}</strong>.
+                    </div>
+                    <button @click="removeScheduleDaySlots([detailModal.data?.day_name])"
+                      :disabled="detailItems.length === 0"
+                      class="rounded-xl bg-red-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">
+                      Hapus Semua Hari Ini
+                    </button>
+                  </div>
+                </div>
+
+                <div class="max-h-[55vh] overflow-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+                  <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
+                    <thead
+                      class="sticky top-0 z-10 bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                      <tr>
+                        <th class="px-4 py-3 font-semibold">Sesi</th>
+                        <th class="px-4 py-3 font-semibold">Jam</th>
+                        <th class="px-4 py-3 font-semibold text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                      <tr v-for="slot in detailItems" :key="slot.id">
+                        <td class="px-4 py-3 text-slate-700 dark:text-slate-200">
+                          <div class="font-semibold">{{ slot.label || `Sesi ${slot.session_order}` }}</div>
+                          <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">Urutan hari {{ slot.day_order }}
+                            ·
+                            sesi {{ slot.session_order }}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ slot.start_time }} - {{
+                          slot.end_time
+                          }}</td>
+                        <td class="px-4 py-3">
+                          <div class="flex justify-end gap-2">
+                            <button @click="openSlotModal(slot); closeDetailModal()"
+                              class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">Edit</button>
+                            <button @click="removeSlot(slot)"
+                              class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700">Hapus</button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr v-if="detailItems.length === 0">
+                        <td colspan="3" class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">Belum
+                          ada
+                          slot pada hari ini.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div v-else-if="detailModal.type === 'generated'" class="space-y-4">
+                <div class="grid gap-3 sm:grid-cols-4">
+                  <div
+                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                    <p class="text-xs font-semibold uppercase text-slate-400">Jadwal</p>
+                    <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.item_count ||
+                      0
+                      }}</p>
+                  </div>
+                  <div
+                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                    <p class="text-xs font-semibold uppercase text-slate-400">Kelas</p>
+                    <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.class_count ||
+                      0
+                      }}</p>
+                  </div>
+                  <div
+                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                    <p class="text-xs font-semibold uppercase text-slate-400">Mapel</p>
+                    <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.subject_count
+                      ||
+                      0 }}</p>
+                  </div>
+                  <div
+                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
+                    <p class="text-xs font-semibold uppercase text-slate-400">Hari</p>
+                    <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ detailModal.data?.day_count || 0
+                      }}</p>
+                  </div>
+                </div>
+
+                <div class="max-h-[55vh] overflow-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+                  <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
+                    <thead
+                      class="sticky top-0 z-10 bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                      <tr>
+                        <th class="px-4 py-3 font-semibold">Kelas</th>
+                        <th class="px-4 py-3 font-semibold">Hari / Jam</th>
+                        <th class="px-4 py-3 font-semibold">Mapel</th>
+                        <th class="px-4 py-3 font-semibold">LMS</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                      <tr v-for="item in detailItems" :key="item.id">
+                        <td class="px-4 py-3 font-semibold text-slate-900 dark:text-white">{{ item.class_name }}</td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
+                          <div>{{ item.day_name }} · {{ item.slot_label || `Sesi ${item.session_order}` }}</div>
+                          <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.start_time }} - {{
+                            item.end_time }}</div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300">
+                          <div>{{ item.subject_name }}</div>
+                          <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.subject_code || "-" }}
+                          </div>
+                        </td>
+                        <td class="px-4 py-3 text-slate-600 dark:text-slate-300">Subject ID: {{ item.learning_subject_id
+                          || "-" }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <div v-if="confirmModal.open" class="fixed inset-0 z-[150] flex items-center justify-center p-4"
           style="background-color: rgba(15, 23, 42, 0.5); backdrop-filter: blur(14px);">
-          <div class="w-full max-w-md overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.22)] dark:border-slate-800 dark:bg-slate-900">
+          <div
+            class="w-full max-w-md overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.22)] dark:border-slate-800 dark:bg-slate-900">
             <div class="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
               <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ confirmModal.title }}</h3>
             </div>

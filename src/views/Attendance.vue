@@ -126,7 +126,7 @@
               </div>
             </div>
 
-            <button type="button" @click="submitCheckOut" :disabled="isCheckingOut || hasCheckedOutToday"
+            <button type="button" @click="openCheckoutConfirm" :disabled="isCheckingOut || hasCheckedOutToday"
               class="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
               <svg v-if="isCheckingOut" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
@@ -249,20 +249,73 @@
         </div>
       </section>
     </div>
+
+    <teleport to="body">
+      <div
+        v-if="isCheckoutConfirmOpen"
+        class="fixed inset-0 z-[120] flex items-end justify-center bg-slate-950/70 p-4 backdrop-blur-sm sm:items-center"
+        @click.self="closeCheckoutConfirm"
+      >
+        <div class="w-full max-w-md rounded-3xl bg-white p-5 shadow-2xl ring-1 ring-slate-900/10 dark:bg-[#111b21] dark:ring-white/10">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-indigo-500 dark:text-indigo-300">Konfirmasi Check-out</p>
+          <h2 class="mt-2 text-xl font-black text-slate-900 dark:text-white">Akhiri sesi absensi hari ini?</h2>
+          <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+            Pastikan Anda benar-benar sudah selesai sebelum melakukan check-out.
+          </p>
+
+          <div class="mt-4 grid gap-2 rounded-2xl bg-slate-50 p-3 text-sm dark:bg-[#0b141a]">
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-500 dark:text-slate-400">Check-in</span>
+              <span class="font-bold text-slate-900 dark:text-white">{{ clockInLabel }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-500 dark:text-slate-400">Jam pulang minimal</span>
+              <span class="font-bold text-slate-900 dark:text-white">{{ checkoutDeadlineLabel }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-500 dark:text-slate-400">Waktu sekarang</span>
+              <span class="font-bold text-slate-900 dark:text-white">{{ currentTime }}</span>
+            </div>
+          </div>
+
+          <div v-if="isBeforeCheckoutMinimum" class="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-xs font-semibold leading-5 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
+            Anda check-out sebelum jam pulang minimal. Sistem tetap mencatat check-out dengan catatan kepulangan tidak sesuai.
+          </div>
+
+          <div class="mt-5 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              class="h-11 rounded-2xl border border-slate-200 text-sm font-bold text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5"
+              :disabled="isCheckingOut"
+              @click="closeCheckoutConfirm"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              class="h-11 rounded-2xl bg-slate-900 text-sm font-bold text-white transition hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+              :disabled="isCheckingOut"
+              @click="confirmCheckout"
+            >
+              {{ isCheckingOut ? "Mengirim..." : "Ya, Check-out" }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from "vue";
-import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatChatTime, formatDate, formatDateKey, formatLongDate } from "@/utils/date";
 import { useProfileStore } from "@/store/profile";
 import { createSortState, sortItems } from "@/utils/tableSort";
+import { storeToRefs } from "pinia";
+import { useStudentAttendanceStore } from "@/store/studentAttendance";
 
 // --- Live Clock Logic ---
-const currentTime = ref("");
-const currentDate = ref("");
 let timer;
 let faceApiLoadPromise = null;
 let faceApiModelsPromise = null;
@@ -276,42 +329,40 @@ const LIVE_MATCH_REQUIRED = 2;
 
 const updateClock = () => {
   const now = new Date();
-  currentTime.value = formatChatTime(now);
-  currentDate.value = formatLongDate(now);
+  attendanceStore.currentTime = formatChatTime(now);
+  attendanceStore.currentDate = formatLongDate(now);
 };
 
 // --- Attendance State ---
-const selectedFile = ref(null);
-const selectedPreviewUrl = ref("");
-const attendances = ref([]);
-const todayAttendance = ref(null);
-const isCheckingIn = ref(false);
-const isCheckingOut = ref(false);
-const isLoadingAttendance = ref(false);
-const isVerifyingFace = ref(false);
-const isCameraLoading = ref(false);
-const cameraActive = ref(false);
-const isMobileClient = ref(false);
-const geoCoords = ref({
-  latitude: null,
-  longitude: null,
-  accuracy: null,
-});
+const attendanceStore = useStudentAttendanceStore();
+const {
+  currentTime,
+  currentDate,
+  selectedFile,
+  selectedPreviewUrl,
+  attendances,
+  todayAttendance,
+  isCheckingIn,
+  isCheckingOut,
+  isCheckoutConfirmOpen,
+  isLoadingAttendance,
+  isVerifyingFace,
+  isCameraLoading,
+  cameraActive,
+  isMobileClient,
+  geoCoords,
+  faceVerification,
+  attendancePage,
+  attendanceLimit,
+  attendanceSearch,
+  attendanceSearchInput,
+  attendanceTotal,
+  attendanceTotalPages,
+} = storeToRefs(attendanceStore);
 const cameraVideoRef = ref(null);
 const captureCanvasRef = ref(null);
-const faceVerification = ref({
-  status: "idle",
-  distance: null,
-  message: "Aktifkan kamera untuk mulai verifikasi wajah.",
-});
 const tableSort = createSortState("attendance_date", "desc");
 const profileStore = useProfileStore();
-const attendancePage = ref(1);
-const attendanceLimit = ref(10);
-const attendanceSearch = ref("");
-const attendanceSearchInput = ref("");
-const attendanceTotal = ref(0);
-const attendanceTotalPages = ref(0);
 
 // Computed properti untuk mendeteksi status kehadiran hari ini
 const formatLocalDate = (value) => {
@@ -320,31 +371,33 @@ const formatLocalDate = (value) => {
 
 const todayStr = formatLocalDate(new Date());
 
-const todayRecord = computed(() => {
-  if (todayAttendance.value) {
-    return todayAttendance.value;
-  }
-  return attendances.value.find(item => {
-    const recordDate = formatLocalDate(item.attendance_date);
-    return recordDate === todayStr;
-  });
-});
-
-const hasCheckedInToday = computed(() => !!todayRecord.value);
-const hasCheckedOutToday = computed(() => hasCheckedInToday.value && !!todayRecord.value.clock_out);
+const hasCheckedInToday = computed(() => attendanceStore.hasCheckedInToday);
+const hasCheckedOutToday = computed(() => attendanceStore.hasCheckedOutToday);
+const todayRecord = computed(() => attendanceStore.todayRecord || attendances.value.find(item => formatLocalDate(item.attendance_date) === todayStr));
 const storedReferenceDescriptor = computed(() => profileStore.profile?.face_reference_descriptor || "");
 const hasProfileReference = computed(() => Boolean(String(storedReferenceDescriptor.value || "").trim()));
-const canSubmitCheckIn = computed(() => hasProfileReference.value && faceVerification.value.status === "matched" && Boolean(selectedFile.value));
 const lateAfterLabel = computed(() => profileStore.profile?.attendance_late_after_time || "Tidak dibatasi");
 const checkoutDeadlineLabel = computed(() => profileStore.profile?.attendance_checkout_deadline || "Tidak dibatasi");
+const attendanceRangeLabel = computed(() => attendanceStore.attendanceRangeLabel);
 
 const sortedAttendances = computed(() => sortItems(attendances.value, tableSort));
 const recentAttendances = computed(() => sortedAttendances.value);
-const attendanceRangeLabel = computed(() => {
-  if (attendanceTotal.value === 0) return "0 data";
-  const start = (attendancePage.value - 1) * attendanceLimit.value + 1;
-  const end = Math.min(attendancePage.value * attendanceLimit.value, attendanceTotal.value);
-  return `${start}-${end} dari ${attendanceTotal.value}`;
+const clockMinutesFromTimeString = (value) => {
+  const match = String(value || "").trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+    return null;
+  }
+  return hours * 60 + minutes;
+};
+const isBeforeCheckoutMinimum = computed(() => {
+  const minimumMinutes = clockMinutesFromTimeString(profileStore.profile?.attendance_checkout_deadline);
+  if (minimumMinutes == null) return false;
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  return nowMinutes < minimumMinutes;
 });
 const clockInLabel = computed(() => (todayRecord.value?.clock_in ? formatChatTime(todayRecord.value.clock_in) : "--:--"));
 const clockOutLabel = computed(() => (todayRecord.value?.clock_out ? formatChatTime(todayRecord.value.clock_out) : "--:--"));
@@ -396,11 +449,7 @@ const resetSelectedPreview = () => {
 };
 
 const resetFaceVerification = (status = "idle", message = "Aktifkan kamera untuk mulai verifikasi wajah.") => {
-  faceVerification.value = {
-    status,
-    distance: null,
-    message,
-  };
+  attendanceStore.resetFaceVerification(status, message);
 };
 
 const ensureGeolocation = async () => {
@@ -577,10 +626,7 @@ const captureEvidenceFromVideo = async () => {
 };
 
 const submitCheckIn = async () => {
-  if (isCheckingIn.value || !selectedFile.value || !canSubmitCheckIn.value) return;
-
-  isCheckingIn.value = true;
-
+  if (!selectedFile.value || !hasProfileReference.value || faceVerification.value.status !== "matched") return;
   try {
     const formData = new FormData();
     formData.append("image", selectedFile.value);
@@ -593,24 +639,11 @@ const submitCheckIn = async () => {
     if (typeof geoCoords.value.accuracy === "number") {
       formData.append("accuracy_meters", String(geoCoords.value.accuracy));
     }
-    const response = await api.post("/attendance", formData);
-    pushToast({
-      title: "Check-in Berhasil",
-      message: response?.message || "Check-in berhasil. Selamat beraktivitas!",
-      type: "success",
-    });
+    await attendanceStore.submitCheckIn(formData);
     stopCamera();
-    await Promise.all([loadTodayAttendance(), loadAttendance({ page: 1 })]);
   } catch (error) {
     stopCamera();
     liveConsecutiveMatches = 0;
-    pushToast({
-      title: "Check-in Gagal",
-      message: error.message,
-      type: "error",
-    });
-  } finally {
-    isCheckingIn.value = false;
   }
 };
 
@@ -710,87 +743,39 @@ const startLiveRecognition = async () => {
 };
 
 const loadTodayAttendance = async () => {
-  try {
-    const response = await api.get("/dashboard/siswa", { silentLoading: true });
-    todayAttendance.value = response?.data?.todayAttendance || null;
-  } catch (error) {
-    todayAttendance.value = null;
-  }
+  await attendanceStore.loadTodayAttendance();
 };
 
 const loadAttendance = async ({ page = attendancePage.value } = {}) => {
-  isLoadingAttendance.value = true;
-  try {
-    const response = await api.get("/attendance", {
-      params: {
-        page,
-        limit: attendanceLimit.value,
-        search: attendanceSearch.value || undefined,
-      },
-    });
-    const payload = response?.data || {};
-    attendances.value = Array.isArray(payload.data) ? payload.data : [];
-    attendancePage.value = Number(payload.page || page || 1);
-    attendanceLimit.value = Number(payload.limit || attendanceLimit.value || 10);
-    attendanceTotal.value = Number(payload.total || 0);
-    attendanceTotalPages.value = Number(payload.total_pages || 0);
-  } catch (error) {
-    pushToast({
-      title: "Gagal Memuat Absensi",
-      message: error.message,
-      type: "error",
-    });
-  } finally {
-    isLoadingAttendance.value = false;
-  }
+  await attendanceStore.loadAttendance({ page });
 };
 
 const applyAttendanceSearch = async () => {
-  attendanceSearch.value = String(attendanceSearchInput.value || "").trim();
-  attendancePage.value = 1;
-  await loadAttendance({ page: 1 });
+  await attendanceStore.applyAttendanceSearch();
 };
 
 const clearAttendanceSearch = async () => {
-  attendanceSearchInput.value = "";
-  attendanceSearch.value = "";
-  attendancePage.value = 1;
-  await loadAttendance({ page: 1 });
+  await attendanceStore.clearAttendanceSearch();
 };
 
 const changeAttendanceLimit = async () => {
-  attendancePage.value = 1;
-  await loadAttendance({ page: 1 });
+  await attendanceStore.changeAttendanceLimit();
 };
 
 const goAttendancePage = async (page) => {
-  const nextPage = Math.max(1, Math.min(Number(page || 1), attendanceTotalPages.value || 1));
-  if (nextPage === attendancePage.value || isLoadingAttendance.value) {
-    return;
-  }
-  await loadAttendance({ page: nextPage });
+  await attendanceStore.goAttendancePage(page);
 };
 
-const submitCheckOut = async () => {
-  isCheckingOut.value = true;
+const openCheckoutConfirm = () => {
+  attendanceStore.openCheckoutConfirm();
+};
 
-  try {
-    const response = await api.post("/attendance/checkout", {});
-    pushToast({
-      title: "Check-out Berhasil",
-      message: response?.message || "Check-out berhasil dicatat. Sampai jumpa besok!",
-      type: "success",
-    });
-    await Promise.all([loadTodayAttendance(), loadAttendance()]);
-  } catch (error) {
-    pushToast({
-      title: "Check-out Gagal",
-      message: error.message,
-      type: "error",
-    });
-  } finally {
-    isCheckingOut.value = false;
-  }
+const closeCheckoutConfirm = () => {
+  attendanceStore.closeCheckoutConfirm();
+};
+
+const confirmCheckout = async () => {
+  await attendanceStore.submitCheckOut();
 };
 
 onMounted(() => {
@@ -808,6 +793,7 @@ onMounted(() => {
 onUnmounted(() => {
   clearInterval(timer);
   stopCamera();
+  isCheckoutConfirmOpen.value = false;
   resetSelectedPreview();
 });
 </script>

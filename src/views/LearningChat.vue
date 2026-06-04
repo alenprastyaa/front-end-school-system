@@ -1,266 +1,236 @@
 <template>
-  <div
-    class="min-h-0 overflow-hidden font-sans text-[#111b21] dark:text-[#e9edef]" :class="unifiedMode ? 'contents' : 'h-full bg-[#d9dbd5] dark:bg-[#0b141a]'">
-    <main class="mx-auto flex min-h-0 w-full flex-col" :class="unifiedMode ? 'contents' : 'h-full p-0 lg:p-5'">
+  <div class="h-full overflow-hidden bg-slate-100 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <main class="mx-auto flex h-full max-w-[1480px] flex-col md:p-8">
       <div
-        class="min-h-0 overflow-hidden shadow-sm" :class="unifiedMode ? 'contents' : 'flex-1 bg-white dark:bg-[#111b21] lg:rounded-md'">
-        <div class="min-h-0" :class="unifiedMode ? 'contents' : 'grid h-full lg:grid-cols-[390px_minmax(0,1fr)]'">
-          <aside v-if="!unifiedMode"
-            class="flex min-h-0 flex-col border-r border-[#e9edef] bg-white dark:border-[#222e35] dark:bg-[#111b21]"
-            :class="{ hidden: mobileChatOpen, 'lg:flex': true }">
-            <header class="flex h-[59px] shrink-0 items-center justify-between bg-[#f0f2f5] px-4 dark:bg-[#202c33]">
-              <div class="flex min-w-0 items-center gap-3">
-                <button v-if="isMobileViewport" type="button"
-                  class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
-                  aria-label="Kembali"
-                  @click="goBack">
-                  <Icon icon="mdi:arrow-left" class="h-5 w-5" />
-                </button>
-                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[#00a884] text-white shadow-sm">
-                  <Icon icon="ph:chats-circle-duotone" class="h-5 w-5 opacity-90" />
+        class="flex-1 overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+        <div class="grid h-full min-h-0 lg:grid-cols-[340px_minmax(0,1fr)]">
+          <aside
+            class="min-h-0 border-b border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-950/40 lg:border-b-0 lg:border-r"
+            :class="{ hidden: mobileChatOpen, 'lg:block': true }">
+            <div class="border-b border-slate-200 px-5 py-5 dark:border-slate-800">
+              <div class="flex items-center gap-3">
+                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-sm"
+                  :class="roleAccentClass">
+                  <Icon icon="ph:chats-circle-duotone" class="h-7 w-7 opacity-90" />
                 </div>
-                <div class="min-w-0">
-                  <h2 class="truncate text-base font-semibold text-[#111b21] dark:text-[#e9edef]">Grup Mapel</h2>
-                  <p class="truncate text-xs text-[#667781] dark:text-[#8696a0]">{{ isConnected ? "Tersambung" : "Menghubungkan..." }}</p>
+                <div>
+                  <h2 class="text-lg font-bold text-slate-900 dark:text-white">Grup Mata Pelajaran</h2>
+                  <p class="text-sm text-slate-500 dark:text-slate-400">Pilih mapel untuk mulai berdiskusi.</p>
                 </div>
               </div>
-            </header>
 
-            <div class="min-h-0 flex-1 overflow-y-auto bg-white dark:bg-[#111b21]">
+              <div v-if="subjectError"
+                class="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-300">
+                {{ subjectError }}
+              </div>
+            </div>
+
+            <div class="h-[calc(100%-97px)] overflow-y-auto p-3">
               <button v-for="subject in orderedSubjects" :key="subject.id" @click="selectSubject(subject)"
-                class="group flex min-h-[72px] w-full items-center gap-3 px-3 text-left transition"
+                class="mb-2 flex w-full items-start gap-3 rounded-2xl px-4 py-4 text-left transition ring-1 ring-transparent"
                 :class="selectedSubject?.id === subject.id
-                  ? 'bg-[#f0f2f5] dark:bg-[#2a3942]'
+                  ? selectedGroupClass
                   : subjectUnreadCount(subject.id) > 0
-                    ? 'bg-[#f5fbf8] dark:bg-[#15251f]'
-                    : 'hover:bg-[#f5f6f6] dark:hover:bg-[#202c33]'">
+                    ? unreadGroupClass
+                    : 'bg-transparent hover:bg-white dark:hover:bg-slate-900/80'">
                 <div
-                  class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full text-white shadow-sm"
+                  class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-white shadow-sm"
                   :class="subject.chat_icon_url ? 'bg-slate-100 dark:bg-slate-800' : getSubjectIconClass(subject)">
                   <img v-if="subject.chat_icon_url" :src="subject.chat_icon_url" alt="Ikon grup mapel"
                     class="h-full w-full object-cover" />
                   <Icon v-else :icon="getSubjectIcon(subject)" class="h-6 w-6 opacity-95" />
                 </div>
-                <div class="min-w-0 flex-1 border-b border-[#e9edef] py-3 dark:border-[#222e35]">
-                  <div class="flex min-w-0 items-center gap-3">
-                    <h3 class="min-w-0 flex-1 truncate text-[15px] font-medium text-[#111b21] dark:text-[#e9edef]">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-start justify-between gap-3">
+                    <h3 class="truncate font-bold"
+                      :class="selectedSubject?.id === subject.id ? 'text-white' : 'text-slate-900 dark:text-white'">
                       {{ subject.name }}
                     </h3>
-                    <time class="shrink-0 text-xs"
-                      :class="subjectUnreadCount(subject.id) > 0 ? 'font-semibold text-[#00a884]' : 'text-[#667781] dark:text-[#8696a0]'">
-                      {{ formatSubjectTime(subject.id) }}
-                    </time>
+                    <div class="flex shrink-0 items-center gap-2">
+                      <span v-if="subjectUnreadCount(subject.id) > 0"
+                        class="inline-flex min-w-[22px] items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-bold"
+                        :class="selectedSubject?.id === subject.id ? 'bg-white text-slate-900' : unreadBadgeClass">
+                        {{ formatUnreadCount(subjectUnreadCount(subject.id)) }}
+                      </span>
+                      <span class="text-[11px] font-semibold"
+                        :class="selectedSubject?.id === subject.id ? 'text-white/80' : 'text-slate-400'">
+                        {{ subjectMessageCount(subject.id) }}
+                      </span>
+                    </div>
                   </div>
-                  <p class="mt-1 truncate text-xs text-[#667781] dark:text-[#8696a0]">
+                  <p class="mt-1 truncate text-sm"
+                    :class="selectedSubject?.id === subject.id ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'">
                     {{ subject.class_name || `Guru: ${subject.teacher_name || '-'}` }}
                   </p>
-                  <div class="mt-1 flex min-w-0 items-center gap-2">
-                    <p class="min-w-0 flex-1 truncate text-sm"
-                      :class="subjectUnreadCount(subject.id) > 0 ? 'font-semibold text-[#111b21] dark:text-[#e9edef]' : 'text-[#667781] dark:text-[#8696a0]'">
+                  <div class="mt-1 flex items-center gap-2">
+                    <span v-if="subjectUnreadCount(subject.id) > 0"
+                      class="inline-flex shrink-0 items-center rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-rose-600 dark:bg-rose-500/20 dark:text-rose-300"
+                      :class="selectedSubject?.id === subject.id ? 'bg-white/20 text-white' : ''">
+                      Pesan baru
+                    </span>
+                    <p class="truncate text-xs"
+                      :class="selectedSubject?.id === subject.id ? 'text-white/70' : subjectUnreadCount(subject.id) > 0 ? 'font-semibold text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'">
                       {{ latestMessagePreview(subject.id) }}
                     </p>
-                    <span v-if="subjectUnreadCount(subject.id) > 0"
-                      class="inline-flex min-w-[20px] shrink-0 items-center justify-center rounded-full bg-[#25d366] px-1.5 py-0.5 text-[11px] font-bold leading-none text-[#111b21]">
-                      {{ formatUnreadCount(subjectUnreadCount(subject.id)) }}
-                    </span>
                   </div>
                 </div>
               </button>
 
               <div v-if="subjects.length === 0"
-                class="px-7 py-10 text-center text-sm text-[#667781] dark:text-[#8696a0]">
+                class="p-6 text-center text-sm font-medium text-slate-500 dark:text-slate-400">
                 Belum ada grup mata pelajaran yang tersedia.
               </div>
             </div>
           </aside>
 
-          <section class="flex min-h-0 flex-col overflow-hidden bg-[#efeae2] learning-chat-wallpaper dark:bg-[#0b141a]"
-            :class="unifiedMode ? 'flex-1 w-full' : 'h-full ' + (mobileChatOpen ? '' : 'hidden lg:flex')">
+          <section class="flex min-h-0 h-full flex-col overflow-hidden bg-[#efeae2] dark:bg-slate-950/20"
+            :class="{ hidden: !mobileChatOpen, 'lg:flex': true }">
             <template v-if="selectedSubject">
-              <header
-                class="z-10 flex h-[59px] shrink-0 items-center gap-3 bg-[#f0f2f5] px-3 dark:bg-[#202c33]">
+              <div
+                class="border-b border-slate-200 bg-white/95 px-5 py-4 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
                 <div class="flex items-center gap-3">
-              <button type="button"
-                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10 lg:hidden"
-                    @click="unifiedMode ? emit('back') : backToGroupList">
-                    <Icon icon="mdi:arrow-left" class="h-6 w-6" />
+                  <button v-if="!unifiedMode" type="button"
+                    class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 lg:hidden"
+                    @click="backToGroupList">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
                   </button>
-                  <button type="button"
-                    class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full text-white shadow-sm"
-                    :class="[
-                      selectedSubject.chat_icon_url ? 'bg-slate-100 dark:bg-slate-800' : getSubjectIconClass(selectedSubject),
-                      role === 'GURU' ? 'ring-2 ring-transparent transition hover:ring-[#00a884]/40' : '',
-                    ]" :disabled="role !== 'GURU' || isUploadingChatIcon" @click="openChatIconModal">
+                  <div
+                    class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl text-white shadow-sm"
+                    :class="selectedSubject.chat_icon_url ? 'bg-slate-100 dark:bg-slate-800' : getSubjectIconClass(selectedSubject)">
                     <img v-if="selectedSubject.chat_icon_url" :src="selectedSubject.chat_icon_url" alt="Ikon grup mapel"
                       class="h-full w-full object-cover" />
                     <Icon v-else :icon="getSubjectIcon(selectedSubject)" class="h-6 w-6 opacity-95" />
-                  </button>
-                  <div class="min-w-0 flex-1">
-                    <h2 class="truncate text-[15px] font-medium text-[#111b21] dark:text-[#e9edef]">{{
-                      selectedSubject.name }}
+                  </div>
+                  <div class="min-w-0">
+                    <h2 class="truncate text-lg font-bold text-slate-900 dark:text-white">{{ selectedSubject.name }}
                     </h2>
-                    <p class="truncate text-xs text-[#667781] dark:text-[#8696a0]">
-                      <span v-if="typingIndicatorText" class="text-[#00a884]">{{ typingIndicatorText }}</span>
-                      <span v-else>{{ selectedSubject.class_name }}<span v-if="selectedSubject.teacher_name"> • {{
-                        selectedSubject.teacher_name }}</span> • {{ onlineIndicatorText }}</span>
+                    <p class="truncate text-sm text-slate-500 dark:text-slate-400">
+                      {{ selectedSubject.class_name }}
+                      <span v-if="selectedSubject.teacher_name">• {{ selectedSubject.teacher_name }}</span>
                     </p>
                   </div>
+                  <button v-if="role === 'GURU'" type="button"
+                    class="ml-auto inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                    :disabled="isUploadingChatIcon" @click="openChatIconPicker">
+                    <svg v-if="isUploadingChatIcon" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"
+                      stroke-width="2" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                    <svg v-else class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M6.75 7.5h10.5M6.75 12h10.5m-10.5 4.5h4.5" />
+                    </svg>
+                    {{ isUploadingChatIcon ? "Mengunggah..." : "Ubah Ikon" }}
+                  </button>
                 </div>
-            </header>
+                <input v-if="role === 'GURU'" ref="chatIconInputRef" type="file" accept="image/*" class="hidden"
+                  @change="handleChatIconUpload" />
+              </div>
 
-              <div ref="messageListRef" :style="messageListStyle"
-                class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 md:px-14">
+              <div v-if="chatError"
+                class="mx-5 mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-300">
+                {{ chatError }}
+              </div>
+
+              <div ref="messageListRef"
+                class="min-h-0 flex-1 space-y-4 overflow-y-auto bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.8),_rgba(239,234,226,0.8)_40%,_rgba(239,234,226,1)_100%)] px-4 py-5 dark:bg-[radial-gradient(circle_at_top_left,_rgba(30,41,59,0.7),_rgba(15,23,42,0.98)_45%,_rgba(2,6,23,1)_100%)] md:px-8">
                 <div v-if="isLoadingMessages"
-                  class="flex h-full min-h-[420px] items-center justify-center">
-                  <div
-                    class="rounded-lg bg-white/80 px-4 py-2 text-sm text-[#667781] shadow-sm dark:bg-[#202c33]/90 dark:text-[#8696a0]">
-                    Memuat percakapan...
-                  </div>
+                  class="flex h-full min-h-[420px] items-center justify-center text-sm font-medium text-slate-500 dark:text-slate-400">
+                  Memuat percakapan...
                 </div>
 
                 <div v-else-if="currentMessages.length === 0"
                   class="flex h-full min-h-[420px] items-center justify-center">
                   <div
-                    class="max-w-sm rounded-lg bg-[#fffef7]/95 px-5 py-4 text-center text-sm text-[#667781] shadow-sm dark:bg-[#202c33]/95 dark:text-[#d1d7db]">
-                    Belum ada pesan di grup {{ selectedSubject.name }}.
+                    class="max-w-md rounded-3xl bg-white/90 px-8 py-8 text-center shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900/85 dark:ring-white/10">
+                    <div
+                      class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                      <svg class="h-8 w-8 text-slate-500 dark:text-slate-300" fill="none" viewBox="0 0 24 24"
+                        stroke-width="1.6" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M2.25 12.76l.904-.903a2.25 2.25 0 013.182 0l.904.903m0 0l2.69 2.69a2.25 2.25 0 003.182 0l5.44-5.439a2.25 2.25 0 013.182 0l.904.903M7.5 15.75h9" />
+                      </svg>
+                    </div>
+                    <h3 class="mt-4 text-lg font-bold text-slate-900 dark:text-white">Belum ada pesan</h3>
+                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Mulai percakapan di grup {{
+                      selectedSubject.name }}.</p>
                   </div>
                 </div>
 
-                <div v-else class="space-y-1">
-                  <template v-for="entry in renderedMessages" :key="entry.key">
-                    <div v-if="entry.type === 'date'" class="sticky top-2 z-[1] flex justify-center py-2">
-                      <span
-                        class="rounded-lg bg-[#e1f3fb] px-3 py-1 text-xs text-[#54656f] shadow-sm dark:bg-[#182229] dark:text-[#8696a0]">
-                        {{ entry.label }}
+                <div v-for="item in currentMessages" :key="item.id" class="flex"
+                  :class="item.sender_id === currentUserId ? 'justify-end' : 'justify-start'">
+                  <article class="max-w-[85%] rounded-3xl px-4 py-3 shadow-sm md:max-w-[70%]"
+                    :class="item.sender_id === currentUserId ? ownMessageClass : 'rounded-tl-md bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-800'">
+                    <div class="flex items-center gap-2 text-xs font-semibold">
+                      <span>{{ item.sender_name || "Pengguna" }}</span>
+                      <span class="rounded-full px-2 py-0.5" :class="roleBadgeClass(item.sender_role)">
+                        {{ roleLabel(item.sender_role) }}
                       </span>
                     </div>
-
-                    <div v-else class="flex"
-                      :class="entry.message.sender_id === currentUserId ? 'justify-end' : 'justify-start'">
-                      <article
-                        class="learning-message-bubble relative px-2.5 py-1.5 text-sm leading-5 shadow-sm"
-                        :class="[
-                          entry.message.sender_id === currentUserId ? 'own bg-[#d9fdd3] text-[#111b21] dark:bg-[#005c4b] dark:text-[#e9edef]' : 'other bg-white text-[#111b21] dark:bg-[#202c33] dark:text-[#e9edef]',
-                          replyHighlightMessageId === Number(entry.message.id) ? 'ring-2 ring-amber-400 dark:ring-amber-300' : '',
-                        ]" :data-message-id="entry.message.id" @touchstart.passive="handleMessagePressStart(entry.message)"
-                        @touchend="handleMessagePressEnd(entry.message)" @touchcancel="handleMessagePressEnd">
-                        <div v-if="entry.message.sender_id !== currentUserId"
-                          class="mb-1 flex items-center gap-2 text-xs font-semibold text-[#00a884]">
-                          <span>{{ entry.message.sender_name || "Pengguna" }}</span>
-                          <span class="rounded-full bg-black/5 px-2 py-0.5 text-[10px] text-[#667781] dark:bg-white/10 dark:text-[#aebac1]">
-                            {{ roleLabel(entry.message.sender_role) }}
-                          </span>
-                        </div>
-                        <button v-if="parseReplyPayload(entry.message.message).replyName" type="button"
-                          @click="jumpToReplyTarget(entry.message)"
-                          class="mb-1 w-full rounded-md border-l-4 px-2 py-1.5 text-left text-[11px]"
-                          :class="entry.message.sender_id === currentUserId ? 'border-[#00a884] bg-black/5 text-[#3b4a54] dark:text-[#d1d7db]' : 'border-[#00a884] bg-[#f0f2f5] text-[#3b4a54] dark:bg-[#111b21] dark:text-[#d1d7db]'">
-                          <p class="line-clamp-2">{{ parseReplyPayload(entry.message.message).replyPreview }}</p>
-                        </button>
-                        <p v-if="parseReplyPayload(entry.message.message).body"
-                          class="whitespace-pre-wrap break-words pr-12">
-                          {{ parseReplyPayload(entry.message.message).body }}
-                        </p>
-                        <div v-if="entry.message.attachment_url" class="mt-2">
-                          <audio v-if="isVoiceMessage(entry.message)" :src="normalizePublicUrl(entry.message.attachment_url)" controls
-                            class="w-full max-w-sm" />
-                          <button v-else-if="isRenderableImageMessage(entry.message)" type="button"
-                            @click="openImagePreview(normalizePublicUrl(entry.message.attachment_url), entry.message.attachment_name)"
-                            class="block w-full overflow-hidden rounded-md text-left">
-                            <img :src="normalizePublicUrl(entry.message.attachment_url)"
-                              :alt="entry.message.attachment_name || 'Lampiran gambar'" class="max-h-72 w-full object-cover" />
-                          </button>
-                          <button v-else-if="isPdfPreviewMessage(entry.message)" type="button"
-                            class="block w-full overflow-hidden rounded-md border border-black/10 bg-white text-left shadow-sm dark:border-white/10 dark:bg-[#202c33]"
-                            @click="openPdfPreview(entry.message)">
-                            <img :src="normalizePublicUrl(entry.message.attachment_preview_url)"
-                              :alt="entry.message.attachment_name || 'Pratinjau PDF'"
-                              class="max-h-60 w-full object-contain bg-white" />
-                            <div class="flex items-center gap-3 border-t border-black/5 px-3 py-2 text-sm font-semibold text-[#111b21] dark:border-white/10 dark:text-[#e9edef]">
-                              <Icon icon="ph:file-pdf" class="h-5 w-5 shrink-0 text-[#ef4444]" />
-                              <span class="truncate">{{ entry.message.attachment_name || "Buka PDF" }}</span>
-                            </div>
-                          </button>
-                          <a v-else :href="normalizePublicUrl(entry.message.attachment_url)" target="_blank" rel="noreferrer"
-                            class="flex items-center gap-3 rounded-md bg-black/5 px-3 py-2 text-sm font-semibold hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15">
-                            <Icon icon="ph:paperclip" class="h-5 w-5 shrink-0" />
-                            <span class="truncate">{{ entry.message.attachment_name || "Buka file" }}</span>
-                          </a>
-                        </div>
-                        <div class="-mb-0.5 mt-0.5 flex items-center justify-end gap-1 pl-8 text-[11px] leading-none text-[#667781] dark:text-[#8696a0]">
-                          <time>{{ formatChatTime(entry.message.created_at) }}</time>
-                          <span v-if="entry.message.edited_at" class="text-[10px] font-medium uppercase tracking-wide opacity-80">Diedit</span>
-                          <Icon v-if="entry.message.sender_id === currentUserId" :icon="ownMessageReadIcon(entry.message)"
-                            class="h-4 w-4" :class="ownMessageReadIconClass(entry.message)" />
-                        </div>
-                      </article>
+                    <p v-if="item.message" class="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed">
+                      {{ item.message }}
+                    </p>
+                    <div v-if="item.attachment_url" class="mt-3">
+                      <audio v-if="item.message_type === 'VOICE'" :src="item.attachment_url" controls
+                        class="w-full max-w-sm" />
+                      <a v-else-if="item.message_type === 'IMAGE'" :href="item.attachment_url" target="_blank"
+                        rel="noreferrer" class="block overflow-hidden rounded-2xl">
+                        <img :src="item.attachment_url" :alt="item.attachment_name || 'Lampiran gambar'"
+                          class="max-h-72 w-full object-cover" />
+                      </a>
+                      <a v-else-if="item.message_type === 'PDF'" :href="item.attachment_url" target="_blank"
+                        rel="noreferrer"
+                        class="flex items-center gap-3 rounded-2xl bg-black/5 px-4 py-3 text-sm font-semibold hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15">
+                        <Icon icon="ph:file-pdf" class="h-6 w-6 shrink-0" />
+                        <span class="truncate">{{ item.attachment_name || "Buka PDF" }}</span>
+                      </a>
+                      <a v-else :href="item.attachment_url" target="_blank" rel="noreferrer"
+                        class="flex items-center gap-3 rounded-2xl bg-black/5 px-4 py-3 text-sm font-semibold hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15">
+                        <Icon icon="ph:paperclip" class="h-5 w-5 shrink-0" />
+                        <span class="truncate">{{ item.attachment_name || "Buka file" }}</span>
+                      </a>
                     </div>
-                  </template>
-                </div>
-                <div ref="bottomAnchorRef" class="h-px w-full"></div>
-              </div>
-
-              <form ref="composerBarRef" @submit.prevent="sendMessage"
-                class="fixed inset-x-0 z-20 shrink-0 bg-[#f0f2f5] px-3 py-2 dark:bg-[#202c33] md:sticky md:inset-auto md:px-4"
-                :style="composerBarStyle">
-                <div v-if="editTarget"
-                  class="mb-2 rounded-lg border-l-4 border-amber-400 bg-amber-50 px-3 py-2 text-[11px] shadow-sm dark:bg-amber-500/10">
-                  <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
-                      <p class="font-semibold text-amber-700 dark:text-amber-300">Mengedit pesan</p>
-                      <p class="truncate text-[#54656f] dark:text-[#aebac1]">{{ getMessagePreview(editTarget) }}</p>
-                    </div>
-                    <button type="button" @click="clearEditTarget"
-                      class="rounded-full p-1 text-[#667781] hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10">
-                      <Icon icon="mdi:close" class="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-                <div v-if="replyTarget"
-                  class="mb-2 rounded-lg border-l-4 border-[#00a884] bg-white px-3 py-2 text-[11px] shadow-sm dark:bg-[#2a3942]">
-                  <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
-                      <p class="truncate text-[#667781] dark:text-[#aebac1]">
-                        {{ getMessagePreview(replyTarget) }}
+                    <div class="mt-2 flex items-center justify-between gap-4 text-[11px] opacity-70">
+                      <p>{{ formatDateTime(item.created_at) }}</p>
+                      <p v-if="item.sender_id === currentUserId" class="font-semibold">
+                        {{ ownMessageReadLabel(item) }}
                       </p>
                     </div>
-                    <button type="button" @click="clearReplyTarget"
-                      class="rounded-full p-1 text-[#667781] hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10">
-                      <Icon icon="mdi:close" class="h-4 w-4" />
-                    </button>
-                  </div>
+                  </article>
                 </div>
+              </div>
+
+              <form @submit.prevent="sendMessage"
+                class="border-t border-slate-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-900 md:px-6">
                 <div v-if="attachmentPreviewName || isRecordingVoice || recordedVoiceUrl"
-                  class="mb-2 rounded-lg bg-white px-4 py-3 text-sm shadow-sm dark:bg-[#2a3942]">
+                  class="mb-3 rounded-2xl bg-slate-100 px-4 py-3 text-sm dark:bg-slate-800">
                   <div v-if="attachmentPreviewName" class="flex items-center justify-between gap-3">
                     <div class="min-w-0">
-                      <p class="font-semibold text-[#111b21] dark:text-[#e9edef]">Lampiran siap dikirim</p>
-                      <p class="truncate text-[#667781] dark:text-[#8696a0]">{{ attachmentPreviewName }}</p>
+                      <p class="font-semibold text-slate-900 dark:text-white">Lampiran siap dikirim</p>
+                      <p class="truncate text-slate-500 dark:text-slate-400">{{ attachmentPreviewName }}</p>
                     </div>
-                    <button type="button" class="text-[#667781] hover:text-[#111b21] dark:text-[#aebac1]"
+                    <button type="button" class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200"
                       @click="clearAttachment">
                       <Icon icon="mdi:close" class="h-5 w-5" />
                     </button>
                   </div>
                   <div v-if="recordedVoiceUrl" class="flex items-center justify-between gap-3">
                     <div class="min-w-0 flex-1">
-                      <p class="font-semibold text-[#111b21] dark:text-[#e9edef]">Voice note siap dikirim</p>
+                      <p class="font-semibold text-slate-900 dark:text-white">Voice note siap dikirim</p>
                       <audio :src="recordedVoiceUrl" controls class="mt-2 w-full" />
                     </div>
-                    <button type="button" class="text-[#667781] hover:text-[#111b21] dark:text-[#aebac1]"
+                    <button type="button" class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200"
                       @click="clearAttachment">
                       <Icon icon="mdi:close" class="h-5 w-5" />
                     </button>
                   </div>
                   <div v-else-if="isRecordingVoice" class="flex items-center justify-between gap-3">
-                    <div class="flex-1">
-                      <p class="font-semibold text-[#111b21] dark:text-[#e9edef]">Sedang merekam voice note...</p>
-                      <svg class="mt-2 h-10 w-full max-w-sm rounded-md bg-rose-50/70 dark:bg-rose-500/10"
-                        viewBox="0 0 300 40" preserveAspectRatio="none">
-                        <polyline :points="recordingWavePoints" fill="none" stroke="#ef4444" stroke-width="2"
-                          stroke-linecap="round" stroke-linejoin="round" />
-                      </svg>
-                      <p class="text-[#667781] dark:text-[#8696a0]">{{ recordingDurationLabel }}</p>
+                    <div>
+                      <p class="font-semibold text-slate-900 dark:text-white">Sedang merekam voice note...</p>
+                      <p class="text-slate-500 dark:text-slate-400">{{ recordingDurationLabel }}</p>
                     </div>
                     <button type="button" class="rounded-full bg-rose-500 p-2 text-white hover:bg-rose-400"
                       @click="stopVoiceRecording">
@@ -268,62 +238,61 @@
                     </button>
                   </div>
                 </div>
-                <div class="flex min-h-[44px] items-end gap-2">
-                  <div class="relative mb-1">
+                <div class="flex items-end gap-3">
+                  <div class="flex shrink-0 items-center gap-2">
+                    <input ref="attachmentInputRef" type="file"
+                      accept="image/*,application/pdf,audio/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" class="hidden"
+                      @change="handleAttachmentChange" />
                     <button type="button"
-                      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
-                      @click="toggleEmojiPanel">
-                      <Icon icon="mdi:emoticon-outline" class="h-6 w-6" />
+                      class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                      :disabled="isSendingMessage || isRecordingVoice" @click="openAttachmentPicker">
+                      <Icon icon="ph:paperclip" class="h-5 w-5" />
                     </button>
-                    <div v-if="emojiPanelOpen"
-                      class="absolute bottom-12 left-0 z-30 w-64 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl dark:border-slate-700 dark:bg-slate-900">
-                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Emoji</p>
-                      <div class="grid grid-cols-8 gap-1">
-                        <button v-for="emoji in chatEmojis" :key="emoji" type="button"
-                          class="rounded-lg p-1 text-xl transition hover:bg-slate-100 dark:hover:bg-slate-800"
-                          @click="insertEmoji(emoji)">
-                          {{ emoji }}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="mb-1 flex shrink-0 items-center gap-1">
                     <button type="button"
-                      class="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
-                      :disabled="isSendingMessage || isRecordingVoice || Boolean(editTarget)" @click="openAttachmentPicker">
-                      <Icon icon="mdi:paperclip" class="h-6 w-6" />
+                      class="inline-flex h-12 w-12 items-center justify-center rounded-full text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+                      :class="isRecordingVoice ? 'bg-rose-500 hover:bg-rose-400' : roleAccentClass"
+                      :disabled="isSendingMessage || Boolean(attachmentFile)" @click="toggleVoiceRecording">
+                      <Icon :icon="isRecordingVoice ? 'ph:stop-fill' : 'ph:microphone-fill'" class="h-5 w-5" />
                     </button>
                   </div>
-                  <div class="mb-1 flex min-h-10 flex-1 items-center rounded-lg bg-white px-3 dark:bg-[#2a3942]">
-                    <textarea v-model="composer" rows="1" placeholder="Ketik pesan" @input="handleComposerInput"
-                      @keydown="handleComposerKeydown" @focus="ensureComposerVisible"
-                      class="block max-h-28 min-h-[24px] w-full resize-none overflow-y-auto border-0 bg-transparent py-2 text-[15px] leading-6 text-[#111b21] outline-none placeholder:text-[#667781] focus:outline-none focus:ring-0 dark:text-[#e9edef] dark:placeholder:text-[#8696a0]" />
+                  <div
+                    class="flex-1 rounded-[24px] bg-slate-100 px-4 py-1.5 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+                    <textarea v-model="composer" rows="1" placeholder="Tulis pesan ke grup mata pelajaran ini..."
+                      @keydown="handleComposerKeydown"
+                      class="block w-full resize-none border-0 bg-transparent p-0 text-sm text-slate-900 focus:outline-none focus:ring-0 dark:text-white leading-[48px] h-[48px]" />
                   </div>
-                  <button type="button" v-if="!composer.trim() && !attachmentFile && !editTarget" :disabled="isSendingMessage"
-                    class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#54656f] transition hover:bg-black/5 disabled:opacity-50 dark:text-[#aebac1] dark:hover:bg-white/10"
-                    :class="isRecordingVoice ? 'bg-rose-500 text-white hover:bg-rose-400 dark:text-white' : ''"
-                    @click="toggleVoiceRecording">
-                    <Icon :icon="isRecordingVoice ? 'ph:stop-fill' : 'mdi:microphone'" class="h-5 w-5" />
-                  </button>
-                  <button v-else :disabled="isSendingMessage"
-                    class="mb-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#00a884] text-white transition hover:bg-[#008f72] disabled:opacity-50">
-                    <Icon :icon="editTarget ? 'mdi:check' : 'mdi:send'" class="h-5 w-5" />
+                  <button :disabled="isSendingMessage || !composer.trim()"
+                    class="inline-flex h-14 w-14 items-center justify-center rounded-full text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60"
+                    :class="roleAccentClass">
+                    <svg v-if="isSendingMessage" class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"
+                      stroke-width="2" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                    <svg v-else class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                    </svg>
                   </button>
                 </div>
               </form>
-              <input ref="attachmentInputRef" type="file" class="hidden"
-                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,audio/*"
-                @change="handleAttachmentChange" />
             </template>
 
-            <div v-else class="hidden h-full min-h-[560px] items-center justify-center bg-[#f0f2f5] px-8 dark:bg-[#222e35] lg:flex">
-              <div class="max-w-md text-center">
-                <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-[#d9dbd5] dark:bg-[#111b21]">
-                  <Icon icon="ph:chats-circle-duotone" class="h-12 w-12 text-[#667781] dark:text-[#8696a0]" />
+            <div v-else class="hidden h-full min-h-[720px] items-center justify-center px-6 lg:flex">
+              <div
+                class="max-w-lg rounded-[32px] bg-white/90 px-8 py-10 text-center shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900/85 dark:ring-white/10">
+                <div
+                  class="mx-auto flex h-18 w-18 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                  <svg class="h-10 w-10 text-slate-500 dark:text-slate-300" fill="none" viewBox="0 0 24 24"
+                    stroke-width="1.6" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M8.625 9.75a3.375 3.375 0 116.75 0m-6.75 0a3.375 3.375 0 106.75 0m-6.75 0v1.5m6.75-1.5v1.5m-8.25 8.25h9a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.186-1.016-.523-1.408L15.53 12.45A2.25 2.25 0 0013.851 11.7h-3.702a2.25 2.25 0 00-1.679.75l-2.297 2.57a2.25 2.25 0 00-.523 1.408v1.372A2.25 2.25 0 007.9 20.25z" />
+                  </svg>
                 </div>
-                <h2 class="mt-6 text-2xl font-light text-[#41525d] dark:text-[#d1d7db]">Live Chat Mapel</h2>
-                <p class="mt-3 text-sm leading-6 text-[#667781] dark:text-[#8696a0]">
-                  Pilih grup mata pelajaran di sebelah kiri untuk membuka percakapan.
+                <h2 class="mt-5 text-xl font-bold text-slate-900 dark:text-white">Pilih Grup Mapel</h2>
+                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                  Daftar mata pelajaran di panel kiri berfungsi sebagai grup chat. Pilih salah satu untuk mulai
+                  berdiskusi.
                 </p>
               </div>
             </div>
@@ -331,148 +300,18 @@
         </div>
       </div>
     </main>
-    <div v-if="showChatIconModal && role === 'GURU'" class="fixed inset-0 z-[75] bg-black/45"
-      @click="closeChatIconModal">
-      <div
-        class="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white p-4 shadow-2xl dark:bg-slate-900 sm:mx-auto sm:my-16 sm:inset-auto sm:w-full sm:max-w-md sm:rounded-2xl"
-        @click.stop>
-        <h3 class="text-base font-semibold text-slate-900 dark:text-white">Ubah Ikon Grup</h3>
-        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Pilih gambar baru untuk ikon mapel ini.</p>
-
-        <div class="mt-4 flex items-center gap-3">
-          <div
-            class="h-16 w-16 overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
-            <img v-if="chatIconPreviewUrl || selectedSubject?.chat_icon_url"
-              :src="chatIconPreviewUrl || selectedSubject?.chat_icon_url" alt="Preview ikon grup"
-              class="h-full w-full object-cover" />
-            <div v-else class="flex h-full w-full items-center justify-center text-slate-500 dark:text-slate-300">
-              <Icon icon="ph:chats-circle-duotone" class="h-7 w-7" />
-            </div>
-          </div>
-          <input type="file" accept="image/*" @change="handleChatIconFileChange"
-            class="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:font-semibold file:text-slate-700 hover:file:bg-slate-200 dark:text-slate-300 dark:file:bg-slate-800 dark:file:text-slate-200 dark:hover:file:bg-slate-700" />
-        </div>
-
-        <div class="mt-5 flex items-center justify-end gap-2">
-          <button type="button" @click="closeChatIconModal"
-            class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-300">
-            Batal
-          </button>
-          <button type="button" :disabled="isUploadingChatIcon || !chatIconDraftFile" @click="submitChatIconUpload"
-            class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
-            {{ isUploadingChatIcon ? "Menyimpan..." : "Simpan" }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div v-if="showImagePreview" class="fixed inset-0 z-[80] bg-black/90" @click="closeImagePreview">
-      <div class="absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-3">
-        <p class="truncate text-xs font-semibold text-white/80">{{ previewImageName || "Preview Gambar" }}</p>
-        <div class="flex items-center gap-2">
-          <button type="button" @click.stop="zoomOutPreview"
-            class="rounded-full bg-white/15 p-2 text-white hover:bg-white/25">
-            <Icon icon="mdi:magnify-minus-outline" class="h-5 w-5" />
-          </button>
-          <button type="button" @click.stop="resetPreviewZoom"
-            class="rounded-full bg-white/15 p-2 text-white hover:bg-white/25">
-            <Icon icon="mdi:fit-to-page-outline" class="h-5 w-5" />
-          </button>
-          <button type="button" @click.stop="zoomInPreview"
-            class="rounded-full bg-white/15 p-2 text-white hover:bg-white/25">
-            <Icon icon="mdi:magnify-plus-outline" class="h-5 w-5" />
-          </button>
-          <button type="button" @click.stop="closeImagePreview"
-            class="rounded-full bg-white/15 p-2 text-white hover:bg-white/25">
-            <Icon icon="mdi:close" class="h-5 w-5" />
-          </button>
-        </div>
-      </div>
-      <div class="flex h-full w-full items-center justify-center overflow-auto p-4 pt-16">
-        <img :src="previewImageUrl" :alt="previewImageName || 'Preview gambar'"
-          class="max-h-full max-w-full origin-center object-contain transition-transform duration-150"
-          :style="{ transform: `scale(${previewImageZoom})` }" @click.stop />
-      </div>
-    </div>
-
-    <div v-if="showPdfPreview" class="fixed inset-0 z-[81] bg-black/90" @click="closePdfPreview">
-      <div class="absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-3">
-        <p class="truncate text-xs font-semibold text-white/80">{{ previewPdfName || "Preview PDF" }}</p>
-        <div class="flex items-center gap-2">
-          <a
-            v-if="previewPdfUrl"
-            :href="previewPdfUrl"
-            :download="previewPdfName || 'preview.pdf'"
-            class="rounded-full bg-white/15 px-3 py-2 text-xs font-semibold text-white hover:bg-white/25"
-            @click.stop
-          >
-            Unduh
-          </a>
-          <button type="button" @click.stop="closePdfPreview"
-            class="rounded-full bg-white/15 p-2 text-white hover:bg-white/25">
-            <Icon icon="mdi:close" class="h-5 w-5" />
-          </button>
-        </div>
-      </div>
-      <div class="flex h-full w-full items-center justify-center overflow-auto p-4 pt-16">
-        <iframe
-          v-if="previewPdfUrl"
-          :src="previewPdfUrl"
-          class="h-[85vh] w-full max-w-5xl rounded-2xl bg-white shadow-2xl"
-          title="Preview PDF"
-        />
-      </div>
-    </div>
-
-    <div v-if="showMessageActionSheet" class="fixed inset-0 z-[75] bg-black/45" @click="closeMessageActionSheet">
-      <div class="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white p-4 shadow-2xl dark:bg-slate-900" @click.stop>
-        <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Aksi Pesan</p>
-        <button type="button" @click="replyFromActionSheet"
-          class="flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-semibold text-slate-800 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800">
-          Balas Chat
-          <Icon icon="mdi:reply-outline" class="h-5 w-5" />
-        </button>
-        <button v-if="actionSheetMessage && Number(actionSheetMessage.sender_id || 0) === Number(currentUserId)" type="button" @click="editFromActionSheet"
-          class="mt-2 flex w-full items-center justify-between rounded-xl px-3 py-3 text-left text-sm font-semibold text-slate-800 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800">
-          Edit Pesan
-          <Icon icon="mdi:pencil-outline" class="h-5 w-5" />
-        </button>
-        <button type="button" @click="closeMessageActionSheet"
-          class="mt-2 flex w-full items-center justify-center rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300">
-          Batal
-        </button>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-import { storeToRefs } from "pinia";
+import { computed, nextTick, onMounted, onUnmounted, ref } from "vue";
 import { Icon } from "@iconify/vue";
-import { useRoute, useRouter } from "vue-router";
+import { io } from "socket.io-client";
 import { api } from "@/api";
-import { pushToast } from "@/composables/useToast";
-import { convertHeicToJpegIfPossible } from "@/utils/fileImage";
-import { formatChatDateKey, formatChatDateSeparator, formatChatShortDate, formatChatTime as formatJakartaChatTime, parseDateValue } from "@/utils/date";
+import { formatDateTime } from "@/utils/date";
 import { getStoredRole } from "@/utils/auth";
-import { normalizePublicUrl } from "@/utils/url";
-import { useSidebar } from "@/store/sidebar";
-import { useRealtimeStore } from "@/store/realtime";
-
-const props = defineProps({
-  unifiedMode: { type: Boolean, default: false },
-  activeSubjectId: { type: Number, default: null }
-});
-
-const emit = defineEmits(['back']);
 
 const role = getStoredRole();
-const route = useRoute();
-const router = useRouter();
-const sidebarStore = useSidebar();
-const realtimeStore = useRealtimeStore();
-const { connected: realtimeConnected } = storeToRefs(realtimeStore);
 const subjects = ref([]);
 const selectedSubject = ref(null);
 const subjectError = ref("");
@@ -480,12 +319,10 @@ const chatError = ref("");
 const isLoadingMessages = ref(false);
 const isSendingMessage = ref(false);
 const isUploadingChatIcon = ref(false);
+const isConnected = ref(false);
 const isRecordingVoice = ref(false);
 const composer = ref("");
 const mobileChatOpen = ref(false);
-const showChatIconModal = ref(false);
-const chatIconDraftFile = ref(null);
-const chatIconPreviewUrl = ref("");
 const attachmentFile = ref(null);
 const attachmentPreviewName = ref("");
 const recordedVoiceUrl = ref("");
@@ -494,44 +331,12 @@ const recordingTimer = ref(null);
 const mediaRecorder = ref(null);
 const mediaStream = ref(null);
 const recordedChunks = ref([]);
-const audioContext = ref(null);
-const analyserNode = ref(null);
-const sourceNode = ref(null);
-const waveformTimer = ref(null);
-const recordingWavePoints = ref("0,20 300,20");
 const attachmentInputRef = ref(null);
+const chatIconInputRef = ref(null);
 const messageListRef = ref(null);
-const bottomAnchorRef = ref(null);
-const composerBarRef = ref(null);
-const replyTarget = ref(null);
-const replyHighlightMessageId = ref(null);
-const showImagePreview = ref(false);
-const previewImageUrl = ref("");
-const previewImageName = ref("");
-const previewImageZoom = ref(1);
-const showPdfPreview = ref(false);
-const previewPdfUrl = ref("");
-const previewPdfName = ref("");
-const showMessageActionSheet = ref(false);
-const actionSheetMessage = ref(null);
-const editTarget = ref(null);
-const longPressTimer = ref(null);
-const emojiPanelOpen = ref(false);
+const socket = ref(null);
 const messagesBySubject = ref({});
 const chatSummaryBySubject = ref({});
-const realtimeUnsubscribers = ref([]);
-const typingStateBySubject = ref({});
-const typingStopTimer = ref(null);
-const typingDebounceTimer = ref(null);
-const onlineUsersBySubject = ref({});
-const onlineRefreshTimer = ref(null);
-const viewportBottomInset = ref(0);
-const isMobileViewport = ref(false);
-const composerBarHeight = ref(0);
-const composerResizeObserver = ref(null);
-const isConnected = computed(() => realtimeConnected.value);
-const localClientId = ref(`chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
-const chatEmojis = ["😀", "😂", "😍", "🙏", "👍", "🔥", "🎉", "😊", "😢", "😎", "🤔", "👏", "💯", "📚", "✅", "❤️"];
 
 const AUDIO_MIME_EXTENSION_MAP = {
   "audio/webm": ".webm",
@@ -552,7 +357,7 @@ const AUDIO_MIME_EXTENSION_MAP = {
   "audio/mp4a-latm": ".m4a",
 };
 
-const goBack = () => router.back();
+const socketBaseUrl = api.baseUrl.replace(/\/api$/, "");
 
 const getCurrentUserId = () => {
   try {
@@ -640,72 +445,9 @@ const recordingDurationLabel = computed(() => {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 });
 
-const composerBarStyle = computed(() => ({
-  bottom: `${viewportBottomInset.value}px`,
-  paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 8px)",
-}));
-
-const messageListStyle = computed(() => ({
-  paddingBottom: `calc(${viewportBottomInset.value}px + env(safe-area-inset-bottom, 0px) + ${Math.max(composerBarHeight.value, 104) + 24}px)`,
-}));
-
 const currentMessages = computed(() =>
   selectedSubject.value ? messagesBySubject.value[selectedSubject.value.id] || [] : [],
 );
-
-const formatChatTime = (value) => formatJakartaChatTime(value);
-const truncatePreview = (value, limit = 46) => {
-  const text = String(value || "").replace(/\s+/g, " ").trim();
-  if (!text) return "";
-  if (text.length <= limit) return text;
-  return `${text.slice(0, Math.max(0, limit - 1)).trimEnd()}…`;
-};
-
-const formatSubjectTime = (subjectId) => {
-  const messages = messagesBySubject.value[subjectId] || [];
-  const lastMessage = messages[messages.length - 1];
-  if (!lastMessage?.created_at) return "";
-
-  const dateKey = formatChatDateKey(lastMessage.created_at);
-  if (!dateKey) return "";
-
-  const todayKey = formatChatDateKey(new Date());
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayKey = formatChatDateKey(yesterday);
-
-  if (dateKey === todayKey) return formatJakartaChatTime(lastMessage.created_at);
-  if (dateKey === yesterdayKey) return "Kemarin";
-  return formatChatShortDate(lastMessage.created_at);
-};
-
-const formatDateSeparator = (value) => {
-  return formatChatDateSeparator(value);
-};
-
-const renderedMessages = computed(() => {
-  const entries = [];
-  let lastDateKey = "";
-
-  currentMessages.value.forEach((message) => {
-    const dateKey = formatChatDateKey(message?.created_at || Date.now()) || "unknown";
-    if (dateKey !== lastDateKey) {
-      entries.push({
-        key: `date-${dateKey}`,
-        type: "date",
-        label: formatDateSeparator(message?.created_at || Date.now()),
-      });
-      lastDateKey = dateKey;
-    }
-    entries.push({
-      key: `message-${message.id}`,
-      type: "message",
-      message,
-    });
-  });
-
-  return entries;
-});
 
 const orderedSubjects = computed(() => {
   const subjectItems = Array.isArray(subjects.value) ? [...subjects.value] : [];
@@ -713,8 +455,8 @@ const orderedSubjects = computed(() => {
   return subjectItems.sort((left, right) => {
     const leftLastMessage = messagesBySubject.value[left.id]?.slice(-1)[0];
     const rightLastMessage = messagesBySubject.value[right.id]?.slice(-1)[0];
-    const leftTime = parseDateValue(leftLastMessage?.created_at)?.getTime() || 0;
-    const rightTime = parseDateValue(rightLastMessage?.created_at)?.getTime() || 0;
+    const leftTime = leftLastMessage ? new Date(leftLastMessage.created_at).getTime() : 0;
+    const rightTime = rightLastMessage ? new Date(rightLastMessage.created_at).getTime() : 0;
 
     if (leftTime !== rightTime) {
       return rightTime - leftTime;
@@ -722,47 +464,6 @@ const orderedSubjects = computed(() => {
 
     return String(left.name || "").localeCompare(String(right.name || ""), "id");
   });
-});
-
-const typingIndicatorText = computed(() => {
-  const subjectId = Number(selectedSubject.value?.id || 0);
-  if (!subjectId) {
-    return "";
-  }
-
-  const subjectTyping = typingStateBySubject.value[subjectId] || {};
-  const names = Object.values(subjectTyping)
-    .map((item) => String(item?.sender_name || "").trim())
-    .filter(Boolean);
-
-  if (names.length === 0) {
-    return "";
-  }
-  if (names.length === 1) {
-    return `${names[0]} sedang mengetik...`;
-  }
-  return `${names.length} orang sedang mengetik...`;
-});
-
-const onlineIndicatorText = computed(() => {
-  const subjectId = Number(selectedSubject.value?.id || 0);
-  if (!subjectId) {
-    return "Online: -";
-  }
-
-  const users = onlineUsersBySubject.value[subjectId] || [];
-  if (!users.length) {
-    return "Online: 0";
-  }
-
-  if (users.length <= 2) {
-    const names = users
-      .filter((item) => item && typeof item === "object")
-      .map((item) => item.full_name || item.username || "User")
-      .join(", ");
-    return `Online: ${users.length} `;
-  }
-  return `Online: ${users.length} pengguna`;
 });
 
 const getSubjectVisualIndex = (subject) => {
@@ -777,20 +478,11 @@ const getSubjectIconClass = (subject) =>
 
 const subjectMessageCount = (subjectId) => {
   const messages = messagesBySubject.value[subjectId] || [];
-  return messages.length > 99 ? 99 : messages.length;
+  return messages.length > 99 ? "99+" : String(messages.length);
 };
 
-const subjectUnreadCount = (subjectId) => {
-  const normalizedSubjectId = Number(subjectId || 0);
-  if (!normalizedSubjectId) {
-    return 0;
-  }
-
-  const localCount = Number(chatSummaryBySubject.value[normalizedSubjectId]?.unread_count || 0);
-  const baseCount = Number(sidebarStore.liveChatUnreadBySubject?.[normalizedSubjectId] || 0);
-  const pendingCount = Number(sidebarStore.liveChatPendingUnreadBySubject?.[normalizedSubjectId] || 0);
-  return Math.max(localCount, baseCount, pendingCount);
-};
+const subjectUnreadCount = (subjectId) =>
+  Number(chatSummaryBySubject.value[subjectId]?.unread_count || 0);
 
 const formatUnreadCount = (value) => (value > 99 ? "99+" : String(value));
 
@@ -798,7 +490,7 @@ const latestMessagePreview = (subjectId) => {
   const messages = messagesBySubject.value[subjectId] || [];
   const lastMessage = messages[messages.length - 1];
   if (!lastMessage) {
-    return subjectUnreadCount(subjectId) > 0 ? "Ada pesan baru" : "Belum ada pesan";
+    return "Belum ada pesan";
   }
 
   if (lastMessage.message_type === "VOICE") {
@@ -817,7 +509,7 @@ const latestMessagePreview = (subjectId) => {
     return `${lastMessage.sender_name}: File`;
   }
 
-  return truncatePreview(`${lastMessage.sender_name}: ${lastMessage.message}`);
+  return `${lastMessage.sender_name}: ${lastMessage.message}`;
 };
 
 const roleLabel = (userRole) => {
@@ -863,181 +555,11 @@ const ownMessageReadLabel = (message) => {
   return "Belum dilihat";
 };
 
-const ownMessageReadIcon = (message) => {
-  const label = ownMessageReadLabel(message);
-  if (label === "Terkirim") return "mdi:check";
-  return "mdi:check-all";
-};
-
-const ownMessageReadIconClass = (message) =>
-  ownMessageReadLabel(message) === "Sudah dilihat semua" ? "text-[#53bdeb]" : "";
-
-const getMessagePreview = (message) => {
-  if (!message) return "-";
-  if (message.message) return String(message.message).replace(/\s+/g, " ").slice(0, 120);
-  if (message.message_type === "VOICE") return "Voice note";
-  if (message.message_type === "IMAGE") return "Gambar";
-  if (message.message_type === "PDF") return "PDF";
-  if (message.attachment_name) return message.attachment_name;
-  return "Pesan";
-};
-
-const parseReplyPayload = (rawMessage) => {
-  const text = String(rawMessage || "");
-  const matched = text.match(/^(\[Balas(?:#(\d+))?\s+(.+?): (.+?)\])\n([\s\S]*)$/);
-  if (!matched) {
-    return {
-      replyId: null,
-      replyName: "",
-      replyPreview: "",
-      replyPrefix: "",
-      body: text,
-    };
-  }
-
-  return {
-    replyPrefix: matched[1] || "",
-    replyId: matched[2] ? Number(matched[2]) : null,
-    replyName: matched[3] || "",
-    replyPreview: matched[4] || "",
-    body: matched[5] || "",
-  };
-};
-
-const jumpToReplyTarget = async (messageItem) => {
-  const parsed = parseReplyPayload(messageItem?.message);
-  const replyId = Number(parsed?.replyId || 0);
-  if (!replyId) {
-    pushToast({
-      title: "Pesan Asal Tidak Ditemukan",
-      message: "Balasan ini belum menyimpan referensi pesan asal.",
-      type: "info",
-    });
-    return;
-  }
-
-  await nextTick();
-  const target = messageListRef.value?.querySelector?.(`[data-message-id="${replyId}"]`);
-  if (!target) {
-    pushToast({
-      title: "Pesan Asal Tidak Tersedia",
-      message: "Pesan asal kemungkinan di luar riwayat yang sedang dimuat.",
-      type: "info",
-    });
-    return;
-  }
-
-  target.scrollIntoView({ behavior: "smooth", block: "center" });
-  replyHighlightMessageId.value = replyId;
-  window.setTimeout(() => {
-    if (replyHighlightMessageId.value === replyId) {
-      replyHighlightMessageId.value = null;
-    }
-  }, 1600);
-};
-
-const isVoiceMessage = (message) => {
-  const explicitType = String(message?.message_type || "").toUpperCase();
-  if (explicitType === "VOICE") {
-    return true;
-  }
-
-  const mimeType = String(message?.attachment_mime_type || "").toLowerCase();
-  if (mimeType.startsWith("audio/")) {
-    return true;
-  }
-
-  const attachmentName = String(message?.attachment_name || "").toLowerCase();
-  return /\.(mp3|wav|m4a|ogg|aac|webm|flac|amr|3gp|3g2)$/i.test(attachmentName);
-};
-
-const isRenderableImageMessage = (message) => {
-  if (String(message?.message_type || "").toUpperCase() !== "IMAGE") {
-    return false;
-  }
-
-  const mimeType = String(message?.attachment_mime_type || "").toLowerCase();
-  const attachmentName = String(message?.attachment_name || "").toLowerCase();
-
-  if (mimeType.includes("heic") || mimeType.includes("heif")) {
-    return false;
-  }
-
-  if (/\.(heic|heif)$/i.test(attachmentName)) {
-    return false;
-  }
-
-  return true;
-};
-
-const isPdfPreviewMessage = (message) => {
-  return Boolean(message?.attachment_preview_url);
-};
-
-const openPdfPreview = (message) => {
-  const url = normalizePublicUrl(message?.attachment_url);
-  if (!url) return;
-  previewPdfUrl.value = url;
-  previewPdfName.value = message?.attachment_name || "Preview PDF";
-  showPdfPreview.value = true;
-};
-
-const closePdfPreview = () => {
-  showPdfPreview.value = false;
-  previewPdfUrl.value = "";
-  previewPdfName.value = "";
-};
-
 const scrollToBottom = async () => {
   await nextTick();
-  await new Promise((resolve) => {
-    if (typeof window === "undefined") {
-      resolve();
-      return;
-    }
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(resolve);
-    });
-  });
-
-  if (bottomAnchorRef.value) {
-    bottomAnchorRef.value.scrollIntoView({ block: "end" });
-    return;
-  }
-
   if (messageListRef.value) {
     messageListRef.value.scrollTop = messageListRef.value.scrollHeight;
   }
-};
-
-const updateViewportInset = () => {
-  if (typeof window !== "undefined") {
-    isMobileViewport.value = window.innerWidth < 768;
-  }
-  if (typeof window === "undefined" || !window.visualViewport) {
-    viewportBottomInset.value = 0;
-    return;
-  }
-  const vv = window.visualViewport;
-  viewportBottomInset.value = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
-};
-
-const updateComposerBarMetrics = () => {
-  if (!composerBarRef.value) {
-    composerBarHeight.value = 0;
-    return;
-  }
-
-  composerBarHeight.value = Math.ceil(composerBarRef.value.getBoundingClientRect().height);
-};
-
-const ensureComposerVisible = async () => {
-  await nextTick();
-  updateViewportInset();
-  updateComposerBarMetrics();
-  window.setTimeout(() => {
-    scrollToBottom();
-  }, 80);
 };
 
 const sortMessages = (messages = []) =>
@@ -1046,7 +568,7 @@ const sortMessages = (messages = []) =>
       return Number(left.id) - Number(right.id);
     }
 
-    return (parseDateValue(left.created_at)?.getTime() || 0) - (parseDateValue(right.created_at)?.getTime() || 0);
+    return new Date(left.created_at).getTime() - new Date(right.created_at).getTime();
   });
 
 const upsertMessage = async (chatMessage) => {
@@ -1077,7 +599,8 @@ const upsertMessage = async (chatMessage) => {
 
 const refreshChatSummary = async () => {
   try {
-    const summaryItems = await sidebarStore.refreshLiveChatSummary({ force: true });
+    const response = await api.get("/learning/chat/summary");
+    const summaryItems = response?.data || [];
     const nextSummary = {};
 
     summaryItems.forEach((item) => {
@@ -1113,7 +636,6 @@ const markCurrentSubjectAsRead = async () => {
         unread_count: 0,
       },
     };
-    sidebarStore.clearPendingLiveChatUnreadBySubject(subjectId);
     return;
   }
 
@@ -1126,7 +648,6 @@ const markCurrentSubjectAsRead = async () => {
         last_read_message_id: currentLastReadMessageId,
       },
     };
-    sidebarStore.clearPendingLiveChatUnreadBySubject(subjectId);
     return;
   }
 
@@ -1143,75 +664,21 @@ const markCurrentSubjectAsRead = async () => {
         last_read_message_id: Number(readState?.last_read_message_id || lastMessageId),
       },
     };
-    sidebarStore.clearPendingLiveChatUnreadBySubject(subjectId);
   } catch (error) {
     // Ignore read marking failures silently to avoid noisy UX.
   }
 };
 
-const clearTypingForSubject = (subjectId) => {
-  const normalizedSubjectId = Number(subjectId || 0);
-  if (!normalizedSubjectId) return;
-  if (!typingStateBySubject.value[normalizedSubjectId]) return;
-  const next = { ...typingStateBySubject.value };
-  delete next[normalizedSubjectId];
-  typingStateBySubject.value = next;
-};
-
-const sendTypingEvent = async (isTyping) => {
-  const subjectId = Number(selectedSubject.value?.id || 0);
-  if (!subjectId) return;
-  try {
-    await api.post(`/learning/subjects/${subjectId}/chat/typing`, {
-      is_typing: Boolean(isTyping),
-      client_id: localClientId.value,
-    });
-  } catch (error) {
-    // Ignore typing broadcast failures.
-  }
-};
-
-const scheduleTypingStop = () => {
-  if (typingStopTimer.value) {
-    window.clearTimeout(typingStopTimer.value);
-  }
-  typingStopTimer.value = window.setTimeout(() => {
-    sendTypingEvent(false);
-    typingStopTimer.value = null;
-  }, 1800);
-};
-
-const handleComposerInput = () => {
-  updateComposerBarMetrics();
-  if (!selectedSubject.value) return;
-  if (!composer.value.trim()) {
-    if (typingDebounceTimer.value) {
-      window.clearTimeout(typingDebounceTimer.value);
-      typingDebounceTimer.value = null;
-    }
-    if (typingStopTimer.value) {
-      window.clearTimeout(typingStopTimer.value);
-      typingStopTimer.value = null;
-    }
-    sendTypingEvent(false);
-    return;
-  }
-
-  if (typingDebounceTimer.value) {
-    window.clearTimeout(typingDebounceTimer.value);
-  }
-  typingDebounceTimer.value = window.setTimeout(() => {
-    sendTypingEvent(true);
-    scheduleTypingStop();
-  }, 250);
-};
-
 const leaveSubjectRoom = (subjectId) => {
-  return subjectId;
+  if (socket.value?.connected && subjectId) {
+    socket.value.emit("learning-chat:leave", subjectId);
+  }
 };
 
 const joinSubjectRoom = (subjectId) => {
-  return subjectId;
+  if (socket.value?.connected && subjectId) {
+    socket.value.emit("learning-chat:join", subjectId);
+  }
 };
 
 const loadMessages = async (subjectId) => {
@@ -1243,34 +710,10 @@ const loadMessages = async (subjectId) => {
   }
 };
 
-const loadOnlineUsers = async (subjectId) => {
-  if (!subjectId) return;
-  try {
-    const response = await api.get(`/learning/subjects/${subjectId}/chat/online`);
-    onlineUsersBySubject.value = {
-      ...onlineUsersBySubject.value,
-      [subjectId]: response?.data?.users || [],
-    };
-  } catch (error) {
-    // Ignore online user refresh errors silently.
-  }
-};
-
 const selectSubject = async (subject) => {
-  if (selectedSubject.value?.id === subject.id) {
-    mobileChatOpen.value = true;
-    await scrollToBottom();
-    return;
-  }
   const previousSubjectId = selectedSubject.value?.id || null;
-  if (previousSubjectId && Number(previousSubjectId) !== Number(subject.id)) {
-    await sendTypingEvent(false);
-    clearTypingForSubject(previousSubjectId);
-  }
   selectedSubject.value = subject;
   composer.value = "";
-  replyTarget.value = null;
-  editTarget.value = null;
   chatError.value = "";
   mobileChatOpen.value = true;
 
@@ -1279,118 +722,11 @@ const selectSubject = async (subject) => {
   }
 
   await loadMessages(subject.id);
-  await loadOnlineUsers(subject.id);
   joinSubjectRoom(subject.id);
-};
-
-const setReplyTarget = (message) => {
-  replyTarget.value = message || null;
-};
-
-const clearReplyTarget = () => {
-  replyTarget.value = null;
-};
-
-const clearEditTarget = () => {
-  editTarget.value = null;
-};
-
-const setEditTarget = (message) => {
-  if (!message) return;
-  const parsed = parseReplyPayload(message?.message);
-  editTarget.value = message;
-  composer.value = parsed.body || "";
-  replyTarget.value = null;
-  clearAttachment();
-  emojiPanelOpen.value = false;
-  nextTick().then(() => {
-    handleComposerInput();
-  });
-};
-
-const toggleEmojiPanel = () => {
-  emojiPanelOpen.value = !emojiPanelOpen.value;
-};
-
-const insertEmoji = (emoji) => {
-  composer.value = `${composer.value || ""}${emoji}`;
-  emojiPanelOpen.value = false;
-  handleComposerInput();
-};
-
-const openImagePreview = (url, name = "") => {
-  if (!url) return;
-  previewImageUrl.value = url;
-  previewImageName.value = name || "";
-  previewImageZoom.value = 1;
-  showImagePreview.value = true;
-};
-
-const closeImagePreview = () => {
-  showImagePreview.value = false;
-  previewImageUrl.value = "";
-  previewImageName.value = "";
-  previewImageZoom.value = 1;
-};
-
-const zoomInPreview = () => {
-  previewImageZoom.value = Math.min(4, Number((previewImageZoom.value + 0.25).toFixed(2)));
-};
-
-const zoomOutPreview = () => {
-  previewImageZoom.value = Math.max(1, Number((previewImageZoom.value - 0.25).toFixed(2)));
-};
-
-const resetPreviewZoom = () => {
-  previewImageZoom.value = 1;
-};
-
-const clearLongPressTimer = () => {
-  if (longPressTimer.value) {
-    window.clearTimeout(longPressTimer.value);
-    longPressTimer.value = null;
-  }
-};
-
-const openMessageActionSheet = (message) => {
-  actionSheetMessage.value = message || null;
-  showMessageActionSheet.value = Boolean(actionSheetMessage.value);
-};
-
-const closeMessageActionSheet = () => {
-  showMessageActionSheet.value = false;
-  actionSheetMessage.value = null;
-};
-
-const handleMessagePressStart = (message) => {
-  clearLongPressTimer();
-  longPressTimer.value = window.setTimeout(() => {
-    openMessageActionSheet(message);
-  }, 2000);
-};
-
-const handleMessagePressEnd = () => {
-  clearLongPressTimer();
-};
-
-const replyFromActionSheet = () => {
-  if (actionSheetMessage.value) {
-    setReplyTarget(actionSheetMessage.value);
-  }
-  closeMessageActionSheet();
-};
-
-const editFromActionSheet = () => {
-  if (actionSheetMessage.value && Number(actionSheetMessage.value.sender_id || 0) === Number(currentUserId)) {
-    setEditTarget(actionSheetMessage.value);
-  }
-  closeMessageActionSheet();
 };
 
 const backToGroupList = () => {
   mobileChatOpen.value = false;
-  emojiPanelOpen.value = false;
-  clearEditTarget();
 };
 
 const handleComposerKeydown = (event) => {
@@ -1408,7 +744,6 @@ const handleComposerKeydown = (event) => {
 };
 
 const openAttachmentPicker = () => {
-  emojiPanelOpen.value = false;
   attachmentInputRef.value?.click();
 };
 
@@ -1417,44 +752,6 @@ const stopRecordingTimer = () => {
     window.clearInterval(recordingTimer.value);
     recordingTimer.value = null;
   }
-};
-
-const stopWaveformTimer = () => {
-  if (waveformTimer.value) {
-    window.clearInterval(waveformTimer.value);
-    waveformTimer.value = null;
-  }
-};
-
-const resetWaveformBars = () => {
-  recordingWavePoints.value = "0,20 300,20";
-};
-
-const startWaveformTracking = () => {
-  if (!analyserNode.value) {
-    return;
-  }
-
-  const bins = new Uint8Array(analyserNode.value.fftSize);
-  stopWaveformTimer();
-
-  waveformTimer.value = window.setInterval(() => {
-    if (!analyserNode.value) return;
-    analyserNode.value.getByteTimeDomainData(bins);
-
-    const samples = 64;
-    const step = Math.max(1, Math.floor(bins.length / samples));
-    const points = [];
-    for (let i = 0; i < samples; i += 1) {
-      const idx = i * step;
-      const value = bins[idx] ?? 128;
-      const normalized = (value - 128) / 128; // -1..1
-      const x = (i / (samples - 1)) * 300;
-      const y = 20 - normalized * 14;
-      points.push(`${x.toFixed(2)},${y.toFixed(2)}`);
-    }
-    recordingWavePoints.value = points.join(" ");
-  }, 80);
 };
 
 const cleanupMediaStream = () => {
@@ -1472,13 +769,10 @@ const revokeRecordedVoiceUrl = () => {
 };
 
 const clearAttachment = () => {
-  emojiPanelOpen.value = false;
   attachmentFile.value = null;
   attachmentPreviewName.value = "";
   revokeRecordedVoiceUrl();
   stopRecordingTimer();
-  stopWaveformTimer();
-  resetWaveformBars();
   cleanupMediaStream();
   recordedChunks.value = [];
   recordingSeconds.value = 0;
@@ -1487,37 +781,19 @@ const clearAttachment = () => {
   }
   mediaRecorder.value = null;
   isRecordingVoice.value = false;
-  if (sourceNode.value) {
-    sourceNode.value.disconnect();
-    sourceNode.value = null;
-  }
-  if (analyserNode.value) {
-    analyserNode.value.disconnect();
-    analyserNode.value = null;
-  }
-  if (audioContext.value) {
-    audioContext.value.close();
-    audioContext.value = null;
-  }
 };
 
-const handleAttachmentChange = async (event) => {
-  const rawFile = event.target.files?.[0] || null;
+const handleAttachmentChange = (event) => {
+  const file = event.target.files?.[0] || null;
   event.target.value = "";
 
-  if (!rawFile) {
+  if (!file) {
     return;
   }
 
   clearAttachment();
-  try {
-    const file = await convertHeicToJpegIfPossible(rawFile);
-    attachmentFile.value = file;
-    attachmentPreviewName.value = file.name;
-  } catch (error) {
-    attachmentFile.value = rawFile;
-    attachmentPreviewName.value = rawFile.name;
-  }
+  attachmentFile.value = file;
+  attachmentPreviewName.value = file.name;
 };
 
 const stopVoiceRecording = async () => {
@@ -1542,15 +818,6 @@ const toggleVoiceRecording = async () => {
     clearAttachment();
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     mediaStream.value = stream;
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (AudioContextClass) {
-      audioContext.value = new AudioContextClass();
-      sourceNode.value = audioContext.value.createMediaStreamSource(stream);
-      analyserNode.value = audioContext.value.createAnalyser();
-      analyserNode.value.fftSize = 512;
-      sourceNode.value.connect(analyserNode.value);
-      startWaveformTracking();
-    }
     const supportedMimeTypes = Object.keys(AUDIO_MIME_EXTENSION_MAP).filter((mimeType) => {
       try {
         return typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(mimeType);
@@ -1606,24 +873,10 @@ const toggleVoiceRecording = async () => {
   }
 };
 
-const resetChatIconDraft = () => {
-  chatIconDraftFile.value = null;
-  if (chatIconPreviewUrl.value) {
-    URL.revokeObjectURL(chatIconPreviewUrl.value);
+const openChatIconPicker = () => {
+  if (!isUploadingChatIcon.value) {
+    chatIconInputRef.value?.click();
   }
-  chatIconPreviewUrl.value = "";
-};
-
-const openChatIconModal = () => {
-  if (role !== "GURU" || isUploadingChatIcon.value) {
-    return;
-  }
-  showChatIconModal.value = true;
-};
-
-const closeChatIconModal = () => {
-  showChatIconModal.value = false;
-  resetChatIconDraft();
 };
 
 const applyUpdatedSubject = (updatedSubject) => {
@@ -1643,20 +896,11 @@ const applyUpdatedSubject = (updatedSubject) => {
   }
 };
 
-const handleChatIconFileChange = (event) => {
+const handleChatIconUpload = async (event) => {
   const file = event.target.files?.[0] || null;
   event.target.value = "";
-  if (!file) {
-    return;
-  }
 
-  resetChatIconDraft();
-  chatIconDraftFile.value = file;
-  chatIconPreviewUrl.value = URL.createObjectURL(file);
-};
-
-const submitChatIconUpload = async () => {
-  if (!chatIconDraftFile.value || !selectedSubject.value || role !== "GURU") {
+  if (!file || !selectedSubject.value || role !== "GURU") {
     return;
   }
 
@@ -1665,12 +909,11 @@ const submitChatIconUpload = async () => {
 
   try {
     const formData = new FormData();
-    formData.append("chat_icon", chatIconDraftFile.value);
+    formData.append("chat_icon", file);
     const response = await api.put(`/learning/subjects/${selectedSubject.value.id}/chat-icon`, formData);
     if (response?.data) {
       applyUpdatedSubject(response.data);
     }
-    closeChatIconModal();
   } catch (error) {
     chatError.value = error.message;
   } finally {
@@ -1682,7 +925,9 @@ const loadSubjects = async () => {
   subjectError.value = "";
 
   try {
-    subjects.value = await sidebarStore.refreshLiveChatSubjects(role, { force: true });
+    const endpoint = role === "GURU" ? "/learning/subjects/teacher" : "/learning/subjects/student";
+    const response = await api.get(endpoint);
+    subjects.value = response?.data || [];
     await refreshChatSummary();
 
     if (subjects.value.length === 0) {
@@ -1695,24 +940,13 @@ const loadSubjects = async () => {
     if (currentSelected) {
       selectedSubject.value = currentSelected;
       await loadMessages(currentSelected.id);
-      await loadOnlineUsers(currentSelected.id);
+      joinSubjectRoom(currentSelected.id);
       return;
     }
 
-    const requestedSubjectId = Number(route.query?.subject || 0);
-    if (requestedSubjectId) {
-      const requestedSubject = subjects.value.find((item) => Number(item.id) === requestedSubjectId);
-      if (requestedSubject) {
-        selectedSubject.value = requestedSubject;
-        mobileChatOpen.value = true;
-        await loadMessages(requestedSubject.id);
-        await loadOnlineUsers(requestedSubject.id);
-        return;
-      }
-    }
-
-    selectedSubject.value = null;
-    mobileChatOpen.value = false;
+    selectedSubject.value = subjects.value[0];
+    await loadMessages(subjects.value[0].id);
+    joinSubjectRoom(subjects.value[0].id);
   } catch (error) {
     subjectError.value = error.message;
   }
@@ -1728,53 +962,19 @@ const sendMessage = async () => {
 
   try {
     const hasAttachment = Boolean(attachmentFile.value);
-    const baseMessage = composer.value.trim();
-    const replyPrefix = replyTarget.value
-      ? `[Balas#${Number(replyTarget.value.id || 0)} ${replyTarget.value.sender_name || "Pengguna"}: ${getMessagePreview(replyTarget.value)}]`
-      : "";
-    const editPrefix = editTarget.value ? parseReplyPayload(editTarget.value.message).replyPrefix || "" : "";
-    const finalMessage = [editPrefix || replyPrefix, baseMessage].filter(Boolean).join("\n");
-    const shouldEdit = Boolean(editTarget.value);
-    let payload = { message: finalMessage };
+    const payload = hasAttachment ? new FormData() : { message: composer.value.trim() };
 
-    if (!shouldEdit && hasAttachment) {
-      const formData = new FormData();
-      formData.append("message", finalMessage);
-      formData.append("attachment", attachmentFile.value);
-      formData.append("attachment_name", attachmentFile.value.name || "");
-      formData.append("attachment_mime_type", attachmentFile.value.type || "");
-      formData.append("attachment_size", String(Number(attachmentFile.value.size) || 0));
-      if (String(attachmentFile.value.type || "").toLowerCase().startsWith("audio/")) {
-        formData.append("message_type", "VOICE");
-      }
-      payload = formData;
+    if (hasAttachment) {
+      payload.append("message", composer.value.trim());
+      payload.append("attachment", attachmentFile.value);
     }
 
-    const response = shouldEdit
-      ? await api.put(`/learning/subjects/${selectedSubject.value.id}/chat/${editTarget.value.id}`, payload)
-      : await api.post(`/learning/subjects/${selectedSubject.value.id}/chat`, payload);
-    await sendTypingEvent(false);
+    const response = await api.post(`/learning/subjects/${selectedSubject.value.id}/chat`, payload);
     composer.value = "";
-    emojiPanelOpen.value = false;
-    clearReplyTarget();
-    clearEditTarget();
     clearAttachment();
 
     if (response?.data) {
-      const editedMessage = response.data;
-      const existingIndex = (messagesBySubject.value[selectedSubject.value.id] || []).findIndex(
-        (item) => Number(item.id) === Number(editedMessage.id),
-      );
-      if (existingIndex >= 0) {
-        const nextMessages = [...(messagesBySubject.value[selectedSubject.value.id] || [])];
-        nextMessages.splice(existingIndex, 1, editedMessage);
-        messagesBySubject.value = {
-          ...messagesBySubject.value,
-          [selectedSubject.value.id]: sortMessages(nextMessages),
-        };
-      } else {
-        await upsertMessage(editedMessage);
-      }
+      await upsertMessage(response.data);
       await markCurrentSubjectAsRead();
       await refreshChatSummary();
     }
@@ -1786,286 +986,63 @@ const sendMessage = async () => {
 };
 
 onMounted(async () => {
-  if (typeof window !== "undefined" && window.visualViewport) {
-    window.visualViewport.addEventListener("resize", updateViewportInset);
-    window.visualViewport.addEventListener("scroll", updateViewportInset);
-    updateViewportInset();
-  }
-
-  await nextTick();
-  updateComposerBarMetrics();
-  if (typeof window !== "undefined" && "ResizeObserver" in window && composerBarRef.value) {
-    composerResizeObserver.value = new window.ResizeObserver(() => {
-      updateComposerBarMetrics();
-    });
-    composerResizeObserver.value.observe(composerBarRef.value);
-  }
-
   const token = localStorage.getItem("token");
-  realtimeStore.connect(token);
+  socket.value = io(socketBaseUrl, {
+    auth: { token },
+    transports: ["websocket", "polling"],
+  });
 
-  realtimeUnsubscribers.value = [
-    realtimeStore.on("learning-chat:new-message", async (chatMessage) => {
-      await upsertMessage(chatMessage);
-      const incomingSubjectId = Number(chatMessage?.subject_id || 0);
-      const isCurrentSubject = Number(selectedSubject.value?.id || 0) === incomingSubjectId;
-      const isFromCurrentUser = Number(chatMessage?.sender_id || 0) === Number(currentUserId);
+  socket.value.on("connect", () => {
+    isConnected.value = true;
+    joinSubjectRoom(selectedSubject.value?.id);
+  });
 
-      if (isCurrentSubject && !isFromCurrentUser) {
-        await markCurrentSubjectAsRead();
-        await refreshChatSummary();
-      } else if (!isCurrentSubject && !isFromCurrentUser && incomingSubjectId) {
-        const currentState = chatSummaryBySubject.value[incomingSubjectId] || {};
-        chatSummaryBySubject.value = {
-          ...chatSummaryBySubject.value,
-          [incomingSubjectId]: {
-            ...currentState,
-            unread_count: Number(currentState.unread_count || 0) + 1,
-          },
-        };
-      } else {
-        await refreshChatSummary();
-      }
-    }),
-    realtimeStore.on("learning-chat:message-updated", async (chatMessage) => {
-      const subjectId = Number(chatMessage?.subject_id || 0);
-      const activeSubjectId = Number(selectedSubject.value?.id || 0);
+  socket.value.on("disconnect", () => {
+    isConnected.value = false;
+  });
+
+  socket.value.on("learning-chat:error", (message) => {
+    chatError.value = String(message || "Gagal terhubung ke chat realtime");
+  });
+
+  socket.value.on("learning-chat:new-message", async (chatMessage) => {
+    await upsertMessage(chatMessage);
+    const incomingSubjectId = Number(chatMessage?.subject_id || 0);
+    const isCurrentSubject = Number(selectedSubject.value?.id || 0) === incomingSubjectId;
+
+    if (isCurrentSubject && Number(chatMessage?.sender_id) !== Number(currentUserId)) {
+      await markCurrentSubjectAsRead();
+    } else {
       await refreshChatSummary();
-      if (!subjectId || subjectId !== activeSubjectId) {
-        return;
-      }
+    }
+  });
 
-      const existingIndex = (messagesBySubject.value[subjectId] || []).findIndex((item) => Number(item.id) === Number(chatMessage?.id || 0));
-      if (existingIndex >= 0) {
-        const nextMessages = [...(messagesBySubject.value[subjectId] || [])];
-        nextMessages.splice(existingIndex, 1, chatMessage);
-        messagesBySubject.value = {
-          ...messagesBySubject.value,
-          [subjectId]: sortMessages(nextMessages),
-        };
-      }
-    }),
-    realtimeStore.on("learning-chat:read-updated", async (payload) => {
-      const subjectId = Number(payload?.subject_id || 0);
-      if (!subjectId) {
-        return;
-      }
+  socket.value.on("learning-chat:read-updated", async (payload) => {
+    const subjectId = Number(payload?.subject_id || 0);
+    if (!subjectId) {
+      return;
+    }
 
-      if (Number(payload?.user_id || 0) === Number(currentUserId)) {
-        return;
-      }
+    if (Number(payload?.user_id || 0) === Number(currentUserId)) {
+      return;
+    }
 
-      if (Number(selectedSubject.value?.id || 0) === subjectId) {
-        await loadMessages(subjectId);
-      } else {
-        await refreshChatSummary();
-      }
-    }),
-    realtimeStore.on("learning-chat:typing", async (payload) => {
-      const subjectId = Number(payload?.subject_id || 0);
-      const typingUserId = Number(payload?.user_id || 0);
-      const isTyping = Boolean(payload?.is_typing);
-      if (!subjectId || !typingUserId || typingUserId === Number(currentUserId)) {
-        return;
-      }
-      if (String(payload?.origin_client_id || "") === localClientId.value) {
-        return;
-      }
-
-      const subjectTyping = { ...(typingStateBySubject.value[subjectId] || {}) };
-      if (isTyping) {
-        subjectTyping[typingUserId] = {
-          sender_name: payload?.sender_name || payload?.username || "Pengguna",
-          updated_at_unixms: Number(payload?.updated_at_unixms || Date.now()),
-        };
-      } else {
-        delete subjectTyping[typingUserId];
-      }
-
-      typingStateBySubject.value = {
-        ...typingStateBySubject.value,
-        [subjectId]: subjectTyping,
-      };
-    }),
-    realtimeStore.on("learning-presence:updated", async () => {
-      const subjectId = Number(selectedSubject.value?.id || 0);
-      if (!subjectId) return;
-      if (onlineRefreshTimer.value) {
-        window.clearTimeout(onlineRefreshTimer.value);
-      }
-      onlineRefreshTimer.value = window.setTimeout(() => {
-        loadOnlineUsers(subjectId);
-      }, 250);
-    }),
-  ];
+    if (Number(selectedSubject.value?.id || 0) === subjectId) {
+      await loadMessages(subjectId);
+    } else {
+      await refreshChatSummary();
+    }
+  });
 
   await loadSubjects();
 });
 
-watch(() => props.activeSubjectId, (newId) => {
-  if (newId) {
-    const subj = subjects.value.find(s => s.id === newId);
-    if (subj) selectSubject(subj);
-  } else {
-    selectedSubject.value = null;
-  }
-});
-
-watch(subjects, (newSubjects) => {
-  if (props.unifiedMode && props.activeSubjectId && selectedSubject.value?.id !== props.activeSubjectId) {
-    const subj = newSubjects.find(s => s.id === props.activeSubjectId);
-    if (subj) selectSubject(subj);
-  }
-});
-
-defineExpose({
-  orderedSubjects,
-  subjectUnreadCount,
-  latestMessagePreview,
-  formatSubjectTime,
-  getSubjectIcon,
-  getSubjectIconClass,
-  subjects,
-  messagesBySubject,
-  selectSubject
-});
-
 onUnmounted(() => {
-  sendTypingEvent(false);
-  if (typingStopTimer.value) {
-    window.clearTimeout(typingStopTimer.value);
-  }
-  if (typingDebounceTimer.value) {
-    window.clearTimeout(typingDebounceTimer.value);
-  }
-  if (onlineRefreshTimer.value) {
-    window.clearTimeout(onlineRefreshTimer.value);
-  }
   leaveSubjectRoom(selectedSubject.value?.id);
-  closeChatIconModal();
   clearAttachment();
-  stopWaveformTimer();
-  realtimeUnsubscribers.value.forEach((unsubscribe) => {
-    if (typeof unsubscribe === "function") {
-      unsubscribe();
-    }
-  });
-  realtimeUnsubscribers.value = [];
-
-  if (typeof window !== "undefined" && window.visualViewport) {
-    window.visualViewport.removeEventListener("resize", updateViewportInset);
-    window.visualViewport.removeEventListener("scroll", updateViewportInset);
-  }
-  if (composerResizeObserver.value) {
-    composerResizeObserver.value.disconnect();
-    composerResizeObserver.value = null;
+  if (socket.value) {
+    socket.value.disconnect();
+    socket.value = null;
   }
 });
-
-watch(subjectError, (value) => {
-  if (!value) return;
-  pushToast({ title: "Gagal Memuat Grup Chat", message: value, type: "error" });
-});
-
-watch(chatError, (value) => {
-  if (!value) return;
-  pushToast({ title: "Chat Gagal", message: value, type: "error" });
-});
-
-watch(
-  () => route.query?.subject,
-  async (value) => {
-    const subjectId = Number(value || 0);
-    if (!subjectId || !subjects.value.length) {
-      return;
-    }
-    if (Number(selectedSubject.value?.id || 0) === subjectId) {
-      return;
-    }
-    const subject = subjects.value.find((item) => Number(item.id) === subjectId);
-    if (!subject) {
-      return;
-    }
-    await selectSubject(subject);
-  },
-);
-
-watch(
-  () => [selectedSubject.value?.id, renderedMessages.value.length],
-  async () => {
-    if (!selectedSubject.value || isLoadingMessages.value) {
-      return;
-    }
-    await scrollToBottom();
-  },
-  { flush: "post" },
-);
 </script>
-
-<style scoped>
-.learning-chat-wallpaper {
-  background-color: #efeae2;
-  background-image:
-    linear-gradient(rgba(239, 234, 226, 0.88), rgba(239, 234, 226, 0.88)),
-    radial-gradient(circle at 20% 30%, rgba(0, 0, 0, 0.05) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 70% 60%, rgba(0, 0, 0, 0.05) 0 1px, transparent 1.5px);
-  background-size: auto, 34px 34px, 42px 42px;
-}
-
-:global(.dark) .learning-chat-wallpaper {
-  background-color: #0b141a;
-  background-image:
-    linear-gradient(rgba(11, 20, 26, 0.9), rgba(11, 20, 26, 0.9)),
-    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.05) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.05) 0 1px, transparent 1.5px);
-}
-
-.learning-message-bubble {
-  max-width: min(78%, 680px);
-  border-radius: 7.5px;
-}
-
-.learning-message-bubble.own {
-  border-top-right-radius: 2px;
-}
-
-.learning-message-bubble.other {
-  border-top-left-radius: 2px;
-}
-
-.learning-message-bubble.own::after,
-.learning-message-bubble.other::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  width: 0;
-  height: 0;
-  border-top: 8px solid currentColor;
-}
-
-.learning-message-bubble.own::after {
-  right: -7px;
-  color: #d9fdd3;
-  border-right: 8px solid transparent;
-}
-
-.learning-message-bubble.other::after {
-  left: -7px;
-  color: #ffffff;
-  border-left: 8px solid transparent;
-}
-
-:global(.dark) .learning-message-bubble.own::after {
-  color: #005c4b;
-}
-
-:global(.dark) .learning-message-bubble.other::after {
-  color: #202c33;
-}
-
-@media (max-width: 767px) {
-  .learning-message-bubble {
-    max-width: 88%;
-  }
-}
-</style>

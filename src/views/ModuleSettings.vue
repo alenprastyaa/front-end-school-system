@@ -35,13 +35,15 @@
               <tr>
                 <th class="px-4 py-3 font-medium sm:px-6">Sekolah</th>
                 <th class="px-4 py-3 font-medium sm:px-6">Sarpras</th>
-                <th class="px-4 py-3 font-medium sm:px-6">Absensi</th>
+                <th class="px-4 py-3 font-medium sm:px-6">Absensi Siswa</th>
+                <th class="px-4 py-3 font-medium sm:px-6">Absensi Guru</th>
                 <th class="px-4 py-3 font-medium sm:px-6">Koperasi</th>
                 <th class="px-4 py-3 font-medium sm:px-6">Chat Pribadi</th>
                 <th class="px-4 py-3 font-medium sm:px-6">Ujian Resmi</th>
                 <th class="px-4 py-3 font-medium sm:px-6">Modul Ajar AI</th>
+                <th class="px-4 py-3 font-medium sm:px-6">Payroll</th>
                 <th class="px-4 py-3 font-medium sm:px-6">Guru Personal</th>
-                <th class="px-4 py-3 font-medium text-right sm:px-6">Aksi</th>
+                <th class="px-4 py-3 font-medium sm:px-6">Status</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
@@ -51,63 +53,83 @@
                 </td>
                 <td class="px-4 py-4 sm:px-6">
                   <label class="inline-flex items-center gap-2 text-sm font-semibold">
-                    <input v-model="item.inventory_module_enabled" type="checkbox"
+                    <input v-model="item.inventory_module_enabled" type="checkbox" :disabled="isSaving(item.id)"
+                      @change="saveModuleSettings(item)"
                       class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
                     {{ item.inventory_module_enabled !== false ? "Aktif" : "Nonaktif" }}
                   </label>
                 </td>
                 <td class="px-4 py-4 sm:px-6">
                   <label class="inline-flex items-center gap-2 text-sm font-semibold">
-                    <input v-model="item.attendance_module_enabled" type="checkbox"
+                    <input v-model="item.attendance_module_enabled" type="checkbox" :disabled="isSaving(item.id)"
+                      @change="saveModuleSettings(item)"
                       class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
                     {{ item.attendance_module_enabled !== false ? "Aktif" : "Nonaktif" }}
                   </label>
                 </td>
                 <td class="px-4 py-4 sm:px-6">
                   <label class="inline-flex items-center gap-2 text-sm font-semibold">
-                    <input v-model="item.koperasi_module_enabled" type="checkbox"
+                    <input v-model="item.attendance_teacher_module_enabled" type="checkbox" :disabled="isSaving(item.id)"
+                      @change="saveModuleSettings(item)"
+                      class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
+                    {{ item.attendance_teacher_module_enabled !== false ? "Aktif" : "Nonaktif" }}
+                  </label>
+                </td>
+                <td class="px-4 py-4 sm:px-6">
+                  <label class="inline-flex items-center gap-2 text-sm font-semibold">
+                    <input v-model="item.koperasi_module_enabled" type="checkbox" :disabled="isSaving(item.id)"
+                      @change="saveModuleSettings(item)"
                       class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
                     {{ item.koperasi_module_enabled !== false ? "Aktif" : "Nonaktif" }}
                   </label>
                 </td>
                 <td class="px-4 py-4 sm:px-6">
                   <label class="inline-flex items-center gap-2 text-sm font-semibold">
-                    <input v-model="item.private_chat_module_enabled" type="checkbox"
+                    <input v-model="item.private_chat_module_enabled" type="checkbox" :disabled="isSaving(item.id)"
+                      @change="saveModuleSettings(item)"
                       class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
                     {{ item.private_chat_module_enabled !== false ? "Aktif" : "Nonaktif" }}
                   </label>
                 </td>
                 <td class="px-4 py-4 sm:px-6">
                   <label class="inline-flex items-center gap-2 text-sm font-semibold">
-                    <input v-model="item.official_exam_module_enabled" type="checkbox"
+                    <input v-model="item.official_exam_module_enabled" type="checkbox" :disabled="isSaving(item.id)"
+                      @change="saveModuleSettings(item)"
                       class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
                     {{ item.official_exam_module_enabled !== false ? "Aktif" : "Nonaktif" }}
                   </label>
                 </td>
                 <td class="px-4 py-4 sm:px-6">
                   <label class="inline-flex items-center gap-2 text-sm font-semibold">
-                    <input v-model="item.teaching_module_ai_enabled" type="checkbox"
+                    <input v-model="item.teaching_module_ai_enabled" type="checkbox" :disabled="isSaving(item.id)"
+                      @change="saveModuleSettings(item)"
                       class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
                     {{ item.teaching_module_ai_enabled !== false ? "Aktif" : "Nonaktif" }}
                   </label>
                 </td>
                 <td class="px-4 py-4 sm:px-6">
                   <label class="inline-flex items-center gap-2 text-sm font-semibold">
-                    <input v-model="item.personal_teacher_mode_enabled" type="checkbox"
+                    <input v-model="item.payroll_module_enabled" type="checkbox" :disabled="isSaving(item.id)"
+                      @change="saveModuleSettings(item)"
+                      class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
+                    {{ item.payroll_module_enabled !== false ? "Aktif" : "Nonaktif" }}
+                  </label>
+                </td>
+                <td class="px-4 py-4 sm:px-6">
+                  <label class="inline-flex items-center gap-2 text-sm font-semibold">
+                    <input v-model="item.personal_teacher_mode_enabled" type="checkbox" :disabled="isSaving(item.id)"
+                      @change="saveModuleSettings(item)"
                       class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
                     {{ item.personal_teacher_mode_enabled === true ? "Aktif" : "Nonaktif" }}
                   </label>
                 </td>
-                <td class="px-4 py-4 sm:px-6 text-right">
-                  <button
-                    class="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-50"
-                    :disabled="savingId === item.id" @click="saveModuleSettings(item)">
-                    {{ savingId === item.id ? "Menyimpan..." : "Simpan" }}
-                  </button>
+                <td class="px-4 py-4 sm:px-6">
+                  <span v-if="isSaving(item.id)" class="text-xs font-semibold text-sky-600 dark:text-sky-300">Menyimpan...</span>
+                  <span v-else class="text-xs font-semibold text-slate-400">Otomatis</span>
                 </td>
               </tr>
               <tr v-if="schools.length === 0">
-                <td colspan="9" class="px-4 py-10 text-center text-slate-500 sm:px-6">Belum ada sekolah terdaftar.</td>
+                <td colspan="11" class="px-4 py-10 text-center text-slate-500 sm:px-6">Belum ada sekolah terdaftar.</td>
               </tr>
             </tbody>
           </table>
@@ -124,9 +146,18 @@ import { pushToast } from "@/composables/useToast";
 
 const schools = ref([]);
 const isLoading = ref(false);
-const savingId = ref(null);
+const savingIds = ref({});
 const message = ref("");
 const isError = ref(false);
+
+const isSaving = (id) => Boolean(savingIds.value[id]);
+
+const setSaving = (id, value) => {
+  savingIds.value = {
+    ...savingIds.value,
+    [id]: value,
+  };
+};
 
 const toBooleanFlag = (value) => {
   if (value === true || value === 1) {
@@ -148,10 +179,12 @@ const loadSchools = async () => {
           ...item,
           inventory_module_enabled: toBooleanFlag(item.inventory_module_enabled),
           attendance_module_enabled: toBooleanFlag(item.attendance_module_enabled),
+          attendance_teacher_module_enabled: item.attendance_teacher_module_enabled == null ? true : toBooleanFlag(item.attendance_teacher_module_enabled),
           koperasi_module_enabled: toBooleanFlag(item.koperasi_module_enabled),
           private_chat_module_enabled: toBooleanFlag(item.private_chat_module_enabled),
           official_exam_module_enabled: toBooleanFlag(item.official_exam_module_enabled),
           teaching_module_ai_enabled: toBooleanFlag(item.teaching_module_ai_enabled),
+          payroll_module_enabled: toBooleanFlag(item.payroll_module_enabled),
           personal_teacher_mode_enabled: toBooleanFlag(item.personal_teacher_mode_enabled),
         }))
       : [];
@@ -164,17 +197,19 @@ const loadSchools = async () => {
 };
 
 const saveModuleSettings = async (item) => {
-  savingId.value = item.id;
+  setSaving(item.id, true);
   isError.value = false;
   message.value = "";
   try {
     const formData = new FormData();
     formData.append("inventory_module_enabled", String(Boolean(item.inventory_module_enabled)));
     formData.append("attendance_module_enabled", String(Boolean(item.attendance_module_enabled)));
+    formData.append("attendance_teacher_module_enabled", String(Boolean(item.attendance_teacher_module_enabled)));
     formData.append("koperasi_module_enabled", String(Boolean(item.koperasi_module_enabled)));
     formData.append("private_chat_module_enabled", String(Boolean(item.private_chat_module_enabled)));
     formData.append("official_exam_module_enabled", String(Boolean(item.official_exam_module_enabled)));
     formData.append("teaching_module_ai_enabled", String(Boolean(item.teaching_module_ai_enabled)));
+    formData.append("payroll_module_enabled", String(Boolean(item.payroll_module_enabled)));
     formData.append("personal_teacher_mode_enabled", String(Boolean(item.personal_teacher_mode_enabled)));
     const response = await api.put(`/school/${item.id}/modules`, formData);
     message.value = response?.message || "Setting modul berhasil disimpan.";
@@ -183,7 +218,6 @@ const saveModuleSettings = async (item) => {
       message: response?.message || "Modul sekolah berhasil diperbarui.",
       type: "success",
     });
-    await loadSchools();
   } catch (error) {
     isError.value = true;
     message.value = error.message || "Gagal menyimpan setting modul.";
@@ -192,8 +226,9 @@ const saveModuleSettings = async (item) => {
       message: error.message || "Modul sekolah gagal diperbarui.",
       type: "error",
     });
+    await loadSchools();
   } finally {
-    savingId.value = null;
+    setSaving(item.id, false);
   }
 };
 

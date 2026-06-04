@@ -32,7 +32,7 @@
               Daftar User Sekolah
             </h2>
             <p class="text-sm text-gray-500 dark:text-gray-400">
-              Role yang dikelola di sini: admin, guru, sarpras, dan koperasi.
+              Role yang dikelola di sini: admin, guru, sarpras, koperasi, dan bendahara.
             </p>
           </div>
           <button @click="loadUsers" class="px-4 py-2 rounded-md border dark:border-gray-600 dark:text-white">
@@ -281,6 +281,7 @@
               <option value="GURU">GURU</option>
               <option value="SARPRAS">SARPRAS</option>
               <option value="KOPERASI">KOPERASI</option>
+              <option value="BENDAHARA">BENDAHARA</option>
             </select>
           </div>
 
@@ -394,87 +395,51 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 import SuccessModal from "@/components/SuccessModal.vue";
+import { useAdminStore } from "@/store/admin";
+import { storeToRefs } from "pinia";
 
 const successModal = ref(null);
 const guruImportInput = ref(null);
+const adminStore = useAdminStore();
 
-const baseForm = () => ({
-  full_name: "",
-  username: "",
-  password: "",
-  role: "GURU",
-  parent_email: "",
-  phone_number: "",
-});
-
-const isDeleteModalOpen = ref(false);
-const isDeletingUser = ref(false);
-const userToDelete = ref(null);
-const isDetailModalOpen = ref(false);
-const detailUser = ref(null);
-const isResettingPassword = ref(false);
-const isResetConfirmOpen = ref(false);
-const resetTargetId = ref(null);
-const resetTargetLabel = ref("");
-
-const form = reactive(baseForm());
-const users = ref([]);
-const currentPage = ref(1);
-const pageSize = 10;
-const totalUsers = ref(0);
-const editingUserId = ref(null);
-const showModal = ref(false);
-const isSubmitting = ref(false);
-const isImportingGuru = ref(false);
-const tableSort = createSortState("full_name");
-
-const sortedUsers = computed(() =>
-  sortItems(users.value, tableSort, {
-    full_name: (item) => item.full_name || item.username || "",
-    username: (item) => item.username || "",
-    initial_password: (item) => item.initial_password || "",
-    parent_email: (item) => item.parent_email || "",
-    phone_number: (item) => item.phone_number || "",
-  }),
-);
-
-const totalPages = computed(() =>
-  Math.max(1, Math.ceil(totalUsers.value / pageSize)),
-);
-
-const paginatedUsers = computed(() => sortedUsers.value);
+const {
+  schoolUsersForm: form,
+  schoolUsers: users,
+  schoolUsersPage: currentPage,
+  schoolUsersPageSize: pageSize,
+  schoolUsersTotal: totalUsers,
+  schoolUsersEditingId: editingUserId,
+  schoolUsersShowModal: showModal,
+  schoolUsersSubmitting: isSubmitting,
+  schoolUsersImportingGuru: isImportingGuru,
+  schoolUsersDeleteModalOpen: isDeleteModalOpen,
+  schoolUsersDeleting: isDeletingUser,
+  schoolUsersToDelete: userToDelete,
+  schoolUsersDetailModalOpen: isDetailModalOpen,
+  schoolUsersDetail: detailUser,
+  schoolUsersResettingPassword: isResettingPassword,
+  schoolUsersResetConfirmOpen: isResetConfirmOpen,
+  schoolUsersResetTargetLabel: resetTargetLabel,
+  schoolUsersPaginated: paginatedUsers,
+  schoolUsersTotalPages: totalPages,
+  schoolUsersSortKey: sortKey,
+  schoolUsersSortDirection: sortDirection,
+} = storeToRefs(adminStore);
 
 const handleSort = (key) => {
-  toggleSort(tableSort, key);
+  adminStore.toggleSchoolUsersSort(key);
   currentPage.value = 1;
 };
 
 const sortIndicator = (key) => {
-  if (tableSort.key !== key) {
+  if (sortKey.value !== key) {
     return "↕";
   }
-
-  return tableSort.direction === "asc" ? "▲" : "▼";
-};
-
-const resetForm = () => {
-  Object.assign(form, baseForm());
-  editingUserId.value = null;
-};
-
-const closeModal = () => {
-  showModal.value = false;
-  resetForm();
-};
-
-const openCreateModal = () => {
-  resetForm();
-  showModal.value = true;
+  return sortDirection.value === "asc" ? "▲" : "▼";
 };
 
 const downloadGuruTemplate = () => {
@@ -514,225 +479,57 @@ const openGuruImportPicker = () => {
 const handleGuruImportFileChange = async (event) => {
   const file = event?.target?.files?.[0];
   if (!file) return;
-
-  isImportingGuru.value = true;
   try {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await api.post("/auth/register/user-school/import", formData);
-    const imported = Number(response?.data?.imported || 0);
-    const failed = Number(response?.data?.failed || 0);
-
-    await loadUsers();
-    pushToast({
-      title: "Import Guru Selesai",
-      message: `${imported} guru berhasil diimport${failed > 0 ? `, ${failed} baris gagal` : ""}.`,
-      type: "success",
-    });
-    if (failed > 0) {
-      pushToast({
-        title: "Sebagian Baris Gagal",
-        message: "Periksa data yang kosong. Username dan password dibuat otomatis dari nama lengkap.",
-        type: "warning",
-      });
-    }
-  } catch (error) {
-    pushToast({
-      title: "Gagal Import Guru",
-      message: error.message,
-      type: "error",
-    });
+    await adminStore.importGuru(file);
   } finally {
-    isImportingGuru.value = false;
     if (guruImportInput.value) {
       guruImportInput.value.value = "";
     }
   }
 };
 
-const loadUsers = async () => {
-  try {
-    const response = await api.get("/auth/user-school", {
-      params: {
-        paginate: 1,
-        page: currentPage.value,
-        limit: pageSize,
-      },
-    });
-    users.value = (response?.data?.data || []).filter((item) =>
-      ["ADMIN", "GURU", "SARPRAS", "KOPERASI"].includes(item.role),
-    );
-    totalUsers.value = Number(response?.data?.total || 0);
-  } catch (error) {
-    pushToast({
-      title: "Gagal Memuat User Sekolah",
-      message: error.message,
-      type: "error",
-    });
-  }
-};
-
-const goToPrevPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value -= 1;
-    loadUsers();
-  }
-};
-
-const goToNextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value += 1;
-    loadUsers();
-  }
-};
-
-const startEdit = (item) => {
-  editingUserId.value = item.id;
-  form.full_name = item.full_name || "";
-  form.username = item.username;
-  form.password = "";
-  form.role = item.role;
-  form.parent_email = item.parent_email || "";
-  form.phone_number = item.phone_number || "";
-  showModal.value = true;
-};
-
-const openDeleteModal = (item) => {
-  userToDelete.value = item;
-  isDeleteModalOpen.value = true;
-};
-
-const openDetailModal = (item) => {
-  detailUser.value = item;
-  isDetailModalOpen.value = true;
-};
-
-const closeDetailModal = () => {
-  isDetailModalOpen.value = false;
-  detailUser.value = null;
-};
-
-const editDetailUser = () => {
-  if (!detailUser.value) return;
-  const user = detailUser.value;
-  closeDetailModal();
-  startEdit(user);
-};
-
-const resetDetailPassword = async () => {
-  if (!detailUser.value?.id || isResettingPassword.value) return;
-  resetTargetId.value = detailUser.value.id;
-  resetTargetLabel.value = detailUser.value.full_name || detailUser.value.username || "user ini";
-  isResetConfirmOpen.value = true;
-};
-
-const closeResetConfirm = () => {
-  if (isResettingPassword.value) return;
-  isResetConfirmOpen.value = false;
-  resetTargetId.value = null;
-  resetTargetLabel.value = "";
-};
-
+const loadUsers = () => adminStore.loadSchoolUsers();
+const goToPrevPage = () => adminStore.goToSchoolUsersPage(Number(currentPage.value) - 1);
+const goToNextPage = () => adminStore.goToSchoolUsersPage(Number(currentPage.value) + 1);
+const startEdit = (item) => adminStore.startEditSchoolUser(item);
+const openDeleteModal = (item) => adminStore.openSchoolUserDeleteModal(item);
+const openDetailModal = (item) => adminStore.openSchoolUserDetail(item);
+const closeDetailModal = () => adminStore.closeSchoolUserDetail();
+const editDetailUser = () => adminStore.editSchoolUserFromDetail();
+const resetDetailPassword = () => adminStore.openSchoolUserResetConfirm();
+const closeResetConfirm = () => adminStore.closeSchoolUserResetConfirm();
 const confirmResetPassword = async () => {
-  if (!resetTargetId.value || isResettingPassword.value) return;
-  isResettingPassword.value = true;
-  try {
-    const response = await api.post(`/auth/user-school/${resetTargetId.value}/reset-password`);
-    detailUser.value = {
-      ...detailUser.value,
-      initial_password: response?.data?.password || response?.data?.initial_password || "",
-    };
-    isResetConfirmOpen.value = false;
-    resetTargetId.value = null;
-    resetTargetLabel.value = "";
-    await loadUsers();
+  const response = await adminStore.resetSchoolUserPassword();
+  if (response) {
     successModal.value.show(
       response?.message ||
       `Password berhasil direset. Password baru: ${response?.data?.password || response?.data?.initial_password || "-"}`,
     );
-  } catch (error) {
-    pushToast({
-      title: "Gagal Reset Password",
-      message: error.message,
-      type: "error",
-    });
-  } finally {
-    isResettingPassword.value = false;
   }
 };
-
-const closeDeleteModal = () => {
-  if (isDeletingUser.value) return;
-  isDeleteModalOpen.value = false;
-  userToDelete.value = null;
-};
-
+const closeDeleteModal = () => adminStore.closeSchoolUserDeleteModal();
 const confirmDeleteUser = async () => {
-  if (!userToDelete.value?.id) return;
-  isDeletingUser.value = true;
-  try {
-    await api.delete(`/auth/user-school/${userToDelete.value.id}`);
-    isDeleteModalOpen.value = false;
-    userToDelete.value = null;
-    await loadUsers();
+  const response = await adminStore.deleteSchoolUser();
+  if (response) {
     successModal.value.show("User berhasil dihapus");
-  } catch (error) {
-    isDeleteModalOpen.value = false;
-    pushToast({
-      title: "Gagal Menghapus User Sekolah",
-      message: error.message,
-      type: "error",
-    });
-  } finally {
-    isDeletingUser.value = false;
   }
 };
-
+const closeModal = () => adminStore.closeSchoolUsersModal();
+const openCreateModal = () => adminStore.openSchoolUsersCreateModal();
 const submitUser = async () => {
-  isSubmitting.value = true;
-
-  try {
-    const payload = {
-      full_name: form.full_name,
-      username: form.username,
-      role: form.role,
-      parent_email: form.parent_email || null,
-      phone_number: form.phone_number || null,
-    };
-
-    if (form.role !== "GURU" && form.password) {
-      payload.password = form.password;
-    }
-    if (form.role === "GURU") {
-      delete payload.username;
-      delete payload.password;
-    }
-
-    const response = editingUserId.value
-      ? await api.put(`/auth/user-school/${editingUserId.value}`, payload)
-      : await api.post("/auth/register/user-school", payload);
-
-    await loadUsers();
-    closeModal();
-    const generatedCredentials =
-      !editingUserId.value && form.role === "GURU" && response?.data?.username && response?.data?.password
-        ? ` Username: ${response.data.username}. Password: ${response.data.password}`
-        : "";
+  const isEditing = !!editingUserId.value;
+  const response = await adminStore.saveSchoolUser();
+  const generatedCredentials =
+    !isEditing && form.value.role === "GURU" && response?.data?.username && response?.data?.password
+      ? ` Username: ${response.data.username}. Password: ${response.data.password}`
+      : "";
+  if (response) {
     successModal.value.show(
       response?.message ||
-      (editingUserId.value
+      (isEditing
         ? "User sekolah berhasil diupdate"
         : `User sekolah berhasil dibuat.${generatedCredentials}`),
     );
-  } catch (error) {
-    pushToast({
-      title: editingUserId.value ? "Gagal Mengupdate User Sekolah" : "Gagal Membuat User Sekolah",
-      message: error.message,
-      type: "error",
-    });
-  } finally {
-    isSubmitting.value = false;
   }
 };
 

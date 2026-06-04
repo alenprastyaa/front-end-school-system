@@ -316,34 +316,38 @@ import { computed, nextTick, onMounted, ref, watch, reactive } from "vue";
 import { api } from "@/api";
 import { formatDateTime } from "@/utils/date";
 import { pushToast } from "@/composables/useToast";
-import { useMasterDataStore } from "@/store/masterData";
+import { useTeacherStore } from "@/store/teacher";
+import { useTeacherExamStore } from "@/store/teacherExam";
+import { storeToRefs } from "pinia";
 import { normalizePublicUrl } from "@/utils/url";
 
-const subjects = ref([]);
-const masterDataStore = useMasterDataStore();
-const selectedSubject = ref(null);
-const assignments = ref([]);
-const questionBank = ref([]);
-const questionBankTotal = ref(0);
-const subjectError = ref("");
-const message = ref("");
-const isError = ref(false);
-const isSavingAssignment = ref(false);
-const bankSearch = ref("");
-const bankTypeFilter = ref("ALL");
-const bankPageSize = ref(20);
-const bankCurrentPage = ref(1);
-const activeExamRequestId = ref(null);
+const teacherStore = useTeacherStore();
+const examStore = useTeacherExamStore();
+const { subjects } = storeToRefs(teacherStore);
+const {
+  selectedSubject,
+  assignments,
+  questionBank,
+  questionBankTotal,
+  subjectError,
+  message,
+  isError,
+  isSavingAssignment,
+  bankSearch,
+  bankTypeFilter,
+  bankPageSize,
+  bankCurrentPage,
+  activeExamRequestId,
+} = storeToRefs(examStore);
 const composerSectionRef = ref(null);
 const questionBankSectionRef = ref(null);
-const isComposerHighlighted = ref(false);
+const { isComposerHighlighted } = storeToRefs(examStore);
 let composerHighlightTimeout = null;
 
-const assignmentForm = reactive({
-  shuffle_questions: false,
-  question_duration_minutes: 10,
-  selected_question_bank_ids: [],
-});
+const assignmentForm = examStore.assignmentForm;
+assignmentForm.shuffle_questions = assignmentForm.shuffle_questions ?? false;
+assignmentForm.question_duration_minutes = assignmentForm.question_duration_minutes ?? 10;
+assignmentForm.selected_question_bank_ids = assignmentForm.selected_question_bank_ids || [];
 
 const QUESTION_IMAGE_MARKER = "[[QUESTION_IMAGE_URL]]";
 
@@ -511,7 +515,7 @@ const selectExamRequest = async (assignment) => {
 const loadSubjects = async () => {
   subjectError.value = "";
   try {
-    subjects.value = await masterDataStore.getTeacherSubjects();
+    subjects.value = await teacherStore.loadTeacherSubjects();
     if (!selectedSubject.value && subjects.value.length > 0) {
       await selectSubject(subjects.value[0]);
     }

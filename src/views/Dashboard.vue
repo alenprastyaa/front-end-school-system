@@ -62,7 +62,196 @@
         {{ errorMessage }}
       </div>
 
-      <template v-if="isParentDashboard">
+      <template v-if="isPayrollDashboard">
+        <section class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div class="flex flex-col gap-4 border-b border-slate-200 px-4 py-4 sm:px-6 sm:py-5 dark:border-slate-800 lg:flex-row lg:items-center lg:justify-between">
+            <div class="min-w-0">
+              <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Bendahara · Penggajian</p>
+              <h2 class="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                {{ payrollPeriodLabel }}
+              </h2>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Ringkasan payroll periode ini.</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <input v-model="selectedPayrollPeriod" type="month"
+                class="h-10 rounded-xl border border-slate-200 bg-white px-3.5 text-[13px] text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:focus:ring-slate-600" />
+              <button @click="loadDashboard" :disabled="isLoading"
+                class="inline-flex h-10 items-center gap-2 rounded-xl bg-slate-900 px-4 text-[13px] font-semibold text-white shadow-lg shadow-slate-900/15 transition hover:bg-slate-800 disabled:opacity-40">
+                <Icon icon="mdi:refresh" class="h-4 w-4" />
+                {{ isLoading ? "Memuat…" : "Muat" }}
+              </button>
+            </div>
+          </div>
+
+          <div class="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4 sm:p-6">
+            <div v-for="item in summaryCards" :key="item.label" class="rounded-2xl p-5 text-white shadow-sm" :class="item.cardClass">
+              <p class="text-[11px] font-medium text-white/80">{{ item.label }}</p>
+              <div class="mt-2 flex items-end justify-between gap-3">
+                <div>
+                  <p class="text-3xl font-bold tracking-tight">{{ item.value }}</p>
+                  <p class="mt-2 text-xs text-white/75">{{ item.caption }}</p>
+                </div>
+                <Icon :icon="item.icon" class="h-9 w-9 shrink-0 text-white/80" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
+          <div class="space-y-4">
+            <section class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div class="border-b border-slate-200 px-4 py-4 sm:px-6 dark:border-slate-800">
+                <div class="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 class="text-base font-semibold text-slate-900 dark:text-white">Status Payroll</h3>
+                  </div>
+                  <div class="rounded-2xl bg-slate-50 px-4 py-3 text-right dark:bg-slate-800/60">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Rate / JP</p>
+                    <p class="mt-1 text-lg font-bold text-slate-900 dark:text-white">
+                      {{ formatCurrency(payrollSettings.hourly_rate || 0) }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid gap-4 p-4 sm:grid-cols-2 sm:p-6">
+                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                  <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 dark:text-slate-400">Progres Lunas</p>
+                  <p class="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{{ payrollPaidRatio }}%</p>
+                  <div class="mt-4 h-2 rounded-full bg-slate-200 dark:bg-slate-700">
+                    <div class="h-2 rounded-full bg-emerald-500 transition-all"
+                      :style="{ width: `${payrollPaidRatio}%` }"></div>
+                  </div>
+                  <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                    {{ payrollSummary.paid_count || 0 }} dari {{ payrollSummary.total_teachers || 0 }} guru sudah dibayar.
+                  </p>
+                </div>
+                <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                  <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600 dark:text-slate-400">Pengaturan Aktif</p>
+                  <div class="mt-3 space-y-3 text-sm text-slate-600 dark:text-slate-300">
+                    <div class="flex items-center justify-between gap-3">
+                      <span>Durasi JP</span>
+                      <strong class="text-slate-900 dark:text-white">{{ payrollSettings.lesson_minutes || 45 }} menit</strong>
+                    </div>
+                    <div class="flex items-center justify-between gap-3">
+                      <span>Pengali</span>
+                      <strong class="text-slate-900 dark:text-white">{{ payrollSettings.teaching_hours_multiplier || 4 }}x</strong>
+                    </div>
+                    <div class="flex items-center justify-between gap-3">
+                      <span>Komponen aktif</span>
+                      <strong class="text-slate-900 dark:text-white">{{ payrollComponents.length }}</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div class="border-b border-slate-200 px-4 py-4 sm:px-6 dark:border-slate-800">
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white">Slip Guru Terbaru</h3>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-left text-sm">
+                  <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
+                    <tr>
+                      <th class="px-4 py-3 font-medium sm:px-6">Guru</th>
+                      <th class="px-4 py-3 font-medium">JP</th>
+                      <th class="px-4 py-3 font-medium">Status</th>
+                      <th class="px-4 py-3 font-medium">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tr v-for="teacher in payrollTeachers" :key="teacher.teacher_id"
+                      class="hover:bg-slate-50/60 dark:hover:bg-slate-800/50">
+                      <td class="px-4 py-4 sm:px-6">
+                        <div class="min-w-0">
+                          <p class="font-semibold text-slate-900 dark:text-white">{{ teacher.teacher_name }}</p>
+                          <p v-if="teacher.username" class="mt-0.5 text-[11px] text-slate-400">{{ teacher.username }}</p>
+                        </div>
+                      </td>
+                      <td class="px-4 py-4 text-slate-600 dark:text-slate-300">{{ numberValue(teacher.teaching_hours) }} JP</td>
+                      <td class="px-4 py-4">
+                        <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                          :class="teacher.status === 'PAID' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300'">
+                          {{ teacher.status === 'PAID' ? "Lunas" : "Belum Lunas" }}
+                        </span>
+                      </td>
+                      <td class="px-4 py-4 font-semibold text-slate-900 dark:text-white">
+                        {{ formatCurrency(calculatedPayrollRowTotal(teacher)) }}
+                      </td>
+                    </tr>
+                    <tr v-if="payrollTeachers.length === 0">
+                      <td colspan="4" class="px-4 py-10 text-center text-slate-500 sm:px-6">
+                        Belum ada data slip untuk periode ini.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+
+          <div class="space-y-4">
+            <section class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div class="border-b border-slate-200 px-4 py-4 sm:px-6 dark:border-slate-800">
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white">Komponen Aktif</h3>
+              </div>
+              <div class="space-y-3 p-4 sm:p-6">
+                <div v-for="component in payrollComponents.slice(0, 6)" :key="component.id"
+                  class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ component.name }}</p>
+                      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        {{ component.component_type === "DEDUCTION" ? "Potongan" : "Tunjangan" }}
+                        <span class="mx-1">•</span>
+                        {{ component.calculation_type === "DAILY" ? "Harian" : "Tetap" }}
+                      </p>
+                    </div>
+                    <div class="shrink-0 text-right">
+                      <p class="text-sm font-semibold text-slate-900 dark:text-white">
+                        {{ component.component_type === "DEDUCTION" ? "−" : "+" }}{{ formatCurrency(componentTotalValue(component)) }}
+                      </p>
+                      <p class="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                        {{ component.applies_to_all ? "Untuk semua guru" : "Opsional" }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="payrollComponents.length === 0" class="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                  Belum ada komponen gaji.
+                </div>
+              </div>
+            </section>
+
+            <section class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div class="border-b border-slate-200 px-4 py-4 sm:px-6 dark:border-slate-800">
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white">Aksi Cepat</h3>
+              </div>
+              <div class="grid gap-3 p-4 sm:p-6">
+                <router-link to="/payroll/slips"
+                  class="inline-flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200 dark:hover:bg-slate-800">
+                  <span>Kelola Slip Guru</span>
+                  <Icon icon="mdi:chevron-right" class="h-4 w-4" />
+                </router-link>
+                <router-link to="/payroll/components"
+                  class="inline-flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200 dark:hover:bg-slate-800">
+                  <span>Komponen Gaji</span>
+                  <Icon icon="mdi:chevron-right" class="h-4 w-4" />
+                </router-link>
+                <router-link to="/payroll/settings"
+                  class="inline-flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200 dark:hover:bg-slate-800">
+                  <span>Setting Tarif</span>
+                  <Icon icon="mdi:chevron-right" class="h-4 w-4" />
+                </router-link>
+              </div>
+            </section>
+          </div>
+        </section>
+      </template>
+
+      <template v-else-if="isParentDashboard">
         <section
           class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div class="bg-slate-950 px-4 py-5 text-white sm:px-6 sm:py-6">
@@ -643,29 +832,36 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from "vue";
+import { storeToRefs } from "pinia";
 import { Icon } from "@iconify/vue";
 import { api } from "@/api";
 import { formatDate, formatDateTime, formatTime } from "@/utils/date";
 import { getStoredRole, getStoredUser } from "@/utils/auth";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
+import { usePayrollStore } from "@/store/payroll";
+import { useStudentDashboardStore } from "@/store/studentDashboard";
 
 const role = getStoredRole();
 const user = getStoredUser();
-const isLoading = ref(false);
-const errorMessage = ref("");
-const dashboardData = ref({});
 const primaryTableSort = createSortState("");
-const attendanceEmailReportDate = ref(new Date().toISOString().slice(0, 10));
-const isSendingAttendanceEmailReport = ref(false);
-const attendanceEmailReportMessage = ref("");
-const attendanceEmailReportError = ref(false);
-const attendanceEmailReportSummary = ref(null);
-const announcementModalOpen = ref(false);
-const currentAnnouncementIndex = ref(0);
 const announcementAutoAdvanceTimer = ref(null);
-const announcementTransitionName = ref("announcement-slide-next");
-const announcementNoticeMessage = ref("");
 let announcementNoticeTimer = null;
+const studentDashboardStore = useStudentDashboardStore();
+const {
+  dashboardData,
+  selectedParentChildId,
+  isLoading,
+  errorMessage,
+  attendanceEmailReportDate,
+  isSendingAttendanceEmailReport,
+  attendanceEmailReportMessage,
+  attendanceEmailReportError,
+  attendanceEmailReportSummary,
+  announcementModalOpen,
+  currentAnnouncementIndex,
+  announcementTransitionName,
+  announcementNoticeMessage,
+} = storeToRefs(studentDashboardStore);
 
 const endpointByRole = {
   SUPER_ADMIN: "/dashboard/superadmin",
@@ -676,8 +872,27 @@ const endpointByRole = {
   SISWA: "/dashboard/siswa",
   ORANG_TUA: "/dashboard/parent",
 };
+const isPayrollDashboard = computed(() => role === "BENDAHARA");
+const payrollStore = usePayrollStore();
+const {
+  selectedPeriod: selectedPayrollPeriod,
+  searchQuery: payrollSearchQuery,
+  appliedSearchQuery: payrollAppliedSearchQuery,
+  currentPage: payrollCurrentPage,
+  limit: payrollLimit,
+  totalTeachersCount: payrollTotalTeachersCount,
+  totalPagesCount: payrollTotalPagesCount,
+  isLoading: payrollIsLoading,
+  teachers: payrollTeachers,
+  components: payrollComponents,
+  teachingHoursMultiplier: payrollTeachingHoursMultiplier,
+  summary: payrollSummary,
+  settings: payrollSettings,
+  payrollPaidRatio,
+  payrollPeriodLabel,
+  activeComponents: payrollActiveComponents,
+} = storeToRefs(payrollStore);
 const isParentDashboard = computed(() => role === "ORANG_TUA");
-const selectedParentChildId = ref("");
 const parentChildren = computed(() => Array.isArray(dashboardData.value?.children) ? dashboardData.value.children : []);
 const selectedParentChild = computed(() => {
   const selectedId = String(selectedParentChildId.value || dashboardData.value?.selected_child_id || "");
@@ -689,7 +904,6 @@ const parentGradesSummary = computed(() => dashboardData.value?.gradesSummary ||
 const parentAttendanceHistory = computed(() => Array.isArray(dashboardData.value?.recentAttendance) ? dashboardData.value.recentAttendance : []);
 const parentReceiptHistory = computed(() => Array.isArray(dashboardData.value?.recentReceipts) ? dashboardData.value.recentReceipts : []);
 const parentPendingAssignments = computed(() => Array.isArray(dashboardData.value?.pendingAssignments) ? dashboardData.value.pendingAssignments : []);
-
 const isAnnouncementExpired = (item) => {
   if (!item?.deactivated_at) return false;
   const expiresAt = new Date(item.deactivated_at);
@@ -782,6 +996,9 @@ const chartPalette = ["#3b82f6", "#10b981", "#f59e0b", "#6366f1", "#ef4444", "#6
 
 const numberValue = (value) => Number(value || 0);
 
+const formatCurrency = (value) =>
+  new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(value || 0));
+
 const formatCompactNumber = (value) => {
   const numeric = numberValue(value);
   return new Intl.NumberFormat("id-ID", { notation: numeric >= 10000 ? "compact" : "standard" }).format(numeric);
@@ -810,6 +1027,7 @@ const createSummaryCard = ({
 });
 
 const heroTitle = computed(() => {
+  if (role === "BENDAHARA") return "Dashboard Bendahara";
   if (role === "SUPER_ADMIN") return "Ikhtisar Sistem Terpadu";
   if (role === "ADMIN") return `Dashboard Admin ${dashboardData.value?.school?.name || user?.school_name || ""}`.trim();
   if (role === "GURU") return `Kelas Wali: ${dashboardData.value?.homeroom?.class_name || ""}`.trim();
@@ -818,6 +1036,7 @@ const heroTitle = computed(() => {
 });
 
 const heroDescription = computed(() => {
+  if (role === "BENDAHARA") return "Pantau payroll, status slip, komponen gaji, dan pengaturan tarif dalam satu halaman.";
   if (role === "SUPER_ADMIN") return "Pemantauan komprehensif metrik sekolah dan aktivitas pengguna sistem.";
   if (role === "ADMIN") return "Metrik operasional sekolah, status absensi, dan data kelas secara real-time.";
   if (role === "GURU") return "Ringkasan data absensi siswa dan administrasi untuk kelas perwalian Anda.";
@@ -828,6 +1047,15 @@ const heroDescription = computed(() => {
 
 const summaryCards = computed(() => {
   const overview = dashboardData.value?.overview || {};
+
+  if (role === "BENDAHARA") {
+    return [
+      createSummaryCard({ label: "Total Guru", value: numberValue(payrollSummary.value.total_teachers), caption: "Guru dalam periode ini", icon: "mdi:account-group-outline", cardClass: "bg-sky-600" }),
+      createSummaryCard({ label: "Sudah Dibayar", value: numberValue(payrollSummary.value.paid_count), caption: formatCurrency(payrollSummary.value.paid_amount || 0), icon: "mdi:check-circle-outline", cardClass: "bg-emerald-600" }),
+      createSummaryCard({ label: "Belum Dibayar", value: numberValue(payrollSummary.value.unpaid_count), caption: formatCurrency(payrollSummary.value.unpaid_amount || 0), icon: "mdi:clock-outline", cardClass: "bg-amber-500" }),
+      createSummaryCard({ label: "Total Periode", value: formatCurrency(payrollSummary.value.total_payroll_amount || 0), caption: payrollPeriodLabel.value, icon: "mdi:wallet-outline", cardClass: "bg-slate-700" }),
+    ];
+  }
 
   return role === "SUPER_ADMIN"
     ? [
@@ -1011,6 +1239,23 @@ const spotlight = computed(() => {
 });
 
 const visualPanel = computed(() => {
+  if (role === "BENDAHARA") {
+    return {
+      title: "Komposisi Status Payroll",
+      description: "Lunas, belum lunas, komponen.",
+      chartType: "bar",
+      labels: ["Lunas", "Belum Lunas", "Komponen"],
+      series: [{
+        name: "Jumlah",
+        data: [
+          numberValue(payrollSummary.value.paid_count),
+          numberValue(payrollSummary.value.unpaid_count),
+          numberValue(payrollComponents.value.length),
+        ],
+      }],
+    };
+  }
+
   if (role === "SUPER_ADMIN") return {
     title: "Metrik Kepadatan Sekolah",
     description: "Populasi siswa per unit sekolah.",
@@ -1146,6 +1391,20 @@ const compositionChartOptions = computed(() => ({
 }));
 
 const loadDashboard = async () => {
+  if (role === "BENDAHARA") {
+    dashboardData.value = {};
+    errorMessage.value = "";
+    isLoading.value = true;
+    try {
+      await payrollStore.loadOverview({ period: selectedPayrollPeriod.value, page: 1, limit: 10, search: "" });
+    } catch (error) {
+      errorMessage.value = error.message;
+    } finally {
+      isLoading.value = false;
+    }
+    return;
+  }
+
   const endpoint = endpointByRole[role];
 
   if (!endpoint) {
@@ -1160,7 +1419,9 @@ const loadDashboard = async () => {
   try {
     const params = role === "ORANG_TUA" && selectedParentChildId.value
       ? { child_id: selectedParentChildId.value }
-      : undefined;
+      : role === "BENDAHARA"
+        ? { period: selectedPayrollPeriod.value }
+        : undefined;
     const response = await api.get(endpoint, { params });
     dashboardData.value = response?.data || {};
     if (role === "ORANG_TUA" && !selectedParentChildId.value && dashboardData.value?.selected_child_id) {
@@ -1195,6 +1456,16 @@ const sendAttendanceEmailReport = async () => {
   } finally {
     isSendingAttendanceEmailReport.value = false;
   }
+};
+
+const componentTotalValue = (component) =>
+  Math.round(Math.abs(Number(component?.default_amount || 0)) * Math.max(Number(component?.default_quantity || 1), 0));
+
+const calculatedPayrollRowTotal = (teacher) => {
+  const baseAmount = Number(teacher?.base_amount || Math.round(Number(teacher?.hourly_rate || 0) * Number(teacher?.teaching_hours || 0)));
+  const allowances = Number(teacher?.allowances_amount || 0);
+  const deductions = Number(teacher?.deductions_amount || 0);
+  return Number(teacher?.total_amount || (baseAmount + allowances - deductions));
 };
 
 onMounted(loadDashboard);
