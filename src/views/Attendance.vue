@@ -192,6 +192,7 @@ const currentTime = ref("");
 const currentDate = ref("");
 let timer;
 let faceApiLoadPromise = null;
+let faceApiModelsPromise = null;
 let cameraStream = null;
 
 const FACE_API_SCRIPT_URL = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
@@ -820,7 +821,7 @@ let liveScanInFlight = false;
 let liveFaceApiInstance = null;
 let mediapipeVision = null;
 let mediapipeFaceLandmarker = null;
-let liveWarmupUntilMs = 0;
+let mediapipeFaceLandmarkerPromise = null;
 let mediapipeLastAtMs = 0;
 let faceMeshOverlayRafId = null;
 let latestFaceMeshResult = null;
@@ -836,7 +837,6 @@ const stopLiveRecognition = () => {
   liveScanLastAt = 0;
   liveConsecutiveMatches = 0;
   liveScanInFlight = false;
-  liveWarmupUntilMs = 0;
   mediapipeLastAtMs = 0;
   fallbackFaceMeshLastAtMs = 0;
 };
@@ -884,6 +884,8 @@ const startCamera = async () => {
 
   isCameraLoading.value = true;
   try {
+    loadFaceApi().catch(() => { });
+    ensureMediapipeFaceLandmarker().catch(() => { });
     await ensureGeolocation();
     const isMobile = window.matchMedia?.("(pointer:coarse)")?.matches || window.innerWidth < 640;
     isMobileClient.value = Boolean(isMobile);
@@ -911,7 +913,7 @@ const startCamera = async () => {
   }
 };
 
-const loadFaceApi = async () => {
+const loadFaceApiScript = async () => {
   if (window.faceapi) {
     return window.faceapi;
   }
@@ -927,12 +929,30 @@ const loadFaceApi = async () => {
     });
   }
 
-  const faceapi = await faceApiLoadPromise;
-  await Promise.all([
-    faceapi.nets.tinyFaceDetector.loadFromUri(FACE_API_MODEL_URL),
-    faceapi.nets.faceLandmark68Net.loadFromUri(FACE_API_MODEL_URL),
-    faceapi.nets.faceRecognitionNet.loadFromUri(FACE_API_MODEL_URL),
-  ]);
+  return await faceApiLoadPromise;
+};
+
+const loadFaceApi = async () => {
+  if (!faceApiModelsPromise) {
+    faceApiModelsPromise = (async () => {
+      const faceapi = await loadFaceApiScript();
+      if (!faceapi?.nets) {
+        throw new Error("Gagal memuat library face recognition.");
+      }
+
+      await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(FACE_API_MODEL_URL),
+        faceapi.nets.faceLandmark68Net.loadFromUri(FACE_API_MODEL_URL),
+        faceapi.nets.faceRecognitionNet.loadFromUri(FACE_API_MODEL_URL),
+      ]);
+      return faceapi;
+    })().catch((error) => {
+      faceApiModelsPromise = null;
+      throw error;
+    });
+  }
+
+  const faceapi = await faceApiModelsPromise;
   return faceapi;
 };
 
@@ -946,25 +966,35 @@ const loadMediapipeVision = async () => {
 };
 
 const ensureMediapipeFaceLandmarker = async () => {
-  if (mediapipeFaceLandmarker) return;
+  if (mediapipeFaceLandmarker) return mediapipeFaceLandmarker;
 
-  const vision = await loadMediapipeVision();
-  if (!vision?.FilesetResolver || !vision?.FaceLandmarker) {
-    throw new Error("Gagal memuat MediaPipe Face Landmarker.");
+  if (!mediapipeFaceLandmarkerPromise) {
+    mediapipeFaceLandmarkerPromise = (async () => {
+      const vision = await loadMediapipeVision();
+      if (!vision?.FilesetResolver || !vision?.FaceLandmarker) {
+        throw new Error("Gagal memuat MediaPipe Face Landmarker.");
+      }
+
+      const fileset = await vision.FilesetResolver.forVisionTasks(MEDIAPIPE_WASM_BASE_URL);
+      mediapipeFaceLandmarker = await vision.FaceLandmarker.createFromOptions(fileset, {
+        baseOptions: {
+          modelAssetPath: MEDIAPIPE_FACE_LANDMARKER_MODEL_URL,
+          // GPU can be flaky/slow on some mobile browsers; CPU is more consistent.
+          delegate: "CPU",
+        },
+        runningMode: "VIDEO",
+        numFaces: 1,
+        outputFaceBlendshapes: false,
+        outputFacialTransformationMatrixes: false,
+      });
+      return mediapipeFaceLandmarker;
+    })().catch((error) => {
+      mediapipeFaceLandmarkerPromise = null;
+      throw error;
+    });
   }
 
-  const fileset = await vision.FilesetResolver.forVisionTasks(MEDIAPIPE_WASM_BASE_URL);
-  mediapipeFaceLandmarker = await vision.FaceLandmarker.createFromOptions(fileset, {
-    baseOptions: {
-      modelAssetPath: MEDIAPIPE_FACE_LANDMARKER_MODEL_URL,
-      // GPU can be flaky/slow on some mobile browsers; CPU is more consistent.
-      delegate: "CPU",
-    },
-    runningMode: "VIDEO",
-    numFaces: 1,
-    outputFaceBlendshapes: false,
-    outputFacialTransformationMatrixes: false,
-  });
+  return await mediapipeFaceLandmarkerPromise;
 };
 
 const ensureOverlaySize = (_video) => {
@@ -1012,7 +1042,8 @@ const convertFaceApiDetectionToMeshData = (detection, video) => {
 };
 
 const refreshFallbackFaceMeshFromFaceApi = async (faceapi, video, nowMs) => {
-  if (nowMs - fallbackFaceMeshLastAtMs < 1200) {
+  const refreshIntervalMs = latestFaceMeshResult ? 1000 : 220;
+  if (nowMs - fallbackFaceMeshLastAtMs < refreshIntervalMs) {
     return false;
   }
   fallbackFaceMeshLastAtMs = nowMs;
@@ -1187,24 +1218,22 @@ const startLiveRecognition = async () => {
   }
 
   stopLiveRecognition();
-  liveFaceApiInstance = liveFaceApiInstance || (await loadFaceApi());
-  try {
-    await ensureMediapipeFaceLandmarker();
-  } catch (error) {
-    // Non-fatal: face match can still work without landmark overlay.
+  resetFaceVerification("loading", "Menyiapkan deteksi wajah...");
+  ensureMediapipeFaceLandmarker().catch((error) => {
+    // Non-fatal: face match can still work with the 68-point face-api landmark fallback.
     console.warn(error);
-  }
+  });
 
   let referenceDescriptor;
   try {
+    liveFaceApiInstance = liveFaceApiInstance || (await loadFaceApi());
     referenceDescriptor = Float32Array.from(JSON.parse(storedReferenceDescriptor.value));
-  } catch {
-    resetFaceVerification("error", "Data referensi wajah tidak valid. Silakan enrol ulang wajah.");
+  } catch (error) {
+    resetFaceVerification("error", error?.message || "Data referensi wajah tidak valid. Silakan enrol ulang wajah.");
     return;
   }
 
   resetFaceVerification("loading", "Arahkan wajah ke kamera. Sistem akan mencocokkan secara otomatis.");
-  liveWarmupUntilMs = performance.now() + 3000;
 
   const loop = async (timestamp) => {
     if (!cameraActive.value || hasCheckedInToday.value || !cameraVideoRef.value) {
@@ -1226,18 +1255,6 @@ const startLiveRecognition = async () => {
       const faceapi = liveFaceApiInstance;
       const video = cameraVideoRef.value;
       await refreshFallbackFaceMeshFromFaceApi(faceapi, video, nowMs);
-
-      // Warmup window: show scanning for 5 seconds before matching.
-      if (liveWarmupUntilMs && nowMs < liveWarmupUntilMs) {
-        liveConsecutiveMatches = 0;
-        const remaining = Math.max(0, Math.ceil((liveWarmupUntilMs - nowMs) / 1000));
-        faceVerification.value = {
-          status: "loading",
-          distance: null,
-          message: `Menyiapkan deteksi... ${remaining}s`,
-        };
-        return;
-      }
 
       const detection = await faceapi
         .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }))
