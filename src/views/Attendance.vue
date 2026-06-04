@@ -38,8 +38,6 @@
           <div class="relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-950">
             <video ref="cameraVideoRef" class="absolute inset-0 z-0 h-full w-full object-cover"
               :class="cameraActive ? 'block' : 'hidden'" autoplay playsinline muted></video>
-            <canvas v-show="cameraActive" ref="overlayCanvasRef"
-              class="pointer-events-none absolute inset-0 z-10 h-full w-full"></canvas>
 
             <div v-if="!cameraActive && !selectedFile" class="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
               <div class="flex h-16 w-16 items-center justify-center rounded-full bg-white/10 text-white">
@@ -185,7 +183,6 @@ import { pushToast } from "@/composables/useToast";
 import { formatChatTime, formatDate, formatDateKey, formatLongDate } from "@/utils/date";
 import { useProfileStore } from "@/store/profile";
 import { createSortState, sortItems } from "@/utils/tableSort";
-import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 
 // --- Live Clock Logic ---
 const currentTime = ref("");
@@ -195,485 +192,17 @@ let faceApiLoadPromise = null;
 let faceApiModelsPromise = null;
 let cameraStream = null;
 
-const FACE_API_SCRIPT_URL = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
-const FACE_API_MODEL_URL = "https://justadudewhohacks.github.io/face-api.js/models";
+const FACE_API_SCRIPT_URL = "/vendor/face-api/face-api.min.js";
+const FACE_API_MODEL_URL = "/vendor/face-api/models";
 const FACE_MATCH_THRESHOLD = 0.5;
 const LIVE_SCAN_INTERVAL_MS = 260;
 const LIVE_MATCH_REQUIRED = 3;
-
-const MEDIAPIPE_TASKS_VISION_VERSION = "0.10.35";
-const MEDIAPIPE_WASM_BASE_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MEDIAPIPE_TASKS_VISION_VERSION}/wasm`;
-const MEDIAPIPE_FACE_LANDMARKER_MODEL_URL =
-  "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
 
 const updateClock = () => {
   const now = new Date();
   currentTime.value = formatChatTime(now);
   currentDate.value = formatLongDate(now);
 };
-
-class FaceMeshPainter {
-  constructor({
-    scanT,
-    scanning,
-    progress,
-    fullBright,
-    meshData,
-    mirrorHorizontal,
-    accentColor,
-    sourceAspect,
-    coverFit = false,
-    dotsOnly = true,
-  }) {
-    this.scanT = scanT;
-    this.scanning = scanning;
-    this.progress = progress;
-    this.fullBright = fullBright;
-    this.meshData = meshData;
-    this.mirrorHorizontal = mirrorHorizontal;
-    this.accentColor = accentColor;
-    this.sourceAspect = sourceAspect;
-    this.coverFit = coverFit;
-    this.dotsOnly = dotsOnly;
-  }
-
-  static rippleCount = 5;
-  static bandFrac = 0.085;
-  static baseSpeed = 0.6;
-  static spread = 0.18;
-  static faceRegions = [
-    { name: "Dahi", duration: 1.4, color: "#38bdf8",
-      mpIndices: [10, 108, 69, 104, 54, 284, 338, 337, 336, 299, 333, 151, 9, 8, 107, 66, 105, 63, 70],
-      fa68Indices: [17, 18, 19, 20, 21, 22, 23, 24, 25, 26] },
-    { name: "Mata Kiri", duration: 1.2, color: "#a78bfa",
-      mpIndices: [33, 246, 161, 160, 159, 158, 157, 173, 133, 155, 154, 153, 145, 144, 163, 7],
-      fa68Indices: [36, 37, 38, 39, 40, 41, 17, 18, 19, 20, 21] },
-    { name: "Mata Kanan", duration: 1.2, color: "#a78bfa",
-      mpIndices: [362, 398, 384, 385, 386, 387, 388, 466, 263, 249, 390, 373, 374, 380, 381, 382],
-      fa68Indices: [42, 43, 44, 45, 46, 47, 22, 23, 24, 25, 26] },
-    { name: "Hidung", duration: 1.2, color: "#34d399",
-      mpIndices: [1, 2, 98, 327, 168, 6, 197, 195, 5, 4, 129, 358, 19, 94],
-      fa68Indices: [27, 28, 29, 30, 31, 32, 33, 34, 35] },
-    { name: "Bibir", duration: 1.4, color: "#f59e0b",
-      mpIndices: [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 308, 415, 310, 311, 312, 13, 82, 81, 80, 191, 78, 95, 88, 178, 87, 14, 317, 402, 318, 324],
-      fa68Indices: [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67] },
-    { name: "Rahang", duration: 1.0, color: "#38bdf8",
-      mpIndices: [132, 58, 172, 136, 150, 149, 176, 148, 152, 377, 400, 378, 379, 365, 397, 288, 361, 323],
-      fa68Indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] },
-  ];
-
-  _hash(n) {
-    const x = Math.sin(n * 12.9898) * 43758.5453;
-    return x - Math.floor(x);
-  }
-
-  _clamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
-  }
-
-  _parseColor(color) {
-    if (typeof color !== "string") {
-      return { r: 56, g: 189, b: 248, a: 1 };
-    }
-
-    const value = color.trim();
-    if (value.startsWith("#")) {
-      const normalized = value.slice(1);
-      const full = normalized.length === 3
-        ? normalized.split("").map((char) => char + char).join("")
-        : normalized;
-      if (full.length === 6 || full.length === 8) {
-        const r = Number.parseInt(full.slice(0, 2), 16);
-        const g = Number.parseInt(full.slice(2, 4), 16);
-        const b = Number.parseInt(full.slice(4, 6), 16);
-        const a = full.length === 8 ? Number.parseInt(full.slice(6, 8), 16) / 255 : 1;
-        if ([r, g, b].every(Number.isFinite)) {
-          return { r, g, b, a: Number.isFinite(a) ? a : 1 };
-        }
-      }
-    }
-
-    const match = value.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+)\s*)?\)/);
-    if (match) {
-      return {
-        r: Number.parseFloat(match[1]) || 0,
-        g: Number.parseFloat(match[2]) || 0,
-        b: Number.parseFloat(match[3]) || 0,
-        a: match[4] == null ? 1 : Number.parseFloat(match[4]) || 0,
-      };
-    }
-
-    return { r: 56, g: 189, b: 248, a: 1 };
-  }
-
-  _rgba(color, alpha = 1) {
-    const parsed = this._parseColor(color);
-    return `rgba(${Math.round(parsed.r)}, ${Math.round(parsed.g)}, ${Math.round(parsed.b)}, ${this._clamp((parsed.a ?? 1) * alpha, 0, 1)})`;
-  }
-
-  _mixColor(from, to, t) {
-    const a = this._parseColor(from);
-    const b = this._parseColor(to);
-    const ratio = this._clamp(t, 0, 1);
-    const r = a.r + (b.r - a.r) * ratio;
-    const g = a.g + (b.g - a.g) * ratio;
-    const bb = a.b + (b.b - a.b) * ratio;
-    const alpha = a.a + (b.a - a.a) * ratio;
-    return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(bb)}, ${this._clamp(alpha, 0, 1)})`;
-  }
-
-  _map(point, size) {
-    const px = point.x ?? point._x ?? point[0] ?? 0;
-    const py = point.y ?? point._y ?? point[1] ?? 0;
-    const x = this.mirrorHorizontal ? 1 - px : px;
-    if (!this.coverFit || !this.sourceAspect || this.sourceAspect <= 0) {
-      return { x: x * size.width, y: py * size.height };
-    }
-
-    const viewAspect = size.width / size.height;
-    let contentW;
-    let contentH;
-    let offsetX;
-    let offsetY;
-    if (viewAspect > this.sourceAspect) {
-      contentW = size.width;
-      contentH = size.width / this.sourceAspect;
-      offsetX = 0;
-      offsetY = (size.height - contentH) / 2;
-    } else {
-      contentH = size.height;
-      contentW = size.height * this.sourceAspect;
-      offsetX = (size.width - contentW) / 2;
-      offsetY = 0;
-    }
-
-    return {
-      x: offsetX + x * contentW,
-      y: offsetY + py * contentH,
-    };
-  }
-
-  paint(ctx, size) {
-    const points =
-      this.meshData?.faceLandmarks?.[0] ||
-      this.meshData?.landmarks?.positions ||
-      this.meshData?.landmarks?._positions ||
-      this.meshData?.points ||
-      [];
-    if (points.length < 20) return;
-
-    const mapped = points.map((point) => this._map(point, size));
-
-    let minX = Number.POSITIVE_INFINITY;
-    let maxX = Number.NEGATIVE_INFINITY;
-    let minY = Number.POSITIVE_INFINITY;
-    let maxY = Number.NEGATIVE_INFINITY;
-    for (const point of mapped) {
-      if (point.x < minX) minX = point.x;
-      if (point.x > maxX) maxX = point.x;
-      if (point.y < minY) minY = point.y;
-      if (point.y > maxY) maxY = point.y;
-    }
-
-    const center = {
-      x: (minX + maxX) / 2,
-      y: (minY + maxY) / 2,
-    };
-    let maxR = 1;
-    for (const point of mapped) {
-      const dx = point.x - center.x;
-      const dy = point.y - center.y;
-      const radius = Math.sqrt(dx * dx + dy * dy);
-      if (radius > maxR) maxR = radius;
-    }
-
-    const progressFloor = this._clamp(this.progress, 0, 1) * 0.22;
-    const band = maxR * FaceMeshPainter.bandFrac;
-    const twoBandSq = 2 * band * band;
-    const accent = this.accentColor || "#38bdf8";
-    const dimColor = this._rgba("#ffffff", this.fullBright ? 0.15 : 0.07);
-    const glowColor = this._rgba(accent, 0.4);
-    const peakColor = this._rgba("#ffffff", 0.6);
-
-    const amt = new Array(points.length).fill(progressFloor);
-    const ringR = [];
-    const ringC = [];
-    const ringA = [];
-    let activeRegion = null;
-    let regionProgress = 0;
-    const regionHighlight = new Array(points.length).fill(0);
-
-    if (this.scanning) {
-      for (let k = 0; k < FaceMeshPainter.rippleCount; k += 1) {
-        const speed = FaceMeshPainter.baseSpeed + FaceMeshPainter.spread * this._hash(k * 7 + 3);
-        const tk = this.scanT * speed + this._hash(k * 11 + 5);
-        const cycle = Math.floor(tk);
-        const local = tk - cycle;
-        const seed = k * 131 + cycle * 977;
-        const ci = Math.min(points.length - 1, Math.max(0, Math.floor(this._hash(seed) * points.length)));
-        const c = mapped[ci];
-        const maxRad = maxR * (0.65 + 0.55 * this._hash(seed + 41));
-        const radius = local * maxRad;
-        const fade = 1 - local;
-
-        for (let i = 0; i < points.length; i += 1) {
-          const dx = mapped[i].x - c.x;
-          const dy = mapped[i].y - c.y;
-          const d = Math.sqrt(dx * dx + dy * dy);
-          const dd = d - radius;
-          amt[i] += Math.exp(-(dd * dd) / twoBandSq) * fade;
-        }
-
-        ringR.push(radius);
-        ringC.push(c);
-        ringA.push(fade);
-      }
-
-      const faceHeight = Math.max(1, maxY - minY);
-      const sweepCenter = (this.scanT * 0.22) % 1;
-      const sweepWidthSq = 2 * 0.0064;
-      for (let i = 0; i < points.length; i += 1) {
-        const yNorm = this._clamp((mapped[i].y - minY) / faceHeight, 0, 1);
-        const delta = yNorm - sweepCenter;
-        const sweepPower = Math.exp(-(delta * delta) / sweepWidthSq);
-        const tailDelta = yNorm - (sweepCenter - 0.12);
-        const tailPower = Math.exp(-(tailDelta * tailDelta) / (2 * 0.018));
-        amt[i] += sweepPower * 0.35 + tailPower * 0.1;
-      }
-
-      // Determine which face region is currently being scanned
-      const totalRegionDuration = FaceMeshPainter.faceRegions.reduce((s, r) => s + r.duration, 0);
-      const cycleT = this.scanT % totalRegionDuration;
-      let regionElapsed = 0;
-      for (const region of FaceMeshPainter.faceRegions) {
-        if (cycleT < regionElapsed + region.duration) {
-          regionProgress = (cycleT - regionElapsed) / region.duration;
-          activeRegion = region;
-          break;
-        }
-        regionElapsed += region.duration;
-      }
-
-      if (activeRegion) {
-        const isMediaPipeData = points.length > 200;
-        const regionIndices = isMediaPipeData ? activeRegion.mpIndices : activeRegion.fa68Indices;
-        for (const idx of regionIndices) {
-          if (idx < points.length) {
-            const pulse = 0.5 + 0.5 * Math.sin(regionProgress * Math.PI * 3);
-            amt[idx] = Math.min(1.5, amt[idx] + 0.3 + 0.15 * pulse);
-            regionHighlight[idx] = 0.35 + 0.2 * pulse;
-          }
-        }
-      }
-    }
-
-    const screen = {
-      x: -12,
-      y: -12,
-      w: size.width + 24,
-      h: size.height + 24,
-    };
-    const inScreen = (point) =>
-      point.x >= screen.x &&
-      point.y >= screen.y &&
-      point.x <= screen.x + screen.w &&
-      point.y <= screen.y + screen.h;
-
-    const faceLandmarkerClass = mediapipeVision?.FaceLandmarker;
-    const meshConnections = faceLandmarkerClass?.FACE_LANDMARKS_TESSELATION || [];
-    const faceOval = faceLandmarkerClass?.FACE_LANDMARKS_FACE_OVAL || [];
-    const lips = faceLandmarkerClass?.FACE_LANDMARKS_LIPS || [];
-    const leftEye = faceLandmarkerClass?.FACE_LANDMARKS_LEFT_EYE || [];
-    const rightEye = faceLandmarkerClass?.FACE_LANDMARKS_RIGHT_EYE || [];
-    const hasMediaPipeMesh = meshConnections.length > 0;
-
-    if (!this.dotsOnly) {
-      const baseAlpha = this.fullBright ? 0.15 : 0.06;
-      const drawConnections = (list, alphaBoost, strokeWidth) => {
-        for (const conn of list) {
-          if (!conn) continue;
-          const aIndex = conn[0] ?? conn.start ?? conn.from;
-          const bIndex = conn[1] ?? conn.end ?? conn.to;
-          if (!Number.isInteger(aIndex) || !Number.isInteger(bIndex)) continue;
-          if (aIndex >= points.length || bIndex >= points.length) continue;
-          const a = mapped[aIndex];
-          const b = mapped[bIndex];
-          if (!inScreen(a) && !inScreen(b)) continue;
-          const w = this._clamp((amt[aIndex] + amt[bIndex]) / 2, 0, 1.2);
-          const alpha = this._clamp(baseAlpha + alphaBoost * w, 0, 1);
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.strokeStyle = this._rgba(accent, alpha);
-          ctx.lineWidth = strokeWidth;
-          ctx.stroke();
-        }
-      };
-
-      drawConnections(meshConnections.filter((_, i) => i % 3 === 0), 0.22, 0.35);
-      drawConnections(faceOval, 0.18, 0.5);
-      drawConnections(lips, 0.15, 0.4);
-      drawConnections(leftEye, 0.13, 0.38);
-      drawConnections(rightEye, 0.13, 0.38);
-
-      if (!hasMediaPipeMesh && points.length >= 68) {
-        const drawLoop = (indices, alphaBoost, strokeWidth) => {
-          for (let i = 0; i < indices.length - 1; i += 1) {
-            const aIndex = indices[i];
-            const bIndex = indices[i + 1];
-            if (aIndex >= points.length || bIndex >= points.length) continue;
-            const a = mapped[aIndex];
-            const b = mapped[bIndex];
-            const w = this._clamp((amt[aIndex] + amt[bIndex]) / 2, 0, 1.2);
-            const alpha = this._clamp(0.05 + alphaBoost * w, 0, 1);
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = this._rgba(accent, alpha);
-            ctx.lineWidth = strokeWidth;
-            ctx.stroke();
-          }
-        };
-
-        const closeLoop = (indices, alphaBoost, strokeWidth) => {
-          drawLoop(indices, alphaBoost, strokeWidth);
-          const first = indices[0];
-          const last = indices[indices.length - 1];
-          if (first < points.length && last < points.length) {
-            const a = mapped[first];
-            const b = mapped[last];
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = this._rgba(accent, 0.18);
-            ctx.lineWidth = strokeWidth;
-            ctx.stroke();
-            ctx.restore();
-          }
-        };
-
-        closeLoop([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], 0.42, 1.0);
-        drawLoop([17, 18, 19, 20, 21], 0.34, 0.75);
-        drawLoop([22, 23, 24, 25, 26], 0.34, 0.75);
-        drawLoop([27, 28, 29, 30], 0.28, 0.7);
-        drawLoop([31, 32, 33, 34, 35], 0.3, 0.65);
-        closeLoop([36, 37, 38, 39, 40, 41], 0.36, 0.85);
-        closeLoop([42, 43, 44, 45, 46, 47], 0.36, 0.85);
-        closeLoop([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59], 0.4, 0.95);
-        closeLoop([60, 61, 62, 63, 64, 65, 66, 67], 0.32, 0.8);
-
-        const centerX = center.x;
-        const centerY = center.y;
-        const centerSpokes = [30, 33, 36, 45, 48, 54, 57, 8];
-        for (const idx of centerSpokes) {
-          if (idx >= points.length) continue;
-          const p = mapped[idx];
-          const w = this._clamp(amt[idx], 0, 1.2);
-          ctx.save();
-          ctx.beginPath();
-          ctx.moveTo(centerX, centerY);
-          ctx.lineTo(p.x, p.y);
-          ctx.strokeStyle = this._rgba(accent, this._clamp(0.14 + 0.22 * w, 0, 1));
-          ctx.lineWidth = 0.55 + 0.18 * w;
-          ctx.stroke();
-          ctx.restore();
-        }
-      }
-    }
-
-    for (let k = 0; k < ringR.length; k += 1) {
-      if (ringR[k] < band) continue;
-      ctx.save();
-      ctx.beginPath();
-      ctx.strokeStyle = this._rgba(accent, this._clamp(0.06 * ringA[k], 0, 1));
-      ctx.lineWidth = 0.6;
-      ctx.shadowBlur = 0;
-      ctx.arc(ringC[k].x, ringC[k].y, ringR[k], 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    const isMediaPipeDots = points.length > 200;
-    const baseDotR = this._clamp(Math.min(size.width, size.height) / 620, 0.6, 0.9);
-    for (let i = 0; i < points.length; i += 1) {
-      if (isMediaPipeDots && i % 3 !== 0 && regionHighlight[i] === 0) continue;
-      const point = mapped[i];
-      if (!inScreen(point)) continue;
-      const w = this._clamp(amt[i], 0, 1.2);
-      const rh = regionHighlight[i];
-      let color;
-      if (rh > 0 && activeRegion) {
-        const baseBlend = this._mixColor(dimColor, glowColor, this._clamp(w, 0, 1));
-        color = this._mixColor(baseBlend, this._rgba(activeRegion.color, 0.6), this._clamp(rh, 0, 1));
-      } else {
-        color = this._mixColor(dimColor, glowColor, this._clamp(w, 0, 1));
-        if (w > 0.6) {
-          color = this._mixColor(color, peakColor, this._clamp((w - 0.6) / 0.6, 0, 1));
-        }
-      }
-
-      const radius = baseDotR + w * 0.55;
-
-      ctx.beginPath();
-      ctx.fillStyle = color;
-      ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // Draw region scan UI: corner brackets, sweep line, label
-    if (this.scanning && activeRegion) {
-      const isMediaPipeData = points.length > 200;
-      const regionIndices = isMediaPipeData ? activeRegion.mpIndices : activeRegion.fa68Indices;
-      const regionPts = regionIndices
-        .filter(idx => idx < mapped.length && inScreen(mapped[idx]))
-        .map(idx => mapped[idx]);
-
-      if (regionPts.length >= 2) {
-        let rMinX = Infinity, rMaxX = -Infinity, rMinY = Infinity, rMaxY = -Infinity;
-        for (const p of regionPts) {
-          if (p.x < rMinX) rMinX = p.x;
-          if (p.x > rMaxX) rMaxX = p.x;
-          if (p.y < rMinY) rMinY = p.y;
-          if (p.y > rMaxY) rMaxY = p.y;
-        }
-
-        const pad = 10;
-        const rx = rMinX - pad;
-        const ry = rMinY - pad;
-        const rw = (rMaxX - rMinX) + pad * 2;
-        const rh2 = (rMaxY - rMinY) + pad * 2;
-        const regionColor = activeRegion.color;
-        const blink = 0.5 + 0.5 * Math.sin(this.scanT * 1.8);
-        const alpha = 0.26 + 0.16 * blink;
-        const cornerLen = Math.min(rw * 0.22, rh2 * 0.22, 14);
-
-        // Corner brackets
-        ctx.strokeStyle = this._rgba(regionColor, alpha);
-        ctx.lineWidth = 1.0;
-        ctx.lineCap = "square";
-        ctx.beginPath(); ctx.moveTo(rx, ry + cornerLen); ctx.lineTo(rx, ry); ctx.lineTo(rx + cornerLen, ry); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(rx + rw - cornerLen, ry); ctx.lineTo(rx + rw, ry); ctx.lineTo(rx + rw, ry + cornerLen); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(rx, ry + rh2 - cornerLen); ctx.lineTo(rx, ry + rh2); ctx.lineTo(rx + cornerLen, ry + rh2); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(rx + rw - cornerLen, ry + rh2); ctx.lineTo(rx + rw, ry + rh2); ctx.lineTo(rx + rw, ry + rh2 - cornerLen); ctx.stroke();
-
-        // Sweep line
-        const scanY = ry + rh2 * regionProgress;
-        ctx.strokeStyle = this._rgba(regionColor, alpha * 0.8);
-        ctx.lineWidth = 0.8;
-        ctx.beginPath(); ctx.moveTo(rx, scanY); ctx.lineTo(rx + rw, scanY); ctx.stroke();
-
-        // Region label
-        const fontSize = Math.max(7, Math.min(8, size.width / 55));
-        ctx.font = `${fontSize}px monospace`;
-        ctx.textBaseline = "bottom";
-        ctx.fillStyle = this._rgba(regionColor, alpha);
-        const labelY = Math.max(fontSize + 2, ry - 2);
-        ctx.fillText(activeRegion.name, rx, labelY);
-      }
-    }
-  }
-}
 
 // --- Attendance State ---
 const selectedFile = ref(null);
@@ -692,7 +221,6 @@ const geoCoords = ref({
 });
 const cameraVideoRef = ref(null);
 const captureCanvasRef = ref(null);
-const overlayCanvasRef = ref(null);
 const faceVerification = ref({
   status: "idle",
   distance: null,
@@ -819,15 +347,6 @@ let liveScanLastAt = 0;
 let liveConsecutiveMatches = 0;
 let liveScanInFlight = false;
 let liveFaceApiInstance = null;
-let mediapipeVision = null;
-let mediapipeFaceLandmarker = null;
-let mediapipeFaceLandmarkerPromise = null;
-let mediapipeLastAtMs = 0;
-let faceMeshOverlayRafId = null;
-let latestFaceMeshResult = null;
-let fallbackFaceMeshLastAtMs = 0;
-
-const MEDIAPIPE_FRAME_INTERVAL_MS = 200;
 
 const stopLiveRecognition = () => {
   if (liveRafId) {
@@ -837,31 +356,10 @@ const stopLiveRecognition = () => {
   liveScanLastAt = 0;
   liveConsecutiveMatches = 0;
   liveScanInFlight = false;
-  mediapipeLastAtMs = 0;
-  fallbackFaceMeshLastAtMs = 0;
-};
-
-const stopFaceMeshOverlay = () => {
-  if (faceMeshOverlayRafId) {
-    cancelAnimationFrame(faceMeshOverlayRafId);
-    faceMeshOverlayRafId = null;
-  }
-  latestFaceMeshResult = null;
-  fallbackFaceMeshLastAtMs = 0;
-  clearOverlay();
-};
-
-const clearOverlay = () => {
-  const overlay = overlayCanvasRef.value;
-  if (!overlay) return;
-  const ctx = overlay.getContext("2d");
-  if (!ctx) return;
-  ctx.clearRect(0, 0, overlay.width || 0, overlay.height || 0);
 };
 
 const stopCamera = () => {
   stopLiveRecognition();
-  stopFaceMeshOverlay();
   if (cameraStream) {
     cameraStream.getTracks().forEach((track) => track.stop());
     cameraStream = null;
@@ -873,7 +371,6 @@ const stopCamera = () => {
   selectedFile.value = null;
   resetSelectedPreview();
   resetFaceVerification();
-  clearOverlay();
   geoCoords.value = { latitude: null, longitude: null, accuracy: null };
 };
 
@@ -885,7 +382,6 @@ const startCamera = async () => {
   isCameraLoading.value = true;
   try {
     loadFaceApi().catch(() => { });
-    ensureMediapipeFaceLandmarker().catch(() => { });
     await ensureGeolocation();
     const isMobile = window.matchMedia?.("(pointer:coarse)")?.matches || window.innerWidth < 640;
     isMobileClient.value = Boolean(isMobile);
@@ -903,7 +399,6 @@ const startCamera = async () => {
       await cameraVideoRef.value.play();
     }
     cameraActive.value = true;
-    startFaceMeshOverlay();
     startLiveRecognition();
   } catch (error) {
     stopCamera();
@@ -954,192 +449,6 @@ const loadFaceApi = async () => {
 
   const faceapi = await faceApiModelsPromise;
   return faceapi;
-};
-
-const loadMediapipeVision = async () => {
-  if (mediapipeVision) return mediapipeVision;
-  mediapipeVision = {
-    FaceLandmarker,
-    FilesetResolver,
-  };
-  return mediapipeVision;
-};
-
-const ensureMediapipeFaceLandmarker = async () => {
-  if (mediapipeFaceLandmarker) return mediapipeFaceLandmarker;
-
-  if (!mediapipeFaceLandmarkerPromise) {
-    mediapipeFaceLandmarkerPromise = (async () => {
-      const vision = await loadMediapipeVision();
-      if (!vision?.FilesetResolver || !vision?.FaceLandmarker) {
-        throw new Error("Gagal memuat MediaPipe Face Landmarker.");
-      }
-
-      const fileset = await vision.FilesetResolver.forVisionTasks(MEDIAPIPE_WASM_BASE_URL);
-      mediapipeFaceLandmarker = await vision.FaceLandmarker.createFromOptions(fileset, {
-        baseOptions: {
-          modelAssetPath: MEDIAPIPE_FACE_LANDMARKER_MODEL_URL,
-          // GPU can be flaky/slow on some mobile browsers; CPU is more consistent.
-          delegate: "CPU",
-        },
-        runningMode: "VIDEO",
-        numFaces: 1,
-        outputFaceBlendshapes: false,
-        outputFacialTransformationMatrixes: false,
-      });
-      return mediapipeFaceLandmarker;
-    })().catch((error) => {
-      mediapipeFaceLandmarkerPromise = null;
-      throw error;
-    });
-  }
-
-  return await mediapipeFaceLandmarkerPromise;
-};
-
-const ensureOverlaySize = (_video) => {
-  const overlay = overlayCanvasRef.value;
-  if (!overlay) return false;
-  const ctx = overlay.getContext("2d");
-  if (!ctx) return false;
-
-  // IMPORTANT:
-  // - Mobile browsers often render <video> with object-cover, so the displayed
-  //   pixels differ from video.videoWidth/video.videoHeight.
-  // - MediaPipe landmarks are normalized; DrawingUtils maps to canvas size.
-  // Therefore: size canvas to the displayed box (CSS pixels), not intrinsic video size.
-  const width = Math.round(overlay.clientWidth || 0);
-  const height = Math.round(overlay.clientHeight || 0);
-  if (!width || !height) return false;
-
-  if (overlay.width !== width) overlay.width = width;
-  if (overlay.height !== height) overlay.height = height;
-  return true;
-};
-
-const convertFaceApiDetectionToMeshData = (detection, video) => {
-  const rawPoints =
-    detection?.landmarks?.positions ||
-    detection?.landmarks?._positions ||
-    detection?.landmarks ||
-    [];
-  const width = video?.videoWidth || 0;
-  const height = video?.videoHeight || 0;
-  if (!Array.isArray(rawPoints) || !rawPoints.length || !width || !height) {
-    return null;
-  }
-
-  const points = rawPoints.map((point) => {
-    const x = point?.x ?? point?._x ?? point?.[0] ?? 0;
-    const y = point?.y ?? point?._y ?? point?.[1] ?? 0;
-    return { x: x / width, y: y / height };
-  });
-
-  return {
-    points,
-    landmarks: { positions: points },
-  };
-};
-
-const refreshFallbackFaceMeshFromFaceApi = async (faceapi, video, nowMs) => {
-  const refreshIntervalMs = latestFaceMeshResult ? 1000 : 220;
-  if (nowMs - fallbackFaceMeshLastAtMs < refreshIntervalMs) {
-    return false;
-  }
-  fallbackFaceMeshLastAtMs = nowMs;
-
-  const detection = await faceapi
-    .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }))
-    .withFaceLandmarks();
-
-  const meshData = convertFaceApiDetectionToMeshData(detection, video);
-  if (meshData) {
-    latestFaceMeshResult = meshData;
-    return true;
-  }
-  return false;
-};
-
-const startFaceMeshOverlay = () => {
-  if (faceMeshOverlayRafId) return;
-
-  const loop = (timestampMs) => {
-    faceMeshOverlayRafId = requestAnimationFrame(loop);
-
-    const video = cameraVideoRef.value;
-    const overlay = overlayCanvasRef.value;
-    if (!video || !overlay || !cameraActive.value) {
-      clearOverlay();
-      return;
-    }
-
-    if (!ensureOverlaySize(video)) return;
-    const ctx = overlay.getContext("2d");
-    if (!ctx) return;
-
-    if (mediapipeFaceLandmarker) {
-      const nowMs = typeof timestampMs === "number" ? timestampMs : performance.now();
-      if (nowMs - mediapipeLastAtMs >= MEDIAPIPE_FRAME_INTERVAL_MS) {
-        mediapipeLastAtMs = nowMs;
-        try {
-          latestFaceMeshResult = mediapipeFaceLandmarker.detectForVideo(video, nowMs);
-        } catch (error) {
-          // Keep fallback animation if MediaPipe fails on a frame.
-          console.warn(error);
-        }
-      }
-    }
-
-    ctx.clearRect(0, 0, overlay.width, overlay.height);
-    if (!latestFaceMeshResult) {
-      // Keep a visible scan state even before the first face mesh result arrives.
-      const t = (timestampMs || performance.now()) / 1000;
-      const pulse = 0.5 + 0.5 * Math.sin(t * 2.4);
-      const w = overlay.width;
-      const h = overlay.height;
-      const cx = w / 2;
-      const cy = h / 2;
-      const ringR = Math.min(w, h) * (0.18 + 0.02 * pulse);
-      ctx.save();
-      ctx.strokeStyle = `rgba(56,189,248,${0.24 + 0.16 * pulse})`;
-      ctx.lineWidth = 2;
-      ctx.shadowColor = "rgba(56,189,248,0.36)";
-      ctx.shadowBlur = 12;
-      ctx.beginPath();
-      ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(cx, cy, ringR * 0.72, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.fillStyle = "rgba(56,189,248,0.8)";
-      ctx.beginPath();
-      ctx.arc(cx, cy, 2.4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-      return;
-    }
-
-    const painter = new FaceMeshPainter({
-      scanT: (timestampMs || performance.now()) / 1800,
-      scanning: cameraActive.value && !hasCheckedInToday.value,
-      progress: faceVerification.value.status === "matched"
-        ? liveConsecutiveMatches / LIVE_MATCH_REQUIRED
-        : 0.22,
-      fullBright:
-        faceVerification.value.status === "loading" ||
-        faceVerification.value.status === "matched" ||
-        isVerifyingFace.value,
-      meshData: latestFaceMeshResult,
-      mirrorHorizontal: false,
-      accentColor: "#38bdf8",
-      sourceAspect: video.videoWidth && video.videoHeight ? video.videoWidth / video.videoHeight : null,
-      coverFit: true,
-      dotsOnly: false,
-    });
-    painter.paint(ctx, { width: overlay.width, height: overlay.height });
-  };
-
-  faceMeshOverlayRafId = requestAnimationFrame(loop);
 };
 
 
@@ -1219,10 +528,6 @@ const startLiveRecognition = async () => {
 
   stopLiveRecognition();
   resetFaceVerification("loading", "Menyiapkan deteksi wajah...");
-  ensureMediapipeFaceLandmarker().catch((error) => {
-    // Non-fatal: face match can still work with the 68-point face-api landmark fallback.
-    console.warn(error);
-  });
 
   let referenceDescriptor;
   try {
@@ -1254,7 +559,6 @@ const startLiveRecognition = async () => {
     try {
       const faceapi = liveFaceApiInstance;
       const video = cameraVideoRef.value;
-      await refreshFallbackFaceMeshFromFaceApi(faceapi, video, nowMs);
 
       const detection = await faceapi
         .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }))
@@ -1262,7 +566,6 @@ const startLiveRecognition = async () => {
         .withFaceDescriptor();
 
       if (!detection?.descriptor) {
-        // Keep overlay (if any) but reset status.
         liveConsecutiveMatches = 0;
         faceVerification.value = {
           status: "idle",
@@ -1270,11 +573,6 @@ const startLiveRecognition = async () => {
           message: "Wajah belum terdeteksi. Pastikan wajah terlihat jelas dan cahaya cukup.",
         };
         return;
-      }
-
-      const faceMeshFallback = convertFaceApiDetectionToMeshData(detection, video);
-      if (faceMeshFallback) {
-        latestFaceMeshResult = faceMeshFallback;
       }
 
       const distance = faceapi.euclideanDistance(referenceDescriptor, detection.descriptor);
@@ -1366,14 +664,12 @@ onMounted(() => {
   loadAttendance();
   // Preload model di background agar siap sebelum kamera dinyalakan
   loadFaceApi().catch(() => { });
-  ensureMediapipeFaceLandmarker().catch(() => { });
 });
 
 onUnmounted(() => {
   clearInterval(timer);
   stopCamera();
   resetSelectedPreview();
-  stopFaceMeshOverlay();
 });
 </script>
 
