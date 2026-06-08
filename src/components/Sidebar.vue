@@ -534,6 +534,7 @@ const submitSchoolEdit = async () => {
 const menuByRole = {
   SUPER_ADMIN: [
     { key: "dashboard", to: "/dashboard", dataTour: "dashboard", label: "Dashboard", icon: "bxs:dashboard" },
+    { key: "school-visit-targets", to: "/school-visit-targets", label: "List Sekolah", icon: "ph:map-trifold" },
     { key: "schools", to: "/schools", label: "Sekolah", icon: "ph:buildings" },
     { key: "module-settings", to: "/module-settings", label: "Setting Modul", icon: "ph:squares-four" },
     { key: "marketing-email", to: "/marketing-email", label: "Email Penawaran", icon: "ph:envelope-simple" },

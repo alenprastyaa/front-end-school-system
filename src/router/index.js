@@ -100,6 +100,16 @@ const routes = [
     },
   },
   {
+    path: "/school-visit-targets",
+    name: "SchoolVisitTargets",
+    component: lazyRoute(() => import("../views/SchoolVisitTargets.vue")),
+    meta: {
+      title: "List Sekolah" + appName,
+      requiresAuth: true,
+      roles: ["SUPER_ADMIN"],
+    },
+  },
+  {
     path: "/module-settings",
     name: "ModuleSettings",
     component: lazyRoute(() => import("../views/ModuleSettings.vue")),
