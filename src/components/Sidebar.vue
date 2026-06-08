@@ -258,6 +258,17 @@
                   <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Check-out sebelum jam ini tetap dicatat dengan catatan kepulangan tidak sesuai.</p>
                 </div>
               </div>
+              <div class="mt-4">
+                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jumlah Kolom Bangku Denah</label>
+                <input
+                  v-model.number="schoolEditForm.attendance_seat_map_columns"
+                  type="number"
+                  min="1"
+                  max="24"
+                  class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700"
+                />
+                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Mengatur jumlah bangku per baris pada denah nomor bangku.</p>
+              </div>
             </div>
 
             <div class="flex justify-end gap-3 border-t border-slate-100 pt-5 dark:border-slate-800">
@@ -327,6 +338,7 @@ const schoolEditForm = reactive({
   attendance_radius_meters: "",
   attendance_late_after_time: "",
   attendance_checkout_deadline: "",
+  attendance_seat_map_columns: 4,
 });
 let toastIdCounter = 0;
 
@@ -417,6 +429,7 @@ const openSchoolEditModal = () => {
   schoolEditForm.attendance_radius_meters = storedProfile.value?.attendance_radius_meters == null ? "" : String(storedProfile.value.attendance_radius_meters);
   schoolEditForm.attendance_late_after_time = storedProfile.value?.attendance_late_after_time || "";
   schoolEditForm.attendance_checkout_deadline = storedProfile.value?.attendance_checkout_deadline || "";
+  schoolEditForm.attendance_seat_map_columns = Number(storedProfile.value?.attendance_seat_map_columns) || 4;
   schoolEditLogoFile.value = null;
   schoolEditLogoPreview.value = normalizePublicUrl(storedProfile.value?.school_logo) || "";
   removeSchoolEditLogo.value = false;
@@ -480,6 +493,7 @@ const submitSchoolEdit = async () => {
     } else {
       formData.append("clear_attendance_checkout_deadline", "true");
     }
+    formData.append("attendance_seat_map_columns", String(Number(schoolEditForm.attendance_seat_map_columns) || 4));
     if (schoolEditLogoFile.value) {
       formData.append("logo", schoolEditLogoFile.value);
     }
@@ -498,6 +512,7 @@ const submitSchoolEdit = async () => {
       attendance_radius_meters: updatedSchool.attendance_radius_meters ?? storedProfile.value?.attendance_radius_meters ?? null,
       attendance_late_after_time: updatedSchool.attendance_late_after_time || "",
       attendance_checkout_deadline: updatedSchool.attendance_checkout_deadline || "",
+      attendance_seat_map_columns: Number(updatedSchool.attendance_seat_map_columns) || Number(schoolEditForm.attendance_seat_map_columns) || 4,
     });
     isSchoolEditModalOpen.value = false;
     pushToast({
@@ -521,6 +536,7 @@ const menuByRole = {
     { key: "dashboard", to: "/dashboard", dataTour: "dashboard", label: "Dashboard", icon: "bxs:dashboard" },
     { key: "schools", to: "/schools", label: "Sekolah", icon: "ph:buildings" },
     { key: "module-settings", to: "/module-settings", label: "Setting Modul", icon: "ph:squares-four" },
+    { key: "marketing-email", to: "/marketing-email", label: "Email Penawaran", icon: "ph:envelope-simple" },
     { key: "billing", to: "/billing", label: "Billing", icon: "ph:credit-card" },
     { key: "admin-settings", to: "/admin-settings", dataTour: "settings", label: "Setting Admin", icon: "ph:gear-six" },
   ],

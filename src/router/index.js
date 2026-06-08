@@ -110,6 +110,16 @@ const routes = [
     },
   },
   {
+    path: "/marketing-email",
+    name: "MarketingEmail",
+    component: lazyRoute(() => import("../views/MarketingEmail.vue")),
+    meta: {
+      title: "Kirim Email Penawaran" + appName,
+      requiresAuth: true,
+      roles: ["SUPER_ADMIN"],
+    },
+  },
+  {
     path: "/school-users",
     name: "SchoolUsers",
     component: lazyRoute(() => import("../views/SchoolUsers.vue")),
