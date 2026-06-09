@@ -15,6 +15,7 @@ const baseUserForm = () => ({
 const baseClassForm = () => ({
   className: "",
   waliGuruId: "",
+  majorId: "",
 });
 
 const baseYearForm = () => ({
@@ -399,6 +400,7 @@ export const useAdminStore = defineStore("admin", {
       this.classesForm = {
         className: item.class_name || "",
         waliGuruId: item.wali_guru_id || "",
+        majorId: item.major_id || "",
       };
       this.classesShowModal = true;
     },
@@ -465,6 +467,7 @@ export const useAdminStore = defineStore("admin", {
         const payload = {
           class_name: this.classesForm.className,
           wali_guru_id: this.classesForm.waliGuruId ? Number(this.classesForm.waliGuruId) : null,
+          major_id: this.classesForm.majorId ? Number(this.classesForm.majorId) : null,
         };
 
         const response = this.classesEditingId

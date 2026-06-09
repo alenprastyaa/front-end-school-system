@@ -54,6 +54,7 @@
                       sortIndicator('wali_guru_name') }}</span>
                   </button>
                 </th>
+                <th class="border-b border-slate-200 px-6 py-4 font-semibold dark:border-slate-800">Jurusan</th>
                 <th class="border-b border-slate-200 px-6 py-4 font-semibold dark:border-slate-800">Email Wali</th>
                 <th class="border-b border-slate-200 px-6 py-4 font-semibold dark:border-slate-800">No. HP Wali</th>
                 <th class="border-b border-slate-200 px-6 py-4 text-right font-semibold dark:border-slate-800">Aksi</th>
@@ -64,6 +65,7 @@
                 class="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
                 <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ item.class_name }}</td>
                 <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ item.wali_guru_name || "-" }}</td>
+                <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ item.major_code || "-" }}</td>
                 <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ item.wali_guru_email || "-" }}</td>
                 <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ item.wali_guru_phone_number || "-" }}</td>
                 <td class="px-6 py-4 text-right">
@@ -89,7 +91,7 @@
                 </td>
               </tr>
               <tr v-if="classes.length === 0">
-                <td colspan="5" class="px-6 py-16 text-center">
+                <td colspan="6" class="px-6 py-16 text-center">
                   <div class="mx-auto flex max-w-sm flex-col items-center">
                     <div
                       class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
@@ -167,6 +169,17 @@
               </select>
             </div>
 
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jurusan</label>
+              <select v-model="majorId"
+                class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-8 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                <option value="">Tanpa jurusan</option>
+                <option v-for="major in majors" :key="major.id" :value="major.id">
+                  {{ major.code }} - {{ major.name }}
+                </option>
+              </select>
+            </div>
+
             <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
               <button type="button" @click="closeModal"
                 class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
@@ -240,12 +253,14 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
+import { api } from "@/api";
 import SuccessModal from "@/components/SuccessModal.vue";
 import { useAdminStore } from "@/store/admin";
 import { storeToRefs } from "pinia";
 
 const successModal = ref(null);
 const adminStore = useAdminStore();
+const majors = ref([]);
 const {
   classesForm,
   classes,
@@ -279,6 +294,13 @@ const waliGuruId = computed({
   },
 });
 
+const majorId = computed({
+  get: () => classesForm.value.majorId,
+  set: (value) => {
+    classesForm.value.majorId = value;
+  },
+});
+
 const handleSort = (key) => {
   adminStore.toggleClassSort(key);
 };
@@ -298,6 +320,10 @@ const sortIndicator = (key) => {
 
 const loadClasses = () => adminStore.loadClasses();
 const loadTeachers = () => adminStore.loadClassTeachers();
+const loadMajors = async () => {
+  const response = await api.get("/majors");
+  majors.value = Array.isArray(response?.data) ? response.data : [];
+};
 const resetForm = () => adminStore.resetClassForm();
 const closeModal = () => adminStore.closeClassModal();
 const openCreateModal = () => adminStore.openClassCreateModal();
@@ -319,6 +345,6 @@ const submitClass = async () => {
 };
 
 onMounted(async () => {
-  await Promise.all([loadClasses(), loadTeachers()]);
+  await Promise.all([loadClasses(), loadTeachers(), loadMajors()]);
 });
 </script>

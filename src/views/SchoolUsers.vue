@@ -32,7 +32,7 @@
               Daftar User Sekolah
             </h2>
             <p class="text-sm text-gray-500 dark:text-gray-400">
-              Role yang dikelola di sini: admin, guru, sarpras, koperasi, dan bendahara.
+              Role yang dikelola di sini: admin, admin SPMB, guru, sarpras, koperasi, dan bendahara.
             </p>
           </div>
           <button @click="loadUsers" class="px-4 py-2 rounded-md border dark:border-gray-600 dark:text-white">
@@ -278,6 +278,7 @@
             <select v-model="form.role"
               class="mt-1 w-full px-3 py-2 rounded-md border dark:border-gray-600 dark:bg-gray-900 dark:text-white">
               <option value="ADMIN">ADMIN</option>
+              <option value="ADMIN_SPMB">ADMIN SPMB</option>
               <option value="GURU">GURU</option>
               <option value="SARPRAS">SARPRAS</option>
               <option value="KOPERASI">KOPERASI</option>

@@ -89,6 +89,7 @@ export const persistSession = (payload) => {
       private_chat_module_enabled: schoolFeatures.private_chat_module_enabled !== false,
       teaching_module_ai_enabled: schoolFeatures.teaching_module_ai_enabled !== false,
       payroll_module_enabled: schoolFeatures.payroll_module_enabled !== false,
+      spmb_module_enabled: schoolFeatures.spmb_module_enabled === true,
       personal_teacher_mode_enabled: schoolFeatures.personal_teacher_mode_enabled === true,
       profile_image: normalizePublicUrl(data.profile_image) || null,
       face_reference_image: normalizePublicUrl(data.face_reference_image) || null,

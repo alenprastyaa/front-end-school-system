@@ -26,7 +26,7 @@ const routes = [
     meta: {
       title: "Dashboard" + appName,
       requiresAuth: true,
-      roles: ["SUPER_ADMIN", "ADMIN", "KOPERASI", "BENDAHARA", "SARPRAS", "GURU", "SISWA", "ORANG_TUA"],
+      roles: ["SUPER_ADMIN", "ADMIN", "ADMIN_SPMB", "KOPERASI", "BENDAHARA", "SARPRAS", "GURU", "SISWA", "ORANG_TUA"],
     },
   },
   {
@@ -87,6 +87,45 @@ const routes = [
       requiresAuth: true,
       roles: ["BENDAHARA"],
       moduleKey: "payroll",
+    },
+  },
+  {
+    path: "/majors",
+    name: "Majors",
+    component: lazyRoute(() => import("../views/Majors.vue")),
+    meta: {
+      title: "Jurusan" + appName,
+      requiresAuth: true,
+      roles: ["ADMIN", "ADMIN_SPMB"],
+    },
+  },
+  {
+    path: "/spmb",
+    name: "SPMBApplicants",
+    component: lazyRoute(() => import("../views/SPMBApplicants.vue")),
+    meta: {
+      title: "SPMB" + appName,
+      requiresAuth: true,
+      roles: ["ADMIN", "ADMIN_SPMB"],
+      moduleKey: "spmb",
+    },
+  },
+  {
+    path: "/spmb/register",
+    name: "PublicSPMBRegister",
+    component: lazyRoute(() => import("../views/PublicSPMBRegister.vue")),
+    meta: {
+      title: "Pendaftaran SPMB" + appName,
+      hideNav: true,
+    },
+  },
+  {
+    path: "/spmb/status/:token",
+    name: "PublicSPMBStatus",
+    component: lazyRoute(() => import("../views/PublicSPMBStatus.vue")),
+    meta: {
+      title: "Status SPMB" + appName,
+      hideNav: true,
     },
   },
   {
@@ -199,7 +238,7 @@ const routes = [
     meta: {
       title: "Pesan" + appName,
       requiresAuth: true,
-      roles: ["ADMIN", "KOPERASI", "BENDAHARA", "GURU", "SISWA"],
+      roles: ["ADMIN", "ADMIN_SPMB", "KOPERASI", "BENDAHARA", "GURU", "SISWA"],
     },
   },
   {
@@ -598,6 +637,7 @@ router.beforeEach((to, from, next) => {
       private_chat: "private_chat_module_enabled",
       teaching_module_ai: "teaching_module_ai_enabled",
       payroll: "payroll_module_enabled",
+      spmb: "spmb_module_enabled",
     };
     const moduleFlag = moduleFlagByKey[to.meta.moduleKey];
     const moduleEnabled = moduleFlag ? storedUser[moduleFlag] !== false : true;

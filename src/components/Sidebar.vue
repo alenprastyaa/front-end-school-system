@@ -355,9 +355,10 @@ const isKoperasiEnabled = computed(() => storedProfile.value?.koperasi_module_en
 const isPrivateChatEnabled = computed(() => storedProfile.value?.private_chat_module_enabled !== false);
 const isTeachingModuleAIEnabled = computed(() => storedProfile.value?.teaching_module_ai_enabled !== false);
 const isPayrollEnabled = computed(() => storedProfile.value?.payroll_module_enabled !== false);
+const isSPMBEnabled = computed(() => storedProfile.value?.spmb_module_enabled === true);
 const isPersonalTeacherModeEnabled = computed(() => storedProfile.value?.personal_teacher_mode_enabled === true);
 const shouldTrackKoperasi = computed(() => isKoperasiEnabled.value && (isAdminRole || isKoperasiRole));
-const shouldTrackPrivateChat = computed(() => isPrivateChatEnabled.value && ["ADMIN", "KOPERASI", "BENDAHARA", "GURU", "SISWA"].includes(role));
+const shouldTrackPrivateChat = computed(() => isPrivateChatEnabled.value && ["ADMIN", "ADMIN_SPMB", "KOPERASI", "BENDAHARA", "GURU", "SISWA"].includes(role));
 
 const getCurrentUserId = () => {
   try {
@@ -546,6 +547,8 @@ const menuByRole = {
     { key: "school-users", to: "/school-users", dataTour: "teachers", label: "User Sekolah", icon: "clarity:users-line" },
     { key: "chat", to: "/chat", label: "Pesan", icon: "ph:chats-circle" },
     { key: "classes", to: "/classes", dataTour: "classes", label: "Kelas", icon: "mdi:google-classroom" },
+    { key: "majors", to: "/majors", label: "Jurusan", icon: "ph:git-branch" },
+    { key: "spmb", to: "/spmb", label: "SPMB", icon: "ph:identification-card" },
     { key: "students", to: "/students", dataTour: "students-admin", label: "Siswa", icon: "mdi:account-school-outline" },
     { key: "academic-periods", to: "/academic-periods", label: "Tahun Ajaran", icon: "ph:calendar-blank" },
     { key: "inventory", to: "/inventory", label: "Sarpras", icon: "ph:archive-box" },
@@ -567,6 +570,12 @@ const menuByRole = {
     { key: "announcements", to: "/announcements", label: "Pengumuman", icon: "ph:megaphone-simple" },
     { key: "billing", to: "/billing", label: "Billing", icon: "ph:credit-card" },
     { key: "admin-settings", to: "/admin-settings", dataTour: "settings", label: "Setting", icon: "ph:gear-six" },
+  ],
+  ADMIN_SPMB: [
+    { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
+    { key: "spmb", to: "/spmb", label: "SPMB", icon: "ph:identification-card" },
+    { key: "majors", to: "/majors", label: "Jurusan", icon: "ph:git-branch" },
+    { key: "chat", to: "/chat", label: "Pesan", icon: "ph:chats-circle" },
   ],
   GURU: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
@@ -647,6 +656,7 @@ const filterMenuItems = (items = []) =>
           "homeroom-students",
           "inventory",
           "koperasi",
+          "spmb",
           "learning-exams-admin",
           "announcements",
           "billing",
@@ -666,6 +676,9 @@ const filterMenuItems = (items = []) =>
         return null;
       }
       if (item.key === "payroll" && !isPayrollEnabled.value) {
+        return null;
+      }
+      if (item.key === "spmb" && !isSPMBEnabled.value) {
         return null;
       }
       if (item.key === "chat" && !isPrivateChatEnabled.value && !shouldTrackLiveChat) {

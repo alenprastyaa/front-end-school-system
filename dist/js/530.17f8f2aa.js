@@ -1,2 +1,0 @@
-"use strict";(self["webpackChunkwindzo"]=self["webpackChunkwindzo"]||[]).push([[530],{1530:function(e,n,t){t.r(n),t.d(n,{default:function(){return s}});var u=t(3396),a=t(5324),r={__name:"LearningExamStudent",setup(e){return(e,n)=>((0,u.wg)(),(0,u.j4)(a["default"],{mode:"exam"}))}};const d=r;var s=d}}]);
-//# sourceMappingURL=530.17f8f2aa.js.map

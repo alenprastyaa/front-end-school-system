@@ -42,6 +42,7 @@
                 <th class="px-4 py-3 font-medium sm:px-6">Ujian Resmi</th>
                 <th class="px-4 py-3 font-medium sm:px-6">Modul Ajar AI</th>
                 <th class="px-4 py-3 font-medium sm:px-6">Payroll</th>
+                <th class="px-4 py-3 font-medium sm:px-6">SPMB</th>
                 <th class="px-4 py-3 font-medium sm:px-6">Guru Personal</th>
                 <th class="px-4 py-3 font-medium sm:px-6">Status</th>
               </tr>
@@ -117,6 +118,14 @@
                 </td>
                 <td class="px-4 py-4 sm:px-6">
                   <label class="inline-flex items-center gap-2 text-sm font-semibold">
+                    <input v-model="item.spmb_module_enabled" type="checkbox" :disabled="isSaving(item.id)"
+                      @change="saveModuleSettings(item)"
+                      class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
+                    {{ item.spmb_module_enabled === true ? "Aktif" : "Nonaktif" }}
+                  </label>
+                </td>
+                <td class="px-4 py-4 sm:px-6">
+                  <label class="inline-flex items-center gap-2 text-sm font-semibold">
                     <input v-model="item.personal_teacher_mode_enabled" type="checkbox" :disabled="isSaving(item.id)"
                       @change="saveModuleSettings(item)"
                       class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
@@ -129,7 +138,7 @@
                 </td>
               </tr>
               <tr v-if="schools.length === 0">
-                <td colspan="11" class="px-4 py-10 text-center text-slate-500 sm:px-6">Belum ada sekolah terdaftar.</td>
+                <td colspan="12" class="px-4 py-10 text-center text-slate-500 sm:px-6">Belum ada sekolah terdaftar.</td>
               </tr>
             </tbody>
           </table>
@@ -185,6 +194,7 @@ const loadSchools = async () => {
           official_exam_module_enabled: toBooleanFlag(item.official_exam_module_enabled),
           teaching_module_ai_enabled: toBooleanFlag(item.teaching_module_ai_enabled),
           payroll_module_enabled: toBooleanFlag(item.payroll_module_enabled),
+          spmb_module_enabled: toBooleanFlag(item.spmb_module_enabled),
           personal_teacher_mode_enabled: toBooleanFlag(item.personal_teacher_mode_enabled),
         }))
       : [];
@@ -210,6 +220,7 @@ const saveModuleSettings = async (item) => {
     formData.append("official_exam_module_enabled", String(Boolean(item.official_exam_module_enabled)));
     formData.append("teaching_module_ai_enabled", String(Boolean(item.teaching_module_ai_enabled)));
     formData.append("payroll_module_enabled", String(Boolean(item.payroll_module_enabled)));
+    formData.append("spmb_module_enabled", String(Boolean(item.spmb_module_enabled)));
     formData.append("personal_teacher_mode_enabled", String(Boolean(item.personal_teacher_mode_enabled)));
     const response = await api.put(`/school/${item.id}/modules`, formData);
     message.value = response?.message || "Setting modul berhasil disimpan.";
