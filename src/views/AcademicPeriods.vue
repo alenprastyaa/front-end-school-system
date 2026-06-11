@@ -74,7 +74,8 @@
       </div>
 
       <div class="mt-6 space-y-5">
-        <article v-for="year in years" :key="year.id" class="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 dark:border-slate-700 dark:bg-slate-900/40">
+        <SkeletonLoader v-if="pageLoading" variant="card" :count="3" :columns="1" />
+        <article v-for="year in years" v-show="!pageLoading" :key="year.id" class="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 dark:border-slate-700 dark:bg-slate-900/40">
           <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div>
               <div class="flex flex-wrap items-center gap-2">
@@ -148,7 +149,7 @@
           </div>
         </article>
 
-        <div v-if="years.length === 0" class="rounded-lg border-2 border-dashed border-slate-200 py-10 text-center text-sm text-slate-500 dark:border-slate-700">
+        <div v-if="!pageLoading && years.length === 0" class="rounded-lg border-2 border-dashed border-slate-200 py-10 text-center text-sm text-slate-500 dark:border-slate-700">
           Belum ada data tahun ajaran.
         </div>
       </div>
@@ -335,7 +336,7 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, ref } from "vue";
 import { formatDate } from "@/utils/date";
 import { useAdminStore } from "@/store/admin";
 import { storeToRefs } from "pinia";
@@ -365,7 +366,14 @@ const closeYearModal = () => adminStore.closeAcademicYearModal();
 const closeSemesterModal = () => adminStore.closeAcademicSemesterModal();
 const openYearModal = (item = null) => adminStore.openAcademicYearModal(item);
 const openSemesterModal = (semester = null, year = null) => adminStore.openAcademicSemesterModal(semester, year);
-const loadData = () => adminStore.loadAcademicPeriods();
+const pageLoading = ref(true);
+const loadData = async () => {
+  try {
+    await adminStore.loadAcademicPeriods();
+  } finally {
+    pageLoading.value = false;
+  }
+};
 const submitYear = async () => {
   await adminStore.saveAcademicYear();
 };

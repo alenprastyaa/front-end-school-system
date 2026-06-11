@@ -37,6 +37,7 @@ const baseAssignmentForm = () => ({
   due_date: "",
   assignment_type: "MCQ",
   shuffle_questions: false,
+  question_duration_mode: "PER_QUESTION",
   question_duration_seconds: 10,
   selected_question_bank_ids: [],
 });

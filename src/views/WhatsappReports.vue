@@ -196,6 +196,13 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
+              <template v-if="isLoading && !summary.results.length">
+                <tr v-for="n in 5" :key="`wa-sk-${n}`">
+                  <td v-for="c in 6" :key="`wa-sk-${n}-${c}`" class="px-4 py-3.5">
+                    <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-32' : 'w-16'"></div>
+                  </td>
+                </tr>
+              </template>
               <tr v-for="item in summary.results" :key="`${item.student_id}-${item.target || 'wa'}`">
                 <td class="px-4 py-3 font-medium text-slate-950">{{ item.student_name || "-" }}</td>
                 <td class="px-4 py-3 text-slate-600">{{ item.class_name || "-" }}</td>

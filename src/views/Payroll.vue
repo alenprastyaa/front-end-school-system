@@ -96,7 +96,8 @@
         </div>
 
         <!-- Teacher list -->
-        <div
+        <SkeletonLoader v-if="isLoading && !teachers.length" variant="list" :count="6" />
+        <div v-show="!(isLoading && !teachers.length)"
           class="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-[#161b22] divide-y divide-slate-100 dark:divide-slate-800">
           <div v-for="teacher in teachers" :key="teacher.teacher_id"
             class="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4 hover:bg-slate-50 dark:hover:bg-[#1c2230] transition-colors">

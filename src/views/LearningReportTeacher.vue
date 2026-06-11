@@ -101,8 +101,9 @@
 
       <!-- Report -->
       <section class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+        <SkeletonLoader v-if="reportLoading" variant="table" :count="8" :table-columns="6" class="p-4" />
         <!-- Desktop matrix -->
-        <div class="hidden overflow-x-auto lg:block">
+        <div v-show="!reportLoading" class="hidden overflow-x-auto lg:block">
           <table class="w-full text-left text-sm">
             <thead class="border-b border-slate-200 bg-slate-50/80 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-800/50">
               <tr>
@@ -153,7 +154,7 @@
         </div>
 
         <!-- Mobile cards -->
-        <div class="divide-y divide-slate-100 lg:hidden dark:divide-slate-800">
+        <div v-show="!reportLoading" class="divide-y divide-slate-100 lg:hidden dark:divide-slate-800">
           <article v-for="row in reportStudents" :key="`m-${row.student_id}`" class="p-4">
             <div class="flex items-center justify-between gap-3">
               <p class="font-semibold text-slate-900 dark:text-white">{{ row.student_name }}</p>
@@ -258,6 +259,7 @@ const filters = reportStore.filters;
 
 const assignments = computed(() => report.value?.assignments || []);
 const reportStudents = computed(() => report.value?.students || []);
+const reportLoading = ref(true);
 const totalPages = computed(() => Math.max(1, Number(report.value?.total_pages || Math.ceil(totalRows.value / Number(pageSize.value || 20)) || 1)));
 const paginationStartRow = computed(() => {
   if (totalRows.value === 0) return 0;
@@ -350,9 +352,11 @@ const loadReport = async () => {
 
   if (!filters.subjectId) {
     totalRows.value = 0;
+    reportLoading.value = false;
     return;
   }
 
+  reportLoading.value = true;
   try {
     const response = await api.get(`/learning/subjects/${filters.subjectId}/final-report`, {
       params: {
@@ -371,6 +375,8 @@ const loadReport = async () => {
       message: error.message,
       type: "error",
     });
+  } finally {
+    reportLoading.value = false;
   }
 };
 

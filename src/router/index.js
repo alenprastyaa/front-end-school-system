@@ -238,7 +238,7 @@ const routes = [
     meta: {
       title: "Enrol Wajah" + appName,
       requiresAuth: true,
-      roles: ["SISWA"],
+      roles: ["GURU", "SISWA"],
       moduleKey: "attendance",
     },
   },

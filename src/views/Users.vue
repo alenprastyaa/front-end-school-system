@@ -82,7 +82,8 @@
           </div>
 
           <div class="block space-y-4 p-4 md:hidden">
-            <article v-for="item in displayedStudents" :key="`card-${item.id}`"
+            <SkeletonLoader v-if="studentsLoading" variant="list" :count="5" />
+            <article v-for="item in displayedStudents" v-show="!studentsLoading" :key="`card-${item.id}`"
               class="rounded-3xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div class="flex items-start justify-between gap-3">
                 <div class="flex min-w-0 items-center gap-3">
@@ -128,7 +129,7 @@
               </div>
             </article>
 
-            <div v-if="displayedStudents.length === 0"
+            <div v-if="!studentsLoading && displayedStudents.length === 0"
               class="rounded-3xl border border-dashed border-slate-300 bg-white/80 px-6 py-12 text-center dark:border-slate-700 dark:bg-slate-900/80">
               <div
                 class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
@@ -178,7 +179,14 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr v-for="item in displayedStudents" :key="item.id"
+                <template v-if="studentsLoading">
+                  <tr v-for="n in 6" :key="`user-sk-${n}`">
+                    <td v-for="c in 5" :key="`user-sk-${n}-${c}`" class="px-6 py-4">
+                      <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-36' : 'w-20'"></div>
+                    </td>
+                  </tr>
+                </template>
+                <tr v-for="item in displayedStudents" v-show="!studentsLoading" :key="item.id"
                   class="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
                   :class="editingId === item.id ? 'bg-sky-50/50 dark:bg-sky-900/10' : ''">
                   <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ item.full_name || "-" }}</td>
@@ -230,7 +238,7 @@
                   </td>
                 </tr>
 
-                <tr v-if="displayedStudents.length === 0">
+                <tr v-if="!studentsLoading && displayedStudents.length === 0">
                   <td colspan="5" class="px-6 py-12 text-center">
                     <div class="mx-auto flex flex-col items-center">
                       <div
@@ -899,6 +907,7 @@ const studentToDelete = ref(null);
 const isPromotionModalOpen = ref(false);
 const isPromoting = ref(false);
 const isLoadingPromotionCandidates = ref(false);
+const studentsLoading = ref(true);
 const isImportingStudents = ref(false);
 const isStudentImportModalOpen = ref(false);
 const isStudentTemplateModalOpen = ref(false);
@@ -1382,6 +1391,7 @@ const loadClasses = async () => {
 };
 
 const loadStudents = async () => {
+  studentsLoading.value = true;
   try {
     const params = new URLSearchParams({
       page: String(filters.page),
@@ -1400,6 +1410,8 @@ const loadStudents = async () => {
       message: error.message,
       type: "error",
     });
+  } finally {
+    studentsLoading.value = false;
   }
 };
 

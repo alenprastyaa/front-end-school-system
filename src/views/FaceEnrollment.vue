@@ -6,7 +6,7 @@
         <div>
           <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-500 dark:text-indigo-300">Enrol Wajah</p>
           <p class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-            {{ hasReferenceImage ? "Perubahan wajah harus disetujui admin" : "Wajib diselesaikan sebelum membuka menu lain" }}
+            {{ enrollmentSubtitle }}
           </p>
         </div>
         <span class="inline-flex shrink-0 rounded-full px-2.5 py-1 text-xs font-bold"
@@ -135,6 +135,13 @@ let cameraStream = null;
 
 const hasReferenceImage = computed(() => Boolean(String(profileStore.profile?.face_reference_image || "").trim()));
 const currentReferenceImage = computed(() => faceReferencePreview.value || profileStore.profile?.face_reference_image || "");
+const isStudentRole = computed(() => String(profileStore.profile?.role || "").toUpperCase() === "SISWA");
+const enrollmentSubtitle = computed(() => {
+  if (hasReferenceImage.value) {
+    return "Perubahan wajah harus disetujui admin";
+  }
+  return isStudentRole.value ? "Wajib diselesaikan sebelum membuka menu lain" : "Diperlukan sebelum melakukan absensi";
+});
 
 const FACE_API_SCRIPT_URL = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
 const FACE_API_MODEL_URL = "https://justadudewhohacks.github.io/face-api.js/models";

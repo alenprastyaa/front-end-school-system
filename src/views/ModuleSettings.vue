@@ -48,6 +48,13 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              <template v-if="isLoading && !schools.length">
+                <tr v-for="n in 5" :key="`module-settings-sk-${n}`">
+                  <td v-for="c in 12" :key="`module-settings-sk-${n}-${c}`" class="px-4 py-4 sm:px-6">
+                    <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-32' : 'w-12'"></div>
+                  </td>
+                </tr>
+              </template>
               <tr v-for="item in schools" :key="item.id" class="hover:bg-slate-50/60 dark:hover:bg-slate-800/50">
                 <td class="px-4 py-4 sm:px-6">
                   <div class="font-semibold text-slate-900 dark:text-white">{{ item.name }}</div>
@@ -137,7 +144,7 @@
                   <span v-else class="text-xs font-semibold text-slate-400">Otomatis</span>
                 </td>
               </tr>
-              <tr v-if="schools.length === 0">
+              <tr v-if="!isLoading && schools.length === 0">
                 <td colspan="12" class="px-4 py-10 text-center text-slate-500 sm:px-6">Belum ada sekolah terdaftar.</td>
               </tr>
             </tbody>

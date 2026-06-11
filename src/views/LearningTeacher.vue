@@ -26,6 +26,12 @@
               class="absolute right-3 top-3 h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)] sm:right-4 sm:top-4 sm:h-2 sm:w-2"></div>
           </button>
         </nav>
+
+        <div v-if="subjectsLoading && !subjects.length"
+          class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
+          <div v-for="n in 8" :key="`subject-skeleton-${n}`"
+            class="skeleton-shimmer h-16 rounded-xl sm:h-[4.5rem] sm:rounded-2xl"></div>
+        </div>
       </section>
 
       <div v-if="selectedSubject">
@@ -71,7 +77,9 @@
             </div>
           </div>
 
-          <div class="space-y-2 md:hidden">
+          <SkeletonLoader v-if="contentLoading" variant="list" :count="5" />
+
+          <div v-show="!contentLoading" class="space-y-2 md:hidden">
             <article v-for="item in materials" :key="item.id"
               class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900">
               <div class="flex items-start justify-between gap-3">
@@ -122,7 +130,7 @@
             </div>
           </div>
 
-          <div
+          <div v-show="!contentLoading"
             class="hidden overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800 sm:rounded-2xl md:block">
               <table class="w-full divide-y divide-slate-200 text-left text-xs dark:divide-slate-700 sm:text-sm">
                 <thead class="bg-slate-50 dark:bg-slate-900/40">
@@ -221,8 +229,10 @@
               </div>
             </div>
 
+            <SkeletonLoader v-if="contentLoading" variant="card" :count="6" :columns="3" />
+
             <!-- List Tugas -->
-            <div class="space-y-2 md:hidden">
+            <div v-show="!contentLoading" class="space-y-2 md:hidden">
               <article v-for="item in filteredAssignments" :key="item.id"
                 class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                 <div class="flex items-start justify-between gap-3">
@@ -288,7 +298,7 @@
               </div>
             </div>
 
-            <div
+            <div v-show="!contentLoading"
               class="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:rounded-2xl md:block">
               <table class="w-full text-left text-xs sm:text-sm">
                 <thead
@@ -763,6 +773,8 @@ import { storeToRefs } from "pinia";
 const teacherStore = useTeacherStore();
 const learningStore = useTeacherLearningStore();
 const { subjects } = storeToRefs(teacherStore);
+const subjectsLoading = ref(true);
+const contentLoading = ref(false);
 const {
   selectedSubject,
   activeTab,
@@ -985,11 +997,15 @@ const loadSubjects = async () => {
     }
   } catch (error) {
     subjectError.value = error.message;
+  } finally {
+    subjectsLoading.value = false;
   }
 };
 
 const loadSubjectData = async () => {
   if (!selectedSubject.value) return;
+  contentLoading.value = true;
+  try {
   const [materialResponse, assignmentResponse] = await Promise.all([
     api.get(`/learning/subjects/${selectedSubject.value.id}/materials`),
     api.get(`/learning/subjects/${selectedSubject.value.id}/assignments`),
@@ -1012,6 +1028,9 @@ const loadSubjectData = async () => {
       }
     }),
   );
+  } finally {
+    contentLoading.value = false;
+  }
 };
 
 const submitMaterial = async () => {

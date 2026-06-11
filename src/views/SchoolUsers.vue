@@ -73,7 +73,14 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in paginatedUsers" :key="item.id"
+              <template v-if="pageLoading">
+                <tr v-for="n in 6" :key="`schooluser-sk-${n}`" class="border-b dark:border-gray-700">
+                  <td v-for="c in 6" :key="`schooluser-sk-${n}-${c}`" class="py-3.5 pr-4">
+                    <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-32' : 'w-20'"></div>
+                  </td>
+                </tr>
+              </template>
+              <tr v-for="item in paginatedUsers" v-show="!pageLoading" :key="item.id"
                 class="border-b dark:border-gray-700 text-gray-800 dark:text-gray-200">
                 <td class="py-3 pr-4">{{ item.full_name || item.username || "-" }}</td>
                 <td class="py-3 pr-4">{{ item.username || "-" }}</td>
@@ -112,7 +119,7 @@
                   </div>
                 </td>
               </tr>
-              <tr v-if="users.length === 0">
+              <tr v-if="!pageLoading && users.length === 0">
                 <td colspan="6" class="py-6 text-center text-gray-500 dark:text-gray-400">
                   Belum ada user sekolah.
                 </td>
@@ -430,6 +437,7 @@ import { storeToRefs } from "pinia";
 
 const successModal = ref(null);
 const guruImportInput = ref(null);
+const pageLoading = ref(true);
 const adminStore = useAdminStore();
 
 const {
@@ -514,7 +522,13 @@ const handleGuruImportFileChange = async (event) => {
   }
 };
 
-const loadUsers = () => adminStore.loadSchoolUsers();
+const loadUsers = async () => {
+  try {
+    await adminStore.loadSchoolUsers();
+  } finally {
+    pageLoading.value = false;
+  }
+};
 const goToPrevPage = () => adminStore.goToSchoolUsersPage(Number(currentPage.value) - 1);
 const goToNextPage = () => adminStore.goToSchoolUsersPage(Number(currentPage.value) + 1);
 const startEdit = (item) => adminStore.startEditSchoolUser(item);

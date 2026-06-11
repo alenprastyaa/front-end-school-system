@@ -190,9 +190,7 @@
           </button>
         </div>
 
-        <p v-if="isLoadingAttendance" class="py-8 text-center text-sm text-slate-400">
-          Memuat riwayat kehadiran...
-        </p>
+        <SkeletonLoader v-if="isLoadingAttendance" variant="list" :count="4" class="mt-3" />
 
         <p v-else-if="recentAttendances.length === 0" class="py-8 text-center text-sm text-slate-400">
           Belum ada riwayat kehadiran.

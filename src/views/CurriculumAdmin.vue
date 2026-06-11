@@ -64,7 +64,7 @@
             <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">{{ filteredSubjects.length }} mapel</p>
           </div>
 
-          <div v-if="filteredSubjects.length > 0"
+          <div v-if="pageLoading || filteredSubjects.length > 0"
             class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
             <table class="min-w-full text-left text-sm">
               <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
@@ -77,7 +77,14 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr v-for="item in filteredSubjects" :key="item.id"
+                <template v-if="pageLoading">
+                  <tr v-for="n in 6" :key="`curr-sk-${n}`">
+                    <td v-for="c in 5" :key="`curr-sk-${n}-${c}`" class="px-4 py-4">
+                      <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-20' : 'w-28'"></div>
+                    </td>
+                  </tr>
+                </template>
+                <tr v-for="item in filteredSubjects" v-show="!pageLoading" :key="item.id"
                   class="hover:bg-slate-50/70 dark:hover:bg-slate-800/50">
                   <td class="whitespace-nowrap px-4 py-4">
                     <span
@@ -1574,6 +1581,7 @@ const searchTerms = reactive({
 
 const teachers = ref([]);
 const classes = ref([]);
+const pageLoading = ref(true);
 const generating = ref(false);
 const generationIssues = ref([]);
 const formModal = reactive({
@@ -2423,6 +2431,8 @@ const loadData = async () => {
       message: error.message || "Gagal memuat modul kurikulum.",
       type: "error",
     });
+  } finally {
+    pageLoading.value = false;
   }
 };
 

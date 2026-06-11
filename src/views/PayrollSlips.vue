@@ -142,6 +142,13 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              <template v-if="isLoading && !teachers.length">
+                <tr v-for="n in 6" :key="`slip-sk-${n}`">
+                  <td v-for="c in 5" :key="`slip-sk-${n}-${c}`" class="px-4 py-4">
+                    <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-40' : 'w-16'"></div>
+                  </td>
+                </tr>
+              </template>
               <template v-for="teacher in teachers" :key="teacher.teacher_id">
                 <tr
                   class="cursor-pointer align-middle text-slate-700 transition hover:bg-slate-50/70"
@@ -194,7 +201,7 @@
                   </td>
                 </tr>
               </template>
-              <tr v-if="teachers.length === 0">
+              <tr v-if="!isLoading && teachers.length === 0">
                 <td colspan="6" class="px-6 py-12 text-center text-sm text-slate-400">
                   Belum ada data guru untuk periode ini.
                 </td>

@@ -38,6 +38,11 @@
               class="absolute right-4 top-4 h-2 w-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
             ></div>
           </button>
+
+          <template v-if="subjectsLoading && !subjects.length">
+            <div v-for="n in 5" :key="`module-subj-sk-${n}`"
+              class="skeleton-shimmer h-[88px] min-w-[240px] flex-none rounded-2xl"></div>
+          </template>
         </nav>
       </section>
 
@@ -728,9 +733,13 @@
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
-                    <tr v-if="isLoadingSavedModules">
-                      <td colspan="6" class="px-4 py-6 text-center text-slate-500 dark:text-slate-400">Memuat modul tersimpan...</td>
+                    <template v-if="isLoadingSavedModules">
+                    <tr v-for="n in 5" :key="`module-sk-${n}`">
+                      <td v-for="c in 6" :key="`module-sk-${n}-${c}`" class="px-4 py-3.5">
+                        <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-40' : 'w-20'"></div>
+                      </td>
                     </tr>
+                    </template>
                     <tr v-else-if="savedModules.length === 0">
                       <td colspan="6" class="px-4 py-6 text-center text-slate-500 dark:text-slate-400">Belum ada modul tersimpan untuk mapel ini.</td>
                     </tr>
@@ -904,6 +913,7 @@ import { storeToRefs } from "pinia";
 const teacherStore = useTeacherStore();
 const teachingModuleStore = useTeacherTeachingModuleStore();
 const { subjects } = storeToRefs(teacherStore);
+const subjectsLoading = ref(true);
 const {
   selectedSubject,
   subjectError,
@@ -1129,6 +1139,8 @@ const loadSubjects = async () => {
     }
   } catch (error) {
     subjectError.value = error.message;
+  } finally {
+    subjectsLoading.value = false;
   }
 };
 

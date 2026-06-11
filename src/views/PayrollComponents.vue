@@ -125,7 +125,8 @@
       </form>
 
       <!-- Daftar Komponen -->
-      <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm divide-y divide-slate-100">
+      <SkeletonLoader v-if="isLoading && !components.length" variant="list" :count="5" />
+      <div v-show="!(isLoading && !components.length)" class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm divide-y divide-slate-100">
         <div v-for="item in components" :key="item.id"
           class="flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors">
           <div class="flex-1 min-w-0">

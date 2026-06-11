@@ -64,11 +64,18 @@
               </p>
             </button>
 
-            <div v-if="subjects.length === 0"
+            <div v-if="!subjectsLoading && subjects.length === 0"
               class="flex items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white px-4 py-6 text-center dark:border-slate-800 dark:bg-slate-950">
               <span class="text-xs font-normal text-slate-500 dark:text-slate-400">Belum ada kelas terdaftar.</span>
             </div>
+            <template v-if="subjectsLoading && !subjects.length">
+              <div v-for="n in 4" :key="`subj-sk-m-${n}`" class="skeleton-shimmer h-20 w-full shrink-0 rounded-xl"></div>
+            </template>
           </div>
+        </div>
+
+        <div v-if="subjectsLoading && !subjects.length" class="mt-4 hidden gap-3 md:grid md:grid-cols-2 xl:grid-cols-3">
+          <div v-for="n in 6" :key="`subj-sk-${n}`" class="skeleton-shimmer h-28 w-full rounded-2xl"></div>
         </div>
 
         <div class="mt-4 hidden gap-3 md:grid md:grid-cols-2 xl:grid-cols-3">
@@ -99,7 +106,7 @@
           </button>
         </div>
 
-        <div v-if="subjects.length === 0"
+        <div v-if="!subjectsLoading && subjects.length === 0"
           class="mt-4 rounded-2xl border-2 border-dashed border-slate-200 py-10 text-center dark:border-slate-800">
           <span class="text-sm font-normal text-slate-500 dark:text-slate-400">Belum ada kelas terdaftar.</span>
         </div>
@@ -132,7 +139,9 @@
           </span>
         </div>
 
-        <div v-if="isMaterialsMode" class="grid gap-3 md:grid-cols-2 md:gap-5 xl:grid-cols-3">
+        <SkeletonLoader v-if="contentLoading" variant="card" :count="6" :columns="3" />
+
+        <div v-if="isMaterialsMode" v-show="!contentLoading" class="grid gap-3 md:grid-cols-2 md:gap-5 xl:grid-cols-3">
           <article v-for="item in materials" :key="item.id"
             class="flex h-full flex-col justify-between rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition-transform hover:-translate-y-0.5 hover:border-emerald-200 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-500/30 sm:rounded-2xl sm:p-5">
             <div>
@@ -172,7 +181,7 @@
           </div>
         </div>
 
-        <div v-else class="grid gap-3 md:gap-5 xl:grid-cols-2">
+        <div v-else v-show="!contentLoading" class="grid gap-3 md:gap-5 xl:grid-cols-2">
           <article v-for="item in assignments" :key="item.id"
             class="rounded-xl border bg-white p-3 shadow-sm transition-transform hover:-translate-y-0.5 dark:bg-slate-900 sm:rounded-2xl sm:p-5"
             :class="submissionTarget?.id === item.id ? 'border-emerald-500 ring-1 ring-emerald-500 dark:border-emerald-500' : 'border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700'">
@@ -327,7 +336,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { Icon } from "@iconify/vue";
 import { useRoute } from "vue-router";
 import { api } from "@/api";
@@ -359,6 +368,8 @@ const {
   isError,
 } = storeToRefs(studentLearningStore);
 const submissionForm = studentLearningStore.submissionForm;
+const subjectsLoading = ref(true);
+const contentLoading = ref(false);
 
 const isMaterialsMode = computed(() => props.mode !== "assignments");
 const isAssignmentsMode = computed(() => props.mode === "assignments");
@@ -405,12 +416,16 @@ const loadSubjects = async () => {
     }
   } catch (error) {
     subjectError.value = error.message;
+  } finally {
+    subjectsLoading.value = false;
   }
 };
 
 const loadSubjectData = async () => {
   if (!selectedSubject.value) return;
 
+  contentLoading.value = true;
+  try {
   const requests = [];
 
   if (isMaterialsMode.value) {
@@ -445,6 +460,9 @@ const loadSubjectData = async () => {
         startSubmission(requestedAssignment);
       }
     }
+  }
+  } finally {
+    contentLoading.value = false;
   }
 };
 

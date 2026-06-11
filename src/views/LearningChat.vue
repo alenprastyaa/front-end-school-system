@@ -1,21 +1,21 @@
 <template>
-  <div class="h-full overflow-hidden bg-slate-100 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+  <div class="h-full overflow-hidden bg-slate-100 font-sans text-slate-900 dark:bg-[#0b141a] dark:text-[#e9edef]">
     <main class="mx-auto flex h-full max-w-[1480px] flex-col md:p-8">
       <div
-        class="flex-1 overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+        class="flex-1 overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-[#111b21] dark:ring-[#222e35]">
         <div class="grid h-full min-h-0 lg:grid-cols-[340px_minmax(0,1fr)]">
           <aside
-            class="min-h-0 border-b border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-950/40 lg:border-b-0 lg:border-r"
+            class="min-h-0 border-b border-slate-200 bg-slate-50/80 dark:border-[#222e35] dark:bg-[#111b21] lg:border-b-0 lg:border-r"
             :class="{ hidden: mobileChatOpen, 'lg:block': true }">
-            <div class="border-b border-slate-200 px-5 py-5 dark:border-slate-800">
+            <div class="border-b border-slate-200 px-5 py-5 dark:border-[#222e35] dark:bg-[#111b21]">
               <div class="flex items-center gap-3">
                 <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-sm"
                   :class="roleAccentClass">
                   <Icon icon="ph:chats-circle-duotone" class="h-7 w-7 opacity-90" />
                 </div>
                 <div>
-                  <h2 class="text-lg font-bold text-slate-900 dark:text-white">Grup Mata Pelajaran</h2>
-                  <p class="text-sm text-slate-500 dark:text-slate-400">Pilih mapel untuk mulai berdiskusi.</p>
+                  <h2 class="text-lg font-bold text-slate-900 dark:text-[#e9edef]">Grup Mata Pelajaran</h2>
+                  <p class="text-sm text-slate-500 dark:text-[#8696a0]">Pilih mapel untuk mulai berdiskusi.</p>
                 </div>
               </div>
 
@@ -25,17 +25,17 @@
               </div>
             </div>
 
-            <div class="h-[calc(100%-97px)] overflow-y-auto p-3">
+            <div class="h-[calc(100%-97px)] overflow-y-auto bg-white p-3 dark:bg-[#111b21]">
               <button v-for="subject in orderedSubjects" :key="subject.id" @click="selectSubject(subject)"
                 class="mb-2 flex w-full items-start gap-3 rounded-2xl px-4 py-4 text-left transition ring-1 ring-transparent"
                 :class="selectedSubject?.id === subject.id
                   ? selectedGroupClass
                   : subjectUnreadCount(subject.id) > 0
                     ? unreadGroupClass
-                    : 'bg-transparent hover:bg-white dark:hover:bg-slate-900/80'">
+                    : 'bg-transparent hover:bg-white dark:hover:bg-[#202c33]'">
                 <div
                   class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-white shadow-sm"
-                  :class="subject.chat_icon_url ? 'bg-slate-100 dark:bg-slate-800' : getSubjectIconClass(subject)">
+                  :class="subject.chat_icon_url ? 'bg-slate-100 dark:bg-[#2a3942]' : getSubjectIconClass(subject)">
                   <img v-if="subject.chat_icon_url" :src="subject.chat_icon_url" alt="Ikon grup mapel"
                     class="h-full w-full object-cover" />
                   <Icon v-else :icon="getSubjectIcon(subject)" class="h-6 w-6 opacity-95" />
@@ -43,7 +43,7 @@
                 <div class="min-w-0 flex-1">
                   <div class="flex items-start justify-between gap-3">
                     <h3 class="truncate font-bold"
-                      :class="selectedSubject?.id === subject.id ? 'text-white' : 'text-slate-900 dark:text-white'">
+                      :class="selectedSubject?.id === subject.id ? 'text-white' : 'text-slate-900 dark:text-[#e9edef]'">
                       {{ subject.name }}
                     </h3>
                     <div class="flex shrink-0 items-center gap-2">
@@ -59,7 +59,7 @@
                     </div>
                   </div>
                   <p class="mt-1 truncate text-sm"
-                    :class="selectedSubject?.id === subject.id ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'">
+                    :class="selectedSubject?.id === subject.id ? 'text-white/80' : 'text-slate-500 dark:text-[#8696a0]'">
                     {{ subject.class_name || `Guru: ${subject.teacher_name || '-'}` }}
                   </p>
                   <div class="mt-1 flex items-center gap-2">
@@ -69,7 +69,7 @@
                       Pesan baru
                     </span>
                     <p class="truncate text-xs"
-                      :class="selectedSubject?.id === subject.id ? 'text-white/70' : subjectUnreadCount(subject.id) > 0 ? 'font-semibold text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'">
+                      :class="selectedSubject?.id === subject.id ? 'text-white/70' : subjectUnreadCount(subject.id) > 0 ? 'font-semibold text-slate-700 dark:text-[#e9edef]' : 'text-slate-400 dark:text-[#8696a0]'">
                       {{ latestMessagePreview(subject.id) }}
                     </p>
                   </div>
@@ -77,20 +77,20 @@
               </button>
 
               <div v-if="subjects.length === 0"
-                class="p-6 text-center text-sm font-medium text-slate-500 dark:text-slate-400">
+                class="p-6 text-center text-sm font-medium text-slate-500 dark:text-[#8696a0]">
                 Belum ada grup mata pelajaran yang tersedia.
               </div>
             </div>
           </aside>
 
-          <section class="flex min-h-0 h-full flex-col overflow-hidden bg-[#efeae2] dark:bg-slate-950/20"
+          <section class="flex h-full min-h-0 flex-col overflow-hidden bg-[#efeae2] dark:bg-[#0b141a]"
             :class="{ hidden: !mobileChatOpen, 'lg:flex': true }">
             <template v-if="selectedSubject">
               <div
-                class="border-b border-slate-200 bg-white/95 px-5 py-4 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+                class="border-b border-slate-200 bg-white/95 px-5 py-4 backdrop-blur dark:border-[#222e35] dark:bg-[#202c33]">
                 <div class="flex items-center gap-3">
                   <button v-if="!unifiedMode" type="button"
-                    class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 lg:hidden"
+                    class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-[#2a3942] dark:text-[#aebac1] dark:hover:bg-[#334852] lg:hidden"
                     @click="backToGroupList">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -98,21 +98,21 @@
                   </button>
                   <div
                     class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl text-white shadow-sm"
-                    :class="selectedSubject.chat_icon_url ? 'bg-slate-100 dark:bg-slate-800' : getSubjectIconClass(selectedSubject)">
+                    :class="selectedSubject.chat_icon_url ? 'bg-slate-100 dark:bg-[#2a3942]' : getSubjectIconClass(selectedSubject)">
                     <img v-if="selectedSubject.chat_icon_url" :src="selectedSubject.chat_icon_url" alt="Ikon grup mapel"
                       class="h-full w-full object-cover" />
                     <Icon v-else :icon="getSubjectIcon(selectedSubject)" class="h-6 w-6 opacity-95" />
                   </div>
                   <div class="min-w-0">
-                    <h2 class="truncate text-lg font-bold text-slate-900 dark:text-white">{{ selectedSubject.name }}
+                    <h2 class="truncate text-lg font-bold text-slate-900 dark:text-[#e9edef]">{{ selectedSubject.name }}
                     </h2>
-                    <p class="truncate text-sm text-slate-500 dark:text-slate-400">
+                    <p class="truncate text-sm text-slate-500 dark:text-[#8696a0]">
                       {{ selectedSubject.class_name }}
                       <span v-if="selectedSubject.teacher_name">• {{ selectedSubject.teacher_name }}</span>
                     </p>
                   </div>
                   <button v-if="role === 'GURU'" type="button"
-                    class="ml-auto inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                    class="ml-auto inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-[#334852] dark:bg-[#2a3942] dark:text-[#e9edef] dark:hover:bg-[#334852]"
                     :disabled="isUploadingChatIcon" @click="openChatIconPicker">
                     <svg v-if="isUploadingChatIcon" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"
                       stroke-width="2" stroke="currentColor">
@@ -136,26 +136,29 @@
               </div>
 
               <div ref="messageListRef"
-                class="min-h-0 flex-1 space-y-4 overflow-y-auto bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.8),_rgba(239,234,226,0.8)_40%,_rgba(239,234,226,1)_100%)] px-4 py-5 dark:bg-[radial-gradient(circle_at_top_left,_rgba(30,41,59,0.7),_rgba(15,23,42,0.98)_45%,_rgba(2,6,23,1)_100%)] md:px-8">
-                <div v-if="isLoadingMessages"
-                  class="flex h-full min-h-[420px] items-center justify-center text-sm font-medium text-slate-500 dark:text-slate-400">
-                  Memuat percakapan...
+                class="min-h-0 flex-1 space-y-4 overflow-y-auto bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.8),_rgba(239,234,226,0.8)_40%,_rgba(239,234,226,1)_100%)] px-4 py-5 dark:bg-[radial-gradient(circle_at_top_left,_rgba(32,44,51,0.92),_rgba(17,27,33,0.98)_46%,_rgba(11,20,26,1)_100%)] md:px-8">
+                <div v-if="isLoadingMessages" class="space-y-4">
+                  <div v-for="n in 6" :key="`chat-sk-${n}`" class="flex"
+                    :class="n % 2 === 0 ? 'justify-end' : 'justify-start'">
+                    <div class="skeleton-shimmer h-16 rounded-3xl"
+                      :class="n % 3 === 0 ? 'w-1/2' : 'w-2/3'"></div>
+                  </div>
                 </div>
 
                 <div v-else-if="currentMessages.length === 0"
                   class="flex h-full min-h-[420px] items-center justify-center">
                   <div
-                    class="max-w-md rounded-3xl bg-white/90 px-8 py-8 text-center shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900/85 dark:ring-white/10">
+                    class="max-w-md rounded-3xl bg-white/90 px-8 py-8 text-center shadow-sm ring-1 ring-slate-900/5 dark:bg-[#202c33]/95 dark:ring-[#334852]">
                     <div
-                      class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                      <svg class="h-8 w-8 text-slate-500 dark:text-slate-300" fill="none" viewBox="0 0 24 24"
+                      class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-[#2a3942]">
+                      <svg class="h-8 w-8 text-slate-500 dark:text-[#aebac1]" fill="none" viewBox="0 0 24 24"
                         stroke-width="1.6" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round"
                           d="M2.25 12.76l.904-.903a2.25 2.25 0 013.182 0l.904.903m0 0l2.69 2.69a2.25 2.25 0 003.182 0l5.44-5.439a2.25 2.25 0 013.182 0l.904.903M7.5 15.75h9" />
                       </svg>
                     </div>
-                    <h3 class="mt-4 text-lg font-bold text-slate-900 dark:text-white">Belum ada pesan</h3>
-                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Mulai percakapan di grup {{
+                    <h3 class="mt-4 text-lg font-bold text-slate-900 dark:text-[#e9edef]">Belum ada pesan</h3>
+                    <p class="mt-2 text-sm text-slate-500 dark:text-[#8696a0]">Mulai percakapan di grup {{
                       selectedSubject.name }}.</p>
                   </div>
                 </div>
@@ -163,7 +166,7 @@
                 <div v-for="item in currentMessages" :key="item.id" class="flex"
                   :class="item.sender_id === currentUserId ? 'justify-end' : 'justify-start'">
                   <article class="max-w-[85%] rounded-3xl px-4 py-3 shadow-sm md:max-w-[70%]"
-                    :class="item.sender_id === currentUserId ? ownMessageClass : 'rounded-tl-md bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-800'">
+                    :class="item.sender_id === currentUserId ? ownMessageClass : 'rounded-tl-md bg-white text-slate-800 ring-1 ring-slate-200 dark:bg-[#202c33] dark:text-[#e9edef] dark:ring-[#2a3942]'">
                     <div class="flex items-center gap-2 text-xs font-semibold">
                       <span>{{ item.sender_name || "Pengguna" }}</span>
                       <span class="rounded-full px-2 py-0.5" :class="roleBadgeClass(item.sender_role)">
@@ -204,33 +207,33 @@
               </div>
 
               <form @submit.prevent="sendMessage"
-                class="border-t border-slate-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-900 md:px-6">
+                class="border-t border-slate-200 bg-white px-4 py-4 dark:border-[#222e35] dark:bg-[#202c33] md:px-6">
                 <div v-if="attachmentPreviewName || isRecordingVoice || recordedVoiceUrl"
-                  class="mb-3 rounded-2xl bg-slate-100 px-4 py-3 text-sm dark:bg-slate-800">
+                  class="mb-3 rounded-2xl bg-slate-100 px-4 py-3 text-sm dark:bg-[#2a3942]">
                   <div v-if="attachmentPreviewName" class="flex items-center justify-between gap-3">
                     <div class="min-w-0">
-                      <p class="font-semibold text-slate-900 dark:text-white">Lampiran siap dikirim</p>
-                      <p class="truncate text-slate-500 dark:text-slate-400">{{ attachmentPreviewName }}</p>
+                      <p class="font-semibold text-slate-900 dark:text-[#e9edef]">Lampiran siap dikirim</p>
+                      <p class="truncate text-slate-500 dark:text-[#8696a0]">{{ attachmentPreviewName }}</p>
                     </div>
-                    <button type="button" class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200"
+                    <button type="button" class="text-slate-500 hover:text-slate-700 dark:text-[#aebac1] dark:hover:text-[#e9edef]"
                       @click="clearAttachment">
                       <Icon icon="mdi:close" class="h-5 w-5" />
                     </button>
                   </div>
                   <div v-if="recordedVoiceUrl" class="flex items-center justify-between gap-3">
                     <div class="min-w-0 flex-1">
-                      <p class="font-semibold text-slate-900 dark:text-white">Voice note siap dikirim</p>
+                      <p class="font-semibold text-slate-900 dark:text-[#e9edef]">Voice note siap dikirim</p>
                       <audio :src="recordedVoiceUrl" controls class="mt-2 w-full" />
                     </div>
-                    <button type="button" class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200"
+                    <button type="button" class="text-slate-500 hover:text-slate-700 dark:text-[#aebac1] dark:hover:text-[#e9edef]"
                       @click="clearAttachment">
                       <Icon icon="mdi:close" class="h-5 w-5" />
                     </button>
                   </div>
                   <div v-else-if="isRecordingVoice" class="flex items-center justify-between gap-3">
                     <div>
-                      <p class="font-semibold text-slate-900 dark:text-white">Sedang merekam voice note...</p>
-                      <p class="text-slate-500 dark:text-slate-400">{{ recordingDurationLabel }}</p>
+                      <p class="font-semibold text-slate-900 dark:text-[#e9edef]">Sedang merekam voice note...</p>
+                      <p class="text-slate-500 dark:text-[#8696a0]">{{ recordingDurationLabel }}</p>
                     </div>
                     <button type="button" class="rounded-full bg-rose-500 p-2 text-white hover:bg-rose-400"
                       @click="stopVoiceRecording">
@@ -244,7 +247,7 @@
                       accept="image/*,application/pdf,audio/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" class="hidden"
                       @change="handleAttachmentChange" />
                     <button type="button"
-                      class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                      class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-[#2a3942] dark:text-[#aebac1] dark:hover:bg-[#334852]"
                       :disabled="isSendingMessage || isRecordingVoice" @click="openAttachmentPicker">
                       <Icon icon="ph:paperclip" class="h-5 w-5" />
                     </button>
@@ -256,10 +259,10 @@
                     </button>
                   </div>
                   <div
-                    class="flex-1 rounded-[24px] bg-slate-100 px-4 py-1.5 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+                    class="flex-1 rounded-[24px] bg-slate-100 px-4 py-1.5 ring-1 ring-inset ring-slate-200 dark:bg-[#2a3942] dark:ring-[#334852]">
                     <textarea v-model="composer" rows="1" placeholder="Tulis pesan ke grup mata pelajaran ini..."
                       @keydown="handleComposerKeydown"
-                      class="block w-full resize-none border-0 bg-transparent p-0 text-sm text-slate-900 focus:outline-none focus:ring-0 dark:text-white leading-[48px] h-[48px]" />
+                      class="block h-[48px] w-full resize-none border-0 bg-transparent p-0 text-sm leading-[48px] text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-0 dark:text-[#e9edef] dark:placeholder:text-[#8696a0]" />
                   </div>
                   <button :disabled="isSendingMessage || !composer.trim()"
                     class="inline-flex h-14 w-14 items-center justify-center rounded-full text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60"
@@ -280,17 +283,17 @@
 
             <div v-else class="hidden h-full min-h-[720px] items-center justify-center px-6 lg:flex">
               <div
-                class="max-w-lg rounded-[32px] bg-white/90 px-8 py-10 text-center shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900/85 dark:ring-white/10">
+                class="max-w-lg rounded-[32px] bg-white/90 px-8 py-10 text-center shadow-sm ring-1 ring-slate-900/5 dark:bg-[#202c33]/95 dark:ring-[#334852]">
                 <div
-                  class="mx-auto flex h-18 w-18 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                  <svg class="h-10 w-10 text-slate-500 dark:text-slate-300" fill="none" viewBox="0 0 24 24"
+                  class="mx-auto flex h-18 w-18 items-center justify-center rounded-full bg-slate-100 dark:bg-[#2a3942]">
+                  <svg class="h-10 w-10 text-slate-500 dark:text-[#aebac1]" fill="none" viewBox="0 0 24 24"
                     stroke-width="1.6" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round"
                       d="M8.625 9.75a3.375 3.375 0 116.75 0m-6.75 0a3.375 3.375 0 106.75 0m-6.75 0v1.5m6.75-1.5v1.5m-8.25 8.25h9a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.186-1.016-.523-1.408L15.53 12.45A2.25 2.25 0 0013.851 11.7h-3.702a2.25 2.25 0 00-1.679.75l-2.297 2.57a2.25 2.25 0 00-.523 1.408v1.372A2.25 2.25 0 007.9 20.25z" />
                   </svg>
                 </div>
-                <h2 class="mt-5 text-xl font-bold text-slate-900 dark:text-white">Pilih Grup Mapel</h2>
-                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                <h2 class="mt-5 text-xl font-bold text-slate-900 dark:text-[#e9edef]">Pilih Grup Mapel</h2>
+                <p class="mt-2 text-sm text-slate-500 dark:text-[#8696a0]">
                   Daftar mata pelajaran di panel kiri berfungsi sebagai grup chat. Pilih salah satu untuk mulai
                   berdiskusi.
                 </p>
@@ -533,7 +536,7 @@ const roleBadgeClass = (userRole) => {
     return "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300";
   }
 
-  return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300";
+  return "bg-slate-100 text-slate-700 dark:bg-[#2a3942] dark:text-[#aebac1]";
 };
 
 const ownMessageReadLabel = (message) => {

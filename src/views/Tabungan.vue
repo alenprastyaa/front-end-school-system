@@ -18,7 +18,8 @@
       <div class="p-5">
         <!-- Mobile Cards -->
         <div class="space-y-3 md:hidden">
-          <div v-if="receipts.length === 0"
+          <SkeletonLoader v-if="pageLoading" variant="list" :count="4" />
+          <div v-if="!pageLoading && receipts.length === 0"
             class="rounded-xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
             Belum ada bukti pembayaran.
           </div>
@@ -97,7 +98,14 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-              <tr v-for="item in sortedReceipts" :key="item.id"
+              <template v-if="pageLoading">
+                <tr v-for="n in 5" :key="`tabungan-sk-${n}`">
+                  <td v-for="c in 5" :key="`tabungan-sk-${n}-${c}`" class="py-3.5 pr-4">
+                    <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-24' : 'w-20'"></div>
+                  </td>
+                </tr>
+              </template>
+              <tr v-for="item in sortedReceipts" v-show="!pageLoading" :key="item.id"
                 class="text-slate-800 transition hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/50">
                 <td class="py-3 pr-4">{{ formatDate(item.payment_date) }}</td>
                 <td class="py-3 pr-4 max-w-[200px] truncate">{{ item.description || "-" }}</td>
@@ -137,7 +145,7 @@
                   </div>
                 </td>
               </tr>
-              <tr v-if="receipts.length === 0">
+              <tr v-if="!pageLoading && receipts.length === 0">
                 <td colspan="5" class="py-10 text-center text-sm text-slate-500 dark:text-slate-400">
                   Belum ada bukti pembayaran.
                 </td>
@@ -328,7 +336,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { formatDate, formatDateTime } from "@/utils/date";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 import { storeToRefs } from "pinia";
@@ -383,8 +391,13 @@ const sortIndicator = (key) => {
   return tableSort.direction === "asc" ? "▲" : "▼";
 };
 
+const pageLoading = ref(true);
 const loadReceipts = async () => {
-  await receiptsStore.loadReceipts();
+  try {
+    await receiptsStore.loadReceipts();
+  } finally {
+    pageLoading.value = false;
+  }
 };
 
 const handleFileChange = async (event) => {

@@ -103,6 +103,13 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              <template v-if="isLoading && !filteredAnnouncements.length">
+                <tr v-for="n in 6" :key="`ann-sk-${n}`">
+                  <td v-for="c in 4" :key="`ann-sk-${n}-${c}`" class="px-6 py-4">
+                    <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-48' : 'w-20'"></div>
+                  </td>
+                </tr>
+              </template>
               <tr v-for="item in filteredAnnouncements" :key="item.id" @click="selectForReview(item)"
                 class="cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-800/50"
                 :class="selectedAnnouncement?.id === item.id ? 'bg-sky-50/60 dark:bg-sky-500/5' : ''">
@@ -146,7 +153,7 @@
                   </div>
                 </td>
               </tr>
-              <tr v-if="filteredAnnouncements.length === 0">
+              <tr v-if="!isLoading && filteredAnnouncements.length === 0">
                 <td colspan="5" class="px-6 py-12 text-center text-sm text-slate-400 dark:text-slate-500">
                   {{ isLoading ? "Memuat..." : "Belum ada pengumuman" }}
                 </td>

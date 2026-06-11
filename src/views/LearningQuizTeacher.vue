@@ -32,6 +32,11 @@
               </svg>
             </span>
           </button>
+
+          <template v-if="subjectsLoading && !subjects.length">
+            <div v-for="n in 5" :key="`quizt-subj-sk-${n}`"
+              class="skeleton-shimmer h-[68px] min-w-[180px] flex-none rounded-xl sm:h-[88px] sm:min-w-[240px] sm:rounded-2xl"></div>
+          </template>
         </div>
       </section>
 
@@ -180,7 +185,8 @@
               </div>
 
               <div class="space-y-2 bg-slate-50/60 p-2.5 dark:bg-slate-950/20 sm:space-y-3 sm:p-4">
-                <article v-for="(item, index) in paginatedQuestionBank" :key="item.id"
+                <SkeletonLoader v-if="contentLoading" variant="list" :count="5" />
+                <article v-for="(item, index) in paginatedQuestionBank" v-show="!contentLoading" :key="item.id"
                   class="relative rounded-lg border bg-white p-3 pr-12 shadow-sm transition dark:bg-slate-900 sm:p-4 sm:pr-14"
                   :class="assignmentForm.selected_question_bank_ids.includes(item.id)
                     ? 'border-sky-500 ring-2 ring-sky-500/20 dark:border-sky-400'
@@ -250,7 +256,7 @@
                   </div>
                 </article>
 
-                <div v-if="paginatedQuestionBank.length === 0" class="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-8 text-center dark:border-slate-700 dark:bg-slate-900 sm:py-12">
+                <div v-if="!contentLoading && paginatedQuestionBank.length === 0" class="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-8 text-center dark:border-slate-700 dark:bg-slate-900 sm:py-12">
                   <p class="text-sm font-semibold text-slate-600 dark:text-slate-300 sm:text-base">Belum ada soal</p>
                   <p class="mt-2 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">Soal yang cocok dengan pencarian dan filter akan muncul di sini.</p>
                 </div>
@@ -1003,6 +1009,8 @@ const selectedSubject = ref(null);
 const assignments = ref([]);
 const questionBank = ref([]);
 const questionBankTotal = ref(0);
+const subjectsLoading = ref(true);
+const contentLoading = ref(false);
 const subjectError = ref("");
 const message = ref("");
 const isError = ref(false);
@@ -1590,12 +1598,16 @@ const loadSubjects = async () => {
     }
   } catch (error) {
     subjectError.value = error.message;
+  } finally {
+    subjectsLoading.value = false;
   }
 };
 
 const loadSubjectData = async () => {
   if (!selectedSubject.value) return;
 
+  contentLoading.value = true;
+  try {
   const [assignmentResponse, questionBankResponse] = await Promise.all([
     api.get(`/learning/subjects/${selectedSubject.value.id}/assignments`),
     api.get(`/learning/subjects/${selectedSubject.value.id}/question-bank`, {
@@ -1635,6 +1647,9 @@ const loadSubjectData = async () => {
   assignments.value = assignmentsWithSubmissionCount;
   questionBank.value = (questionBankResponse?.data?.data || []).map(normalizeQuestionBankItem);
   questionBankTotal.value = questionBankResponse?.data?.total || 0;
+  } finally {
+    contentLoading.value = false;
+  }
 };
 
 const selectSubject = async (subject) => {

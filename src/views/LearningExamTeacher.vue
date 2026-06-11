@@ -15,6 +15,11 @@
               {{ item.class_name }}
             </span>
           </button>
+
+          <template v-if="subjectsLoading && !subjects.length">
+            <div v-for="n in 5" :key="`examt-subj-sk-${n}`"
+              class="skeleton-shimmer h-[88px] min-w-[240px] flex-none rounded-2xl"></div>
+          </template>
         </div>
       </section>
 
@@ -258,7 +263,8 @@
               </div>
             </div>
 
-            <div class="overflow-x-auto">
+            <SkeletonLoader v-if="contentLoading" variant="table" :count="6" :table-columns="4" class="p-4" />
+            <div v-show="!contentLoading" class="overflow-x-auto">
               <table class="min-w-full text-left text-sm">
                 <thead class="bg-white text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-900">
                   <tr>
@@ -324,6 +330,8 @@ import { normalizePublicUrl } from "@/utils/url";
 const teacherStore = useTeacherStore();
 const examStore = useTeacherExamStore();
 const { subjects } = storeToRefs(teacherStore);
+const subjectsLoading = ref(true);
+const contentLoading = ref(false);
 const {
   selectedSubject,
   assignments,
@@ -521,12 +529,16 @@ const loadSubjects = async () => {
     }
   } catch (error) {
     subjectError.value = error.message;
+  } finally {
+    subjectsLoading.value = false;
   }
 };
 
 const loadSubjectData = async () => {
   if (!selectedSubject.value) return;
 
+  contentLoading.value = true;
+  try {
   const [assignmentResponse, questionBankResponse] = await Promise.all([
     api.get(`/learning/subjects/${selectedSubject.value.id}/assignments`),
     api.get(`/learning/subjects/${selectedSubject.value.id}/question-bank`, {
@@ -542,6 +554,9 @@ const loadSubjectData = async () => {
   assignments.value = (assignmentResponse?.data || []).filter((item) => item.is_exam);
   questionBank.value = questionBankResponse?.data?.data || [];
   questionBankTotal.value = questionBankResponse?.data?.total || 0;
+  } finally {
+    contentLoading.value = false;
+  }
 };
 
 const selectSubject = async (subject) => {

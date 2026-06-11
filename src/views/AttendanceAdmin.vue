@@ -77,13 +77,13 @@
         <!-- Loading skeleton -->
         <div v-if="isLoading" class="space-y-3 p-4 sm:p-5">
           <div v-for="n in 3" :key="n"
-            class="flex animate-pulse items-center gap-4 rounded-2xl border border-slate-100 p-4 dark:border-white/5">
-            <div class="h-14 w-14 rounded-xl bg-slate-200 dark:bg-white/10"></div>
+            class="flex items-center gap-4 rounded-2xl border border-slate-100 p-4 dark:border-white/5">
+            <div class="skeleton-shimmer h-14 w-14 rounded-xl"></div>
             <div class="flex-1 space-y-2">
-              <div class="h-3 w-1/3 rounded bg-slate-200 dark:bg-white/10"></div>
-              <div class="h-3 w-1/2 rounded bg-slate-100 dark:bg-white/5"></div>
+              <div class="skeleton-shimmer h-3 w-1/3 rounded"></div>
+              <div class="skeleton-shimmer h-3 w-1/2 rounded"></div>
             </div>
-            <div class="h-8 w-24 rounded-xl bg-slate-100 dark:bg-white/5"></div>
+            <div class="skeleton-shimmer h-8 w-24 rounded-xl"></div>
           </div>
         </div>
 

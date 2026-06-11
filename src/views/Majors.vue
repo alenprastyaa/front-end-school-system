@@ -26,7 +26,14 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in majors" :key="item.id" class="border-b text-slate-800 dark:border-gray-700 dark:text-slate-200">
+            <template v-if="pageLoading">
+              <tr v-for="n in 5" :key="`major-sk-${n}`" class="border-b dark:border-gray-700">
+                <td v-for="c in 5" :key="`major-sk-${n}-${c}`" class="py-3.5 pr-4">
+                  <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-16' : 'w-24'"></div>
+                </td>
+              </tr>
+            </template>
+            <tr v-for="item in majors" v-show="!pageLoading" :key="item.id" class="border-b text-slate-800 dark:border-gray-700 dark:text-slate-200">
               <td class="py-3 pr-4 font-semibold">{{ item.code }}</td>
               <td class="py-3 pr-4">{{ item.name }}</td>
               <td class="py-3 pr-4">{{ item.quota ?? "-" }}</td>
@@ -43,7 +50,7 @@
                 </div>
               </td>
             </tr>
-            <tr v-if="majors.length === 0">
+            <tr v-if="!pageLoading && majors.length === 0">
               <td colspan="5" class="py-10 text-center text-slate-500">Belum ada jurusan.</td>
             </tr>
           </tbody>
@@ -91,15 +98,22 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { pushToast } from "@/composables/useToast";
 import { useMajorStore } from "@/store/majors";
 
 const majorStore = useMajorStore();
 const { majors, showModal, editingId, isSaving, form } = storeToRefs(majorStore);
+const pageLoading = ref(true);
 
-const loadMajors = () => majorStore.loadMajors();
+const loadMajors = async () => {
+  try {
+    await majorStore.loadMajors();
+  } finally {
+    pageLoading.value = false;
+  }
+};
 const openModal = (item = null) => majorStore.openModal(item);
 const closeModal = () => majorStore.closeModal();
 const saveMajor = async () => {

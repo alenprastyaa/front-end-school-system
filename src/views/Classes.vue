@@ -102,7 +102,14 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-              <tr v-for="item in paginatedClasses" :key="item.id"
+              <template v-if="pageLoading">
+                <tr v-for="n in 6" :key="`class-sk-${n}`">
+                  <td v-for="c in 7" :key="`class-sk-${n}-${c}`" class="px-6 py-4">
+                    <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-28' : 'w-20'"></div>
+                  </td>
+                </tr>
+              </template>
+              <tr v-for="item in paginatedClasses" v-show="!pageLoading" :key="item.id"
                 class="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
                 <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ item.class_name }}</td>
                 <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ item.class_level_name || "-" }}</td>
@@ -132,7 +139,7 @@
                   </div>
                 </td>
               </tr>
-              <tr v-if="classes.length === 0">
+              <tr v-if="!pageLoading && classes.length === 0">
                 <td colspan="7" class="px-6 py-16 text-center">
                   <div class="mx-auto flex max-w-sm flex-col items-center">
                     <div
@@ -440,6 +447,7 @@ import { useClassStore } from "@/store/classes";
 import { storeToRefs } from "pinia";
 
 const successModal = ref(null);
+const pageLoading = ref(true);
 const classStore = useClassStore();
 const {
   form: classesForm,
@@ -570,6 +578,10 @@ const submitClass = async () => {
 };
 
 onMounted(async () => {
-  await classStore.initialize();
+  try {
+    await classStore.initialize();
+  } finally {
+    pageLoading.value = false;
+  }
 });
 </script>

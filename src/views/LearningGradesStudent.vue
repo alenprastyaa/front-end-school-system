@@ -52,7 +52,9 @@
           </select>
         </div>
 
-        <div class="hidden md:block overflow-x-auto">
+        <SkeletonLoader v-if="pageLoading" variant="table" :count="6" :table-columns="6" />
+
+        <div v-show="!pageLoading" class="hidden md:block overflow-x-auto">
           <table class="min-w-[980px] w-full text-sm">
             <thead class="bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/60">
               <tr>
@@ -86,7 +88,7 @@
             </tbody>
           </table>
         </div>
-        <div class="space-y-2 md:hidden">
+        <div v-show="!pageLoading" class="space-y-2 md:hidden">
           <article v-for="row in filteredRows" :key="`m-${row.assignment_id}-${row.subject_id}`"
             class="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
             <div class="flex items-start justify-between gap-2">
@@ -113,7 +115,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import VueApexCharts from "vue3-apexcharts";
 import { formatDateTime } from "@/utils/date";
 import { storeToRefs } from "pinia";
@@ -208,5 +210,12 @@ const chartOptions = computed(() => {
 const isSubmittedRow = (row) =>
   Boolean(row?.is_submitted || row?.submitted_at || row?.submission_id);
 
-onMounted(() => studentGradesStore.loadGrades());
+const pageLoading = ref(true);
+onMounted(async () => {
+  try {
+    await studentGradesStore.loadGrades();
+  } finally {
+    pageLoading.value = false;
+  }
+});
 </script>

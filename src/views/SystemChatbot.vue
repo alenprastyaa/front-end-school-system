@@ -34,6 +34,12 @@
         >
           <p class="whitespace-pre-wrap">{{ msg.text }}</p>
         </article>
+
+        <article v-if="isLoading"
+          class="max-w-3xl space-y-2 rounded-2xl bg-slate-100 px-4 py-3 dark:bg-slate-700">
+          <div class="skeleton-shimmer h-3 w-48 rounded"></div>
+          <div class="skeleton-shimmer h-3 w-32 rounded"></div>
+        </article>
       </div>
 
       <form class="mt-4 flex flex-col gap-3 md:flex-row" @submit.prevent="sendQuestion">

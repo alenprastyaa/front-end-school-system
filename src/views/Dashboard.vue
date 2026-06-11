@@ -84,7 +84,8 @@
             </div>
           </div>
 
-          <div class="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4 sm:p-6">
+          <SkeletonLoader v-if="isLoading && !summaryCards.length" variant="stats" :count="4" :columns="4" class="p-4 sm:p-6" />
+          <div v-show="!(isLoading && !summaryCards.length)" class="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4 sm:p-6">
             <div v-for="item in summaryCards" :key="item.label" class="rounded-2xl p-5 text-white shadow-sm" :class="item.cardClass">
               <p class="text-[11px] font-medium text-white/80">{{ item.label }}</p>
               <div class="mt-2 flex items-end justify-between gap-3">

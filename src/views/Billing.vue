@@ -114,6 +114,13 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                <template v-if="isLoading && !filteredBillings.length">
+                  <tr v-for="n in 6" :key="`billing-sk-${n}`">
+                    <td v-for="c in 6" :key="`billing-sk-${n}-${c}`" class="px-4 py-4 sm:px-6">
+                      <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-32' : 'w-20'"></div>
+                    </td>
+                  </tr>
+                </template>
                 <tr v-for="item in filteredBillings" :key="item.school_id" class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
                   <td class="px-4 py-4 sm:px-6">{{ item.school_name || "-" }}</td>
                   <td class="px-4 py-4 sm:px-6">
@@ -136,7 +143,7 @@
                     </div>
                   </td>
                 </tr>
-                <tr v-if="filteredBillings.length === 0">
+                <tr v-if="!isLoading && filteredBillings.length === 0">
                   <td colspan="6" class="px-4 py-10 text-center text-slate-500 dark:text-slate-400">Belum ada billing yang cocok.</td>
                 </tr>
               </tbody>

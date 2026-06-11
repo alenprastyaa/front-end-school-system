@@ -123,10 +123,11 @@
 
               <div ref="messageListRef" :style="messageListStyle"
                 class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 md:px-14">
-                <div v-if="isLoadingMessages" class="flex h-full min-h-[420px] items-center justify-center">
-                  <div
-                    class="rounded-lg bg-white/80 px-4 py-2 text-sm text-[#667781] shadow-sm dark:bg-[#202c33]/90 dark:text-[#8696a0]">
-                    Memuat pesan...
+                <div v-if="isLoadingMessages" class="space-y-4">
+                  <div v-for="n in 6" :key="`pchat-sk-${n}`" class="flex"
+                    :class="n % 2 === 0 ? 'justify-end' : 'justify-start'">
+                    <div class="skeleton-shimmer h-14 rounded-2xl"
+                      :class="n % 3 === 0 ? 'w-1/2' : 'w-3/5'"></div>
                   </div>
                 </div>
 

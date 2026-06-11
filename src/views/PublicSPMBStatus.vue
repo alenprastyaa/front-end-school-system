@@ -12,7 +12,7 @@
       </section>
 
       <section v-else class="rounded-lg border bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div v-if="isLoading" class="py-10 text-center text-slate-500">Memuat status...</div>
+        <SkeletonLoader v-if="isLoading" variant="text" :count="5" />
         <div v-else class="space-y-5">
           <div>
             <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</p>

@@ -293,6 +293,13 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                <template v-if="isLoadingSchools && !schools.length">
+                  <tr v-for="n in 5" :key="`school-sk-${n}`">
+                    <td v-for="c in 8" :key="`school-sk-${n}-${c}`" class="px-4 py-4 sm:px-6">
+                      <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-44' : 'w-12'"></div>
+                    </td>
+                  </tr>
+                </template>
                 <tr v-for="item in schools" :key="item.id" class="hover:bg-slate-50/60 dark:hover:bg-slate-800/50">
                   <td class="px-4 py-4 sm:px-6">
                     <div class="font-semibold text-slate-900 dark:text-white">{{ item.name }}</div>
@@ -327,7 +334,7 @@
                     </div>
                   </td>
                 </tr>
-                <tr v-if="schools.length === 0">
+                <tr v-if="!isLoadingSchools && schools.length === 0">
                   <td colspan="8" class="px-4 py-10 text-center text-slate-500 sm:px-6">Belum ada sekolah terdaftar.</td>
                 </tr>
               </tbody>

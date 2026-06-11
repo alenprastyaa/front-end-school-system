@@ -556,6 +556,7 @@ const menuByRole = {
     { key: "homeroom-students", to: "/homeroom-students", dataTour: "students", label: "Siswa Wali Kelas", icon: "mdi:account-school-outline" },
     { key: "chat", to: "/chat", label: "Pesan", icon: "ph:chats-circle" },
     { key: "attendance", to: "/attendance", dataTour: "attendance", label: "Absensi", icon: "mdi:calendar-check-outline" },
+    { key: "face-enrollment", to: "/face-enrollment", label: "Enrol Wajah", icon: "mdi:face-recognition" },
     {
       key: "learning-module",
       label: "Modul Pembelajaran",

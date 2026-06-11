@@ -256,10 +256,7 @@
           </div>
 
           <div class="mt-5 overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-700/60">
-            <div v-if="isLoading" class="flex flex-col items-center justify-center gap-3 p-12 text-center">
-              <Icon icon="mdi:loading" class="h-8 w-8 animate-spin text-sky-500" />
-              <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Memuat list sekolah...</p>
-            </div>
+            <SkeletonLoader v-if="isLoading" variant="list" :count="5" class="p-4" />
             <div v-else-if="targets.length === 0" class="flex flex-col items-center justify-center gap-3 p-12 text-center">
               <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
                 <Icon icon="mdi:school-outline" class="h-7 w-7" />

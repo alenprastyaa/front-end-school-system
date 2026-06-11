@@ -50,7 +50,14 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in applicants" :key="item.id" class="border-b text-slate-800 dark:border-gray-700 dark:text-slate-200">
+            <template v-if="pageLoading">
+              <tr v-for="n in 6" :key="`spmb-sk-${n}`" class="border-b dark:border-gray-700">
+                <td v-for="c in 7" :key="`spmb-sk-${n}-${c}`" class="py-3.5 pr-4">
+                  <div class="skeleton-shimmer h-4 rounded" :class="c === 2 ? 'w-36' : 'w-20'"></div>
+                </td>
+              </tr>
+            </template>
+            <tr v-for="item in applicants" v-show="!pageLoading" :key="item.id" class="border-b text-slate-800 dark:border-gray-700 dark:text-slate-200">
               <td class="py-3 pr-4 font-semibold">{{ item.registration_number }}</td>
               <td class="py-3 pr-4">
                 <div class="font-semibold">{{ item.full_name }}</div>
@@ -78,7 +85,7 @@
                 </div>
               </td>
             </tr>
-            <tr v-if="applicants.length === 0">
+            <tr v-if="!pageLoading && applicants.length === 0">
               <td colspan="7" class="py-10 text-center text-slate-500">Belum ada pendaftar SPMB.</td>
             </tr>
           </tbody>
@@ -325,8 +332,13 @@ const loadClasses = async () => {
   classes.value = Array.isArray(response?.data) ? response.data : [];
 };
 
+const pageLoading = ref(true);
 const loadData = async () => {
-  await Promise.all([loadOverview(), loadApplicants(), loadMajors(), loadClasses()]);
+  try {
+    await Promise.all([loadOverview(), loadApplicants(), loadMajors(), loadClasses()]);
+  } finally {
+    pageLoading.value = false;
+  }
 };
 
 const normalizeId = (value) => (value === "" || value == null ? null : Number(value));
