@@ -5,6 +5,7 @@ import { getStoredRole } from "@/utils/auth";
 const SUMMARY_TTL = 15000;
 const SUBJECT_TTL = 60000;
 const PRIVATE_CHAT_TTL = 15000;
+const ATTENDANCE_ADMIN_TTL = 15000;
 
 const normalizeSubjectList = (response) => {
   const items = response?.data || [];
@@ -66,6 +67,9 @@ export const useSidebar = defineStore("sidebar", {
     privateChatUnreadCount: 0,
     privateChatSummaryLoadedAt: 0,
     privateChatSummaryInFlight: null,
+    attendanceFacePendingCount: 0,
+    attendanceFacePendingLoadedAt: 0,
+    attendanceFacePendingInFlight: null,
   }),
 
   actions: {
@@ -240,7 +244,52 @@ export const useSidebar = defineStore("sidebar", {
       this.recomputePrivateChatUnreadCount();
     },
 
+    applyAttendanceFacePendingCount(count = 0) {
+      this.attendanceFacePendingCount = Math.max(Number(count || 0), 0);
+      this.attendanceFacePendingLoadedAt = Date.now();
+    },
+
+    bumpAttendanceFacePendingCount(count) {
+      if (count !== undefined && count !== null) {
+        this.applyAttendanceFacePendingCount(count);
+        return;
+      }
+      this.applyAttendanceFacePendingCount(Number(this.attendanceFacePendingCount || 0) + 1);
+    },
+
+    async refreshAttendanceFacePendingCount({ force = false } = {}) {
+      if (!force && this.attendanceFacePendingLoadedAt && Date.now() - this.attendanceFacePendingLoadedAt < ATTENDANCE_ADMIN_TTL) {
+        return this.attendanceFacePendingCount;
+      }
+
+      if (this.attendanceFacePendingInFlight) {
+        return this.attendanceFacePendingInFlight;
+      }
+
+      this.attendanceFacePendingInFlight = (async () => {
+        try {
+          const response = await api.get("/attendance/face-enrollment-requests/pending-count", {
+            silentLoading: true,
+          });
+          this.applyAttendanceFacePendingCount(response?.data?.pending_count || 0);
+        } catch (error) {
+          // Keep the last known badge count if refresh fails.
+        } finally {
+          this.attendanceFacePendingInFlight = null;
+        }
+        return this.attendanceFacePendingCount;
+      })();
+
+      return this.attendanceFacePendingInFlight;
+    },
+
     async refreshLiveChatSummary({ force = false } = {}) {
+      const role = getStoredRole();
+      if (!["GURU", "SISWA"].includes(role)) {
+        this.applyLiveChatSummary([]);
+        return [];
+      }
+
       if (!force && this.liveChatSummaryLoadedAt && Date.now() - this.liveChatSummaryLoadedAt < SUMMARY_TTL) {
         return this.liveChatSummaryItems;
       }
@@ -269,7 +318,7 @@ export const useSidebar = defineStore("sidebar", {
 
     async refreshPrivateChatSummary({ force = false } = {}) {
       const role = getStoredRole();
-      if (!["ADMIN", "KOPERASI", "GURU", "SISWA"].includes(role)) {
+      if (!["ADMIN", "ADMIN_SPMB", "KOPERASI", "BENDAHARA", "GURU", "SISWA"].includes(role)) {
         this.applyPrivateChatSummary([]);
         return [];
       }

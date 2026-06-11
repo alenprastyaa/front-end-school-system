@@ -14,6 +14,7 @@ const baseUserForm = () => ({
 
 const baseClassForm = () => ({
   className: "",
+  classLevelId: "",
   waliGuruId: "",
   majorId: "",
 });
@@ -398,7 +399,8 @@ export const useAdminStore = defineStore("admin", {
     startEditClass(item) {
       this.classesEditingId = item.id;
       this.classesForm = {
-        className: item.class_name || "",
+        className: item.class_rombel_name || item.class_name || "",
+        classLevelId: item.class_level_id || "",
         waliGuruId: item.wali_guru_id || "",
         majorId: item.major_id || "",
       };
@@ -466,6 +468,7 @@ export const useAdminStore = defineStore("admin", {
       try {
         const payload = {
           class_name: this.classesForm.className,
+          class_level_id: this.classesForm.classLevelId ? Number(this.classesForm.classLevelId) : null,
           wali_guru_id: this.classesForm.waliGuruId ? Number(this.classesForm.waliGuruId) : null,
           major_id: this.classesForm.majorId ? Number(this.classesForm.majorId) : null,
         };

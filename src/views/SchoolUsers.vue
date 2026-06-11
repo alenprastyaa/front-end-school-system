@@ -32,7 +32,7 @@
               Daftar User Sekolah
             </h2>
             <p class="text-sm text-gray-500 dark:text-gray-400">
-              Role yang dikelola di sini: admin, admin SPMB, guru, sarpras, koperasi, dan bendahara.
+              Role yang dikelola di sini: admin, admin SPMB, guru, sarpras, koperasi, bendahara, dan orang tua.
             </p>
           </div>
           <button @click="loadUsers" class="px-4 py-2 rounded-md border dark:border-gray-600 dark:text-white">
@@ -120,20 +120,44 @@
             </tbody>
           </table>
         </div>
-        <div class="mt-4 flex items-center justify-between">
-          <p class="text-xs text-gray-500 dark:text-gray-400">
-            Halaman {{ currentPage }} dari {{ totalPages }} · Menampilkan {{ paginatedUsers.length }} user
-          </p>
-          <div class="flex items-center gap-2">
-            <button @click="goToPrevPage" :disabled="currentPage === 1"
-              class="px-3 py-1.5 rounded-md border dark:border-gray-600 text-xs font-semibold disabled:opacity-50">
-              Sebelumnya
-            </button>
-            <button @click="goToNextPage" :disabled="currentPage >= totalPages"
-              class="px-3 py-1.5 rounded-md border dark:border-gray-600 text-xs font-semibold disabled:opacity-50">
-              Berikutnya
-            </button>
+        <div
+          class="mt-4 flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-4 dark:border-slate-700 dark:bg-slate-900/50 sm:flex-row sm:items-center sm:justify-between">
+          <div class="text-sm font-semibold text-slate-700 dark:text-slate-200">
+            Menampilkan {{ paginatedUsers.length }} dari {{ totalUsers }} user
           </div>
+          <nav aria-label="Pagination" class="flex items-center">
+            <ul class="flex list-none overflow-hidden rounded-lg border border-slate-300 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+              <li>
+                <button @click="goToPrevPage" :disabled="currentPage === 1"
+                  class="px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-400 dark:text-slate-200 dark:hover:bg-slate-800">
+                  Prev
+                </button>
+              </li>
+              <li v-if="currentPage > 1">
+                <button @click="goToPrevPage"
+                  class="border-l border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                  {{ currentPage - 1 }}
+                </button>
+              </li>
+              <li>
+                <span class="border-l border-slate-200 bg-sky-600 px-4 py-2 text-sm font-semibold text-white dark:border-slate-700">
+                  {{ currentPage }}
+                </span>
+              </li>
+              <li v-if="currentPage < totalPages">
+                <button @click="goToNextPage"
+                  class="border-l border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                  {{ currentPage + 1 }}
+                </button>
+              </li>
+              <li>
+                <button @click="goToNextPage" :disabled="currentPage >= totalPages"
+                  class="border-l border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-400 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                  Next
+                </button>
+              </li>
+            </ul>
+          </nav>
         </div>
       </div>
     </section>
@@ -283,6 +307,7 @@
               <option value="SARPRAS">SARPRAS</option>
               <option value="KOPERASI">KOPERASI</option>
               <option value="BENDAHARA">BENDAHARA</option>
+              <option value="ORANG_TUA">ORANG TUA</option>
             </select>
           </div>
 

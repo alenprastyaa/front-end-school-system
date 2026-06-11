@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { cancelPendingApiRequests } from "@/api";
-import { clearSession, getStoredRole, getStoredUser, isAuthenticated } from "@/utils/auth";
+import { clearSession, getStoredRole, getStoredUser, isAuthenticated, isStudentFaceEnrolled, isStudentProfileComplete } from "@/utils/auth";
 import { clearChunkReloadAttempt, isChunkLoadError, lazyRoute, recoverFromChunkLoadError } from "./lazyRoute";
 import PublicLanding from "../views/PublicLanding.vue";
 import Dashboard from "../views/Dashboard.vue";
@@ -200,6 +200,16 @@ const routes = [
     },
   },
   {
+    path: "/whatsapp-reports",
+    name: "WhatsappReports",
+    component: lazyRoute(() => import("../views/WhatsappReports.vue")),
+    meta: {
+      title: "Laporan WhatsApp" + appName,
+      requiresAuth: true,
+      roles: ["ADMIN"],
+    },
+  },
+  {
     path: "/attendance",
     name: "Attendance",
     component: lazyRoute(() => import("../views/Attendance.vue")),
@@ -211,13 +221,24 @@ const routes = [
     },
   },
   {
+    path: "/attendance-admin",
+    name: "AttendanceAdmin",
+    component: lazyRoute(() => import("../views/AttendanceAdmin.vue")),
+    meta: {
+      title: "Kelola Absensi" + appName,
+      requiresAuth: true,
+      roles: ["ADMIN"],
+      moduleKey: "attendance",
+    },
+  },
+  {
     path: "/face-enrollment",
     name: "FaceEnrollment",
     component: lazyRoute(() => import("../views/FaceEnrollment.vue")),
     meta: {
       title: "Enrol Wajah" + appName,
       requiresAuth: true,
-      roles: ["GURU", "SISWA"],
+      roles: ["SISWA"],
       moduleKey: "attendance",
     },
   },
@@ -251,7 +272,7 @@ const routes = [
     component: lazyRoute(() => import("../views/CurriculumAdmin.vue")),
     props: { section: "subjects" },
     meta: {
-      title: "Kurikulum Admin" + appName,
+      title: "Mapel Kurikulum" + appName,
       requiresAuth: true,
       roles: ["ADMIN"],
     },
@@ -263,6 +284,17 @@ const routes = [
     props: { section: "teacher-loads" },
     meta: {
       title: "Beban Mengajar Guru" + appName,
+      requiresAuth: true,
+      roles: ["ADMIN"],
+    },
+  },
+  {
+    path: "/learning-admin/rooms",
+    name: "LearningAdminRooms",
+    component: lazyRoute(() => import("../views/CurriculumAdmin.vue")),
+    props: { section: "rooms" },
+    meta: {
+      title: "Ruang dan Lab" + appName,
       requiresAuth: true,
       roles: ["ADMIN"],
     },
@@ -303,12 +335,7 @@ const routes = [
   {
     path: "/learning-subjects",
     name: "LearningSubjectsAdmin",
-    component: lazyRoute(() => import("../views/LearningAdmin.vue")),
-    meta: {
-      title: "Guru Mapel" + appName,
-      requiresAuth: true,
-      roles: ["ADMIN"],
-    },
+    redirect: "/learning-admin/class-distributions",
   },
   {
     path: "/learning-exams-admin",
@@ -590,6 +617,7 @@ const personalTeacherModeBlockedRoutes = new Set([
   "SchoolUsers",
   "TeacherStudents",
   "LearningAdminTeacherLoads",
+  "LearningAdminRooms",
   "LearningAdminClassDistributions",
   "LearningAdminSchedule",
   "LearningAdminGenerate",
@@ -623,6 +651,22 @@ router.beforeEach((to, from, next) => {
     const role = getStoredRole();
     if (!to.meta.roles.includes(role)) {
       next({ name: "Dashboard" });
+      return;
+    }
+  }
+
+  if (to.meta.requiresAuth && getStoredRole() === "SISWA" && to.name !== "Dashboard") {
+    const storedUser = getStoredUser() || {};
+    if (!isStudentProfileComplete(storedUser)) {
+      next({ name: "Dashboard" });
+      return;
+    }
+  }
+
+  if (to.meta.requiresAuth && getStoredRole() === "SISWA" && to.name !== "FaceEnrollment") {
+    const storedUser = getStoredUser() || {};
+    if (isStudentProfileComplete(storedUser) && !isStudentFaceEnrolled(storedUser)) {
+      next({ name: "FaceEnrollment" });
       return;
     }
   }

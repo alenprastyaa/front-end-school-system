@@ -86,114 +86,121 @@
       </div>
     </section>
 
-    <div v-if="showApplicantModal" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 px-4 py-8">
-      <div class="w-full max-w-3xl rounded-lg border bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
-        <div class="flex items-center justify-between border-b px-6 py-4 dark:border-gray-700">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ editingApplicantId ? "Edit Pendaftar" : "Tambah Pendaftar" }}</h2>
-          <button @click="closeApplicantModal" class="text-2xl leading-none text-gray-500">&times;</button>
+    <teleport to="body">
+      <div v-if="showApplicantModal" class="fixed inset-0 z-[260] flex items-center justify-center overflow-y-auto bg-black/50 px-4 py-8">
+        <div class="w-full max-w-3xl rounded-lg border bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
+          <div class="flex items-center justify-between border-b px-6 py-4 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ editingApplicantId ? "Edit Pendaftar" : "Tambah Pendaftar" }}</h2>
+            <button @click="closeApplicantModal" class="text-2xl leading-none text-gray-500">&times;</button>
+          </div>
+          <form @submit.prevent="saveApplicant" class="space-y-4 p-6">
+            <div class="grid gap-4 md:grid-cols-2">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nama Lengkap</label>
+                <input v-model="form.full_name" required class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nomor WhatsApp</label>
+                <input v-model="form.phone_number" required class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
+              </div>
+            </div>
+            <div class="grid gap-4 md:grid-cols-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pilihan 1</label>
+                <select v-model="form.first_major_id" required class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
+                  <option value="">Pilih Jurusan</option>
+                  <option v-for="major in majors" :key="major.id" :value="major.id">{{ major.code }} - {{ major.name }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pilihan 2</label>
+                <select v-model="form.second_major_id" class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
+                  <option value="">-</option>
+                  <option v-for="major in majors" :key="major.id" :value="major.id">{{ major.code }} - {{ major.name }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pilihan 3</label>
+                <select v-model="form.third_major_id" class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
+                  <option value="">-</option>
+                  <option v-for="major in majors" :key="major.id" :value="major.id">{{ major.code }} - {{ major.name }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid gap-4 md:grid-cols-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                <select v-model="form.status" class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
+                  <option v-for="item in statusOptions" :key="item.value" :value="item.value">{{ item.label }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Jurusan Diterima</label>
+                <select v-model="form.accepted_major_id" class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
+                  <option value="">-</option>
+                  <option v-for="major in majors" :key="major.id" :value="major.id">{{ major.code }} - {{ major.name }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal Lahir</label>
+                <input v-model="form.birth_date" type="date" class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
+              </div>
+            </div>
+            <div class="grid gap-4 md:grid-cols-2">
+              <input v-model="form.birth_place" placeholder="Tempat lahir" class="rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
+              <input v-model="form.origin_school" placeholder="Asal sekolah" class="rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
+              <input v-model="form.nisn" placeholder="NISN" class="rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
+              <input v-model="form.parent_name" placeholder="Nama orang tua/wali" class="rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
+              <input v-model="form.email" type="email" placeholder="Email" class="rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
+              <select v-model="form.gender" class="rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
+                <option value="">Jenis Kelamin</option>
+                <option value="L">Laki-laki</option>
+                <option value="P">Perempuan</option>
+              </select>
+            </div>
+            <textarea v-model="form.address" rows="2" placeholder="Alamat" class="w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white"></textarea>
+            <textarea v-model="form.notes" rows="2" placeholder="Catatan admin" class="w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white"></textarea>
+            <textarea v-model="form.revision_note" rows="2" placeholder="Catatan revisi untuk pendaftar" class="w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white"></textarea>
+            <div class="flex justify-end gap-3 pt-2">
+              <button type="button" @click="closeApplicantModal" class="rounded-md border px-4 py-2 dark:border-gray-600 dark:text-white">Batal</button>
+              <button type="submit" :disabled="isSaving" class="rounded-md bg-sky-600 px-4 py-2 text-white disabled:opacity-60">{{ isSaving ? "Menyimpan..." : "Simpan" }}</button>
+            </div>
+          </form>
         </div>
-        <form @submit.prevent="saveApplicant" class="space-y-4 p-6">
-          <div class="grid gap-4 md:grid-cols-2">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nama Lengkap</label>
-              <input v-model="form.full_name" required class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nomor WhatsApp</label>
-              <input v-model="form.phone_number" required class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
-            </div>
-          </div>
-          <div class="grid gap-4 md:grid-cols-3">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pilihan 1</label>
-              <select v-model="form.first_major_id" required class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
-                <option value="">Pilih Jurusan</option>
-                <option v-for="major in majors" :key="major.id" :value="major.id">{{ major.code }} - {{ major.name }}</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pilihan 2</label>
-              <select v-model="form.second_major_id" class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
-                <option value="">-</option>
-                <option v-for="major in majors" :key="major.id" :value="major.id">{{ major.code }} - {{ major.name }}</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pilihan 3</label>
-              <select v-model="form.third_major_id" class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
-                <option value="">-</option>
-                <option v-for="major in majors" :key="major.id" :value="major.id">{{ major.code }} - {{ major.name }}</option>
-              </select>
-            </div>
-          </div>
-          <div class="grid gap-4 md:grid-cols-3">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-              <select v-model="form.status" class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
-                <option v-for="item in statusOptions" :key="item.value" :value="item.value">{{ item.label }}</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Jurusan Diterima</label>
-              <select v-model="form.accepted_major_id" class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
-                <option value="">-</option>
-                <option v-for="major in majors" :key="major.id" :value="major.id">{{ major.code }} - {{ major.name }}</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal Lahir</label>
-              <input v-model="form.birth_date" type="date" class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
-            </div>
-          </div>
-          <div class="grid gap-4 md:grid-cols-2">
-            <input v-model="form.birth_place" placeholder="Tempat lahir" class="rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
-            <input v-model="form.origin_school" placeholder="Asal sekolah" class="rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
-            <input v-model="form.nisn" placeholder="NISN" class="rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
-            <input v-model="form.parent_name" placeholder="Nama orang tua/wali" class="rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
-            <input v-model="form.email" type="email" placeholder="Email" class="rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white" />
-            <select v-model="form.gender" class="rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
-              <option value="">Jenis Kelamin</option>
-              <option value="L">Laki-laki</option>
-              <option value="P">Perempuan</option>
-            </select>
-          </div>
-          <textarea v-model="form.address" rows="2" placeholder="Alamat" class="w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white"></textarea>
-          <textarea v-model="form.notes" rows="2" placeholder="Catatan admin" class="w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white"></textarea>
-          <textarea v-model="form.revision_note" rows="2" placeholder="Catatan revisi untuk pendaftar" class="w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white"></textarea>
-          <div class="flex justify-end gap-3 pt-2">
-            <button type="button" @click="closeApplicantModal" class="rounded-md border px-4 py-2 dark:border-gray-600 dark:text-white">Batal</button>
-            <button type="submit" :disabled="isSaving" class="rounded-md bg-sky-600 px-4 py-2 text-white disabled:opacity-60">{{ isSaving ? "Menyimpan..." : "Simpan" }}</button>
-          </div>
-        </form>
       </div>
-    </div>
+    </teleport>
 
-    <div v-if="convertTarget" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div class="w-full max-w-md rounded-lg border bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
-        <div class="border-b px-6 py-4 dark:border-gray-700">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Jadikan Siswa</h2>
-          <p class="text-sm text-slate-500">{{ convertTarget.full_name }}</p>
-        </div>
-        <div class="space-y-4 p-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Kelas Awal</label>
-            <select v-model="convertClassId" class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
-              <option value="">Belum ditempatkan</option>
-              <option v-for="item in classes" :key="item.id" :value="item.id">{{ item.class_name }}</option>
-            </select>
+    <teleport to="body">
+      <div v-if="convertTarget" class="fixed inset-0 z-[260] flex items-center justify-center bg-black/50 px-4">
+        <div class="w-full max-w-md rounded-lg border bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800">
+          <div class="border-b px-6 py-4 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Jadikan Siswa</h2>
+            <p class="text-sm text-slate-500">{{ convertTarget.full_name }}</p>
           </div>
-          <div class="flex justify-end gap-3">
-            <button @click="convertTarget = null" class="rounded-md border px-4 py-2 dark:border-gray-600 dark:text-white">Batal</button>
-            <button @click="convertApplicant" :disabled="isConverting" class="rounded-md bg-indigo-600 px-4 py-2 text-white disabled:opacity-60">{{ isConverting ? "Memproses..." : "Buat Akun Siswa" }}</button>
+          <div class="space-y-4 p-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Kelas Awal</label>
+              <select v-model="convertClassId" class="mt-1 w-full rounded-md border px-3 py-2 dark:border-gray-600 dark:bg-gray-900 dark:text-white">
+                <option value="" disabled>Pilih kelas awal</option>
+                <option v-for="item in availableConvertClasses" :key="item.id" :value="item.id">{{ item.class_name }}</option>
+              </select>
+              <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                Kelas yang tampil hanya kelas dari jurusan diterima atau jurusan pilihan pendaftar, dan hanya dari level kelas terendah.
+              </p>
+            </div>
+            <div class="flex justify-end gap-3">
+              <button @click="convertTarget = null" class="rounded-md border px-4 py-2 dark:border-gray-600 dark:text-white">Batal</button>
+              <button @click="convertApplicant" :disabled="isConverting" class="rounded-md bg-indigo-600 px-4 py-2 text-white disabled:opacity-60">{{ isConverting ? "Memproses..." : "Buat Akun Siswa" }}</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </teleport>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { getStoredUser } from "@/utils/auth";
@@ -254,6 +261,48 @@ const cards = computed(() => {
     { label: "Diterima", value: Number(totals.accepted || 0), caption: "Menunggu konversi", class: "bg-emerald-600" },
     { label: "Menjadi Siswa", value: Number(totals.converted || 0), caption: "Akun dibuat", class: "bg-indigo-600" },
   ];
+});
+
+const convertTargetMajorIds = computed(() => {
+  const target = convertTarget.value;
+  if (!target) return [];
+
+  const acceptedMajorID = Number(target.accepted_major_id || 0);
+  if (acceptedMajorID > 0) {
+    return [acceptedMajorID];
+  }
+
+  return [target.first_major_id, target.second_major_id, target.third_major_id]
+    .map((value) => Number(value || 0))
+    .filter((value, index, list) => value > 0 && list.indexOf(value) === index);
+});
+
+const availableConvertClasses = computed(() => {
+  const majorIDs = new Set(convertTargetMajorIds.value.map(String));
+  const items = Array.isArray(classes.value) ? classes.value : [];
+
+  const classesByMajor = majorIDs.size > 0
+    ? items.filter((item) => majorIDs.has(String(item?.major_id || "")))
+    : items;
+
+  if (classesByMajor.length === 0) {
+    return [];
+  }
+
+  const lowestOrder = classesByMajor.reduce((current, item) => {
+    const order = Number(item?.class_level_order || 0);
+    if (order <= 0) return current;
+    if (current === null || order < current) return order;
+    return current;
+  }, null);
+
+  return classesByMajor
+    .filter((item) => {
+      if (lowestOrder == null) return true;
+      return Number(item?.class_level_order || 0) === lowestOrder;
+    })
+    .slice()
+    .sort((a, b) => String(a?.class_name || "").localeCompare(String(b?.class_name || "")));
 });
 
 const loadOverview = async () => {
@@ -339,8 +388,23 @@ const openConvertModal = (item) => {
   convertClassId.value = "";
 };
 
+watch(
+  availableConvertClasses,
+  (items) => {
+    const allowedIDs = new Set(items.map((item) => String(item.id)));
+    if (!allowedIDs.has(String(convertClassId.value || ""))) {
+      convertClassId.value = items[0]?.id || "";
+    }
+  },
+  { immediate: true },
+);
+
 const convertApplicant = async () => {
   if (!convertTarget.value?.id) return;
+  if (!convertClassId.value) {
+    pushToast({ title: "Kelas Awal Wajib Diisi", message: "Pilih kelas level terendah yang sesuai jurusan pendaftar.", type: "error" });
+    return;
+  }
   isConverting.value = true;
   try {
     const response = await api.post(`/spmb/applicants/${convertTarget.value.id}/convert`, {

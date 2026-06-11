@@ -38,6 +38,7 @@ export const useProfileStore = defineStore("profile", {
         personal_teacher_mode_enabled: false,
       parent_email: "",
       phone_number: "",
+      profile_complete: false,
       profile_image: "",
       face_reference_image: "",
       face_reference_descriptor: "",
@@ -85,6 +86,7 @@ export const useProfileStore = defineStore("profile", {
         payroll_module_enabled: hasProfileKey("payroll_module_enabled") ? profile.payroll_module_enabled !== false : this.profile.payroll_module_enabled !== false,
         spmb_module_enabled: hasProfileKey("spmb_module_enabled") ? profile.spmb_module_enabled === true : this.profile.spmb_module_enabled === true,
         personal_teacher_mode_enabled: hasProfileKey("personal_teacher_mode_enabled") ? profile.personal_teacher_mode_enabled === true : this.profile.personal_teacher_mode_enabled === true,
+        profile_complete: hasProfileKey("profile_complete") ? profile.profile_complete === true : this.profile.profile_complete === true,
         profile_image: hasProfileKey("profile_image") ? normalizePublicUrl(profile.profile_image) || null : this.profile.profile_image,
         face_reference_image: hasProfileKey("face_reference_image") ? normalizePublicUrl(profile.face_reference_image) || null : this.profile.face_reference_image,
         face_reference_descriptor: hasProfileKey("face_reference_descriptor") ? profile.face_reference_descriptor || null : this.profile.face_reference_descriptor,
@@ -92,6 +94,7 @@ export const useProfileStore = defineStore("profile", {
 
       this.profile = nextProfile;
       updateStoredUser({
+        full_name: nextProfile.full_name,
         username: nextProfile.username,
         role: nextProfile.role,
         school_id: nextProfile.school_id,
@@ -113,6 +116,9 @@ export const useProfileStore = defineStore("profile", {
         payroll_module_enabled: nextProfile.payroll_module_enabled,
         spmb_module_enabled: nextProfile.spmb_module_enabled,
         personal_teacher_mode_enabled: nextProfile.personal_teacher_mode_enabled,
+        parent_email: nextProfile.parent_email,
+        phone_number: nextProfile.phone_number,
+        profile_complete: nextProfile.profile_complete,
         profile_image: nextProfile.profile_image,
         face_reference_image: nextProfile.face_reference_image,
         face_reference_descriptor: nextProfile.face_reference_descriptor,

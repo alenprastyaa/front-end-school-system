@@ -44,6 +44,44 @@ export const getStoredRole = () => {
   return normalizeRole(localStorage.getItem("role"));
 };
 
+const requiredStudentProfileFields = [
+  { key: "full_name", label: "Nama Lengkap" },
+  { key: "parent_email", label: "Email" },
+  { key: "phone_number", label: "No. HP" },
+];
+
+const hasProfileValue = (value) => String(value ?? "").trim() !== "";
+
+export const getMissingStudentProfileFields = (user = {}) => {
+  if (normalizeRole(user?.role) !== "SISWA") {
+    return [];
+  }
+
+  return requiredStudentProfileFields
+    .filter((field) => !hasProfileValue(user?.[field.key]))
+    .map((field) => field.label);
+};
+
+export const isStudentProfileComplete = (user = {}) => {
+  if (normalizeRole(user?.role) !== "SISWA") {
+    return true;
+  }
+
+  if (user?.profile_complete === true) {
+    return true;
+  }
+
+  return getMissingStudentProfileFields(user).length === 0;
+};
+
+export const isStudentFaceEnrolled = (user = {}) => {
+  if (normalizeRole(user?.role) !== "SISWA") {
+    return true;
+  }
+
+  return hasProfileValue(user?.face_reference_image) && hasProfileValue(user?.face_reference_descriptor);
+};
+
 const isTokenUsable = (token) => {
   const payload = decodeJwtPayload(token);
   if (!payload) {
@@ -91,6 +129,9 @@ export const persistSession = (payload) => {
       payroll_module_enabled: schoolFeatures.payroll_module_enabled !== false,
       spmb_module_enabled: schoolFeatures.spmb_module_enabled === true,
       personal_teacher_mode_enabled: schoolFeatures.personal_teacher_mode_enabled === true,
+      parent_email: data.parent_email || "",
+      phone_number: data.phone_number || "",
+      profile_complete: data.profile_complete === true,
       profile_image: normalizePublicUrl(data.profile_image) || null,
       face_reference_image: normalizePublicUrl(data.face_reference_image) || null,
       face_reference_descriptor: data.face_reference_descriptor || null,

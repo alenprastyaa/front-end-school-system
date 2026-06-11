@@ -3,45 +3,36 @@
     <nav class="sidebar flex h-full flex-col bg-white dark:bg-gray-800" data-tour="sidebar">
       <div class="sidebar-head shrink-0 border-b border-slate-200 p-4 dark:border-gray-700">
         <div class="flex items-start gap-3">
-          <button
-            type="button"
+          <button type="button"
             class="group relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 transition hover:bg-slate-200 dark:bg-slate-700 dark:ring-slate-600 dark:hover:bg-slate-600"
-            :class="isAdminRole ? 'cursor-pointer' : 'cursor-default'"
-            :disabled="!isAdminRole || isUploadingSchoolLogo"
-            @click="triggerSchoolLogoPicker"
-          >
+            :class="isAdminRole ? 'cursor-pointer' : 'cursor-default'" :disabled="!isAdminRole || isUploadingSchoolLogo"
+            @click="triggerSchoolLogoPicker">
             <img v-if="schoolLogoSrc" :src="schoolLogoSrc" :alt="schoolNameLabel" class="h-full w-full object-cover" />
             <img v-else class="w-8" src="@/assets/logo/logo.svg" alt="School System" />
-            <span
-              v-if="isAdminRole"
-              class="absolute inset-0 flex items-center justify-center bg-slate-900/45 text-[10px] font-semibold text-white opacity-0 transition group-hover:opacity-100"
-            >
+            <span v-if="isAdminRole"
+              class="absolute inset-0 flex items-center justify-center bg-slate-900/45 text-[10px] font-semibold text-white opacity-0 transition group-hover:opacity-100">
               {{ isUploadingSchoolLogo ? "Upload..." : "Ubah" }}
             </span>
           </button>
-          <input ref="schoolLogoInputRef" type="file" accept="image/*" class="hidden" @change="handleSchoolLogoChange" />
+          <input ref="schoolLogoInputRef" type="file" accept="image/*" class="hidden"
+            @change="handleSchoolLogoChange" />
           <router-link to="/dashboard" class="min-w-0 flex-1 pr-2">
             <h2 class="truncate text-xl font-semibold text-gray-800 dark:text-gray-200">{{ schoolNameLabel }}</h2>
             <p class="text-xs text-gray-400">{{ role || "Guest" }}</p>
             <div class="mt-1 flex flex-wrap gap-1.5">
-              <p
-                v-if="isSarprasRole"
-                class="inline-flex rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-600 dark:text-amber-300"
-              >
+              <p v-if="isSarprasRole"
+                class="inline-flex rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-600 dark:text-amber-300">
                 CMS Sarpras
               </p>
-              <p
-                v-if="isKoperasiRole"
-                class="inline-flex rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-300"
-              >
+              <p v-if="isKoperasiRole"
+                class="inline-flex rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-300">
                 CMS Koperasi
               </p>
             </div>
           </router-link>
           <button
             class="lg:hidden inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-500 transition hover:bg-slate-100 dark:text-gray-400 dark:hover:bg-slate-700"
-            @click="$emit('sidebarToggle')"
-          >
+            @click="$emit('sidebarToggle')">
             <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 32 32" fill="currentColor">
               <path
                 d="M7.219 5.781L5.78 7.22L14.563 16L5.78 24.781l1.44 1.439L16 17.437l8.781 8.782l1.438-1.438L17.437 16l8.782-8.781L24.78 5.78L16 14.563z" />
@@ -50,11 +41,9 @@
         </div>
         <div v-if="isAdminRole" class="mt-2 flex items-center justify-between gap-3">
           <p class="text-[11px] text-slate-400">Klik logo untuk ganti logo sekolah</p>
-          <button
-            type="button"
+          <button type="button"
             class="rounded-lg border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-            @click="openSchoolEditModal"
-          >
+            @click="openSchoolEditModal">
             Edit Sekolah
           </button>
         </div>
@@ -165,50 +154,43 @@
     </teleport>
 
     <teleport to="body">
-      <div
-        v-if="isSchoolEditModalOpen"
-        class="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm"
-        @click.self="closeSchoolEditModal"
-      >
-        <div class="w-full max-w-4xl rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
-          <div class="border-b border-slate-100 px-6 py-5 dark:border-slate-800">
-            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-600 dark:text-sky-300">Admin Sekolah</p>
+      <div v-if="isSchoolEditModalOpen"
+        class="fixed inset-0 z-[300] flex items-start justify-center overflow-y-auto bg-slate-950/70 p-3 py-6 backdrop-blur-sm sm:p-6"
+        @click.self="closeSchoolEditModal">
+        <div
+          class="flex max-h-[calc(100vh-3rem)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10 sm:rounded-3xl">
+          <div class="shrink-0 border-b border-slate-100 px-5 py-4 dark:border-slate-800 sm:px-6 sm:py-5">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-sky-600 dark:text-sky-300">Admin Sekolah
+            </p>
             <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Edit Data Sekolah</h2>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Perbarui nama sekolah dan logo yang tampil untuk seluruh admin sekolah ini.</p>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Perbarui nama sekolah dan logo yang tampil untuk
+              seluruh admin sekolah ini.</p>
           </div>
 
-          <form class="max-h-[90vh] space-y-5 overflow-y-auto px-6 py-5" @submit.prevent="submitSchoolEdit">
+          <form class="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5 sm:px-6" @submit.prevent="submitSchoolEdit">
             <div>
               <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Nama Sekolah</label>
-              <input
-                v-model="schoolEditForm.name"
-                type="text"
-                required
-                class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
-              />
+              <input v-model="schoolEditForm.name" type="text" required
+                class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
             </div>
 
             <div>
               <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Logo Sekolah</label>
               <div class="flex items-center gap-4">
-                <div class="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
-                  <img v-if="schoolEditLogoPreview" :src="schoolEditLogoPreview" :alt="schoolEditForm.name || schoolNameLabel" class="h-full w-full object-cover" />
+                <div
+                  class="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+                  <img v-if="schoolEditLogoPreview" :src="schoolEditLogoPreview"
+                    :alt="schoolEditForm.name || schoolNameLabel" class="h-full w-full object-cover" />
                   <img v-else class="w-8" src="@/assets/logo/logo.svg" alt="School System" />
                 </div>
                 <div class="min-w-0 flex-1">
-                  <input
-                    ref="schoolEditLogoInputRef"
-                    type="file"
-                    accept="image/*"
+                  <input ref="schoolEditLogoInputRef" type="file" accept="image/*"
                     class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 file:mr-3 file:rounded-lg file:border-0 file:bg-sky-600 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white dark:bg-slate-800 dark:text-white dark:ring-slate-700 dark:file:bg-sky-500"
-                    @change="handleSchoolEditLogoChange"
-                  />
-                  <label class="mt-3 inline-flex items-center gap-2 text-xs font-medium text-rose-600 dark:text-rose-300">
-                    <input
-                      v-model="removeSchoolEditLogo"
-                      type="checkbox"
-                      class="rounded border-slate-300 text-rose-600 focus:ring-rose-500 dark:border-slate-600 dark:bg-slate-900"
-                    />
+                    @change="handleSchoolEditLogoChange" />
+                  <label
+                    class="mt-3 inline-flex items-center gap-2 text-xs font-medium text-rose-600 dark:text-rose-300">
+                    <input v-model="removeSchoolEditLogo" type="checkbox"
+                      class="rounded border-slate-300 text-rose-600 focus:ring-rose-500 dark:border-slate-600 dark:bg-slate-900" />
                     Hapus logo sekolah saat disimpan
                   </label>
                 </div>
@@ -220,70 +202,57 @@
               <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">
                 Admin sekolah juga bisa menentukan lokasi absensi dan radius sekolah.
               </p>
-              <button
-                type="button"
+              <button type="button"
                 class="mt-3 inline-flex h-10 items-center justify-center rounded-xl bg-sky-600 px-4 text-sm font-semibold text-white transition hover:bg-sky-500"
-                @click="schoolLocationPickerOpen = !schoolLocationPickerOpen"
-              >
+                @click="schoolLocationPickerOpen = !schoolLocationPickerOpen">
                 {{ schoolLocationPickerOpen ? "Tutup Peta" : "Buka Peta Lokasi" }}
               </button>
               <div v-if="schoolLocationPickerOpen" class="mt-4">
-                <MapLocationPicker
-                  :title="'Pilih Lokasi Sekolah'"
-                  :latitude="schoolEditForm.attendance_latitude"
+                <MapLocationPicker :title="'Pilih Lokasi Sekolah'" :latitude="schoolEditForm.attendance_latitude"
                   :longitude="schoolEditForm.attendance_longitude"
                   :radius-meters="schoolEditForm.attendance_radius_meters || 150"
                   @update:latitude="(v) => (schoolEditForm.attendance_latitude = String(v ?? ''))"
                   @update:longitude="(v) => (schoolEditForm.attendance_longitude = String(v ?? ''))"
-                  @update:radiusMeters="(v) => (schoolEditForm.attendance_radius_meters = String(v ?? ''))"
-                />
+                  @update:radiusMeters="(v) => (schoolEditForm.attendance_radius_meters = String(v ?? ''))" />
               </div>
               <div class="mt-4 grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Batas Terlambat</label>
-                  <input
-                    v-model="schoolEditForm.attendance_late_after_time"
-                    type="time"
-                    class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700"
-                  />
-                  <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Check-in setelah jam ini otomatis berstatus terlambat.</p>
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Batas
+                    Terlambat</label>
+                  <input v-model="schoolEditForm.attendance_late_after_time" type="time"
+                    class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700" />
+                  <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Check-in setelah jam ini otomatis berstatus
+                    terlambat.</p>
                 </div>
                 <div>
-                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jam Pulang Minimal</label>
-                  <input
-                    v-model="schoolEditForm.attendance_checkout_deadline"
-                    type="time"
-                    class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700"
-                  />
-                  <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Check-out sebelum jam ini tetap dicatat dengan catatan kepulangan tidak sesuai.</p>
+                  <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jam Pulang
+                    Minimal</label>
+                  <input v-model="schoolEditForm.attendance_checkout_deadline" type="time"
+                    class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700" />
+                  <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Check-out sebelum jam ini tetap dicatat
+                    dengan
+                    catatan kepulangan tidak sesuai.</p>
                 </div>
               </div>
-              <div class="mt-4">
-                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jumlah Kolom Bangku Denah</label>
-                <input
-                  v-model.number="schoolEditForm.attendance_seat_map_columns"
-                  type="number"
-                  min="1"
-                  max="24"
-                  class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700"
-                />
-                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Mengatur jumlah bangku per baris pada denah nomor bangku.</p>
-              </div>
+              <!-- <div class="mt-4">
+                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Jumlah Kolom Bangku
+                  Denah</label>
+                <input v-model.number="schoolEditForm.attendance_seat_map_columns" type="number" min="1" max="24"
+                  class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700" />
+                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Mengatur jumlah bangku per baris pada denah
+                  nomor
+                  bangku.</p>
+              </div> -->
             </div>
 
             <div class="flex justify-end gap-3 border-t border-slate-100 pt-5 dark:border-slate-800">
-              <button
-                type="button"
+              <button type="button"
                 class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200"
-                @click="closeSchoolEditModal"
-              >
+                @click="closeSchoolEditModal">
                 Batal
               </button>
-              <button
-                type="submit"
-                :disabled="isSavingSchoolEdit"
-                class="rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-50"
-              >
+              <button type="submit" :disabled="isSavingSchoolEdit"
+                class="rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-50">
                 {{ isSavingSchoolEdit ? "Menyimpan..." : "Simpan Perubahan" }}
               </button>
             </div>
@@ -300,7 +269,7 @@ import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
 import { api } from "@/api";
-import { getStoredRole } from "@/utils/auth";
+import { getStoredRole, isStudentFaceEnrolled, isStudentProfileComplete } from "@/utils/auth";
 import { pushToast } from "@/composables/useToast";
 import { playNotificationSound } from "@/utils/notificationSound";
 import { useProfileStore } from "@/store/profile";
@@ -317,7 +286,7 @@ const role = getStoredRole();
 const profileStore = useProfileStore();
 const sidebarStore = useSidebar();
 const realtimeStore = useRealtimeStore();
-const { liveChatUnreadCount, liveChatSubjects, privateChatUnreadCount } = storeToRefs(sidebarStore);
+const { liveChatUnreadCount, liveChatSubjects, privateChatUnreadCount, attendanceFacePendingCount } = storeToRefs(sidebarStore);
 const { profile: storedProfile } = storeToRefs(profileStore);
 const chatToasts = ref([]);
 const learningToasts = ref([]);
@@ -357,8 +326,11 @@ const isTeachingModuleAIEnabled = computed(() => storedProfile.value?.teaching_m
 const isPayrollEnabled = computed(() => storedProfile.value?.payroll_module_enabled !== false);
 const isSPMBEnabled = computed(() => storedProfile.value?.spmb_module_enabled === true);
 const isPersonalTeacherModeEnabled = computed(() => storedProfile.value?.personal_teacher_mode_enabled === true);
+const isStudentProfileLocked = computed(() => role === "SISWA" && !isStudentProfileComplete({ ...(storedProfile.value || {}), role }));
+const isStudentFaceEnrollmentLocked = computed(() => role === "SISWA" && !isStudentProfileLocked.value && !isStudentFaceEnrolled({ ...(storedProfile.value || {}), role }));
 const shouldTrackKoperasi = computed(() => isKoperasiEnabled.value && (isAdminRole || isKoperasiRole));
 const shouldTrackPrivateChat = computed(() => isPrivateChatEnabled.value && ["ADMIN", "ADMIN_SPMB", "KOPERASI", "BENDAHARA", "GURU", "SISWA"].includes(role));
+const shouldTrackAttendanceAdmin = computed(() => isAdminRole && isAttendanceEnabled.value);
 
 const getCurrentUserId = () => {
   try {
@@ -544,12 +516,14 @@ const menuByRole = {
   ],
   ADMIN: [
     { key: "dashboard", to: "/dashboard", label: "Dashboard", icon: "bxs:dashboard" },
-    { key: "school-users", to: "/school-users", dataTour: "teachers", label: "User Sekolah", icon: "clarity:users-line" },
+    { key: "school-users", to: "/school-users", dataTour: "teachers", label: "Karyawan", icon: "clarity:users-line" },
     { key: "chat", to: "/chat", label: "Pesan", icon: "ph:chats-circle" },
-    { key: "classes", to: "/classes", dataTour: "classes", label: "Kelas", icon: "mdi:google-classroom" },
     { key: "majors", to: "/majors", label: "Jurusan", icon: "ph:git-branch" },
+    { key: "classes", to: "/classes", dataTour: "classes", label: "Kelas", icon: "mdi:google-classroom" },
     { key: "spmb", to: "/spmb", label: "SPMB", icon: "ph:identification-card" },
     { key: "students", to: "/students", dataTour: "students-admin", label: "Siswa", icon: "mdi:account-school-outline" },
+    { key: "attendance-admin", to: "/attendance-admin", label: "Attendance", icon: "mdi:calendar-account" },
+    { key: "whatsapp-reports", to: "/whatsapp-reports", label: "Laporan WhatsApp", icon: "mdi:whatsapp" },
     { key: "academic-periods", to: "/academic-periods", label: "Tahun Ajaran", icon: "ph:calendar-blank" },
     { key: "inventory", to: "/inventory", label: "Sarpras", icon: "ph:archive-box" },
     { key: "koperasi", to: "/koperasi", label: "Koperasi", icon: "ph:shopping-cart" },
@@ -558,9 +532,9 @@ const menuByRole = {
       label: "Kurikulum",
       icon: "ph:books",
       children: [
-        { to: "/learning-admin", dataTour: "curriculum", label: "Mata Pelajaran", icon: "ph:book-open-text" },
-        { to: "/learning-subjects", label: "Guru Mapel", icon: "ph:user-focus" },
+        { to: "/learning-admin", dataTour: "curriculum", label: "Mapel", icon: "ph:book-open-text" },
         { to: "/learning-admin/teacher-loads", label: "Beban Guru", icon: "ph:chalkboard-teacher" },
+        { to: "/learning-admin/rooms", label: "Ruang & Lab", icon: "ph:door-open" },
         { to: "/learning-admin/class-distributions", label: "Distribusi Guru ke Kelas", icon: "ph:git-branch" },
         { to: "/learning-admin/schedule", label: "Jadwal Pembelajaran", icon: "ph:calendar-blank" },
         { to: "/learning-admin/generate", label: "Generate Pembagian", icon: "ph:magic-wand" },
@@ -582,7 +556,6 @@ const menuByRole = {
     { key: "homeroom-students", to: "/homeroom-students", dataTour: "students", label: "Siswa Wali Kelas", icon: "mdi:account-school-outline" },
     { key: "chat", to: "/chat", label: "Pesan", icon: "ph:chats-circle" },
     { key: "attendance", to: "/attendance", dataTour: "attendance", label: "Absensi", icon: "mdi:calendar-check-outline" },
-    { key: "face-enrollment", to: "/face-enrollment", label: "Enrol Wajah", icon: "mdi:face-recognition" },
     {
       key: "learning-module",
       label: "Modul Pembelajaran",
@@ -650,6 +623,12 @@ const menuByRole = {
 const filterMenuItems = (items = []) =>
   items
     .map((item) => {
+      if (isStudentProfileLocked.value && item.key !== "dashboard") {
+        return null;
+      }
+      if (isStudentFaceEnrollmentLocked.value && item.key !== "face-enrollment") {
+        return null;
+      }
       if (isPersonalTeacherModeEnabled.value) {
         const hiddenPersonalKeys = new Set([
           "school-users",
@@ -669,7 +648,7 @@ const filterMenuItems = (items = []) =>
         return null;
       }
       const attendanceEnabledForRole = role === "GURU" ? isTeacherAttendanceEnabled.value : isAttendanceEnabled.value;
-      if ((item.key === "attendance" || item.key === "face-enrollment") && !attendanceEnabledForRole) {
+      if ((item.key === "attendance" || item.key === "face-enrollment" || item.key === "attendance-admin") && !attendanceEnabledForRole) {
         return null;
       }
       if (item.key === "koperasi" && !isKoperasiEnabled.value) {
@@ -692,6 +671,7 @@ const filterMenuItems = (items = []) =>
           if (isPersonalTeacherModeEnabled.value) {
             const hiddenPersonalChildPaths = new Set([
               "/learning-admin/teacher-loads",
+              "/learning-admin/rooms",
               "/learning-admin/class-distributions",
               "/learning-admin/schedule",
               "/learning-admin/generate",
@@ -742,6 +722,10 @@ const getChildBadge = (child) => {
 };
 
 const getGroupBadge = (item) => {
+  if (item.key === "attendance-admin") {
+    return attendanceFacePendingCount.value;
+  }
+
   if (item.to === "/chat" || item.key === "chat") {
     return privateChatUnreadCount.value + liveChatUnreadCount.value;
   }
@@ -967,7 +951,7 @@ const pushKoperasiToast = (payload) => {
 };
 
 const bindRealtimeStream = () => {
-  if (!shouldTrackLiveChat && !shouldTrackPrivateChat.value && !shouldTrackKoperasi.value) {
+  if (!shouldTrackLiveChat && !shouldTrackPrivateChat.value && !shouldTrackKoperasi.value && !shouldTrackAttendanceAdmin.value) {
     return;
   }
 
@@ -1036,25 +1020,52 @@ const bindRealtimeStream = () => {
 
       pushKoperasiToast(payload);
     }),
+    realtimeStore.on("face-enrollment:new-request", (payload) => {
+      if (!shouldTrackAttendanceAdmin.value) {
+        return;
+      }
+
+      sidebarStore.bumpAttendanceFacePendingCount(payload?.pending_count);
+      playNotificationSound(payload?.soundUrl || payload?.sound_url || "announcement");
+      pushToast({
+        title: "Approval Enrol Wajah",
+        message: "Ada permintaan perubahan wajah siswa yang menunggu persetujuan.",
+        type: "info",
+        duration: 6000,
+      });
+    }),
+    realtimeStore.on("face-enrollment:pending-count", (payload) => {
+      if (!shouldTrackAttendanceAdmin.value) {
+        return;
+      }
+
+      sidebarStore.applyAttendanceFacePendingCount(payload?.pending_count || 0);
+    }),
   ];
 };
 
 watch(
   () => route.path,
   () => {
-    refreshLiveChatSummary(false).catch(() => {});
+    if (shouldTrackLiveChat) {
+      refreshLiveChatSummary(false).catch(() => { });
+    }
   },
 );
 
 onMounted(() => {
-  profileStore.loadProfile().catch(() => {});
+  profileStore.loadProfile().catch(() => { });
 
-  const startupTasks = [refreshLiveChatSummary(false)];
+  const startupTasks = [];
   if (shouldTrackLiveChat) {
+    startupTasks.push(refreshLiveChatSummary(false));
     startupTasks.push(sidebarStore.refreshLiveChatSubjects(role));
   }
   if (shouldTrackPrivateChat.value) {
     startupTasks.push(sidebarStore.refreshPrivateChatSummary({ force: false }));
+  }
+  if (shouldTrackAttendanceAdmin.value) {
+    startupTasks.push(sidebarStore.refreshAttendanceFacePendingCount({ force: false }));
   }
 
   Promise.allSettled(startupTasks).finally(() => {

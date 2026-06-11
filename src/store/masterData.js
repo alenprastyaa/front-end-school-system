@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { api } from "@/api";
+import { isAbortedApiResponse } from "@/api";
 
 const DEFAULT_TTL = 60 * 1000;
 
@@ -28,6 +29,9 @@ export const useMasterDataStore = defineStore("masterData", {
       this.inFlight[key] = (async () => {
         try {
           const response = await api.get(endpoint);
+          if (isAbortedApiResponse(response)) {
+            return cached?.items || [];
+          }
           const items = normalizeList(response);
           this.cache[key] = {
             items,
@@ -70,6 +74,9 @@ export const useMasterDataStore = defineStore("masterData", {
       this.inFlight[key] = (async () => {
         try {
           const response = await api.get("/academic-periods");
+          if (isAbortedApiResponse(response)) {
+            return cached?.value || { years: [], active: null };
+          }
           const value = {
             years: Array.isArray(response?.data?.years) ? response.data.years : [],
             active: response?.data?.active || null,

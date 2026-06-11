@@ -5,7 +5,9 @@
       <header class="flex items-end justify-between">
         <div>
           <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-500 dark:text-indigo-300">Enrol Wajah</p>
-          <p class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">Foto referensi untuk verifikasi absensi</p>
+          <p class="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
+            {{ hasReferenceImage ? "Perubahan wajah harus disetujui admin" : "Wajib diselesaikan sebelum membuka menu lain" }}
+          </p>
         </div>
         <span class="inline-flex shrink-0 rounded-full px-2.5 py-1 text-xs font-bold"
           :class="hasReferenceImage ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'">
@@ -56,6 +58,15 @@
             </p>
           </div>
 
+          <div v-if="latestRequest?.status === 'PENDING'"
+            class="rounded-2xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-xs font-semibold leading-5 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+            Permintaan perubahan wajah sedang menunggu persetujuan admin.
+          </div>
+          <div v-else-if="latestRequest?.status === 'REJECTED'"
+            class="rounded-2xl border border-rose-200 bg-rose-50 px-3.5 py-3 text-xs font-semibold leading-5 text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
+            Permintaan terakhir ditolak{{ latestRequest.admin_note ? `: ${latestRequest.admin_note}` : "." }}
+          </div>
+
           <!-- Capture controls -->
           <div v-if="!faceReferencePreview" class="grid gap-2.5" :class="cameraActive ? 'grid-cols-2' : 'grid-cols-1'">
             <button v-if="!cameraActive" type="button" @click="startCamera"
@@ -91,13 +102,7 @@
             <svg v-if="isSaving" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
             </svg>
-            {{ isSaving ? "Menyimpan..." : hasReferenceImage ? "Ganti Foto Referensi" : "Simpan Foto Referensi" }}
-          </button>
-
-          <!-- Remove -->
-          <button v-if="hasReferenceImage && !faceReferencePreview" type="button" @click="removeFaceReference" :disabled="isSaving"
-            class="inline-flex h-12 w-full items-center justify-center rounded-2xl border border-rose-200 bg-rose-50 text-sm font-bold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
-            Hapus Foto Referensi
+            {{ isSaving ? "Menyimpan..." : hasReferenceImage ? "Ajukan Perubahan ke Admin" : "Simpan Foto Referensi" }}
           </button>
         </div>
       </section>
@@ -108,6 +113,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { storeToRefs } from "pinia";
+import { api } from "@/api";
 import { useProfileStore } from "@/store/profile";
 import { useStudentFaceEnrollmentStore } from "@/store/studentFaceEnrollment";
 import { pushToast } from "@/composables/useToast";
@@ -123,6 +129,7 @@ const {
 } = storeToRefs(faceEnrollmentStore);
 const cameraVideoRef = ref(null);
 const captureCanvasRef = ref(null);
+const latestRequest = ref(null);
 let faceApiLoadPromise = null;
 let cameraStream = null;
 
@@ -279,10 +286,19 @@ const saveFaceReference = async () => {
     const formData = new FormData();
     formData.append("face_reference_image", faceReferenceFile.value);
     formData.append("face_reference_descriptor", descriptor);
-    await profileStore.saveProfile(formData);
+    const response = await api.post("/face-enrollment", formData);
+    const data = response?.data || {};
+    if (data.mode === "ENROLLED") {
+      profileStore.applyProfile({
+        face_reference_image: data.face_reference_image,
+        face_reference_descriptor: data.face_reference_descriptor,
+      });
+    } else {
+      await loadLatestRequest();
+    }
     pushToast({
-      title: "Foto Referensi Disimpan",
-      message: "Foto referensi wajah berhasil diperbarui.",
+      title: data.mode === "PENDING_APPROVAL" ? "Menunggu Approval Admin" : "Foto Referensi Disimpan",
+      message: response?.message || "Foto referensi wajah berhasil diproses.",
       type: "success",
     });
     resetPreview();
@@ -298,32 +314,19 @@ const saveFaceReference = async () => {
   }
 };
 
-const removeFaceReference = async () => {
-  isSaving.value = true;
+const loadLatestRequest = async () => {
   try {
-    const formData = new FormData();
-    formData.append("remove_face_reference", "true");
-    await profileStore.saveProfile(formData);
-    pushToast({
-      title: "Foto Referensi Dihapus",
-      message: "Foto referensi wajah berhasil dihapus.",
-      type: "success",
-    });
-    resetPreview();
+    const response = await api.get("/face-enrollment/request");
+    latestRequest.value = response?.data || null;
   } catch (error) {
-    pushToast({
-      title: "Gagal Menghapus Foto Referensi",
-      message: error.message || "Gagal menghapus foto referensi wajah.",
-      type: "error",
-    });
-  } finally {
-    isSaving.value = false;
+    latestRequest.value = null;
   }
 };
 
 onMounted(async () => {
   try {
     await profileStore.loadProfile({ force: true });
+    await loadLatestRequest();
   } catch (error) {
     pushToast({
       title: "Gagal Memuat Profil",

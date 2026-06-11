@@ -66,6 +66,8 @@ const ensureEventSource = (url) => {
     "learning-notification:new",
     "koperasi:order-created",
     "koperasi:order-updated",
+    "face-enrollment:new-request",
+    "face-enrollment:pending-count",
   ];
 
   eventNames.forEach((eventName) => {

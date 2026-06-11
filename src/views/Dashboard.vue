@@ -632,103 +632,6 @@
         </div>
       </section>
 
-      <section v-if="role === 'ADMIN'"
-        class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <h2 class="text-base font-semibold text-slate-900 dark:text-white">Kirim Laporan WhatsApp Orang Tua</h2>
-            <p class="mt-1 text-sm text-slate-500">Generate PDF bulanan, upload ke R2, lalu kirim link laporan ke WhatsApp orang tua.
-            </p>
-          </div>
-
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-            <div>
-              <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Bulan Laporan</label>
-              <input v-model="parentWhatsAppReportMonth" type="month"
-                class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200" />
-            </div>
-            <div>
-              <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Kelas</label>
-              <select v-model="parentWhatsAppReportClassId"
-                class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
-                <option value="">Semua kelas</option>
-                <option v-for="item in parentWhatsAppReportClassOptions" :key="item.id" :value="String(item.id)">
-                  {{ item.class_name || item.name || `Kelas ${item.id}` }}
-                </option>
-              </select>
-            </div>
-            <button @click="sendParentWhatsAppReport" :disabled="isSendingParentWhatsAppReport"
-              class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60">
-              <svg v-if="isSendingParentWhatsAppReport" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"
-                stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-              </svg>
-              {{ isSendingParentWhatsAppReport ? "Mengirim..." : "Kirim WhatsApp" }}
-            </button>
-          </div>
-        </div>
-
-        <div v-if="parentWhatsAppReportMessage" class="mt-4 rounded-xl px-4 py-3 text-sm font-medium"
-          :class="parentWhatsAppReportError ? 'border border-red-200 bg-red-50 text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300' : 'border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300'">
-          {{ parentWhatsAppReportMessage }}
-        </div>
-
-        <div v-if="parentWhatsAppReportSummary" class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div class="rounded-xl bg-slate-50 p-4 dark:bg-slate-800/70">
-            <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Total Siswa</p>
-            <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{{
-              parentWhatsAppReportSummary.total_students || 0 }}</p>
-          </div>
-          <div class="rounded-xl bg-emerald-50 p-4 dark:bg-emerald-500/10">
-            <p class="text-xs font-medium uppercase tracking-wide text-emerald-600 dark:text-emerald-300">Berhasil</p>
-            <p class="mt-2 text-2xl font-bold text-emerald-700 dark:text-emerald-200">{{
-              parentWhatsAppReportSummary.success_count || 0 }}</p>
-          </div>
-          <div class="rounded-xl bg-rose-50 p-4 dark:bg-rose-500/10">
-            <p class="text-xs font-medium uppercase tracking-wide text-rose-600 dark:text-rose-300">Gagal</p>
-            <p class="mt-2 text-2xl font-bold text-rose-700 dark:text-rose-200">{{
-              parentWhatsAppReportSummary.failed_count || 0 }}</p>
-          </div>
-        </div>
-
-        <div v-if="parentWhatsAppReportSummary?.results?.length" class="mt-5 overflow-x-auto">
-          <table class="min-w-full text-left text-sm">
-            <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
-              <tr>
-                <th class="px-4 py-3 font-medium">Siswa</th>
-                <th class="px-4 py-3 font-medium">Kelas</th>
-                <th class="px-4 py-3 font-medium">WhatsApp</th>
-                <th class="px-4 py-3 font-medium">Status</th>
-                <th class="px-4 py-3 font-medium">PDF</th>
-                <th class="px-4 py-3 font-medium">Catatan</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-              <tr v-for="item in parentWhatsAppReportSummary.results" :key="`${item.student_id}-${item.target || 'wa'}`">
-                <td class="px-4 py-3 font-medium text-slate-900 dark:text-white">{{ item.student_name || "-" }}</td>
-                <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.class_name || "-" }}</td>
-                <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.target || "-" }}</td>
-                <td class="px-4 py-3">
-                  <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold"
-                    :class="item.success ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300'">
-                    {{ item.success ? "Berhasil" : "Gagal" }}
-                  </span>
-                </td>
-                <td class="px-4 py-3">
-                  <a v-if="item.pdf_url" :href="item.pdf_url" target="_blank" rel="noopener"
-                    class="text-sm font-semibold text-sky-600 hover:text-sky-500 dark:text-sky-300">
-                    Buka PDF
-                  </a>
-                  <span v-else class="text-slate-500">-</span>
-                </td>
-                <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ item.error || "-" }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
       <div class="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-3">
 
         <div class="flex flex-col gap-5 sm:gap-6 lg:col-span-2">
@@ -954,13 +857,6 @@ const {
   attendanceEmailReportMessage,
   attendanceEmailReportError,
   attendanceEmailReportSummary,
-  parentWhatsAppReportMonth,
-  parentWhatsAppReportClassId,
-  parentWhatsAppReportClassOptions,
-  isSendingParentWhatsAppReport,
-  parentWhatsAppReportMessage,
-  parentWhatsAppReportError,
-  parentWhatsAppReportSummary,
   announcementModalOpen,
   currentAnnouncementIndex,
   announcementTransitionName,
@@ -1549,16 +1445,6 @@ const loadDashboard = async () => {
   }
 };
 
-const loadParentWhatsAppReportClasses = async () => {
-  if (role !== "ADMIN" || parentWhatsAppReportClassOptions.value.length) return;
-  try {
-    const response = await api.get("/class");
-    parentWhatsAppReportClassOptions.value = Array.isArray(response?.data) ? response.data : [];
-  } catch (error) {
-    parentWhatsAppReportClassOptions.value = [];
-  }
-};
-
 const sendAttendanceEmailReport = async () => {
   isSendingAttendanceEmailReport.value = true;
   attendanceEmailReportMessage.value = "";
@@ -1582,32 +1468,6 @@ const sendAttendanceEmailReport = async () => {
   }
 };
 
-const sendParentWhatsAppReport = async () => {
-  isSendingParentWhatsAppReport.value = true;
-  parentWhatsAppReportMessage.value = "";
-  parentWhatsAppReportError.value = false;
-  parentWhatsAppReportSummary.value = null;
-
-  try {
-    const payload = {};
-    if (parentWhatsAppReportMonth.value) {
-      payload.month = parentWhatsAppReportMonth.value;
-    }
-    if (parentWhatsAppReportClassId.value) {
-      payload.class_id = Number(parentWhatsAppReportClassId.value);
-    }
-
-    const response = await api.post("/attendance/report/parent-whatsapp", payload);
-    parentWhatsAppReportSummary.value = response?.data || null;
-    parentWhatsAppReportMessage.value = response?.message || "Laporan WhatsApp orang tua berhasil diproses.";
-  } catch (error) {
-    parentWhatsAppReportError.value = true;
-    parentWhatsAppReportMessage.value = error.message || "Gagal mengirim laporan WhatsApp orang tua.";
-  } finally {
-    isSendingParentWhatsAppReport.value = false;
-  }
-};
-
 const componentTotalValue = (component) =>
   Math.round(Math.abs(Number(component?.default_amount || 0)) * Math.max(Number(component?.default_quantity || 1), 0));
 
@@ -1620,7 +1480,6 @@ const calculatedPayrollRowTotal = (teacher) => {
 
 onMounted(() => {
   loadDashboard();
-  loadParentWhatsAppReportClasses();
 });
 
 onUnmounted(() => {

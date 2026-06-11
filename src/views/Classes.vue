@@ -8,13 +8,53 @@
           <div>
             <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">Kelas</h1>
           </div>
-          <button @click="openCreateModal"
-            class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            Tambah Kelas
-          </button>
+          <div class="flex flex-wrap items-center gap-2">
+            <button @click="openQuickGenerateModal"
+              class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-medium text-white transition hover:bg-emerald-500">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 6.75V15m6-6v8.25m.503-12.462l1.95 1.95m0 0l-1.95 1.95m1.95-1.95H4.5m3.997 11.462l-1.95-1.95m0 0l1.95-1.95m-1.95 1.95H19.5" />
+              </svg>
+              Generate Cepat
+            </button>
+            <button @click="openCreateModal"
+              class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-sm font-medium text-white transition hover:bg-sky-500">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              Tambah Kelas
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="rounded-lg border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div class="min-w-0">
+            <h2 class="text-base font-semibold text-slate-900 dark:text-white">Master Tingkat Kelas</h2>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <span v-for="level in classLevels" :key="level.id"
+                class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                {{ level.name }}
+                <button type="button" @click="deleteClassLevel(level)" :disabled="deletingLevelId === level.id"
+                  class="rounded p-0.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50 dark:hover:bg-rose-500/10"
+                  title="Hapus tingkat">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </span>
+              <span v-if="classLevels.length === 0" class="text-sm text-slate-500">Belum ada tingkat kelas.</span>
+            </div>
+          </div>
+          <form @submit.prevent="createClassLevel" class="flex w-full gap-2 sm:w-auto">
+            <input v-model="newLevelName" type="text" placeholder="Contoh: 10"
+              class="min-w-0 flex-1 rounded-lg border-0 px-3 py-2.5 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-sky-600 sm:w-40 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+            <button type="submit" :disabled="isSavingLevel"
+              class="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-60 dark:bg-slate-100 dark:text-slate-900">
+              {{ isSavingLevel ? "Menyimpan..." : "Tambah" }}
+            </button>
+          </form>
         </div>
       </section>
 
@@ -47,6 +87,7 @@
                       sortIndicator('class_name') }}</span>
                   </button>
                 </th>
+                <th class="border-b border-slate-200 px-6 py-4 font-semibold dark:border-slate-800">Tingkat</th>
                 <th class="border-b border-slate-200 px-6 py-4 font-semibold dark:border-slate-800">
                   <button @click="handleSort('wali_guru_name')"
                     class="group flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white">
@@ -64,6 +105,7 @@
               <tr v-for="item in paginatedClasses" :key="item.id"
                 class="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
                 <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ item.class_name }}</td>
+                <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ item.class_level_name || "-" }}</td>
                 <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ item.wali_guru_name || "-" }}</td>
                 <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ item.major_code || "-" }}</td>
                 <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ item.wali_guru_email || "-" }}</td>
@@ -91,7 +133,7 @@
                 </td>
               </tr>
               <tr v-if="classes.length === 0">
-                <td colspan="6" class="px-6 py-16 text-center">
+                <td colspan="7" class="px-6 py-16 text-center">
                   <div class="mx-auto flex max-w-sm flex-col items-center">
                     <div
                       class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
@@ -110,20 +152,44 @@
             </tbody>
           </table>
         </div>
-        <div class="flex items-center justify-between border-t border-slate-200 px-6 py-4 dark:border-slate-800">
-          <p class="text-xs text-slate-500 dark:text-slate-400">
-            Halaman {{ currentPage }} dari {{ totalPages }} · Menampilkan {{ paginatedClasses.length }} kelas
-          </p>
-          <div class="flex items-center gap-2">
-            <button @click="goToPrevPage" :disabled="currentPage === 1"
-              class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-              Sebelumnya
-            </button>
-            <button @click="goToNextPage" :disabled="currentPage >= totalPages"
-              class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-              Berikutnya
-            </button>
+        <div
+          class="flex flex-col gap-4 border-t border-slate-200 bg-slate-50/70 px-6 py-4 dark:border-slate-800 dark:bg-slate-950/40 sm:flex-row sm:items-center sm:justify-between">
+          <div class="text-sm font-semibold text-slate-700 dark:text-slate-200">
+            Menampilkan {{ paginatedClasses.length }} dari {{ totalClasses }} kelas
           </div>
+          <nav aria-label="Pagination" class="flex items-center">
+            <ul class="flex list-none overflow-hidden rounded-lg border border-slate-300 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+              <li>
+                <button @click="goToPrevPage" :disabled="currentPage === 1"
+                  class="px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-400 dark:text-slate-200 dark:hover:bg-slate-800">
+                  Prev
+                </button>
+              </li>
+              <li v-if="currentPage > 1">
+                <button @click="goToPrevPage"
+                  class="border-l border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                  {{ currentPage - 1 }}
+                </button>
+              </li>
+              <li>
+                <span class="border-l border-slate-200 bg-sky-600 px-4 py-2 text-sm font-semibold text-white dark:border-slate-700">
+                  {{ currentPage }}
+                </span>
+              </li>
+              <li v-if="currentPage < totalPages">
+                <button @click="goToNextPage"
+                  class="border-l border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                  {{ currentPage + 1 }}
+                </button>
+              </li>
+              <li>
+                <button @click="goToNextPage" :disabled="currentPage >= totalPages"
+                  class="border-l border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-400 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                  Next
+                </button>
+              </li>
+            </ul>
+          </nav>
         </div>
       </main>
     </div>
@@ -152,10 +218,24 @@
 
           <form @submit.prevent="submitClass" class="space-y-5 p-6">
             <div>
-              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Nama Kelas <span
+              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Tingkat Kelas</label>
+              <select v-model="classLevelId"
+                class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-8 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                <option value="">Tanpa tingkat</option>
+                <option v-for="level in classLevels" :key="level.id" :value="level.id">
+                  {{ level.name }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Nama Rombel <span
                   class="text-rose-500">*</span></label>
-              <input v-model="className" type="text" required placeholder="Contoh: X IPA 1"
+              <input v-model="className" type="text" required :placeholder="classLevelId ? 'Contoh: AK 1 / DKV 2' : 'Contoh: 10 AK 1'"
                 class="block w-full rounded-lg border-0 py-2.5 pl-3 pr-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+              <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                Preview: <span class="font-semibold text-slate-700 dark:text-slate-200">{{ classNamePreview || "-" }}</span>
+              </p>
             </div>
 
             <div>
@@ -193,6 +273,107 @@
                     d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                 </svg>
                 {{ isSubmitting ? "Menyimpan..." : editingClassId ? "Simpan Perubahan" : "Tambah Kelas" }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Modal Generate Cepat Kelas -->
+    <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
+      enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+      leave-to-class="opacity-0">
+      <div v-if="showQuickGenerateModal"
+        class="fixed inset-0 z-[260] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div
+          class="w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10"
+          @click.stop>
+          <div
+            class="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/30">
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Generate Kelas Cepat</h2>
+            <button @click="closeQuickGenerateModal" :disabled="isGeneratingClasses"
+              class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <form @submit.prevent="submitQuickGenerate" class="space-y-5 p-6">
+            <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+              <table class="min-w-full text-left text-sm">
+                <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/60">
+                  <tr>
+                    <th class="px-4 py-3 font-semibold">Tingkat</th>
+                    <th class="px-4 py-3 font-semibold">Jurusan</th>
+                    <th class="px-4 py-3 font-semibold">Nama Rombel</th>
+                    <th class="px-4 py-3 font-semibold">Jumlah</th>
+                    <th class="px-4 py-3 font-semibold">Preview</th>
+                    <th class="px-4 py-3 text-right font-semibold">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tr v-for="(row, index) in quickGenerateRows" :key="row.key">
+                    <td class="px-4 py-3">
+                      <select v-model="row.class_level_id"
+                        class="w-28 rounded-lg border-0 py-2 pl-3 pr-8 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                        <option value="">Pilih</option>
+                        <option v-for="level in classLevels" :key="level.id" :value="level.id">
+                          {{ level.name }}
+                        </option>
+                      </select>
+                    </td>
+                    <td class="px-4 py-3">
+                      <select v-model="row.major_id" @change="syncQuickGenerateMajor(row)"
+                        class="w-44 rounded-lg border-0 py-2 pl-3 pr-8 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700">
+                        <option value="">Tanpa jurusan</option>
+                        <option v-for="major in majors" :key="major.id" :value="major.id">
+                          {{ major.code }} - {{ major.name }}
+                        </option>
+                      </select>
+                    </td>
+                    <td class="px-4 py-3">
+                      <input v-model="row.base_name" type="text" placeholder="Contoh: DKV"
+                        class="w-44 rounded-lg border-0 px-3 py-2 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                    </td>
+                    <td class="px-4 py-3">
+                      <input v-model.number="row.count" type="number" min="1" max="50"
+                        class="w-24 rounded-lg border-0 px-3 py-2 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-emerald-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                    </td>
+                    <td class="min-w-[220px] px-4 py-3 text-xs font-medium text-slate-500 dark:text-slate-400">
+                      {{ quickGeneratePreview(row) || "-" }}
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                      <button type="button" @click="removeQuickGenerateRow(index)"
+                        :disabled="quickGenerateRows.length === 1 || isGeneratingClasses"
+                        class="rounded-lg px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-rose-300 dark:hover:bg-rose-500/10">
+                        Hapus
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <button type="button" @click="addQuickGenerateRow" :disabled="isGeneratingClasses"
+              class="inline-flex items-center justify-center rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+              Tambah Pola
+            </button>
+
+            <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+              <button type="button" @click="closeQuickGenerateModal" :disabled="isGeneratingClasses"
+                class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-slate-800">
+                Batal
+              </button>
+              <button type="submit" :disabled="isGeneratingClasses"
+                class="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500 disabled:opacity-60">
+                <svg v-if="isGeneratingClasses" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"
+                  stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7L21 9.348" />
+                </svg>
+                {{ isGeneratingClasses ? "Membuat..." : "Generate Kelas" }}
               </button>
             </div>
           </form>
@@ -253,32 +434,40 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { api } from "@/api";
+import { pushToast } from "@/composables/useToast";
 import SuccessModal from "@/components/SuccessModal.vue";
-import { useAdminStore } from "@/store/admin";
+import { useClassStore } from "@/store/classes";
 import { storeToRefs } from "pinia";
 
 const successModal = ref(null);
-const adminStore = useAdminStore();
-const majors = ref([]);
+const classStore = useClassStore();
 const {
-  classesForm,
+  form: classesForm,
   classes,
   classesTeachers: teachers,
+  majors,
+  classLevels,
+  newLevelName,
+  isSavingLevel,
+  deletingLevelId,
+  showQuickGenerateModal,
+  isGeneratingClasses,
+  quickGenerateRows,
   classesPage: currentPage,
   classesPageSize: pageSize,
   classesTotal: totalClasses,
-  classesEditingId: editingClassId,
-  classesShowModal: showModal,
-  classesSubmitting: isSubmitting,
-  classesDeleteModalOpen: isDeleteModalOpen,
-  classesDeleting: isDeletingClass,
-  classesToDelete: classToDelete,
-  classesPaginated: paginatedClasses,
-  classesTotalPages: totalPages,
-  classesSortKey: sortKey,
-  classesSortDirection: sortDirection,
-} = storeToRefs(adminStore);
+  editingId: editingClassId,
+  showModal,
+  isSubmitting,
+  deleteModalOpen: isDeleteModalOpen,
+  isDeleting: isDeletingClass,
+  toDelete: classToDelete,
+  paginatedClasses,
+  totalPages,
+  sortKey,
+  sortDirection,
+  classNamePreview,
+} = storeToRefs(classStore);
 
 const className = computed({
   get: () => classesForm.value.className,
@@ -286,6 +475,30 @@ const className = computed({
     classesForm.value.className = value;
   },
 });
+
+const classLevelId = computed({
+  get: () => classesForm.value.classLevelId,
+  set: (value) => {
+    classesForm.value.classLevelId = value;
+  },
+});
+const quickGeneratePreview = (row) => classStore.quickGeneratePreview(row);
+const addQuickGenerateRow = () => classStore.addQuickGenerateRow();
+const removeQuickGenerateRow = (index) => classStore.removeQuickGenerateRow(index);
+const openQuickGenerateModal = () => classStore.openQuickGenerateModal();
+const closeQuickGenerateModal = () => classStore.closeQuickGenerateModal();
+const syncQuickGenerateMajor = (row) => classStore.syncQuickGenerateMajor(row);
+const submitQuickGenerate = async () => {
+  try {
+    const response = await classStore.submitQuickGenerate();
+    if (!response) return;
+    const created = Number(response?.data?.created || 0);
+    const skipped = Number(response?.data?.skipped || 0);
+    successModal.value?.show(`Generate selesai. ${created} kelas dibuat${skipped ? `, ${skipped} kelas sudah ada` : ""}.`);
+  } catch {
+    // error toast handled in store
+  }
+};
 
 const waliGuruId = computed({
   get: () => classesForm.value.waliGuruId,
@@ -302,15 +515,15 @@ const majorId = computed({
 });
 
 const handleSort = (key) => {
-  adminStore.toggleClassSort(key);
+  classStore.toggleSort(key);
 };
 
 const goToPrevPage = () => {
-  adminStore.goToClassPage(Number(currentPage.value) - 1);
+  classStore.goToPage(Number(currentPage.value) - 1);
 };
 
 const goToNextPage = () => {
-  adminStore.goToClassPage(Number(currentPage.value) + 1);
+  classStore.goToPage(Number(currentPage.value) + 1);
 };
 
 const sortIndicator = (key) => {
@@ -318,33 +531,45 @@ const sortIndicator = (key) => {
   return sortDirection.value === "asc" ? "▲" : "▼";
 };
 
-const loadClasses = () => adminStore.loadClasses();
-const loadTeachers = () => adminStore.loadClassTeachers();
-const loadMajors = async () => {
-  const response = await api.get("/majors");
-  majors.value = Array.isArray(response?.data) ? response.data : [];
+const loadClasses = () => classStore.loadClasses();
+const loadTeachers = () => classStore.loadTeachers();
+const loadMajors = () => classStore.loadMajors();
+const loadClassLevels = () => classStore.loadClassLevels();
+const createClassLevel = async () => {
+  try {
+    const response = await classStore.createClassLevel();
+    if (!response) return;
+    successModal.value?.show(response?.message || "Tingkat kelas berhasil dibuat");
+  } catch {}
 };
-const resetForm = () => adminStore.resetClassForm();
-const closeModal = () => adminStore.closeClassModal();
-const openCreateModal = () => adminStore.openClassCreateModal();
-const startEdit = (item) => adminStore.startEditClass(item);
-const openDeleteModal = (item) => adminStore.openClassDeleteModal(item);
-const closeDeleteModal = () => adminStore.closeClassDeleteModal();
+const deleteClassLevel = async (level) => {
+  try {
+    const response = await classStore.deleteClassLevel(level);
+    if (!response) return;
+    successModal.value?.show(response?.message || "Tingkat kelas berhasil dihapus");
+  } catch {}
+};
+const resetForm = () => classStore.resetForm();
+const closeModal = () => classStore.closeModal();
+const openCreateModal = () => classStore.openCreateModal();
+const startEdit = (item) => classStore.startEdit(item);
+const openDeleteModal = (item) => classStore.openDeleteModal(item);
+const closeDeleteModal = () => classStore.closeDeleteModal();
 const confirmDeleteClass = async () => {
-  const response = await adminStore.deleteClass();
+  const response = await classStore.deleteClass();
   if (response) {
     successModal.value.show(response?.message || "Kelas berhasil dihapus");
   }
 };
 const submitClass = async () => {
   const isEditing = !!editingClassId.value;
-  const response = await adminStore.saveClass();
+  const response = await classStore.saveClass();
   if (response) {
     successModal.value.show(response?.message || (isEditing ? "Kelas berhasil diupdate" : "Kelas berhasil dibuat"));
   }
 };
 
 onMounted(async () => {
-  await Promise.all([loadClasses(), loadTeachers(), loadMajors()]);
+  await classStore.initialize();
 });
 </script>

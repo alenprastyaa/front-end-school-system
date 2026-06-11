@@ -13,11 +13,14 @@
         </button>
         <div class="min-w-0">
           <h1 class="truncate text-base font-semibold">Pesan</h1>
-          <p class="truncate text-xs text-[#667781] dark:text-[#8696a0]">Grup Mapel dan Chat Pribadi</p>
+          <p class="truncate text-xs text-[#667781] dark:text-[#8696a0]">
+            {{ canUseSubjectChat ? "Grup Mapel dan Chat Pribadi" : "Chat Pribadi" }}
+          </p>
         </div>
       </div>
       <div class="flex items-center rounded-full bg-[#f0f2f5] p-1 dark:bg-[#202c33]">
         <button
+          v-if="canUseSubjectChat"
           type="button"
           class="flex h-9 w-9 items-center justify-center rounded-full transition"
           :class="activeTab === 'subject' ? 'bg-white text-[#111b21] shadow-sm dark:bg-[#111b21] dark:text-[#e9edef]' : 'text-[#667781] hover:text-[#111b21] dark:text-[#8696a0] dark:hover:text-[#e9edef]'"
@@ -41,7 +44,7 @@
     </header>
 
     <main class="min-h-0 flex-1 overflow-hidden">
-      <LearningChat v-if="activeTab === 'subject'" ref="learningChatRef" class="h-full min-h-0" />
+      <LearningChat v-if="canUseSubjectChat && activeTab === 'subject'" ref="learningChatRef" class="h-full min-h-0" />
       <PrivateChat v-else ref="privateChatRef" class="h-full min-h-0" />
     </main>
   </div>
@@ -53,13 +56,16 @@ import { useRoute, useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
 import LearningChat from "./LearningChat.vue";
 import PrivateChat from "./PrivateChat.vue";
+import { getStoredRole } from "@/utils/auth";
 
 const route = useRoute();
 const router = useRouter();
+const role = String(getStoredRole() || "").toUpperCase();
+const canUseSubjectChat = computed(() => ["GURU", "SISWA"].includes(role));
 
 const learningChatRef = ref(null);
 const privateChatRef = ref(null);
-const activeTab = ref("subject");
+const activeTab = ref(canUseSubjectChat.value ? "subject" : "peer");
 
 const requestedSubjectId = computed(() => Number(route.query?.subject || 0));
 const requestedPeerId = computed(() => Number(route.query?.user || 0));
@@ -85,7 +91,7 @@ const backToDashboard = () => {
 };
 
 const showTab = async (tab) => {
-  activeTab.value = tab === "peer" ? "peer" : "subject";
+  activeTab.value = tab === "subject" && canUseSubjectChat.value ? "subject" : "peer";
   await clearRouteQuery();
 };
 
@@ -103,6 +109,12 @@ const applyRouteSelection = async () => {
   }
 
   if (requestedSubjectId.value) {
+    if (!canUseSubjectChat.value) {
+      activeTab.value = "peer";
+      await clearRouteQuery();
+      return;
+    }
+
     activeTab.value = "subject";
     await nextTick();
     const chat = learningChatRef.value;
@@ -128,7 +140,7 @@ watch(
 watch(
   () => unwrapList(learningChatRef.value?.subjects).length + unwrapList(learningChatRef.value?.orderedSubjects).length,
   async () => {
-    if (requestedSubjectId.value) {
+    if (canUseSubjectChat.value && requestedSubjectId.value) {
       await applyRouteSelection();
     }
   },

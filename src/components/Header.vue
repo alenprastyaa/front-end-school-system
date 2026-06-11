@@ -100,19 +100,30 @@
   </header>
 
   <transition name="fade">
-    <div v-if="showProfileModal" class="fixed inset-0 z-[60] overflow-y-auto bg-slate-950/75 p-4 backdrop-blur-sm"
+    <div v-if="showProfileModal" class="fixed inset-0 z-[260] overflow-y-auto bg-slate-950/75 p-4 backdrop-blur-sm"
       @click.self="closeProfileModal">
       <div class="mx-auto my-6 w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-slate-900">
         <div class="flex items-start justify-between gap-4">
           <div>
-            <h2 class="text-xl font-semibold text-slate-900 dark:text-white">Profil Saya</h2>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Username tidak dapat diubah.</p>
+            <h2 class="text-xl font-semibold text-slate-900 dark:text-white">
+              {{ forceProfileCompletion ? "Lengkapi Profil Dulu" : "Profil Saya" }}
+            </h2>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              {{ forceProfileCompletion ? "Lengkapi data wajib agar menu lain bisa diakses." : "Username tidak dapat diubah." }}
+            </p>
           </div>
           <button
             class="text-slate-500 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:text-slate-200"
-            :disabled="isSavingProfile" @click="closeProfileModal">
+            :disabled="isSavingProfile || forceProfileCompletion" @click="closeProfileModal">
             <Icon icon="mdi:close" class="text-2xl" />
           </button>
+        </div>
+
+        <div
+          v-if="forceProfileCompletion"
+          class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+        >
+          Data yang masih wajib diisi: {{ missingProfileFieldsText }}.
         </div>
 
         <div v-if="profileMessage" class="mt-4 rounded-xl px-4 py-3 text-sm font-medium"
@@ -171,10 +182,20 @@
             <div v-if="showPasswordFields" class="mt-3 grid gap-4">
               <div>
                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Password saat ini</label>
-                <input v-model="profileForm.current_password" type="password" autocomplete="current-password"
-                  :disabled="isSavingProfile"
-                  class="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-                  placeholder="Password saat ini" />
+                <div class="relative mt-2">
+                  <input v-model="profileForm.current_password" :type="showCurrentPassword ? 'text' : 'password'"
+                    name="profile_current_password_manual" autocomplete="new-password" autocapitalize="off"
+                    spellcheck="false" :readonly="currentPasswordReadonly" :disabled="isSavingProfile"
+                    class="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-12 text-slate-900 outline-none transition focus:border-primary dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                    placeholder="Password saat ini"
+                    @focus="currentPasswordReadonly = false" />
+                  <button type="button" :disabled="isSavingProfile"
+                    class="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-500 transition hover:text-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-400 dark:hover:text-slate-100"
+                    :title="showCurrentPassword ? 'Sembunyikan password' : 'Tampilkan password'"
+                    @click="showCurrentPassword = !showCurrentPassword">
+                    <Icon :icon="showCurrentPassword ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" class="text-xl" />
+                  </button>
+                </div>
               </div>
               <div>
                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">Password baru</label>
@@ -195,7 +216,7 @@
           </div>
 
           <div class="flex justify-end gap-3">
-            <button type="button" :disabled="isSavingProfile"
+            <button v-if="!forceProfileCompletion" type="button" :disabled="isSavingProfile"
               class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-200"
               @click="closeProfileModal">
               Batal
@@ -219,7 +240,7 @@ import { Icon } from "@iconify/vue";
 import { cancelPendingApiRequests } from "@/api";
 import { fullscreen as handleFullscreen } from "@/helper/fullscreen";
 import { setDarkMode } from "@/helper/theme";
-import { clearSession, getStoredUser } from "@/utils/auth";
+import { clearSession, getMissingStudentProfileFields, getStoredUser, isStudentFaceEnrolled, isStudentProfileComplete, normalizeRole } from "@/utils/auth";
 import { normalizePublicUrl } from "@/utils/url";
 import defaultAvatar from "@/assets/img/user.jpg";
 import { useProfileStore } from "@/store/profile";
@@ -245,6 +266,8 @@ const pwaInstallBusy = ref(false);
 const showProfileModal = ref(false);
 const isSavingProfile = ref(false);
 const showPasswordFields = ref(false);
+const showCurrentPassword = ref(false);
+const currentPasswordReadonly = ref(true);
 const onlineLmsCount = ref(0);
 const realtimeUnsubscribers = ref([]);
 const profileError = ref(false);
@@ -301,6 +324,33 @@ const pushNotificationTitle = computed(() =>
       ? "Di iPhone, install Home Screen dulu agar notifikasi bisa aktif"
       : "Aktifkan push notification browser ini",
 );
+const isStudentUser = computed(() => normalizeRole(userProfile.value.role) === "SISWA");
+const missingProfileFields = computed(() => getMissingStudentProfileFields(userProfile.value));
+const missingProfileFieldsText = computed(() => missingProfileFields.value.join(", ") || "Tidak ada");
+const forceProfileCompletion = computed(() => isStudentUser.value && !isStudentProfileComplete(userProfile.value));
+const forceFaceEnrollment = computed(() => isStudentUser.value && isStudentProfileComplete(userProfile.value) && !isStudentFaceEnrolled(userProfile.value));
+
+const ensureStudentProfileCompletion = () => {
+  if (forceProfileCompletion.value) {
+    menu.value = false;
+    showProfileModal.value = true;
+    profileError.value = false;
+    profileMessage.value = "";
+  }
+};
+
+const ensureStudentFaceEnrollment = () => {
+  if (forceFaceEnrollment.value && route.name !== "FaceEnrollment") {
+    router.replace({ name: "FaceEnrollment" });
+  }
+};
+
+const buildProfileDraft = () => ({
+  ...userProfile.value,
+  full_name: profileForm.value.full_name,
+  parent_email: profileForm.value.parent_email,
+  phone_number: profileForm.value.phone_number,
+});
 
 const resolveOnlineCount = (payload) => {
   const count = Number(payload?.online_count || 0);
@@ -446,6 +496,8 @@ const syncProfileForm = () => {
   profilePreview.value = "";
   profileImageFile.value = null;
   showPasswordFields.value = false;
+  showCurrentPassword.value = false;
+  currentPasswordReadonly.value = true;
   profileMessage.value = "";
   profileError.value = false;
 };
@@ -459,6 +511,8 @@ const loadProfile = async () => {
       profile_image: normalizePublicUrl(profile.profile_image) || null,
     };
     syncProfileForm();
+    ensureStudentProfileCompletion();
+    ensureStudentFaceEnrollment();
   } catch (error) {
     if (error?.isAborted) {
       return;
@@ -468,6 +522,8 @@ const loadProfile = async () => {
       ...(getStoredUser() || {}),
     };
     syncProfileForm();
+    ensureStudentProfileCompletion();
+    ensureStudentFaceEnrollment();
   }
 };
 
@@ -480,6 +536,11 @@ const openProfileModal = async () => {
 
 const closeProfileModal = () => {
   if (isSavingProfile.value) {
+    return;
+  }
+  if (forceProfileCompletion.value) {
+    profileError.value = true;
+    profileMessage.value = `Lengkapi dulu: ${missingProfileFieldsText.value}.`;
     return;
   }
   showProfileModal.value = false;
@@ -505,6 +566,18 @@ const handleProfileImageChange = async (event) => {
 };
 
 const saveProfile = async () => {
+  const missingDraftFields = getMissingStudentProfileFields(buildProfileDraft());
+  if (isStudentUser.value && missingDraftFields.length > 0) {
+    profileError.value = true;
+    profileMessage.value = `Lengkapi dulu: ${missingDraftFields.join(", ")}.`;
+    pushToast({
+      title: "Profil Belum Lengkap",
+      message: profileMessage.value,
+      type: "error",
+    });
+    return;
+  }
+
   if (
     !profileImageFile.value &&
     !profileForm.value.new_password &&
@@ -568,8 +641,10 @@ const saveProfile = async () => {
       message: profileMessage.value,
       type: "success",
     });
-    showProfileModal.value = false;
+    showProfileModal.value = !isStudentProfileComplete(userProfile.value);
     syncProfileForm();
+    ensureStudentProfileCompletion();
+    ensureStudentFaceEnrollment();
   } catch (error) {
     profileError.value = true;
     profileMessage.value = error.message;
@@ -601,6 +676,8 @@ onMounted(() => {
     ...(getStoredUser() || {}),
   };
   syncProfileForm();
+  ensureStudentProfileCompletion();
+  ensureStudentFaceEnrollment();
   loadProfile();
   const token = localStorage.getItem("token");
   if (token) {
