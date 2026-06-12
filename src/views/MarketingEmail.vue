@@ -2,36 +2,33 @@
   <div class="min-h-screen bg-slate-50 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
     <main class="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
       <!-- HERO -->
-      <section class="relative overflow-hidden rounded-3xl bg-slate-900 p-6 text-white shadow-xl ring-1 ring-white/10 md:p-8">
+      <section
+        class="relative overflow-hidden rounded-3xl bg-slate-900 p-6 text-white shadow-xl ring-1 ring-white/10 md:p-8">
         <div class="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-sky-500/30 blur-3xl"></div>
-        <div class="pointer-events-none absolute -bottom-24 -left-10 h-64 w-64 rounded-full bg-indigo-500/20 blur-3xl"></div>
+        <div class="pointer-events-none absolute -bottom-24 -left-10 h-64 w-64 rounded-full bg-indigo-500/20 blur-3xl">
+        </div>
         <div class="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div class="max-w-2xl">
-            <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-sky-200 ring-1 ring-white/15">
+            <span
+              class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-sky-200 ring-1 ring-white/15">
               <Icon icon="mdi:bullhorn-variant-outline" class="h-3.5 w-3.5" />
               Super Admin · Marketing
             </span>
             <h1 class="mt-4 text-2xl font-black tracking-tight md:text-3xl">Kirim Email Penawaran</h1>
             <p class="mt-2 text-sm leading-6 text-slate-300 md:text-base">
-              Kirim penawaran ke banyak sekolah lewat Brevo dalam tiga langkah: susun template, pilih penerima, lalu kirim. Nama sekolah otomatis terisi sebagai placeholder dinamis.
+              Kirim penawaran ke banyak sekolah lewat Brevo dalam tiga langkah: susun template, pilih penerima, lalu
+              kirim. Nama sekolah otomatis terisi sebagai placeholder dinamis.
             </p>
           </div>
           <div class="flex shrink-0 gap-2">
-            <button
-              type="button"
-              @click="loadSchoolContacts"
-              :disabled="isLoadingSchoolContacts"
-              class="inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold text-white ring-1 ring-white/15 transition hover:bg-white/20 disabled:opacity-50"
-            >
-              <Icon :icon="isLoadingSchoolContacts ? 'mdi:loading' : 'mdi:refresh'" class="h-4 w-4" :class="{ 'animate-spin': isLoadingSchoolContacts }" />
+            <button type="button" @click="loadSchoolContacts" :disabled="isLoadingSchoolContacts"
+              class="inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-semibold text-white ring-1 ring-white/15 transition hover:bg-white/20 disabled:opacity-50">
+              <Icon :icon="isLoadingSchoolContacts ? 'mdi:loading' : 'mdi:refresh'" class="h-4 w-4"
+                :class="{ 'animate-spin': isLoadingSchoolContacts }" />
               Refresh
             </button>
-            <button
-              type="button"
-              @click="resetForm"
-              :disabled="isSending"
-              class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-900 transition hover:bg-slate-100 disabled:opacity-50"
-            >
+            <button type="button" @click="resetForm" :disabled="isSending"
+              class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-900 transition hover:bg-slate-100 disabled:opacity-50">
               <Icon icon="mdi:restore" class="h-4 w-4" />
               Reset
             </button>
@@ -79,57 +76,60 @@
         <!-- MAIN COLUMN -->
         <div class="space-y-6">
           <!-- STEP 1: TEMPLATE -->
-          <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+          <section
+            class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div class="flex min-w-0 gap-4">
-                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sm font-black text-sky-700 dark:bg-sky-500/15 dark:text-sky-200">1</span>
+                <span
+                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sm font-black text-sky-700 dark:bg-sky-500/15 dark:text-sky-200">1</span>
                 <div class="min-w-0">
                   <h2 class="text-lg font-bold text-slate-900 dark:text-white">Template Email</h2>
                   <p class="mt-1 flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
                     <Icon icon="mdi:format-title" class="h-4 w-4 shrink-0 text-slate-400" />
-                    <span class="truncate font-semibold text-slate-700 dark:text-slate-200">{{ form.subject || "Subject belum diisi" }}</span>
+                    <span class="truncate font-semibold text-slate-700 dark:text-slate-200">{{ form.subject || `Subject
+                      belum diisi` }}</span>
                   </p>
                   <div class="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
-                    <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    <span
+                      class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                       <Icon :icon="form.send_as_html ? 'mdi:language-html5' : 'mdi:text'" class="h-3.5 w-3.5" />
                       {{ form.send_as_html ? "HTML Modern" : "Teks Biasa" }}
                     </span>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    <span
+                      class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                       <Icon icon="mdi:email-lock-outline" class="h-3.5 w-3.5" />
                       Dikirim sebagai no-reply
                     </span>
-                    <span class="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 font-semibold text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+                    <span
+                      class="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 font-semibold text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
                       <Icon icon="mdi:file-pdf-box" class="h-3.5 w-3.5" />
                       + Lampiran PDF Penawaran
                     </span>
                   </div>
 
-                  <div class="mt-3 flex items-start gap-3 rounded-2xl bg-sky-50 p-3.5 ring-1 ring-sky-100 dark:bg-sky-500/10 dark:ring-sky-500/20">
+                  <div
+                    class="mt-3 flex items-start gap-3 rounded-2xl bg-sky-50 p-3.5 ring-1 ring-sky-100 dark:bg-sky-500/10 dark:ring-sky-500/20">
                     <Icon icon="mdi:file-pdf-box" class="mt-0.5 h-5 w-5 shrink-0 text-rose-500" />
                     <div class="min-w-0">
-                      <p class="text-sm font-bold text-slate-800 dark:text-slate-100">Setiap email otomatis melampirkan PDF Surat Penawaran</p>
+                      <p class="text-sm font-bold text-slate-800 dark:text-slate-100">Setiap email otomatis melampirkan
+                        PDF Surat Penawaran</p>
                       <p class="mt-0.5 text-xs leading-5 text-slate-500 dark:text-slate-400">
-                        PDF dipersonalisasi sesuai nama sekolah tujuan. Harga <b class="text-slate-700 dark:text-slate-200">Rp 1.700</b>/siswa/bulan — langganan tahunan <b class="text-emerald-600 dark:text-emerald-300">gratis 1 bulan</b> (cukup bayar 11 bulan).
+                        PDF dipersonalisasi sesuai nama sekolah tujuan. Harga <b
+                          class="text-slate-700 dark:text-slate-200">Rp 1.700</b>/siswa/bulan — langganan tahunan <b
+                          class="text-emerald-600 dark:text-emerald-300">gratis 1 bulan</b> (cukup bayar 11 bulan).
                       </p>
-                      <button
-                        type="button"
-                        @click="previewProposalPdf"
-                        :disabled="isPreviewingProposal"
-                        class="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-sky-700 ring-1 ring-sky-200 transition hover:bg-sky-50 disabled:opacity-50 dark:bg-slate-900 dark:text-sky-200 dark:ring-sky-500/30 dark:hover:bg-slate-800"
-                      >
-                        <Icon :icon="isPreviewingProposal ? 'mdi:loading' : 'mdi:file-eye-outline'" class="h-4 w-4" :class="{ 'animate-spin': isPreviewingProposal }" />
+                      <button type="button" @click="previewProposalPdf" :disabled="isPreviewingProposal"
+                        class="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-sky-700 ring-1 ring-sky-200 transition hover:bg-sky-50 disabled:opacity-50 dark:bg-slate-900 dark:text-sky-200 dark:ring-sky-500/30 dark:hover:bg-slate-800">
+                        <Icon :icon="isPreviewingProposal ? 'mdi:loading' : 'mdi:file-eye-outline'" class="h-4 w-4"
+                          :class="{ 'animate-spin': isPreviewingProposal }" />
                         {{ isPreviewingProposal ? "Membuka..." : "Preview PDF Penawaran" }}
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
-              <button
-                type="button"
-                @click="openTemplateModal"
-                :disabled="isSending"
-                class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm shadow-sky-600/20 transition hover:bg-sky-500 disabled:opacity-50"
-              >
+              <button type="button" @click="openTemplateModal" :disabled="isSending"
+                class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm shadow-sky-600/20 transition hover:bg-sky-500 disabled:opacity-50">
                 <Icon icon="mdi:file-document-edit-outline" class="h-4 w-4" />
                 Edit & Preview
               </button>
@@ -137,10 +137,12 @@
           </section>
 
           <!-- STEP 2: PENERIMA -->
-          <section class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+          <section
+            class="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
             <div class="flex flex-col gap-4 p-6 pb-0">
               <div class="flex gap-4">
-                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sm font-black text-sky-700 dark:bg-sky-500/15 dark:text-sky-200">2</span>
+                <span
+                  class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sm font-black text-sky-700 dark:bg-sky-500/15 dark:text-sky-200">2</span>
                 <div>
                   <h2 class="text-lg font-bold text-slate-900 dark:text-white">Pilih Penerima</h2>
                   <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
@@ -151,22 +153,18 @@
 
               <!-- TABS -->
               <div class="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800/80">
-                <button
-                  type="button"
-                  @click="recipientTab = 'schools'"
+                <button type="button" @click="recipientTab = 'schools'"
                   class="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-bold transition"
-                  :class="recipientTab === 'schools' ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'"
-                >
+                  :class="recipientTab === 'schools' ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'">
                   <Icon icon="mdi:format-list-checks" class="h-4 w-4" />
                   List Sekolah
-                  <span class="rounded-full bg-sky-100 px-1.5 text-[11px] font-black text-sky-700 dark:bg-sky-500/20 dark:text-sky-200">{{ selectedSchoolContactCount }}</span>
+                  <span
+                    class="rounded-full bg-sky-100 px-1.5 text-[11px] font-black text-sky-700 dark:bg-sky-500/20 dark:text-sky-200">{{
+                      selectedSchoolContactCount }}</span>
                 </button>
-                <button
-                  type="button"
-                  @click="recipientTab = 'manual'"
+                <button type="button" @click="recipientTab = 'manual'"
                   class="flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-bold transition"
-                  :class="recipientTab === 'manual' ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'"
-                >
+                  :class="recipientTab === 'manual' ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'">
                   <Icon icon="mdi:account-plus-outline" class="h-4 w-4" />
                   Tambah Manual
                 </button>
@@ -177,57 +175,51 @@
             <div v-show="recipientTab === 'schools'" class="p-6 pt-4">
               <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div class="relative flex-1">
-                  <Icon icon="mdi:magnify" class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                  <input
-                    v-model.trim="schoolContactSearch"
-                    type="search"
-                    placeholder="Cari sekolah atau email..."
-                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
-                  />
+                  <Icon icon="mdi:magnify"
+                    class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <input v-model.trim="schoolContactSearch" type="search" placeholder="Cari sekolah atau email..."
+                    class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </div>
                 <div class="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    @click="downloadRecipientTemplate"
+                  <button type="button" @click="downloadRecipientTemplate"
                     :disabled="isSending || isDownloadingTemplate"
                     class="inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-200 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                    title="Unduh template Excel"
-                  >
-                    <Icon :icon="isDownloadingTemplate ? 'mdi:loading' : 'mdi:tray-arrow-down'" class="h-4 w-4" :class="{ 'animate-spin': isDownloadingTemplate }" />
+                    title="Unduh template Excel">
+                    <Icon :icon="isDownloadingTemplate ? 'mdi:loading' : 'mdi:tray-arrow-down'" class="h-4 w-4"
+                      :class="{ 'animate-spin': isDownloadingTemplate }" />
                     Template
                   </button>
                   <label
                     class="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                     :class="{ 'pointer-events-none opacity-50': isSending || isImportingRecipients }"
-                    title="Upload Excel ke list sekolah"
-                  >
-                    <Icon :icon="isImportingRecipients ? 'mdi:loading' : 'mdi:tray-arrow-up'" class="h-4 w-4" :class="{ 'animate-spin': isImportingRecipients }" />
+                    title="Upload Excel ke list sekolah">
+                    <Icon :icon="isImportingRecipients ? 'mdi:loading' : 'mdi:tray-arrow-up'" class="h-4 w-4"
+                      :class="{ 'animate-spin': isImportingRecipients }" />
                     Upload
-                    <input type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden" @change="importRecipientExcel" />
+                    <input type="file"
+                      accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                      class="hidden" @change="importRecipientExcel" />
                   </label>
                 </div>
               </div>
 
               <!-- TOOLBAR -->
-              <div class="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 px-3 py-2 ring-1 ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700">
-                <label class="inline-flex cursor-pointer items-center gap-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300">
-                  <input
-                    type="checkbox"
-                    class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+              <div
+                class="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 px-3 py-2 ring-1 ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700">
+                <label
+                  class="inline-flex cursor-pointer items-center gap-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                  <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
                     :checked="areAllVisibleSchoolContactsSelected"
                     :indeterminate.prop="isSomeVisibleSchoolContactsSelected"
                     :disabled="selectableVisibleSchoolContacts.length === 0 || isSending"
-                    @change="toggleAllVisibleSchoolContacts"
-                  />
+                    @change="toggleAllVisibleSchoolContacts" />
                   Pilih semua
-                  <span class="text-xs font-medium text-slate-400">({{ selectableVisibleSchoolContacts.length }} tersedia)</span>
+                  <span class="text-xs font-medium text-slate-400">({{ selectableVisibleSchoolContacts.length }}
+                    tersedia)</span>
                 </label>
-                <button
-                  type="button"
-                  @click="clearSelectedSchoolContacts"
+                <button type="button" @click="clearSelectedSchoolContacts"
                   :disabled="selectedSchoolContactCount === 0 || isSending"
-                  class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold text-rose-600 transition hover:bg-rose-50 disabled:opacity-40 dark:text-rose-300 dark:hover:bg-rose-500/10"
-                >
+                  class="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold text-rose-600 transition hover:bg-rose-50 disabled:opacity-40 dark:text-rose-300 dark:hover:bg-rose-500/10">
                   <Icon icon="mdi:close-circle-outline" class="h-4 w-4" />
                   Bersihkan pilihan
                 </button>
@@ -238,22 +230,18 @@
                 <SkeletonLoader v-if="isLoadingSchoolContacts" variant="list" :count="5" />
 
                 <template v-else>
-                  <div
-                    v-for="item in paginatedSchoolContacts"
-                    :key="item.id"
+                  <div v-for="item in paginatedSchoolContacts" :key="item.id"
                     class="flex items-start gap-3 rounded-2xl border p-3 transition"
                     :class="isSchoolContactSelected(item.id)
                       ? 'border-sky-300 bg-sky-50/70 dark:border-sky-500/40 dark:bg-sky-500/5'
-                      : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700'"
-                  >
-                    <input
-                      type="checkbox"
+                      : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700'">
+                    <input type="checkbox"
                       class="mt-2.5 h-4 w-4 shrink-0 rounded border-slate-300 text-sky-600 focus:ring-sky-500 disabled:cursor-not-allowed"
                       :checked="isSchoolContactSelected(item.id)"
                       :disabled="!isSchoolContactSelectable(item) || isSending"
-                      @change="toggleSchoolContactSelection(item, $event.target.checked)"
-                    />
-                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-black" :class="avatarClass(item.name)">
+                      @change="toggleSchoolContactSelection(item, $event.target.checked)" />
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-black"
+                      :class="avatarClass(item.name)">
                       {{ schoolInitials(item.name) }}
                     </span>
                     <div class="min-w-0 flex-1">
@@ -262,103 +250,85 @@
                         <div class="shrink-0 text-right">
                           <span
                             class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ring-1"
-                            :class="marketingStatusClass(item)"
-                          >
+                            :class="marketingStatusClass(item)">
                             <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
                             {{ marketingStatusLabel(item) }}
                           </span>
-                          <p v-if="getEmailOfferStatus(item.email).last_sent_at" class="mt-1 text-[11px] text-slate-400 dark:text-slate-500">{{ formatDateTime(getEmailOfferStatus(item.email).last_sent_at) }}</p>
-                          <p v-else-if="isLoadingOfferStatuses" class="mt-1 text-[11px] text-slate-400 dark:text-slate-500">Mengecek Brevo...</p>
+                          <p v-if="getEmailOfferStatus(item.email).last_sent_at"
+                            class="mt-1 text-[11px] text-slate-400 dark:text-slate-500">{{
+                              formatDateTime(getEmailOfferStatus(item.email).last_sent_at) }}</p>
+                          <p v-else-if="isLoadingOfferStatuses"
+                            class="mt-1 text-[11px] text-slate-400 dark:text-slate-500">Mengecek Brevo...</p>
                         </div>
                       </div>
 
                       <!-- EMAIL / EDIT -->
                       <div v-if="editingSchoolEmail.id === item.id" class="mt-2 flex max-w-xl items-center gap-2">
-                        <input
-                          v-model.trim="editingSchoolEmail.email"
-                          type="email"
-                          placeholder="email@sekolah.sch.id"
+                        <input v-model.trim="editingSchoolEmail.email" type="email" placeholder="email@sekolah.sch.id"
                           class="block w-full rounded-lg border-0 bg-white px-3 py-2 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-950 dark:text-white dark:ring-slate-700"
-                          @keydown.enter.prevent="saveSchoolEmail(item)"
-                          @keydown.esc.prevent="cancelEditSchoolEmail"
-                        />
-                        <button
-                          type="button"
-                          @click="saveSchoolEmail(item)"
-                          :disabled="savingSchoolEmailId === item.id"
+                          @keydown.enter.prevent="saveSchoolEmail(item)" @keydown.esc.prevent="cancelEditSchoolEmail" />
+                        <button type="button" @click="saveSchoolEmail(item)" :disabled="savingSchoolEmailId === item.id"
                           class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white transition hover:bg-emerald-500 disabled:opacity-50"
-                          title="Simpan email"
-                        >
-                          <Icon :icon="savingSchoolEmailId === item.id ? 'mdi:loading' : 'mdi:check'" class="h-4 w-4" :class="{ 'animate-spin': savingSchoolEmailId === item.id }" />
+                          title="Simpan email">
+                          <Icon :icon="savingSchoolEmailId === item.id ? 'mdi:loading' : 'mdi:check'" class="h-4 w-4"
+                            :class="{ 'animate-spin': savingSchoolEmailId === item.id }" />
                         </button>
-                        <button
-                          type="button"
-                          @click="cancelEditSchoolEmail"
-                          :disabled="savingSchoolEmailId === item.id"
+                        <button type="button" @click="cancelEditSchoolEmail" :disabled="savingSchoolEmailId === item.id"
                           class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition hover:bg-slate-200 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                          title="Batal"
-                        >
+                          title="Batal">
                           <Icon icon="mdi:close" class="h-4 w-4" />
                         </button>
                       </div>
-                      <div v-else class="mt-1 flex items-center gap-1.5 text-sm" :class="item.email ? 'text-slate-600 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'">
+                      <div v-else class="mt-1 flex items-center gap-1.5 text-sm"
+                        :class="item.email ? 'text-slate-600 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'">
                         <Icon icon="mdi:email-outline" class="h-4 w-4 shrink-0 text-slate-400" />
                         <span class="min-w-0 break-all">{{ item.email || "Email belum diisi" }}</span>
-                        <button
-                          type="button"
-                          @click="startEditSchoolEmail(item)"
+                        <button type="button" @click="startEditSchoolEmail(item)"
                           :disabled="isSending || savingSchoolEmailId === item.id"
                           class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-sky-600 transition hover:bg-sky-50 disabled:opacity-40 dark:text-sky-300 dark:hover:bg-sky-500/10"
-                          title="Edit email sekolah"
-                        >
+                          title="Edit email sekolah">
                           <Icon icon="mdi:pencil-outline" class="h-4 w-4" />
                         </button>
                       </div>
                     </div>
                   </div>
 
-                  <div v-if="filteredSchoolContacts.length === 0" class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 py-12 text-center dark:border-slate-700">
+                  <div v-if="filteredSchoolContacts.length === 0"
+                    class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 py-12 text-center dark:border-slate-700">
                     <Icon icon="mdi:school-outline" class="h-10 w-10 text-slate-300 dark:text-slate-600" />
-                    <p class="mt-3 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ schoolContactSearch ? "Tidak ada sekolah yang cocok." : "Belum ada sekolah." }}</p>
-                    <p class="mt-1 text-xs text-slate-400">Tambahkan lewat tombol Upload atau menu School Visit Targets.</p>
+                    <p class="mt-3 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ schoolContactSearch ?
+                      "Tidak ada sekolah yang cocok." : "Belum ada sekolah." }}</p>
+                    <p class="mt-1 text-xs text-slate-400">Tambahkan lewat tombol Upload atau menu School Visit Targets.
+                    </p>
                   </div>
                 </template>
               </div>
 
               <!-- PAGINATION -->
-              <div v-if="!isLoadingSchoolContacts && filteredSchoolContacts.length > 0" class="mt-4 flex flex-col items-center justify-between gap-3 sm:flex-row">
+              <div v-if="!isLoadingSchoolContacts && filteredSchoolContacts.length > 0"
+                class="mt-4 flex flex-col items-center justify-between gap-3 sm:flex-row">
                 <p class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ schoolContactRangeLabel }}</p>
                 <div class="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    @click="goToSchoolContactPage(schoolContactPage - 1)"
+                  <button type="button" @click="goToSchoolContactPage(schoolContactPage - 1)"
                     :disabled="schoolContactPage <= 1"
                     class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                    aria-label="Halaman sebelumnya"
-                  >
+                    aria-label="Halaman sebelumnya">
                     <Icon icon="mdi:chevron-left" class="h-5 w-5" />
                   </button>
                   <template v-for="(page, index) in schoolContactPageItems" :key="`school-page-${index}`">
                     <span v-if="page === '...'" class="px-1 text-sm text-slate-400">…</span>
-                    <button
-                      v-else
-                      type="button"
-                      @click="goToSchoolContactPage(page)"
+                    <button v-else type="button" @click="goToSchoolContactPage(page)"
                       class="inline-flex h-9 min-w-[2.25rem] items-center justify-center rounded-lg px-2 text-sm font-bold transition"
                       :class="page === schoolContactPage
                         ? 'bg-sky-600 text-white shadow-sm shadow-sky-600/20'
-                        : 'border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'"
-                    >
+                        : 'border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'">
                       {{ page }}
                     </button>
                   </template>
-                  <button
-                    type="button"
-                    @click="goToSchoolContactPage(schoolContactPage + 1)"
+                  <button type="button" @click="goToSchoolContactPage(schoolContactPage + 1)"
                     :disabled="schoolContactPage >= schoolContactTotalPages"
                     class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                    aria-label="Halaman berikutnya"
-                  >
+                    aria-label="Halaman berikutnya">
                     <Icon icon="mdi:chevron-right" class="h-5 w-5" />
                   </button>
                 </div>
@@ -368,57 +338,44 @@
             <!-- TAB: MANUAL -->
             <div v-show="recipientTab === 'manual'" class="p-6 pt-4">
               <div class="flex items-center justify-between gap-3">
-                <p class="text-sm text-slate-500 dark:text-slate-400">{{ recipients.length }} baris penerima · {{ validRecipientCount }} siap kirim</p>
-                <button
-                  type="button"
-                  @click="addRecipient"
-                  :disabled="isSending"
-                  class="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-2 text-sm font-bold text-white transition hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white"
-                >
+                <p class="text-sm text-slate-500 dark:text-slate-400">{{ recipients.length }} baris penerima · {{
+                  validRecipientCount }} siap kirim</p>
+                <button type="button" @click="addRecipient" :disabled="isSending"
+                  class="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-2 text-sm font-bold text-white transition hover:bg-slate-700 disabled:opacity-50 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white">
                   <Icon icon="mdi:plus" class="h-4 w-4" />
                   Tambah Baris
                 </button>
               </div>
 
               <div class="mt-3 space-y-2">
-                <div
-                  v-for="(recipient, index) in recipients"
-                  :key="recipient.id"
-                  class="grid gap-2 rounded-2xl border border-slate-200 bg-white p-2.5 md:grid-cols-[1fr,1.2fr,auto] dark:border-slate-800 dark:bg-slate-900"
-                >
-                  <input v-model.trim="recipient.school_name" type="text" placeholder="Nama sekolah" class="rounded-lg border-0 bg-slate-50 px-3 py-2 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                  <input v-model.trim="recipient.email" type="email" placeholder="email@sekolah.sch.id" class="rounded-lg border-0 bg-slate-50 px-3 py-2 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                  <button
-                    type="button"
-                    @click="removeRecipient(index)"
-                    :disabled="isSending || recipients.length === 1"
+                <div v-for="(recipient, index) in recipients" :key="recipient.id"
+                  class="grid gap-2 rounded-2xl border border-slate-200 bg-white p-2.5 md:grid-cols-[1fr,1.2fr,auto] dark:border-slate-800 dark:bg-slate-900">
+                  <input v-model.trim="recipient.school_name" type="text" placeholder="Nama sekolah"
+                    class="rounded-lg border-0 bg-slate-50 px-3 py-2 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <input v-model.trim="recipient.email" type="email" placeholder="email@sekolah.sch.id"
+                    class="rounded-lg border-0 bg-slate-50 px-3 py-2 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  <button type="button" @click="removeRecipient(index)" :disabled="isSending || recipients.length === 1"
                     class="inline-flex h-9 w-full items-center justify-center rounded-lg bg-rose-50 text-rose-600 transition hover:bg-rose-100 disabled:opacity-40 md:w-9 dark:bg-rose-500/10 dark:text-rose-200"
-                    title="Hapus penerima"
-                    aria-label="Hapus penerima"
-                  >
+                    title="Hapus penerima" aria-label="Hapus penerima">
                     <Icon icon="mdi:trash-can-outline" class="h-5 w-5" />
                   </button>
                 </div>
               </div>
 
-              <div class="mt-4 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-slate-800/50 dark:ring-slate-700">
+              <div
+                class="mt-4 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-slate-800/50 dark:ring-slate-700">
                 <label class="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-200">
                   <Icon icon="mdi:format-list-bulleted" class="h-4 w-4 text-slate-400" />
                   Tempel banyak penerima sekaligus
                 </label>
-                <p class="mb-2 text-xs text-slate-500 dark:text-slate-400">Satu baris satu penerima — format: <code class="rounded bg-slate-200 px-1 py-0.5 text-[11px] dark:bg-slate-700">Nama Sekolah, email@domain.com</code></p>
-                <textarea
-                  v-model="bulkInput"
-                  rows="4"
+                <p class="mb-2 text-xs text-slate-500 dark:text-slate-400">Satu baris satu penerima — format: <code
+                    class="rounded bg-slate-200 px-1 py-0.5 text-[11px] dark:bg-slate-700">Nama Sekolah, email@domain.com</code>
+                </p>
+                <textarea v-model="bulkInput" rows="4"
                   placeholder="SMA Negeri 1, info@sman1.sch.id&#10;SMK Mandiri, admin@smkmandiri.sch.id"
-                  class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm leading-6 text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700"
-                ></textarea>
-                <button
-                  type="button"
-                  @click="applyBulkInput"
-                  :disabled="isSending || !bulkInput.trim()"
-                  class="mt-3 inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-sky-500 disabled:opacity-50"
-                >
+                  class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm leading-6 text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-900 dark:text-white dark:ring-slate-700"></textarea>
+                <button type="button" @click="applyBulkInput" :disabled="isSending || !bulkInput.trim()"
+                  class="mt-3 inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-sky-500 disabled:opacity-50">
                   <Icon icon="mdi:playlist-plus" class="h-4 w-4" />
                   Masukkan ke Daftar
                 </button>
@@ -429,9 +386,11 @@
 
         <!-- SIDE: STEP 3 - KIRIM (sticky) -->
         <aside class="space-y-6">
-          <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 xl:sticky xl:top-6 dark:bg-slate-900 dark:ring-white/10">
+          <section
+            class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 xl:sticky xl:top-6 dark:bg-slate-900 dark:ring-white/10">
             <div class="flex gap-4">
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-black text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-200">3</span>
+              <span
+                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-black text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-200">3</span>
               <div>
                 <h2 class="text-lg font-bold text-slate-900 dark:text-white">Tinjau & Kirim</h2>
                 <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Periksa ringkasan sebelum mengirim.</p>
@@ -441,31 +400,37 @@
             <div class="mt-5 space-y-3">
               <div class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700">
                 <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Subject</p>
-                <p class="mt-1.5 text-sm font-bold text-slate-900 dark:text-white">{{ previewSubject || "Subject belum diisi" }}</p>
+                <p class="mt-1.5 text-sm font-bold text-slate-900 dark:text-white">{{ previewSubject || `Subject belum
+                  diisi` }}
+                </p>
               </div>
 
-              <div class="flex items-center justify-between rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:ring-emerald-500/20">
+              <div
+                class="flex items-center justify-between rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:ring-emerald-500/20">
                 <div>
-                  <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-600 dark:text-emerald-300">Penerima Siap</p>
-                  <p class="mt-1 text-3xl font-black text-emerald-700 dark:text-emerald-200">{{ validRecipientCount }}</p>
+                  <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-600 dark:text-emerald-300">
+                    Penerima
+                    Siap</p>
+                  <p class="mt-1 text-3xl font-black text-emerald-700 dark:text-emerald-200">{{ validRecipientCount }}
+                  </p>
                 </div>
                 <Icon icon="mdi:email-fast-outline" class="h-12 w-12 text-emerald-300 dark:text-emerald-500/40" />
               </div>
 
-              <div v-if="validRecipientCount > 0" class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700">
+              <div v-if="validRecipientCount > 0"
+                class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700">
                 <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Penerima Pertama</p>
-                <p class="mt-1.5 font-bold text-slate-900 dark:text-white">{{ previewRecipient.school_name || "Nama Sekolah" }}</p>
+                <p class="mt-1.5 font-bold text-slate-900 dark:text-white">{{ previewRecipient.school_name || `Nama
+                  Sekolah` }}
+                </p>
                 <p class="mt-0.5 break-all text-xs text-slate-500 dark:text-slate-400">{{ previewRecipient.email }}</p>
               </div>
             </div>
 
-            <button
-              type="button"
-              @click="sendEmails"
-              :disabled="isSending || validRecipientCount === 0"
-              class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
-            >
-              <Icon :icon="isSending ? 'mdi:loading' : 'mdi:send'" class="h-5 w-5" :class="{ 'animate-spin': isSending }" />
+            <button type="button" @click="sendEmails" :disabled="isSending || validRecipientCount === 0"
+              class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none">
+              <Icon :icon="isSending ? 'mdi:loading' : 'mdi:send'" class="h-5 w-5"
+                :class="{ 'animate-spin': isSending }" />
               {{ isSending ? "Mengirim..." : `Kirim ke ${validRecipientCount} Email` }}
             </button>
             <p class="mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-slate-400">
@@ -488,19 +453,23 @@
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Total</p>
             <p class="mt-2 text-2xl font-black">{{ sendSummary.total_recipients || 0 }}</p>
           </article>
-          <article class="rounded-2xl bg-emerald-50 p-4 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-200 dark:ring-emerald-500/20">
+          <article
+            class="rounded-2xl bg-emerald-50 p-4 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-200 dark:ring-emerald-500/20">
             <p class="text-xs font-semibold uppercase tracking-[0.18em]">Sukses</p>
             <p class="mt-2 text-2xl font-black">{{ sendSummary.success_count || 0 }}</p>
           </article>
-          <article class="rounded-2xl bg-rose-50 p-4 text-rose-700 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/20">
+          <article
+            class="rounded-2xl bg-rose-50 p-4 text-rose-700 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/20">
             <p class="text-xs font-semibold uppercase tracking-[0.18em]">Gagal</p>
             <p class="mt-2 text-2xl font-black">{{ sendSummary.failed_count || 0 }}</p>
           </article>
         </div>
 
-        <div v-if="sendResults.length > 0" class="mt-4 overflow-hidden rounded-2xl ring-1 ring-slate-200 dark:ring-slate-700">
+        <div v-if="sendResults.length > 0"
+          class="mt-4 overflow-hidden rounded-2xl ring-1 ring-slate-200 dark:ring-slate-700">
           <table class="min-w-full text-left text-sm">
-            <thead class="bg-slate-50 text-[11px] uppercase tracking-[0.1em] text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+            <thead
+              class="bg-slate-50 text-[11px] uppercase tracking-[0.1em] text-slate-500 dark:bg-slate-800 dark:text-slate-300">
               <tr>
                 <th class="px-4 py-3 font-semibold">Penerima</th>
                 <th class="px-4 py-3 font-semibold">Status</th>
@@ -508,14 +477,17 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-              <tr v-for="item in sendResults" :key="`${item.email}-${item.error || 'ok'}`" class="bg-white dark:bg-slate-900">
+              <tr v-for="item in sendResults" :key="`${item.email}-${item.error || 'ok'}`"
+                class="bg-white dark:bg-slate-900">
                 <td class="px-4 py-3">
                   <div class="font-semibold text-slate-900 dark:text-white">{{ item.school_name || item.email }}</div>
                   <div class="text-xs text-slate-500">{{ item.email }}</div>
                 </td>
                 <td class="px-4 py-3">
-                  <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold" :class="item.success ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200' : 'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-200'">
-                    <Icon :icon="item.success ? 'mdi:check-circle-outline' : 'mdi:alert-circle-outline'" class="h-3.5 w-3.5" />
+                  <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold"
+                    :class="item.success ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200' : 'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-200'">
+                    <Icon :icon="item.success ? 'mdi:check-circle-outline' : 'mdi:alert-circle-outline'"
+                      class="h-3.5 w-3.5" />
                     {{ item.success ? "Terkirim" : "Gagal" }}
                   </span>
                 </td>
@@ -525,7 +497,8 @@
           </table>
         </div>
 
-        <div v-else class="mt-4 flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 py-12 text-center dark:border-slate-700">
+        <div v-else
+          class="mt-4 flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 py-12 text-center dark:border-slate-700">
           <Icon icon="mdi:email-off-outline" class="h-10 w-10 text-slate-300 dark:text-slate-600" />
           <p class="mt-3 text-sm font-semibold text-slate-500 dark:text-slate-400">Belum ada pengiriman</p>
           <p class="mt-1 text-xs text-slate-400">Hasil pengiriman email akan muncul di sini.</p>
@@ -536,79 +509,65 @@
     <!-- MODAL: TEMPLATE -->
     <Teleport to="body">
       <transition name="fade-scale">
-        <div
-          v-if="showTemplateModal"
+        <div v-if="showTemplateModal"
           class="fixed inset-0 z-[135] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm"
-          @click.self="closeTemplateModal"
-        >
-          <section class="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
-            <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5 dark:border-slate-800">
+          @click.self="closeTemplateModal">
+          <section
+            class="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
+            <div
+              class="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5 dark:border-slate-800">
               <div>
-                <p class="text-xs font-bold uppercase tracking-[0.18em] text-sky-600 dark:text-sky-300">Template Email</p>
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-sky-600 dark:text-sky-300">Template Email
+                </p>
                 <h2 class="mt-1 text-lg font-black text-slate-900 dark:text-white">Atur email penawaran</h2>
               </div>
-              <button
-                type="button"
-                @click="closeTemplateModal"
+              <button type="button" @click="closeTemplateModal"
                 class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                aria-label="Tutup template"
-              >
+                aria-label="Tutup template">
                 <Icon icon="mdi:close" class="h-5 w-5" />
               </button>
             </div>
 
             <div class="grid min-h-0 flex-1 gap-0 overflow-y-auto lg:grid-cols-[0.92fr_1.08fr]">
               <div class="space-y-4 border-b border-slate-100 p-6 lg:border-b-0 lg:border-r dark:border-slate-800">
-                <div class="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600 ring-1 ring-slate-200 dark:bg-slate-800/60 dark:text-slate-300 dark:ring-slate-700">
+                <div
+                  class="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600 ring-1 ring-slate-200 dark:bg-slate-800/60 dark:text-slate-300 dark:ring-slate-700">
                   <div class="flex items-start gap-3">
                     <Icon icon="mdi:email-lock-outline" class="mt-0.5 h-5 w-5 shrink-0 text-slate-400" />
                     <div>
                       <p class="font-bold text-slate-800 dark:text-slate-100">Email dikirim sebagai no-reply</p>
-                      <p class="mt-1 leading-6">Balasan penerima diarahkan ke alamat no-reply dari konfigurasi Brevo, sehingga email penawaran tidak memakai kotak balasan aktif.</p>
+                      <p class="mt-1 leading-6">Balasan penerima diarahkan ke alamat no-reply dari konfigurasi Brevo,
+                        sehingga email penawaran tidak memakai kotak balasan aktif.</p>
                     </div>
                   </div>
                 </div>
                 <label class="block">
                   <span class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Subject</span>
-                  <input
-                    v-model.trim="form.subject"
-                    type="text"
-                    required
+                  <input v-model.trim="form.subject" type="text" required
                     placeholder="Penawaran Demo Learning Management System untuk {{school_name}}"
-                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
-                  />
+                    class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                 </label>
                 <label class="block">
                   <span class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Isi Email</span>
-                  <textarea
-                    v-model="form.body"
-                    rows="14"
-                    required
-                    placeholder="Yth. Bapak/Ibu Pimpinan..."
-                    class="block w-full resize-y rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
-                  ></textarea>
+                  <textarea v-model="form.body" rows="14" required placeholder="Yth. Bapak/Ibu Pimpinan..."
+                    class="block w-full resize-y rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"></textarea>
                 </label>
                 <label class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-                  <input v-model="form.send_as_html" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
+                  <input v-model="form.send_as_html" type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
                   Kirim sebagai template HTML modern
                 </label>
                 <div class="rounded-2xl bg-sky-50 p-4 ring-1 ring-sky-100 dark:bg-sky-500/10 dark:ring-sky-500/20">
                   <label class="block">
-                    <span class="mb-1.5 block text-sm font-bold text-sky-900 dark:text-sky-100">Kirim Test Template</span>
+                    <span class="mb-1.5 block text-sm font-bold text-sky-900 dark:text-sky-100">Kirim Test
+                      Template</span>
                     <div class="flex flex-col gap-2 sm:flex-row">
-                      <input
-                        v-model.trim="testEmail"
-                        type="email"
-                        placeholder="email test@domain.com"
-                        class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-sky-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-950 dark:text-white dark:ring-sky-900"
-                      />
-                      <button
-                        type="button"
-                        @click="sendTestEmail"
-                        :disabled="isSendingTestEmail || !testEmail.trim()"
-                        class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-sky-500 disabled:opacity-50"
-                      >
-                        <Icon :icon="isSendingTestEmail ? 'mdi:loading' : 'mdi:send-check-outline'" class="h-4 w-4" :class="{ 'animate-spin': isSendingTestEmail }" />
+                      <input v-model.trim="testEmail" type="email" placeholder="email test@domain.com"
+                        class="block w-full rounded-xl border-0 bg-white px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-sky-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-950 dark:text-white dark:ring-sky-900" />
+                      <button type="button" @click="sendTestEmail" :disabled="isSendingTestEmail || !testEmail.trim()"
+                        class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-sky-500 disabled:opacity-50">
+                        <Icon :icon="isSendingTestEmail ? 'mdi:loading' : 'mdi:send-check-outline'" class="h-4 w-4"
+                          :class="{ 'animate-spin': isSendingTestEmail }" />
                         {{ isSendingTestEmail ? "Mengirim..." : "Tes" }}
                       </button>
                     </div>
@@ -619,33 +578,32 @@
               <div class="p-6">
                 <div class="flex items-center justify-between gap-3">
                   <h3 class="text-sm font-bold text-slate-900 dark:text-white">Preview</h3>
-                  <button
-                    type="button"
-                    @click="useDefaultTemplate"
-                    class="inline-flex items-center gap-2 rounded-xl bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-700 transition hover:bg-sky-100 dark:bg-sky-500/10 dark:text-sky-200"
-                  >
+                  <button type="button" @click="useDefaultTemplate"
+                    class="inline-flex items-center gap-2 rounded-xl bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-700 transition hover:bg-sky-100 dark:bg-sky-500/10 dark:text-sky-200">
                     <Icon icon="mdi:file-restore-outline" class="h-4 w-4" />
                     Default
                   </button>
                 </div>
-                <div class="mt-4 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700">
+                <div
+                  class="mt-4 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700">
                   <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Subject</p>
                   <p class="mt-2 text-sm font-bold text-slate-900 dark:text-white">{{ previewSubject || "-" }}</p>
                   <p class="mt-5 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Body</p>
-                  <div v-if="form.send_as_html" class="mt-2 max-h-[560px] overflow-auto rounded-xl bg-white ring-1 ring-slate-200 dark:bg-white dark:ring-slate-700">
-                    <iframe title="Preview body email" :srcdoc="previewBody" class="h-[540px] w-full border-0" sandbox=""></iframe>
+                  <div v-if="form.send_as_html"
+                    class="mt-2 max-h-[560px] overflow-auto rounded-xl bg-white ring-1 ring-slate-200 dark:bg-white dark:ring-slate-700">
+                    <iframe title="Preview body email" :srcdoc="previewBody" class="h-[540px] w-full border-0"
+                      sandbox=""></iframe>
                   </div>
-                  <pre v-else class="mt-2 max-h-[560px] overflow-auto whitespace-pre-wrap break-words text-sm leading-6 text-slate-700 dark:text-slate-200">{{ previewBody || "-" }}</pre>
+                  <pre v-else
+                    class="mt-2 max-h-[560px] overflow-auto whitespace-pre-wrap break-words text-sm leading-6 text-slate-700 dark:text-slate-200">
+                {{ previewBody || "-" }}</pre>
                 </div>
               </div>
             </div>
 
             <div class="flex justify-end border-t border-slate-100 px-6 py-4 dark:border-slate-800">
-              <button
-                type="button"
-                @click="closeTemplateModal"
-                class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-700 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white"
-              >
+              <button type="button" @click="closeTemplateModal"
+                class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-700 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white">
                 Simpan Template
               </button>
             </div>
@@ -657,19 +615,21 @@
     <!-- MODAL: KONFIRMASI -->
     <Teleport to="body">
       <transition name="fade-scale">
-        <div
-          v-if="showSendConfirmModal"
+        <div v-if="showSendConfirmModal"
           class="fixed inset-0 z-[140] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm"
-          @click.self="closeSendConfirmModal"
-        >
-          <section class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
+          @click.self="closeSendConfirmModal">
+          <section
+            class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
             <div class="border-b border-slate-100 px-6 py-5 dark:border-slate-800">
               <div class="flex items-start gap-3">
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-200">
+                <div
+                  class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-200">
                   <Icon icon="mdi:email-fast-outline" class="h-6 w-6" />
                 </div>
                 <div>
-                  <p class="text-xs font-bold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-300">Konfirmasi Pengiriman</p>
+                  <p class="text-xs font-bold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-300">
+                    Konfirmasi
+                    Pengiriman</p>
                   <h2 class="mt-1 text-lg font-black text-slate-900 dark:text-white">Kirim email penawaran?</h2>
                   <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
                     Sistem akan mengirim template ini ke {{ validRecipientCount }} email penerima.
@@ -681,10 +641,14 @@
             <div class="space-y-3 px-6 py-5 text-sm text-slate-600 dark:text-slate-300">
               <div class="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-slate-800/70 dark:ring-slate-700">
                 <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Preview Penerima Pertama</p>
-                <p class="mt-2 font-bold text-slate-900 dark:text-white">{{ previewRecipient.school_name || "Nama Sekolah" }}</p>
-                <p class="mt-1 break-all text-xs text-slate-500 dark:text-slate-400">{{ previewRecipient.email || "email@sekolah.sch.id" }}</p>
+                <p class="mt-2 font-bold text-slate-900 dark:text-white">{{ previewRecipient.school_name || `Nama
+                  Sekolah`
+                  }}</p>
+                <p class="mt-1 break-all text-xs text-slate-500 dark:text-slate-400">{{ previewRecipient.email ||
+                  "email@sekolah.sch.id" }}</p>
               </div>
-              <div class="flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-2.5 text-xs font-semibold text-rose-700 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
+              <div
+                class="flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-2.5 text-xs font-semibold text-rose-700 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20">
                 <Icon icon="mdi:paperclip" class="h-4 w-4 shrink-0" />
                 Termasuk lampiran PDF Surat Penawaran yang dipersonalisasi per sekolah.
               </div>
@@ -693,22 +657,16 @@
               </p>
             </div>
 
-            <div class="flex flex-col-reverse gap-3 border-t border-slate-100 px-6 py-4 sm:flex-row sm:justify-end dark:border-slate-800">
-              <button
-                type="button"
-                @click="closeSendConfirmModal"
-                :disabled="isSending"
-                class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-              >
+            <div
+              class="flex flex-col-reverse gap-3 border-t border-slate-100 px-6 py-4 sm:flex-row sm:justify-end dark:border-slate-800">
+              <button type="button" @click="closeSendConfirmModal" :disabled="isSending"
+                class="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
                 Batal
               </button>
-              <button
-                type="button"
-                @click="confirmSendEmails"
-                :disabled="isSending"
-                class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-500 disabled:opacity-50"
-              >
-                <Icon :icon="isSending ? 'mdi:loading' : 'mdi:send'" class="h-4 w-4" :class="{ 'animate-spin': isSending }" />
+              <button type="button" @click="confirmSendEmails" :disabled="isSending"
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-500 disabled:opacity-50">
+                <Icon :icon="isSending ? 'mdi:loading' : 'mdi:send'" class="h-4 w-4"
+                  :class="{ 'animate-spin': isSending }" />
                 {{ isSending ? "Mengirim..." : "Ya, Kirim" }}
               </button>
             </div>
@@ -779,7 +737,7 @@ const DEFAULT_BODY = `<!doctype html>
                 </div>
                 <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#334155;">Sistem ini dirancang agar mudah digunakan oleh guru dan siswa, serta membantu {{school_name}} meningkatkan efektivitas proses belajar mengajar dan mempercepat transformasi digital di lingkungan pendidikan.</p>
                 <div style="margin:26px 0;text-align:center;">
-                  <a href="https://demo.school-system.my.id" style="display:inline-block;background:#0284c7;color:#ffffff;text-decoration:none;font-size:15px;font-weight:800;padding:14px 22px;border-radius:12px;margin:4px;">Coba Demo Online</a>
+                  <a href="https://demo.idschoolsystem.com" style="display:inline-block;background:#0284c7;color:#ffffff;text-decoration:none;font-size:15px;font-weight:800;padding:14px 22px;border-radius:12px;margin:4px;">Coba Demo Online</a>
                   <a href="https://wa.me/6285719578195" style="display:inline-block;background:#16a34a;color:#ffffff;text-decoration:none;font-size:15px;font-weight:800;padding:14px 22px;border-radius:12px;margin:4px;">Hubungi Founder via WhatsApp</a>
                 </div>
                 <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#334155;">Melalui demo tersebut, Bapak/Ibu dapat melihat langsung alur manajemen pembelajaran, CBT anti curang, presensi berbasis Face Recognition, laporan orang tua, dan AI Assistant untuk membantu guru membuat materi serta soal.</p>
@@ -791,7 +749,7 @@ const DEFAULT_BODY = `<!doctype html>
             </tr>
             <tr>
               <td style="background:#f8fafc;padding:18px 32px;text-align:center;font-size:12px;line-height:1.6;color:#64748b;">
-                Demo online: <a href="https://demo.school-system.my.id" style="color:#0284c7;text-decoration:none;font-weight:700;">demo.school-system.my.id</a>
+                Demo online: <a href="https://demo.idschoolsystem.com" style="color:#0284c7;text-decoration:none;font-weight:700;">demo.idschoolsystem.com</a>
               </td>
             </tr>
           </table>
