@@ -683,9 +683,9 @@
             </button>
           </div>
 
-            <div v-if="quizOverviewModal.loading" class="min-h-0 flex-1 p-8 text-center sm:p-12">
-              <div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-sky-600"></div>
-              <p class="mt-4 text-sm text-slate-500">Memuat detail quiz...</p>
+            <div v-if="quizOverviewModal.loading" class="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+              <SkeletonLoader variant="stats" :count="3" :columns="3" />
+              <SkeletonLoader variant="table" :count="6" :table-columns="4" class="mt-4" />
             </div>
 
             <div v-else class="min-h-0 flex-1 overflow-y-auto bg-slate-50/40 p-3 dark:bg-slate-950/30 sm:p-6">

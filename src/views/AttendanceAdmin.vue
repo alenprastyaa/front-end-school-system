@@ -200,9 +200,7 @@
           </button>
         </div>
 
-        <div v-if="isLoadingHistory" class="p-6 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">
-          Memuat history perubahan wajah...
-        </div>
+        <SkeletonLoader v-if="isLoadingHistory" variant="list" :count="4" class="p-4" />
         <div v-else-if="historyRows.length === 0" class="p-8 text-center">
           <Icon icon="mdi:history" class="mx-auto text-3xl text-slate-300 dark:text-slate-600" />
           <p class="mt-2 text-sm font-bold">Belum ada history</p>

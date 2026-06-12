@@ -14,7 +14,10 @@
 
     <div class="mx-auto space-y-5 px-5 py-6">
 
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <SkeletonLoader v-if="pageLoading" variant="stats" :count="3" :columns="3" />
+      <SkeletonLoader v-if="pageLoading" variant="form" :count="4" />
+
+      <div v-show="!pageLoading" class="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3.5 shadow-sm">
           <p class="text-[10px] font-medium text-slate-500">Tarif per JP</p>
           <p class="mt-1 text-[22px] font-extrabold leading-none text-slate-900">
@@ -31,12 +34,12 @@
         </div>
       </div>
 
-      <p class="text-sm text-slate-500">
+      <p v-show="!pageLoading" class="text-sm text-slate-500">
         Tarif ini digunakan sebagai nilai default saat membuat slip gaji. Tarif dapat di-override per slip jika
         dibutuhkan.
       </p>
 
-      <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div v-show="!pageLoading" class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div class="divide-y divide-slate-100">
 
           <div class="px-5 py-4 grid sm:grid-cols-[220px,1fr] gap-3 items-start">
@@ -108,6 +111,7 @@ import { usePayrollStore } from "@/store/payroll";
 
 const successModal = ref(null);
 const payrollStore = usePayrollStore();
+const pageLoading = ref(true);
 const {
   settings: settingsForm,
   isSavingSettings,
@@ -134,8 +138,13 @@ const saveSettings = async () => {
 };
 
 onMounted(() => {
-  payrollStore.loadOverview().catch((error) => {
-    pushToast({ title: "Gagal Memuat Setting", message: error.message, type: "error" });
-  });
+  payrollStore
+    .loadOverview()
+    .catch((error) => {
+      pushToast({ title: "Gagal Memuat Setting", message: error.message, type: "error" });
+    })
+    .finally(() => {
+      pageLoading.value = false;
+    });
 });
 </script>

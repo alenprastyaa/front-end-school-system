@@ -638,14 +638,11 @@
 
             <div
               class="max-h-64 overflow-y-auto rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
-              <div v-if="isLoadingPromotionCandidates"
-                class="flex items-center justify-center gap-2 px-4 py-8 text-sm font-medium text-slate-500 dark:text-slate-400">
-                <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                  stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                </svg>
-                Memuat siswa
+              <div v-if="isLoadingPromotionCandidates" class="space-y-2 p-3">
+                <div v-for="n in 4" :key="`promo-sk-${n}`" class="flex items-center gap-3">
+                  <div class="skeleton-shimmer h-4 w-4 shrink-0 rounded"></div>
+                  <div class="skeleton-shimmer h-4 flex-1 rounded"></div>
+                </div>
               </div>
               <div v-else-if="!promotionForm.from_class_id"
                 class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
@@ -722,8 +719,8 @@
           </button>
         </div>
 
-        <div v-if="isLoadingStudentDetail" class="px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
-          Memuat detail siswa...
+        <div v-if="isLoadingStudentDetail" class="px-6 py-6">
+          <SkeletonLoader variant="form" :count="4" />
         </div>
 
         <div v-else class="space-y-4 px-6 py-6">

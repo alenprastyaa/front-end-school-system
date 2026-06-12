@@ -22,8 +22,11 @@
         ref="messageListRef"
         class="min-h-[420px] flex-1 space-y-4 overflow-y-auto overscroll-contain bg-slate-50/40 px-5 py-5 dark:bg-slate-950/30"
       >
-        <div v-if="isLoadingMessages" class="flex h-[360px] items-center justify-center text-sm font-medium text-slate-500 dark:text-slate-400">
-          Memuat percakapan...
+        <div v-if="isLoadingMessages" class="space-y-4">
+          <div v-for="n in 6" :key="`panel-chat-sk-${n}`" class="flex"
+            :class="n % 2 === 0 ? 'justify-end' : 'justify-start'">
+            <div class="skeleton-shimmer h-14 rounded-2xl" :class="n % 3 === 0 ? 'w-1/2' : 'w-3/5'"></div>
+          </div>
         </div>
 
         <div v-else-if="messages.length === 0" class="flex h-[360px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white/70 px-6 text-center dark:border-slate-800 dark:bg-slate-900/40">

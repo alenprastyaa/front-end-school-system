@@ -16,7 +16,8 @@
       </section>
 
       <section class="rounded-lg border bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <form @submit.prevent="submitRegistration" class="space-y-4">
+        <SkeletonLoader v-if="pageLoading" variant="form" :count="5" />
+        <form v-show="!pageLoading" @submit.prevent="submitRegistration" class="space-y-4">
           <div class="grid gap-4 md:grid-cols-2">
             <div>
               <label class="block text-sm font-medium">Nama Lengkap</label>
@@ -76,6 +77,7 @@ import { api } from "@/api";
 const route = useRoute();
 const school = ref(null);
 const majors = ref([]);
+const pageLoading = ref(true);
 const message = ref("");
 const isError = ref(false);
 const isSubmitting = ref(false);
@@ -105,6 +107,8 @@ const loadOptions = async () => {
   } catch (error) {
     isError.value = true;
     message.value = error.message || "Pendaftaran SPMB belum tersedia.";
+  } finally {
+    pageLoading.value = false;
   }
 };
 

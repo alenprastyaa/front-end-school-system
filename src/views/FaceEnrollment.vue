@@ -15,8 +15,17 @@
         </span>
       </header>
 
+      <!-- Skeleton saat memuat profil -->
+      <div v-if="pageLoading" class="overflow-hidden rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#111b21]">
+        <div class="skeleton-shimmer aspect-[4/3] w-full rounded-2xl"></div>
+        <div class="mt-4 space-y-3">
+          <div class="skeleton-shimmer h-10 w-full rounded-xl"></div>
+          <div class="skeleton-shimmer h-10 w-full rounded-xl"></div>
+        </div>
+      </div>
+
       <!-- Enrollment card -->
-      <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#111b21]">
+      <section v-show="!pageLoading" class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#111b21]">
         <!-- Viewfinder -->
         <div class="px-4 pt-4">
           <div class="relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-950">
@@ -130,6 +139,7 @@ const {
 const cameraVideoRef = ref(null);
 const captureCanvasRef = ref(null);
 const latestRequest = ref(null);
+const pageLoading = ref(true);
 let faceApiLoadPromise = null;
 let cameraStream = null;
 
@@ -340,6 +350,8 @@ onMounted(async () => {
       message: error.message || "Gagal memuat profil pengguna.",
       type: "error",
     });
+  } finally {
+    pageLoading.value = false;
   }
 });
 
