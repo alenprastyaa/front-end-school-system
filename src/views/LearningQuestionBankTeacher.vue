@@ -624,7 +624,7 @@
                         class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">1</span>
                       <h3 class="text-sm font-bold text-slate-900 dark:text-white">Pilih Bentuk Soal</h3>
                     </div>
-                    <div class="grid gap-4 md:grid-cols-3">
+                    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                       <div class="space-y-1.5">
                         <label class="text-xs font-semibold text-slate-500">Jenis Soal</label>
                         <select v-model="aiGeneratorForm.question_type"
@@ -645,6 +645,15 @@
                           <option value="MUDAH">Mudah</option>
                           <option value="MENENGAH">Menengah</option>
                           <option value="SULIT">Sulit</option>
+                        </select>
+                      </div>
+                      <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-slate-500">Model Soal</label>
+                        <select v-model="aiGeneratorForm.question_style"
+                          class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+                          <option v-for="option in aiQuestionStyleOptions" :key="option.value" :value="option.value">
+                            {{ option.label }}
+                          </option>
                         </select>
                       </div>
                     </div>
@@ -684,29 +693,40 @@
                             }}</p>
                         </div>
                       </div>
-                      <div class="space-y-1.5">
-                        <div class="flex items-center justify-between gap-3">
-                          <label class="text-xs font-semibold text-slate-500">Pilih Materi</label>
-                          <button type="button" @click="loadAiTopicSuggestions" :disabled="isLoadingAiTopicSuggestions"
-                            class="text-xs font-semibold text-blue-700 hover:text-blue-800 disabled:opacity-50 dark:text-blue-300">
-                            {{ isLoadingAiTopicSuggestions ? "Memuat..." : "Muat Ulang" }}
-                          </button>
-                        </div>
-                        <select v-model="aiGeneratorForm.topic"
-                          class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
-                          <option value="" disabled>
-                            {{ isLoadingAiTopicSuggestions ? "Memuat daftar materi..." : "Pilih materi..." }}
-                          </option>
-                          <option v-for="topic in aiTopicSuggestions" :key="topic" :value="topic">{{ topic }}</option>
-                          <option value="__custom__">Materi lainnya...</option>
-                        </select>
-                        <input v-if="aiGeneratorForm.topic === '__custom__'" v-model="aiCustomTopic" type="text"
-                          placeholder="Tulis materi sendiri"
-                          class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
-                        <p v-if="aiTopicSuggestionError" class="text-xs font-medium text-amber-700 dark:text-amber-300">
-                          {{ aiTopicSuggestionError }}
-                        </p>
-                      </div>
+	                      <div class="space-y-1.5">
+	                        <div class="flex items-center justify-between gap-3">
+	                          <label class="text-xs font-semibold text-slate-500">Pilih Materi</label>
+	                          <button type="button" @click="loadAiTopicSuggestions" :disabled="isLoadingAiTopicSuggestions"
+	                            class="text-xs font-semibold text-blue-700 hover:text-blue-800 disabled:opacity-50 dark:text-blue-300">
+	                            {{ isLoadingAiTopicSuggestions ? "Memuat..." : "Muat Ulang" }}
+	                          </button>
+	                        </div>
+	                        <div v-if="isLoadingAiTopicSuggestions"
+	                          class="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
+	                          <div class="space-y-2">
+	                            <div class="h-10 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700"></div>
+	                            <div class="grid gap-2 sm:grid-cols-3">
+	                              <div class="h-7 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700"></div>
+	                              <div class="h-7 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700"></div>
+	                              <div class="h-7 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700"></div>
+	                            </div>
+	                          </div>
+	                        </div>
+	                        <div v-else>
+	                          <select v-model="aiGeneratorForm.topic"
+	                            class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+	                            <option value="" disabled>Pilih materi...</option>
+	                            <option v-for="topic in aiTopicSuggestions" :key="topic" :value="topic">{{ topic }}</option>
+	                            <option value="__custom__">Materi lainnya...</option>
+	                          </select>
+	                          <input v-if="aiGeneratorForm.topic === '__custom__'" v-model="aiCustomTopic" type="text"
+	                            placeholder="Tulis materi sendiri"
+	                            class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+	                          <p v-if="aiTopicSuggestionError" class="text-xs font-medium text-amber-700 dark:text-amber-300">
+	                            {{ aiTopicSuggestionError }}
+	                          </p>
+	                        </div>
+	                      </div>
                     </div>
                   </section>
 
@@ -824,11 +844,11 @@
                   {{ isSavingGeneratedAiQuestions ? "Menyimpan..." : `Simpan ${selectedGeneratedAiQuestions.length}
                   Soal` }}
                 </button>
-                <button type="submit" :disabled="isGeneratingAiQuestions"
-                  class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:text-sm">
-                  {{ isGeneratingAiQuestions ? "Membuat..." : generatedAiQuestions.length ? `Buat Ulang` : `Buat Soal
-                  dengan AI` }}
-                </button>
+	                <button type="submit" :disabled="isGeneratingAiQuestions || isLoadingAiTopicSuggestions"
+	                  class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:text-sm">
+	                  {{ isGeneratingAiQuestions ? "Membuat..." : isLoadingAiTopicSuggestions ? "Menyiapkan materi..." : generatedAiQuestions.length ? `Buat Ulang` : `Buat Soal
+	                  dengan AI` }}
+	                </button>
               </div>
             </fieldset>
           </form>
@@ -997,12 +1017,16 @@
               <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">
                 Mohon tunggu sampai proses selesai. Form sedang dikunci agar input tidak berubah.
               </p>
-              <div class="mt-4 space-y-2">
-                <p class="text-sm font-medium text-sky-700 dark:text-sky-300">{{ activeAiGenerationStage }}</p>
-                <div class="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                  <div class="h-full w-1/2 animate-pulse rounded-full bg-sky-500"></div>
-                </div>
-              </div>
+	              <div class="mt-4 space-y-2">
+	                <div class="flex items-center justify-between gap-3">
+	                  <p class="text-sm font-medium text-sky-700 dark:text-sky-300">{{ activeAiGenerationStage }}</p>
+	                  <span class="text-sm font-bold tabular-nums text-slate-900 dark:text-white">{{ aiGenerationProgress }}%</span>
+	                </div>
+	                <div class="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+	                  <div class="h-full rounded-full bg-sky-500 transition-all duration-700 ease-out"
+	                    :style="{ width: `${aiGenerationProgress}%` }"></div>
+	                </div>
+	              </div>
             </div>
           </div>
         </div>
@@ -1655,6 +1679,7 @@ const aiGeneratorForm = reactive({
   question_type: "MCQ",
   question_count: 5,
   difficulty: "MENENGAH",
+  question_style: "AUTO",
   topic: "",
   include_illustration: false,
   additional_instructions: "",
@@ -1698,6 +1723,10 @@ onUnmounted(() => {
   if (aiGenerationStageInterval) {
     clearInterval(aiGenerationStageInterval);
     aiGenerationStageInterval = null;
+  }
+  if (aiGenerationProgressInterval) {
+    clearInterval(aiGenerationProgressInterval);
+    aiGenerationProgressInterval = null;
   }
 });
 
@@ -1890,7 +1919,9 @@ const inferPhaseFromGrade = (grade) => {
 const generatedAiQuestions = ref([]);
 const selectedGeneratedAiQuestionIds = ref([]);
 const aiGenerationStageIndex = ref(0);
+const aiGenerationProgress = ref(0);
 let aiGenerationStageInterval = null;
+let aiGenerationProgressInterval = null;
 const aiGenerationStages = [
   "Menganalisis topik dan konteks soal...",
   "Menyusun struktur pertanyaan dan opsi jawaban...",
@@ -1999,6 +2030,51 @@ const resolvedAiTopic = computed(() =>
     ? String(aiCustomTopic.value || "").trim()
     : String(aiGeneratorForm.topic || "").trim(),
 );
+const subjectCategory = computed(() => {
+  const name = String(selectedSubject.value?.name || "").toLowerCase();
+  if (/matematika|math|numerasi|statistik|fisika|kimia|akuntansi|ekonomi/.test(name)) return "NUMERASI";
+  if (/bahasa|indonesia|inggris|arab|jawa|sunda|literasi/.test(name)) return "BAHASA";
+  if (/ipa|biologi|sains|geografi|sejarah|sosiologi|ppkn|pkn|ips/.test(name)) return "KONSEP";
+  if (/informatika|komputer|rpl|tkj|multimedia|kejuruan|produktif|bisnis|otomotif|mesin|listrik/.test(name)) return "KEJURUAN";
+  if (/seni|musik|rupa|prakarya|pjok|olahraga|penjas/.test(name)) return "PRAKTIK";
+  return "UMUM";
+});
+const baseAiQuestionStyleOptions = [
+  { value: "AUTO", label: "Otomatis sesuai mapel" },
+  { value: "HOTS", label: "HOTS" },
+  { value: "STORY", label: "Soal cerita" },
+  { value: "MULTI_STEP", label: "Soal beranak / bertahap" },
+  { value: "CASE_STUDY", label: "Studi kasus" },
+];
+const aiQuestionStyleOptions = computed(() => {
+  const byCategory = {
+    NUMERASI: [
+      { value: "DATA_INTERPRETATION", label: "Interpretasi data" },
+      { value: "PROBLEM_SOLVING", label: "Pemecahan masalah" },
+    ],
+    BAHASA: [
+      { value: "READING_COMPREHENSION", label: "Pemahaman bacaan" },
+      { value: "TEXT_ANALYSIS", label: "Analisis teks" },
+    ],
+    KONSEP: [
+      { value: "CAUSE_EFFECT", label: "Sebab-akibat" },
+      { value: "EXPERIMENT", label: "Eksperimen / observasi" },
+    ],
+    KEJURUAN: [
+      { value: "PROCEDURE", label: "Prosedur kerja" },
+      { value: "TROUBLESHOOTING", label: "Troubleshooting" },
+    ],
+    PRAKTIK: [
+      { value: "PERFORMANCE", label: "Praktik / performa" },
+      { value: "REFLECTION", label: "Refleksi" },
+    ],
+    UMUM: [
+      { value: "CAUSE_EFFECT", label: "Sebab-akibat" },
+      { value: "COMPARISON", label: "Perbandingan" },
+    ],
+  };
+  return [...baseAiQuestionStyleOptions, ...(byCategory[subjectCategory.value] || byCategory.UMUM)];
+});
 
 const selectedQuestionsForPublish = computed(() =>
   filteredQuestionBankForAssignment.value.filter((item) => assignmentForm.selected_question_bank_ids.includes(item.id)),
@@ -2105,6 +2181,7 @@ const resetAiGeneratorForm = () => {
   aiGeneratorForm.question_type = "MCQ";
   aiGeneratorForm.question_count = 5;
   aiGeneratorForm.difficulty = "MENENGAH";
+  aiGeneratorForm.question_style = "AUTO";
   aiGeneratorForm.topic = "";
   aiCustomTopic.value = "";
   aiTopicSuggestions.value = [];
@@ -2117,13 +2194,31 @@ const resetAiGeneratorForm = () => {
 
 const startAiGenerationProgress = () => {
   aiGenerationStageIndex.value = 0;
+  aiGenerationProgress.value = 0;
   if (aiGenerationStageInterval) {
     clearInterval(aiGenerationStageInterval);
+  }
+  if (aiGenerationProgressInterval) {
+    clearInterval(aiGenerationProgressInterval);
   }
 
   aiGenerationStageInterval = window.setInterval(() => {
     aiGenerationStageIndex.value = (aiGenerationStageIndex.value + 1) % aiGenerationStages.length;
   }, 1300);
+
+  aiGenerationProgressInterval = window.setInterval(() => {
+    const current = aiGenerationProgress.value;
+    if (current >= 95) return;
+
+    let step = 1;
+    if (current < 25) {
+      step = 4;
+    } else if (current < 60) {
+      step = 2;
+    }
+
+    aiGenerationProgress.value = Math.min(95, current + step);
+  }, 900);
 };
 
 const stopAiGenerationProgress = () => {
@@ -2131,7 +2226,20 @@ const stopAiGenerationProgress = () => {
     clearInterval(aiGenerationStageInterval);
     aiGenerationStageInterval = null;
   }
+  if (aiGenerationProgressInterval) {
+    clearInterval(aiGenerationProgressInterval);
+    aiGenerationProgressInterval = null;
+  }
   aiGenerationStageIndex.value = 0;
+  aiGenerationProgress.value = 0;
+};
+
+const completeAiGenerationProgress = () => {
+  if (aiGenerationProgressInterval) {
+    clearInterval(aiGenerationProgressInterval);
+    aiGenerationProgressInterval = null;
+  }
+  aiGenerationProgress.value = 100;
 };
 
 const resetQuestionBankImport = () => {
@@ -2767,6 +2875,7 @@ const importQuestionBankDocument = async () => {
 
 const generateQuestionBankWithAi = async () => {
   if (!selectedSubject.value) return;
+  if (isLoadingAiTopicSuggestions.value) return;
   if (!resolvedAiTopic.value) {
     aiTopicSuggestionError.value = "Pilih materi atau tulis materi sendiri terlebih dahulu.";
     return;
@@ -2783,6 +2892,7 @@ const generateQuestionBankWithAi = async () => {
       question_type: aiGeneratorForm.question_type,
       question_count: Number(aiGeneratorForm.question_count) || 0,
       difficulty: aiGeneratorForm.difficulty,
+      question_style: aiGeneratorForm.question_style || "AUTO",
       grade_label: autoAiGradeLabel.value === "-" ? "" : autoAiGradeLabel.value,
       phase_name: autoAiPhaseName.value === "Fase belum terbaca" ? "" : autoAiPhaseName.value,
       curriculum_name: autoAiCurriculumName.value,
@@ -2790,12 +2900,13 @@ const generateQuestionBankWithAi = async () => {
       additional_instructions: aiGeneratorForm.additional_instructions || "",
     };
 
-    const response = await api.post(
-      `/learning/subjects/${selectedSubject.value.id}/question-bank/generate-ai`,
-      payload,
-    );
+	    const response = await api.post(
+	      `/learning/subjects/${selectedSubject.value.id}/question-bank/generate-ai`,
+	      payload,
+	    );
+	    completeAiGenerationProgress();
 
-    const summary = response?.data || {};
+	    const summary = response?.data || {};
     generatedAiQuestions.value = (summary.items || []).map((item, index) => ({
       ...item,
       question_image_url: aiGeneratorForm.include_illustration ? (item.question_image_url || "") : "",
@@ -2825,11 +2936,14 @@ const generateQuestionBankWithAi = async () => {
       message: error.message,
       type: "error",
     });
-  } finally {
-    isGeneratingAiQuestions.value = false;
-    stopAiGenerationProgress();
-  }
-};
+	  } finally {
+	    if (aiGenerationProgress.value === 100) {
+	      await new Promise((resolve) => window.setTimeout(resolve, 350));
+	    }
+	    isGeneratingAiQuestions.value = false;
+	    stopAiGenerationProgress();
+	  }
+	};
 
 const selectAllGeneratedAiQuestions = () => {
   selectedGeneratedAiQuestionIds.value = generatedAiQuestions.value.map((item) => item.temp_id);

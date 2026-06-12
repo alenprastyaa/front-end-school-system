@@ -55,6 +55,7 @@ const baseAiGeneratorForm = () => ({
   question_type: "MCQ",
   question_count: 5,
   difficulty: "MENENGAH",
+  question_style: "AUTO",
   topic: "",
   include_illustration: false,
   additional_instructions: "",

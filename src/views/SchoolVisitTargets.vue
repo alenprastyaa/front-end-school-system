@@ -107,9 +107,18 @@
               </div>
             </div>
 
-            <div class="grid gap-3 sm:grid-cols-2">
-              <label class="block">
-                <span class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Wakur</span>
+	            <div class="grid gap-3 sm:grid-cols-2">
+	              <label class="block">
+	                <span class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Email Sekolah</span>
+	                <input
+	                  v-model.trim="form.email"
+	                  type="email"
+	                  placeholder="email@sekolah.sch.id"
+	                  class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
+	                />
+	              </label>
+	              <label class="block">
+	                <span class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Wakur</span>
                 <input
                   v-model.trim="form.wakur"
                   type="text"
@@ -277,7 +286,8 @@
                   <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0 flex-1">
                       <p class="text-sm font-bold leading-5 text-slate-900 dark:text-white">{{ item.name }}</p>
-                      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.province || "Provinsi belum diisi" }}</p>
+	                      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.email || "Email belum diisi" }}</p>
+	                      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ item.province || "Provinsi belum diisi" }}</p>
                       <p v-if="schoolContactLabel(item)" class="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">{{ schoolContactLabel(item) }}</p>
                     </div>
                     <span
@@ -390,8 +400,12 @@
                           {{ schoolInitials(item.name) }}
                         </div>
                         <div class="min-w-0">
-                          <p class="font-semibold leading-snug text-slate-900 dark:text-white">{{ item.name }}</p>
-                          <p class="mt-0.5 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+	                          <p class="font-semibold leading-snug text-slate-900 dark:text-white">{{ item.name }}</p>
+	                          <p class="mt-0.5 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+	                            <Icon icon="mdi:email-outline" class="h-3.5 w-3.5 shrink-0" />
+	                            {{ item.email || "Email belum diisi" }}
+	                          </p>
+	                          <p class="mt-0.5 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
                             <Icon icon="mdi:map-marker-outline" class="h-3.5 w-3.5 shrink-0" />
                             {{ item.province || "Provinsi belum diisi" }}
                           </p>
@@ -649,6 +663,7 @@ const confirmModal = reactive({
 
 const form = reactive({
   name: "",
+  email: "",
   wakur: "",
   kepsek: "",
   full_address: "",
@@ -659,7 +674,7 @@ const form = reactive({
   longitude: null,
   google_maps_url: "",
   place_id: "",
-  is_planned: true,
+  is_planned: false,
 });
 
 const completedAddressCount = computed(() =>
@@ -719,6 +734,7 @@ const closeFormModal = () => {
 const resetForm = () => {
   editingId.value = null;
   form.name = "";
+  form.email = "";
   form.wakur = "";
   form.kepsek = "";
   form.full_address = "";
@@ -729,7 +745,7 @@ const resetForm = () => {
   form.longitude = null;
   form.google_maps_url = "";
   form.place_id = "";
-  form.is_planned = true;
+  form.is_planned = false;
   addressSuggestions.value = [];
   showAddressSuggestions.value = false;
   addressSearchError.value = "";
@@ -741,6 +757,7 @@ const resetForm = () => {
 
 const buildPayload = () => ({
   name: form.name,
+  email: form.email || undefined,
   wakur: form.wakur || undefined,
   kepsek: form.kepsek || undefined,
   full_address: form.full_address,
@@ -926,6 +943,7 @@ const submitTarget = async () => {
 const editTarget = (item) => {
   editingId.value = item.id;
   form.name = item.name || "";
+  form.email = item.email || "";
   form.wakur = item.wakur || "";
   form.kepsek = item.kepsek || "";
   form.full_address = item.full_address || "";
