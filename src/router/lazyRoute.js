@@ -1,6 +1,5 @@
 import { defineAsyncComponent, defineComponent, h } from "vue";
 
-const dotCount = 18;
 const chunkReloadKey = "school-system:chunk-reload-attempted";
 const pwaCachePrefixes = ["school-system-pwa-", "school-system-runtime-"];
 
@@ -81,29 +80,37 @@ export const clearChunkReloadAttempt = () => {
   }
 };
 
-const createDot = (index) => h("span", {
-  class: "absolute left-1/2 top-1/2 h-2.5 w-2.5 -ml-1 -mt-1 rounded-full bg-sky-500",
-  style: {
-    transform: `rotate(${index * (360 / dotCount)}deg) translateY(-3.2rem)`,
-    opacity: String(1 - (index / dotCount) * 0.76),
-  },
-});
+const skeletonBlock = (cls) => h("div", { class: `skeleton-shimmer ${cls}` });
 
+// Skeleton generik bergaya halaman aplikasi (header + stat + kartu),
+// menggantikan spinner agar konsisten dengan skeleton di seluruh halaman.
 const RouteLoading = defineComponent({
   name: "RouteLoading",
   setup() {
     return () => h("div", {
-      class: "flex min-h-full items-center justify-center bg-[#d9dbd5] p-6 text-[#111b21] dark:bg-[#0b141a] dark:text-[#e9edef]",
+      class: "min-h-full bg-slate-50 p-4 dark:bg-slate-950 sm:p-6",
     }, [
-      h("div", { class: "w-full max-w-xs rounded-3xl border border-[#e9edef] bg-white p-7 text-center shadow-xl shadow-slate-900/10 dark:border-[#222e35] dark:bg-[#202c33]" }, [
-        h("div", { class: "relative mx-auto flex h-28 w-28 items-center justify-center" }, [
-          h("div", { class: "absolute inset-0 animate-spin" }, Array.from({ length: dotCount }, (_, index) => createDot(index))),
-          h("div", { class: "flex h-16 w-16 items-center justify-center rounded-full bg-sky-50 ring-1 ring-sky-100 dark:bg-sky-500/10 dark:ring-sky-400/20" }, [
-            h("span", { class: "h-3 w-3 rounded-full bg-sky-500" }),
+      h("div", { class: "space-y-4" }, [
+        // Header bar
+        h("div", { class: "flex items-center justify-between gap-4" }, [
+          h("div", { class: "space-y-2" }, [
+            skeletonBlock("h-6 w-44 rounded-lg"),
+            skeletonBlock("h-3 w-28 rounded"),
           ]),
+          skeletonBlock("h-9 w-28 rounded-xl"),
         ]),
-        h("p", { class: "mt-6 text-base font-semibold tracking-normal" }, "Memuat halaman"),
-        h("p", { class: "mt-1 text-xs font-medium text-[#667781] dark:text-[#8696a0]" }, "Mohon tunggu sebentar"),
+        // Stat row
+        h(
+          "div",
+          { class: "grid grid-cols-2 gap-3 sm:grid-cols-4" },
+          Array.from({ length: 4 }, () => skeletonBlock("h-24 rounded-2xl")),
+        ),
+        // Content cards
+        h(
+          "div",
+          { class: "grid gap-3 sm:grid-cols-2 lg:grid-cols-3" },
+          Array.from({ length: 6 }, () => skeletonBlock("h-40 rounded-2xl")),
+        ),
       ]),
     ]);
   },
@@ -129,7 +136,9 @@ export const lazyRoute = (loader) => {
     loader,
     loadingComponent: RouteLoading,
     errorComponent: RouteLoadError,
-    delay: 0,
+    // Tunggu sebentar sebelum menampilkan skeleton: kalau chunk route sudah
+    // ter-cache (refresh cepat), halaman langsung muncul tanpa kedipan loader.
+    delay: 200,
     timeout: 30000,
     suspensible: false,
     onError(error, retry, fail) {

@@ -15,6 +15,11 @@
               {{ item.class_name }}
             </span>
           </button>
+
+          <template v-if="subjectsLoading && !subjects.length">
+            <div v-for="n in 5" :key="`examt-subj-sk-${n}`"
+              class="skeleton-shimmer h-[88px] min-w-[240px] flex-none rounded-2xl"></div>
+          </template>
         </div>
       </section>
 
@@ -258,7 +263,8 @@
               </div>
             </div>
 
-            <div class="overflow-x-auto">
+            <SkeletonLoader v-if="contentLoading" variant="table" :count="6" :table-columns="4" class="p-4" />
+            <div v-show="!contentLoading" class="overflow-x-auto">
               <table class="min-w-full text-left text-sm">
                 <thead class="bg-white text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-900">
                   <tr>
@@ -316,34 +322,40 @@ import { computed, nextTick, onMounted, ref, watch, reactive } from "vue";
 import { api } from "@/api";
 import { formatDateTime } from "@/utils/date";
 import { pushToast } from "@/composables/useToast";
-import { useMasterDataStore } from "@/store/masterData";
+import { useTeacherStore } from "@/store/teacher";
+import { useTeacherExamStore } from "@/store/teacherExam";
+import { storeToRefs } from "pinia";
 import { normalizePublicUrl } from "@/utils/url";
 
-const subjects = ref([]);
-const masterDataStore = useMasterDataStore();
-const selectedSubject = ref(null);
-const assignments = ref([]);
-const questionBank = ref([]);
-const questionBankTotal = ref(0);
-const subjectError = ref("");
-const message = ref("");
-const isError = ref(false);
-const isSavingAssignment = ref(false);
-const bankSearch = ref("");
-const bankTypeFilter = ref("ALL");
-const bankPageSize = ref(20);
-const bankCurrentPage = ref(1);
-const activeExamRequestId = ref(null);
+const teacherStore = useTeacherStore();
+const examStore = useTeacherExamStore();
+const { subjects } = storeToRefs(teacherStore);
+const subjectsLoading = ref(true);
+const contentLoading = ref(false);
+const {
+  selectedSubject,
+  assignments,
+  questionBank,
+  questionBankTotal,
+  subjectError,
+  message,
+  isError,
+  isSavingAssignment,
+  bankSearch,
+  bankTypeFilter,
+  bankPageSize,
+  bankCurrentPage,
+  activeExamRequestId,
+} = storeToRefs(examStore);
 const composerSectionRef = ref(null);
 const questionBankSectionRef = ref(null);
-const isComposerHighlighted = ref(false);
+const { isComposerHighlighted } = storeToRefs(examStore);
 let composerHighlightTimeout = null;
 
-const assignmentForm = reactive({
-  shuffle_questions: false,
-  question_duration_minutes: 10,
-  selected_question_bank_ids: [],
-});
+const assignmentForm = examStore.assignmentForm;
+assignmentForm.shuffle_questions = assignmentForm.shuffle_questions ?? false;
+assignmentForm.question_duration_minutes = assignmentForm.question_duration_minutes ?? 10;
+assignmentForm.selected_question_bank_ids = assignmentForm.selected_question_bank_ids || [];
 
 const QUESTION_IMAGE_MARKER = "[[QUESTION_IMAGE_URL]]";
 
@@ -511,18 +523,22 @@ const selectExamRequest = async (assignment) => {
 const loadSubjects = async () => {
   subjectError.value = "";
   try {
-    subjects.value = await masterDataStore.getTeacherSubjects();
+    subjects.value = await teacherStore.loadTeacherSubjects();
     if (!selectedSubject.value && subjects.value.length > 0) {
       await selectSubject(subjects.value[0]);
     }
   } catch (error) {
     subjectError.value = error.message;
+  } finally {
+    subjectsLoading.value = false;
   }
 };
 
 const loadSubjectData = async () => {
   if (!selectedSubject.value) return;
 
+  contentLoading.value = true;
+  try {
   const [assignmentResponse, questionBankResponse] = await Promise.all([
     api.get(`/learning/subjects/${selectedSubject.value.id}/assignments`),
     api.get(`/learning/subjects/${selectedSubject.value.id}/question-bank`, {
@@ -538,6 +554,9 @@ const loadSubjectData = async () => {
   assignments.value = (assignmentResponse?.data || []).filter((item) => item.is_exam);
   questionBank.value = questionBankResponse?.data?.data || [];
   questionBankTotal.value = questionBankResponse?.data?.total || 0;
+  } finally {
+    contentLoading.value = false;
+  }
 };
 
 const selectSubject = async (subject) => {

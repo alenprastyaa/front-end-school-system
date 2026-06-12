@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { cancelPendingApiRequests } from "@/api";
-import { clearSession, getStoredRole, getStoredUser, isAuthenticated } from "@/utils/auth";
+import { clearSession, getStoredRole, getStoredUser, isAuthenticated, isStudentFaceEnrolled, isStudentProfileComplete } from "@/utils/auth";
 import { clearChunkReloadAttempt, isChunkLoadError, lazyRoute, recoverFromChunkLoadError } from "./lazyRoute";
 import PublicLanding from "../views/PublicLanding.vue";
 import Dashboard from "../views/Dashboard.vue";
@@ -26,7 +26,7 @@ const routes = [
     meta: {
       title: "Dashboard" + appName,
       requiresAuth: true,
-      roles: ["SUPER_ADMIN", "ADMIN", "KOPERASI", "SARPRAS", "GURU", "SISWA", "ORANG_TUA"],
+      roles: ["SUPER_ADMIN", "ADMIN", "ADMIN_SPMB", "KOPERASI", "BENDAHARA", "SARPRAS", "GURU", "SISWA", "ORANG_TUA"],
     },
   },
   {
@@ -53,6 +53,82 @@ const routes = [
     },
   },
   {
+    path: "/payroll",
+    redirect: "/payroll/slips",
+  },
+  {
+    path: "/payroll/slips",
+    name: "PayrollSlips",
+    component: lazyRoute(() => import("../views/PayrollSlips.vue")),
+    meta: {
+      title: "Daftar Slip Gaji" + appName,
+      requiresAuth: true,
+      roles: ["BENDAHARA"],
+      moduleKey: "payroll",
+    },
+  },
+  {
+    path: "/payroll/components",
+    name: "PayrollComponents",
+    component: lazyRoute(() => import("../views/PayrollComponents.vue")),
+    meta: {
+      title: "Komponen Gaji" + appName,
+      requiresAuth: true,
+      roles: ["BENDAHARA"],
+      moduleKey: "payroll",
+    },
+  },
+  {
+    path: "/payroll/settings",
+    name: "PayrollSettings",
+    component: lazyRoute(() => import("../views/PayrollSettings.vue")),
+    meta: {
+      title: "Setting Tarif" + appName,
+      requiresAuth: true,
+      roles: ["BENDAHARA"],
+      moduleKey: "payroll",
+    },
+  },
+  {
+    path: "/majors",
+    name: "Majors",
+    component: lazyRoute(() => import("../views/Majors.vue")),
+    meta: {
+      title: "Jurusan" + appName,
+      requiresAuth: true,
+      roles: ["ADMIN", "ADMIN_SPMB"],
+    },
+  },
+  {
+    path: "/spmb",
+    name: "SPMBApplicants",
+    component: lazyRoute(() => import("../views/SPMBApplicants.vue")),
+    meta: {
+      title: "SPMB" + appName,
+      requiresAuth: true,
+      roles: ["ADMIN", "ADMIN_SPMB"],
+      moduleKey: "spmb",
+    },
+  },
+  {
+    path: "/spmb/register",
+    name: "PublicSPMBRegister",
+    component: lazyRoute(() => import("../views/PublicSPMBRegister.vue")),
+    meta: {
+      title: "Pendaftaran SPMB" + appName,
+      hideNav: true,
+    },
+  },
+  {
+    path: "/spmb/status/:token",
+    name: "PublicSPMBStatus",
+    component: lazyRoute(() => import("../views/PublicSPMBStatus.vue")),
+    meta: {
+      title: "Status SPMB" + appName,
+      hideNav: true,
+    },
+  },
+  {
     path: "/schools",
     name: "Schools",
     component: lazyRoute(() => import("../views/Schools.vue")),
@@ -63,11 +139,31 @@ const routes = [
     },
   },
   {
+    path: "/school-visit-targets",
+    name: "SchoolVisitTargets",
+    component: lazyRoute(() => import("../views/SchoolVisitTargets.vue")),
+    meta: {
+      title: "List Sekolah" + appName,
+      requiresAuth: true,
+      roles: ["SUPER_ADMIN"],
+    },
+  },
+  {
     path: "/module-settings",
     name: "ModuleSettings",
     component: lazyRoute(() => import("../views/ModuleSettings.vue")),
     meta: {
       title: "Setting Modul" + appName,
+      requiresAuth: true,
+      roles: ["SUPER_ADMIN"],
+    },
+  },
+  {
+    path: "/marketing-email",
+    name: "MarketingEmail",
+    component: lazyRoute(() => import("../views/MarketingEmail.vue")),
+    meta: {
+      title: "Kirim Email Penawaran" + appName,
       requiresAuth: true,
       roles: ["SUPER_ADMIN"],
     },
@@ -104,13 +200,34 @@ const routes = [
     },
   },
   {
+    path: "/whatsapp-reports",
+    name: "WhatsappReports",
+    component: lazyRoute(() => import("../views/WhatsappReports.vue")),
+    meta: {
+      title: "Laporan WhatsApp" + appName,
+      requiresAuth: true,
+      roles: ["ADMIN"],
+    },
+  },
+  {
     path: "/attendance",
     name: "Attendance",
     component: lazyRoute(() => import("../views/Attendance.vue")),
     meta: {
       title: "Absensi" + appName,
       requiresAuth: true,
-      roles: ["SISWA"],
+      roles: ["GURU", "SISWA"],
+      moduleKey: "attendance",
+    },
+  },
+  {
+    path: "/attendance-admin",
+    name: "AttendanceAdmin",
+    component: lazyRoute(() => import("../views/AttendanceAdmin.vue")),
+    meta: {
+      title: "Kelola Absensi" + appName,
+      requiresAuth: true,
+      roles: ["ADMIN"],
       moduleKey: "attendance",
     },
   },
@@ -121,7 +238,7 @@ const routes = [
     meta: {
       title: "Enrol Wajah" + appName,
       requiresAuth: true,
-      roles: ["SISWA"],
+      roles: ["GURU", "SISWA"],
       moduleKey: "attendance",
     },
   },
@@ -142,7 +259,7 @@ const routes = [
     meta: {
       title: "Pesan" + appName,
       requiresAuth: true,
-      roles: ["ADMIN", "KOPERASI", "GURU", "SISWA"],
+      roles: ["ADMIN", "ADMIN_SPMB", "KOPERASI", "BENDAHARA", "GURU", "SISWA"],
     },
   },
   {
@@ -155,7 +272,7 @@ const routes = [
     component: lazyRoute(() => import("../views/CurriculumAdmin.vue")),
     props: { section: "subjects" },
     meta: {
-      title: "Kurikulum Admin" + appName,
+      title: "Mapel Kurikulum" + appName,
       requiresAuth: true,
       roles: ["ADMIN"],
     },
@@ -167,6 +284,17 @@ const routes = [
     props: { section: "teacher-loads" },
     meta: {
       title: "Beban Mengajar Guru" + appName,
+      requiresAuth: true,
+      roles: ["ADMIN"],
+    },
+  },
+  {
+    path: "/learning-admin/rooms",
+    name: "LearningAdminRooms",
+    component: lazyRoute(() => import("../views/CurriculumAdmin.vue")),
+    props: { section: "rooms" },
+    meta: {
+      title: "Ruang dan Lab" + appName,
       requiresAuth: true,
       roles: ["ADMIN"],
     },
@@ -207,12 +335,7 @@ const routes = [
   {
     path: "/learning-subjects",
     name: "LearningSubjectsAdmin",
-    component: lazyRoute(() => import("../views/LearningAdmin.vue")),
-    meta: {
-      title: "Guru Mapel" + appName,
-      requiresAuth: true,
-      roles: ["ADMIN"],
-    },
+    redirect: "/learning-admin/class-distributions",
   },
   {
     path: "/learning-exams-admin",
@@ -494,6 +617,7 @@ const personalTeacherModeBlockedRoutes = new Set([
   "SchoolUsers",
   "TeacherStudents",
   "LearningAdminTeacherLoads",
+  "LearningAdminRooms",
   "LearningAdminClassDistributions",
   "LearningAdminSchedule",
   "LearningAdminGenerate",
@@ -531,15 +655,33 @@ router.beforeEach((to, from, next) => {
     }
   }
 
+  if (to.meta.requiresAuth && getStoredRole() === "SISWA" && to.name !== "Dashboard") {
+    const storedUser = getStoredUser() || {};
+    if (!isStudentProfileComplete(storedUser)) {
+      next({ name: "Dashboard" });
+      return;
+    }
+  }
+
+  if (to.meta.requiresAuth && getStoredRole() === "SISWA" && to.name !== "FaceEnrollment") {
+    const storedUser = getStoredUser() || {};
+    if (isStudentProfileComplete(storedUser) && !isStudentFaceEnrolled(storedUser)) {
+      next({ name: "FaceEnrollment" });
+      return;
+    }
+  }
+
   if (to.meta.moduleKey) {
     const storedUser = getStoredUser() || {};
     const moduleFlagByKey = {
       inventory: "inventory_module_enabled",
-      attendance: "attendance_module_enabled",
+      attendance: getStoredRole() === "GURU" ? "attendance_teacher_module_enabled" : "attendance_module_enabled",
       official_exam: "official_exam_module_enabled",
       koperasi: "koperasi_module_enabled",
       private_chat: "private_chat_module_enabled",
       teaching_module_ai: "teaching_module_ai_enabled",
+      payroll: "payroll_module_enabled",
+      spmb: "spmb_module_enabled",
     };
     const moduleFlag = moduleFlagByKey[to.meta.moduleKey];
     const moduleEnabled = moduleFlag ? storedUser[moduleFlag] !== false : true;

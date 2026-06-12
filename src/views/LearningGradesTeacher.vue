@@ -99,8 +99,9 @@
 
       <!-- Data -->
       <section class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-900/5 sm:rounded-2xl dark:bg-slate-900 dark:ring-white/10">
+        <SkeletonLoader v-if="rowsLoading" variant="table" :count="8" :table-columns="5" class="p-3 sm:p-4" />
         <!-- Desktop table -->
-        <div class="hidden overflow-x-auto lg:block">
+        <div v-show="!rowsLoading" class="hidden overflow-x-auto lg:block">
           <table class="w-full table-fixed text-left text-sm">
             <thead class="border-b border-slate-200 bg-slate-50/80 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-800/50">
               <tr>
@@ -221,7 +222,7 @@
         </div>
 
         <!-- Mobile cards -->
-        <div class="divide-y divide-slate-100 lg:hidden dark:divide-slate-800">
+        <div v-show="!rowsLoading" class="divide-y divide-slate-100 lg:hidden dark:divide-slate-800">
           <article v-for="(row, index) in sortedRows" :key="`m-${row.assignment_id}-${row.id}-${index}`" class="p-3 sm:p-4">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
@@ -428,38 +429,22 @@ import { formatDateKey, formatDateTime, parseDateValue } from "@/utils/date";
 import { normalizePublicUrl } from "@/utils/url";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 import { downloadExcelWorksheet } from "@/utils/excelExport";
-import { useMasterDataStore } from "@/store/masterData";
+import { useTeacherStore } from "@/store/teacher";
+import { useTeacherGradesStore } from "@/store/teacherGrades";
+import { storeToRefs } from "pinia";
 
 const fieldClass = "block h-10 w-full rounded-lg border-0 bg-slate-50 pl-3 pr-9 text-xs text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-sky-600 sm:h-11 sm:rounded-xl sm:pl-4 sm:pr-10 sm:text-sm dark:bg-slate-800/50 dark:text-white dark:ring-slate-700/50";
 
-const subjects = ref([]);
-const masterDataStore = useMasterDataStore();
-const assignments = ref([]);
-const rows = ref([]);
-const totalRows = ref(0);
-const loadError = ref("");
-const message = ref("");
-const isError = ref(false);
-const reviewRow = ref(null);
-const gradeModal = reactive({
-  open: false,
-  row: null,
-  scoreDraft: "",
-  feedbackDraft: "",
-  saving: false,
-});
+const teacherStore = useTeacherStore();
+const gradesStore = useTeacherGradesStore();
+const { subjects } = storeToRefs(teacherStore);
+const { assignments, rows, totalRows, loadError, message, isError, reviewRow, currentPage, pageSize } = storeToRefs(gradesStore);
+const gradeModal = gradesStore.gradeModal;
+const rowsLoading = ref(true);
 const tableSort = createSortState("submitted_at", "desc");
-const currentPage = ref(1);
-const pageSize = ref(20);
 let keywordSearchTimer = null;
 
-const filters = reactive({
-  subjectId: "",
-  assignmentId: "",
-  gradeStatus: "",
-  assignmentType: "",
-  keyword: "",
-});
+const filters = gradesStore.filters;
 
 const messageClass = computed(() =>
   isError.value
@@ -862,7 +847,7 @@ const canOpenFileReview = (row) =>
   row?.assignment_type === "FILE" && !!row?.attachment_url;
 
 const loadSubjects = async () => {
-  subjects.value = await masterDataStore.getTeacherSubjects();
+  subjects.value = await teacherStore.loadTeacherSubjects();
 };
 
 const loadRowsForSubject = async (subjectId) => {
@@ -870,9 +855,12 @@ const loadRowsForSubject = async (subjectId) => {
     assignments.value = [];
     rows.value = [];
     totalRows.value = 0;
+    rowsLoading.value = false;
     return;
   }
 
+  rowsLoading.value = true;
+  try {
   const gradebookResponse = await api.get(`/learning/subjects/${subjectId}/gradebook`, {
     params: {
       assignment_id: filters.assignmentId || "",
@@ -908,6 +896,9 @@ const loadRowsForSubject = async (subjectId) => {
       feedbackDraft: submission.feedback ?? "",
     };
   });
+  } finally {
+    rowsLoading.value = false;
+  }
 };
 
 const handleSubjectChange = async () => {
@@ -990,6 +981,8 @@ onMounted(async () => {
     }
   } catch (error) {
     loadError.value = error.message;
+  } finally {
+    rowsLoading.value = false;
   }
 });
 

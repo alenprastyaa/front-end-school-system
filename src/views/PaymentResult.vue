@@ -1,14 +1,18 @@
 <template>
-  <div class="min-h-screen bg-[radial-gradient(circle_at_top,_#eff6ff_0,_#f8fafc_35%,_#e2e8f0_100%)] px-4 py-10 text-slate-900">
-    <div class="mx-auto flex min-h-[80vh] max-w-5xl items-center justify-center">
-      <div class="relative w-full overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.15)]">
+  <div
+    class="min-h-screen bg-[radial-gradient(circle_at_top,_#eff6ff_0,_#f8fafc_35%,_#e2e8f0_100%)] px-4 py-10 text-slate-900">
+    <div class="mx-auto flex min-h-[80vh]  items-center justify-center">
+      <div
+        class="relative w-full overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-[0_30px_80px_rgba(15,23,42,0.15)]">
         <div class="absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-sky-500 via-cyan-500 to-emerald-500"></div>
         <div class="border-b border-slate-200 px-6 py-6 md:px-8">
           <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div class="flex items-center gap-4">
-              <div class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div
+                class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                 <img v-if="schoolLogo" :src="schoolLogo" :alt="schoolName" class="h-full w-full object-cover" />
-                <div v-else class="flex h-full w-full items-center justify-center bg-gradient-to-br from-sky-500 to-cyan-500 text-sm font-black text-white">
+                <div v-else
+                  class="flex h-full w-full items-center justify-center bg-gradient-to-br from-sky-500 to-cyan-500 text-sm font-black text-white">
                   {{ schoolInitials }}
                 </div>
               </div>
@@ -19,7 +23,8 @@
                 </h1>
               </div>
             </div>
-            <div class="rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-sky-700">
+            <div
+              class="rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-sky-700">
               {{ schoolName }}
             </div>
           </div>
@@ -39,13 +44,15 @@
               <p class="mt-3 break-all text-lg font-semibold text-slate-900">{{ referenceId || "-" }}</p>
             </div>
 
-            <div class="rounded-2xl border p-5" :class="isSuccess ? 'border-emerald-200 bg-emerald-50' : 'border-rose-200 bg-rose-50'">
+            <div class="rounded-2xl border p-5"
+              :class="isSuccess ? 'border-emerald-200 bg-emerald-50' : 'border-rose-200 bg-rose-50'">
               <p class="text-xs font-bold uppercase tracking-[0.24em] text-slate-500">Status</p>
               <p class="mt-3 text-2xl font-black" :class="isSuccess ? 'text-emerald-700' : 'text-rose-700'">
                 {{ statusLabel }}
               </p>
               <p class="mt-2 text-sm leading-6 text-slate-600">
-                {{ isSuccess ? "Pembayaran diterima dan sedang diproses ke invoice." : "Pembayaran belum berhasil diproses." }}
+                {{ isSuccess ? `Pembayaran diterima dan sedang diproses ke invoice.` : `Pembayaran belum berhasil
+                diproses.` }}
               </p>
             </div>
 
@@ -57,20 +64,17 @@
             </div>
           </div>
 
-          <div class="flex flex-col justify-between gap-4 rounded-[1.75rem] border border-slate-200 bg-slate-50 p-5 md:p-6">
+          <div
+            class="flex flex-col justify-between gap-4 rounded-[1.75rem] border border-slate-200 bg-slate-50 p-5 md:p-6">
             <div>
               <p class="text-xs font-bold uppercase tracking-[0.24em] text-slate-500">Aksi</p>
               <div class="mt-4 space-y-3">
-                <button
-                  @click="goToBilling"
-                  class="w-full rounded-2xl bg-sky-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500"
-                >
+                <button @click="goToBilling"
+                  class="w-full rounded-2xl bg-sky-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500">
                   Kembali ke Billing
                 </button>
-                <button
-                  @click="goToDashboard"
-                  class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
-                >
+                <button @click="goToDashboard"
+                  class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50">
                   Dashboard
                 </button>
               </div>

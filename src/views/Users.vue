@@ -82,7 +82,8 @@
           </div>
 
           <div class="block space-y-4 p-4 md:hidden">
-            <article v-for="item in displayedStudents" :key="`card-${item.id}`"
+            <SkeletonLoader v-if="studentsLoading" variant="list" :count="5" />
+            <article v-for="item in displayedStudents" v-show="!studentsLoading" :key="`card-${item.id}`"
               class="rounded-3xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div class="flex items-start justify-between gap-3">
                 <div class="flex min-w-0 items-center gap-3">
@@ -128,7 +129,7 @@
               </div>
             </article>
 
-            <div v-if="displayedStudents.length === 0"
+            <div v-if="!studentsLoading && displayedStudents.length === 0"
               class="rounded-3xl border border-dashed border-slate-300 bg-white/80 px-6 py-12 text-center dark:border-slate-700 dark:bg-slate-900/80">
               <div
                 class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
@@ -178,7 +179,14 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr v-for="item in displayedStudents" :key="item.id"
+                <template v-if="studentsLoading">
+                  <tr v-for="n in 6" :key="`user-sk-${n}`">
+                    <td v-for="c in 5" :key="`user-sk-${n}-${c}`" class="px-6 py-4">
+                      <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-36' : 'w-20'"></div>
+                    </td>
+                  </tr>
+                </template>
+                <tr v-for="item in displayedStudents" v-show="!studentsLoading" :key="item.id"
                   class="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
                   :class="editingId === item.id ? 'bg-sky-50/50 dark:bg-sky-900/10' : ''">
                   <td class="px-6 py-4 font-medium text-slate-900 dark:text-white">{{ item.full_name || "-" }}</td>
@@ -230,7 +238,7 @@
                   </td>
                 </tr>
 
-                <tr v-if="displayedStudents.length === 0">
+                <tr v-if="!studentsLoading && displayedStudents.length === 0">
                   <td colspan="5" class="px-6 py-12 text-center">
                     <div class="mx-auto flex flex-col items-center">
                       <div
@@ -250,18 +258,34 @@
             </table>
           </div>
           <div
-            class="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <p class="text-xs text-slate-500 dark:text-slate-400">Halaman {{ filters.page }} · {{ displayedStudents.length }} siswa</p>
-            <div class="flex items-center gap-2">
-              <button @click="goToPrevPage" :disabled="filters.page <= 1"
-                class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-                Sebelumnya
-              </button>
-              <button @click="goToNextPage" :disabled="students.length < filters.limit"
-                class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-                Berikutnya
-              </button>
+            class="flex flex-col gap-4 border-t border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/40 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <div class="text-sm font-semibold text-slate-700 dark:text-slate-200">
+              Menampilkan {{ displayedStudents.length }} siswa
+              <span class="block text-xs font-medium text-slate-500 dark:text-slate-400">
+                Maksimal {{ filters.limit }} data per halaman
+              </span>
             </div>
+            <nav aria-label="Pagination" class="flex items-center">
+              <ul class="flex list-none overflow-hidden rounded-lg border border-slate-300 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                <li>
+                  <button @click="goToPrevPage" :disabled="filters.page <= 1"
+                    class="px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-400 dark:text-slate-200 dark:hover:bg-slate-800">
+                    Prev
+                  </button>
+                </li>
+                <li>
+                  <span class="border-l border-slate-200 bg-sky-600 px-4 py-2 text-sm font-semibold text-white dark:border-slate-700">
+                    {{ filters.page }}
+                  </span>
+                </li>
+                <li>
+                  <button @click="goToNextPage" :disabled="students.length < filters.limit"
+                    class="border-l border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-400 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                    Next
+                  </button>
+                </li>
+              </ul>
+            </nav>
           </div>
         </main>
       </div>
@@ -614,14 +638,11 @@
 
             <div
               class="max-h-64 overflow-y-auto rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
-              <div v-if="isLoadingPromotionCandidates"
-                class="flex items-center justify-center gap-2 px-4 py-8 text-sm font-medium text-slate-500 dark:text-slate-400">
-                <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                  stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                </svg>
-                Memuat siswa
+              <div v-if="isLoadingPromotionCandidates" class="space-y-2 p-3">
+                <div v-for="n in 4" :key="`promo-sk-${n}`" class="flex items-center gap-3">
+                  <div class="skeleton-shimmer h-4 w-4 shrink-0 rounded"></div>
+                  <div class="skeleton-shimmer h-4 flex-1 rounded"></div>
+                </div>
               </div>
               <div v-else-if="!promotionForm.from_class_id"
                 class="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
@@ -698,8 +719,8 @@
           </button>
         </div>
 
-        <div v-if="isLoadingStudentDetail" class="px-6 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
-          Memuat detail siswa...
+        <div v-if="isLoadingStudentDetail" class="px-6 py-6">
+          <SkeletonLoader variant="form" :count="4" />
         </div>
 
         <div v-else class="space-y-4 px-6 py-6">
@@ -883,6 +904,7 @@ const studentToDelete = ref(null);
 const isPromotionModalOpen = ref(false);
 const isPromoting = ref(false);
 const isLoadingPromotionCandidates = ref(false);
+const studentsLoading = ref(true);
 const isImportingStudents = ref(false);
 const isStudentImportModalOpen = ref(false);
 const isStudentTemplateModalOpen = ref(false);
@@ -1366,6 +1388,7 @@ const loadClasses = async () => {
 };
 
 const loadStudents = async () => {
+  studentsLoading.value = true;
   try {
     const params = new URLSearchParams({
       page: String(filters.page),
@@ -1384,6 +1407,8 @@ const loadStudents = async () => {
       message: error.message,
       type: "error",
     });
+  } finally {
+    studentsLoading.value = false;
   }
 };
 

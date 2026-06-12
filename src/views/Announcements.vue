@@ -1,117 +1,88 @@
 <template>
-  <div class="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-8 dark:bg-slate-950 dark:text-slate-100">
-    <main class="mx-auto max-w-7xl space-y-6">
-      <section v-if="message" class="rounded-2xl px-5 py-4 text-sm font-medium ring-1 ring-inset"
-        :class="messageType === 'error'
-          ? 'bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/20'
-          : 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-200 dark:ring-emerald-500/20'">
-        {{ message }}
-      </section>
+  <div class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <main class="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
+      <header class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight">Pengumuman</h1>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Kelola dan publikasikan informasi sekolah</p>
+        </div>
+        <button type="button" @click="openCreateModal"
+          class="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
+          </svg>
+          Buat Pengumuman
+        </button>
+      </header>
 
-      <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Pengumuman Sekolah</p>
-            <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">
-              Tulis draft, review, lalu post ke dashboard warga sekolah. Form pengumuman dibuka lewat modal agar halaman
-              tetap bersih.
-            </p>
-          </div>
-          <div class="flex flex-wrap gap-3">
-            <button type="button" @click="openCreateModal"
-              class="rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500">
-              Buat Pengumuman
-            </button>
-          </div>
+      <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div v-for="card in summaryCards" :key="card.label"
+          class="rounded-2xl bg-white px-5 py-4 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+          <p class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ card.label }}</p>
+          <p class="mt-1 text-2xl font-bold tabular-nums">{{ card.value }}</p>
         </div>
       </section>
 
-      <section class="rounded-3xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
-        <div class="border-b border-slate-100 px-6 py-5 dark:border-slate-800">
-          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Review Draft</p>
-          <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
-            Pastikan isi, target, dan nada pengumuman sudah sesuai sebelum Anda aktifkan.
+      <section v-if="selectedAnnouncement"
+        class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+        <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-4 dark:border-slate-800">
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="truncate text-lg font-bold">{{ selectedAnnouncement.title }}</h2>
+              <span class="inline-flex shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase"
+                :class="statusToneClass(selectedAnnouncement.status)">
+                {{ selectedAnnouncement.status_label }}
+              </span>
+            </div>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              {{ selectedAnnouncement.target_label }} &middot;
+              {{ announcementExpiryLabel(selectedAnnouncement) }} &middot;
+              Diperbarui {{ formatDateTime(selectedAnnouncement.updated_at) }}
+            </p>
+          </div>
+          <button type="button" @click="selectedAnnouncement = null"
+            class="rounded-full p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        </div>
+        <div class="px-6 py-4">
+          <p class="whitespace-pre-line text-sm leading-6 text-slate-700 dark:text-slate-300">
+            {{ selectedAnnouncement.content }}
           </p>
-        </div>
-
-        <div class="p-6">
-          <div class="rounded-3xl border bg-gradient-to-br p-5" :class="reviewCardClass">
-            <div class="flex items-start justify-between gap-4">
-              <div class="min-w-0">
-                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  {{ selectedAnnouncement?.target_label || targetLabel(form.target_audiences) }}
-                </p>
-                <h3 class="mt-2 text-xl font-bold text-slate-900 dark:text-white">
-                  {{ selectedAnnouncement?.title || previewAnnouncement.title || "Judul belum diisi" }}
-                </h3>
-              </div>
-              <span class="inline-flex shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide"
-                :class="statusToneClass(selectedAnnouncement?.status || 'DRAFT')">
-                {{ selectedAnnouncement?.status_label || "Draft" }}
-              </span>
-            </div>
-
-            <p class="mt-4 whitespace-pre-line text-sm leading-6 text-slate-700 dark:text-slate-300">
-              {{ selectedAnnouncement?.content || previewAnnouncement.content || "Isi pengumuman belum tersedia." }}
-            </p>
-
-            <div class="mt-5 flex flex-wrap gap-2">
-              <span
-                class="inline-flex rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-900/70 dark:text-slate-200 dark:ring-slate-700">
-                {{ selectedAnnouncement?.target_label || targetLabel(form.target_audiences) }}
-              </span>
-              <span
-                class="inline-flex rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-900/70 dark:text-slate-200 dark:ring-slate-700">
-                {{ selectedAnnouncement?.updated_at ? `Diperbarui ${formatDateTime(selectedAnnouncement.updated_at)}`
-                  : "Belum disimpan" }}
-              </span>
-              <span
-                class="inline-flex rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 dark:bg-slate-900/70 dark:text-slate-200 dark:ring-slate-700">
-                {{ announcementExpiryLabel(selectedAnnouncement || previewAnnouncement) }}
-              </span>
-            </div>
-          </div>
-
-          <div v-if="selectedAnnouncement" class="mt-5 flex flex-wrap gap-3">
+          <div class="mt-4 flex flex-wrap gap-2">
             <button v-if="selectedAnnouncement.status === 'DRAFT'" type="button"
               @click="publishAnnouncement(selectedAnnouncement)"
               :disabled="isBusyAnnouncementId === selectedAnnouncement.id"
-              class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50">
-              {{ isBusyAnnouncementId === selectedAnnouncement.id ? "Memposting..." : "Post Pengumuman" }}
+              class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50">
+              {{ isBusyAnnouncementId === selectedAnnouncement.id ? "Memposting..." : "Post" }}
             </button>
-            <button v-if="selectedAnnouncement.status === 'ACTIVE'" type="button"
-              @click="toggleAnnouncement(selectedAnnouncement)"
+            <button v-else type="button" @click="toggleAnnouncement(selectedAnnouncement)"
               :disabled="isBusyAnnouncementId === selectedAnnouncement.id"
-              class="rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-500 disabled:opacity-50">
-              {{ isBusyAnnouncementId === selectedAnnouncement.id ? "Memproses..." : "Matikan" }}
+              class="rounded-lg px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-50"
+              :class="selectedAnnouncement.status === 'ACTIVE'
+                ? 'bg-amber-600 hover:bg-amber-500'
+                : 'bg-sky-600 hover:bg-sky-500'">
+              {{ isBusyAnnouncementId === selectedAnnouncement.id
+                ? "Memproses..."
+                : selectedAnnouncement.status === 'ACTIVE' ? "Nonaktifkan" : "Aktifkan" }}
             </button>
-            <button v-if="selectedAnnouncement.status === 'INACTIVE'" type="button"
-              @click="toggleAnnouncement(selectedAnnouncement)"
-              :disabled="isBusyAnnouncementId === selectedAnnouncement.id"
-              class="rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-50">
-              {{ isBusyAnnouncementId === selectedAnnouncement.id ? "Memproses..." : "Aktifkan" }}
+            <button type="button" @click="editAnnouncement(selectedAnnouncement)"
+              class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+              Edit
             </button>
-          </div>
-
-          <div v-else
-            class="mt-5 rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500 dark:border-slate-700">
-            Simpan draft terlebih dahulu untuk memunculkan kartu review yang bisa diposting.
           </div>
         </div>
       </section>
 
-      <section class="rounded-3xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
-        <div
-          class="flex flex-col gap-4 border-b border-slate-100 px-6 py-5 lg:flex-row lg:items-end lg:justify-between dark:border-slate-800">
-          <div>
-            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Daftar Pengumuman</h2>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Kelola status draft, aktif, nonaktif, dan hapus
-              dari satu tempat.</p>
-          </div>
-          <div class="flex flex-wrap gap-2">
+      <section class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-4 dark:border-slate-800">
+          <h2 class="text-base font-bold">Daftar Pengumuman</h2>
+          <div class="flex flex-wrap gap-1.5">
             <button v-for="filter in statusFilters" :key="filter.value" type="button"
               @click="activeFilter = filter.value"
-              class="rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition"
+              class="rounded-full px-3.5 py-1.5 text-xs font-semibold transition"
               :class="activeFilter === filter.value
                 ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'">
@@ -122,71 +93,70 @@
 
         <div class="overflow-x-auto">
           <table class="min-w-full text-left text-sm">
-            <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
+            <thead class="text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">
               <tr>
-                <th class="px-4 py-3 font-medium sm:px-6">Judul</th>
-                <th class="px-4 py-3 font-medium sm:px-6">Target</th>
-                <th class="px-4 py-3 font-medium sm:px-6">Status</th>
-                <th class="px-4 py-3 font-medium sm:px-6">Updated</th>
-                <th class="px-4 py-3 font-medium sm:px-6 text-right">Aksi</th>
+                <th class="px-6 py-3 font-semibold">Judul</th>
+                <th class="px-6 py-3 font-semibold">Target</th>
+                <th class="px-6 py-3 font-semibold">Status</th>
+                <th class="px-6 py-3 font-semibold">Diperbarui</th>
+                <th class="px-6 py-3 text-right font-semibold">Aksi</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-              <tr v-for="item in filteredAnnouncements" :key="item.id"
-                class="hover:bg-slate-50/60 dark:hover:bg-slate-800/50">
-                <td class="px-4 py-4 sm:px-6">
-                  <div class="font-semibold text-slate-900 dark:text-white">{{ item.title }}</div>
-                  <div class="mt-1 line-clamp-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
-                    {{ item.content }}
-                  </div>
+              <template v-if="isLoading && !filteredAnnouncements.length">
+                <tr v-for="n in 6" :key="`ann-sk-${n}`">
+                  <td v-for="c in 4" :key="`ann-sk-${n}-${c}`" class="px-6 py-4">
+                    <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-48' : 'w-20'"></div>
+                  </td>
+                </tr>
+              </template>
+              <tr v-for="item in filteredAnnouncements" :key="item.id" @click="selectForReview(item)"
+                class="cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                :class="selectedAnnouncement?.id === item.id ? 'bg-sky-50/60 dark:bg-sky-500/5' : ''">
+                <td class="max-w-xs px-6 py-4">
+                  <div class="truncate font-semibold">{{ item.title }}</div>
+                  <div class="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">{{ item.content }}</div>
                 </td>
-                <td class="px-4 py-4 text-slate-600 dark:text-slate-300 sm:px-6">{{ item.target_label }}</td>
-                <td class="px-4 py-4 sm:px-6">
-                  <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide"
+                <td class="px-6 py-4 text-slate-600 dark:text-slate-300">{{ item.target_label }}</td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase"
                     :class="statusToneClass(item.status)">
                     {{ item.status_label }}
                   </span>
                 </td>
-                <td class="px-4 py-4 text-slate-600 dark:text-slate-300 sm:px-6">{{ formatDateTime(item.updated_at) }}
-                  <div class="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
-                    {{ announcementExpiryLabel(item) }}
-                  </div>
+                <td class="whitespace-nowrap px-6 py-4 text-slate-500 dark:text-slate-400">
+                  {{ formatDateTime(item.updated_at) }}
                 </td>
-                <td class="px-4 py-4 sm:px-6">
-                  <div class="flex flex-wrap justify-end gap-2">
-                    <button type="button" @click="selectForReview(item)"
-                      class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">
-                      Review
-                    </button>
+                <td class="px-6 py-4">
+                  <div class="flex justify-end gap-1" @click.stop>
                     <button v-if="item.status === 'DRAFT'" type="button" @click="publishAnnouncement(item)"
-                      :disabled="isBusyAnnouncementId === item.id"
-                      class="rounded-lg border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700 disabled:opacity-50 dark:border-emerald-500/30 dark:text-emerald-300">
+                      :disabled="isBusyAnnouncementId === item.id" title="Post"
+                      class="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-emerald-600 transition hover:bg-emerald-50 disabled:opacity-50 dark:text-emerald-400 dark:hover:bg-emerald-500/10">
                       Post
                     </button>
-                    <button v-if="item.status === 'ACTIVE'" type="button" @click="toggleAnnouncement(item)"
+                    <button v-else type="button" @click="toggleAnnouncement(item)"
                       :disabled="isBusyAnnouncementId === item.id"
-                      class="rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-700 disabled:opacity-50 dark:border-amber-500/30 dark:text-amber-300">
-                      Matikan
-                    </button>
-                    <button v-if="item.status === 'INACTIVE'" type="button" @click="toggleAnnouncement(item)"
-                      :disabled="isBusyAnnouncementId === item.id"
-                      class="rounded-lg border border-sky-200 px-3 py-1.5 text-xs font-semibold text-sky-700 disabled:opacity-50 dark:border-sky-500/30 dark:text-sky-300">
-                      Aktifkan
+                      class="rounded-lg px-2.5 py-1.5 text-xs font-semibold transition disabled:opacity-50"
+                      :class="item.status === 'ACTIVE'
+                        ? 'text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-500/10'
+                        : 'text-sky-600 hover:bg-sky-50 dark:text-sky-400 dark:hover:bg-sky-500/10'">
+                      {{ item.status === 'ACTIVE' ? "Nonaktifkan" : "Aktifkan" }}
                     </button>
                     <button type="button" @click="editAnnouncement(item)"
-                      class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">
+                      class="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
                       Edit
                     </button>
                     <button type="button" @click="deleteAnnouncement(item)" :disabled="isBusyAnnouncementId === item.id"
-                      class="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-700 disabled:opacity-50 dark:border-rose-500/30 dark:text-rose-300">
+                      class="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50 dark:text-rose-400 dark:hover:bg-rose-500/10">
                       Hapus
                     </button>
                   </div>
                 </td>
               </tr>
-              <tr v-if="filteredAnnouncements.length === 0">
-                <td colspan="5" class="px-4 py-10 text-center text-slate-500 sm:px-6">Belum ada pengumuman yang cocok
-                  dengan filter ini.</td>
+              <tr v-if="!isLoading && filteredAnnouncements.length === 0">
+                <td colspan="5" class="px-6 py-12 text-center text-sm text-slate-400 dark:text-slate-500">
+                  {{ isLoading ? "Memuat..." : "Belum ada pengumuman" }}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -199,95 +169,65 @@
             class="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm"
             @click.self="onFormBackdropClick">
             <div
-              class="w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
+              class="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/10 dark:bg-slate-900 dark:ring-white/10">
               <form @submit.prevent="submitAnnouncement" class="flex max-h-[90vh] flex-col">
-                <div class="border-b border-slate-100 px-6 py-5 dark:border-slate-800">
-                  <div class="flex items-start justify-between gap-4">
-                    <div>
-                      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                        {{ editingId ? "Edit Draft" : "Buat Draft" }}</p>
-                      <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">{{ editingId ?
-                        "Perbarui Pengumuman" : "Tulis Pengumuman Baru" }}</h2>
-                      <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                        Draft akan disimpan dulu untuk direview sebelum diposting ke dashboard warga sekolah.
-                      </p>
-                    </div>
-                    <button type="button"
-                      class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                      @click="closeFormModal">
-                      <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="min-h-0 flex-1 overflow-y-auto px-6 py-5">
-                  <div class="space-y-4">
-                    <div>
-                      <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Judul
-                        Pengumuman</label>
-                      <input v-model="form.title" type="text" required placeholder="Contoh: Jadwal UTS Semester Ganjil"
-                        class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                    </div>
-
-                    <div>
-                      <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Ditujukan
-                        Untuk</label>
-                      <div
-                        class="grid gap-2 rounded-2xl bg-slate-50 p-3 ring-1 ring-inset ring-slate-200 sm:grid-cols-2 dark:bg-slate-800 dark:ring-slate-700">
-                        <label v-for="option in targetOptions" :key="option.value"
-                          class="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white dark:text-slate-200 dark:hover:bg-slate-900">
-                          <input type="checkbox" :checked="isTargetChecked(option.value)"
-                            class="h-4 w-4 rounded border-slate-300 text-sky-600 accent-sky-600 focus:ring-sky-600"
-                            @change="toggleTargetAudience(option.value)" />
-                          <span>{{ option.label }}</span>
-                        </label>
-                      </div>
-                      <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Centang satu atau beberapa target
-                        penerima pengumuman.</p>
-                    </div>
-
-                    <div>
-                      <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Isi
-                        Pengumuman</label>
-                      <textarea v-model="form.content" rows="10" required
-                        placeholder="Tulis informasi pengumuman secara jelas, singkat, dan operasional."
-                        class="block w-full rounded-2xl border-0 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                    </div>
-
-                    <div>
-                      <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Berakhir
-                        Pada</label>
-                      <input v-model="form.deactivated_at" type="datetime-local"
-                        class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
-                      <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                        Kosongkan jika pengumuman tidak punya batas akhir.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
                 <div
-                  class="flex flex-col gap-3 border-t border-slate-100 px-6 py-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
-                  <div class="text-xs text-slate-500 dark:text-slate-400">
-                    {{ editingId ? `Perubahan akan menyimpan draft baru lalu Anda bisa post dari review.` : `Setelah
-                    disimpan, draft dapat direview sebelum diposting.`}}
+                  class="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800">
+                  <h2 class="text-lg font-bold">{{ editingId ? "Edit Pengumuman" : "Pengumuman Baru" }}</h2>
+                  <button type="button" @click="closeFormModal"
+                    class="rounded-full p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div class="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Judul</label>
+                    <input v-model="form.title" type="text" required placeholder="Judul pengumuman"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-2.5 text-sm ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
                   </div>
-                  <div class="flex flex-wrap gap-3">
-                    <button v-if="editingId || form.title || form.content" type="button" @click="resetForm"
-                      class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">
-                      Reset Form
-                    </button>
-                    <button type="button" @click="closeFormModal"
-                      class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">
-                      Batal
-                    </button>
-                    <button type="submit" :disabled="isSubmitting"
-                      class="rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-50">
-                      {{ isSubmitting ? "Menyimpan..." : editingId ? "Simpan Perubahan" : "Simpan Draft" }}
-                    </button>
+
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Target</label>
+                    <div class="flex flex-wrap gap-2">
+                      <button v-for="option in targetOptions" :key="option.value" type="button"
+                        @click="toggleTargetAudience(option.value)"
+                        class="rounded-full px-3.5 py-1.5 text-xs font-semibold transition"
+                        :class="isTargetChecked(option.value)
+                          ? 'bg-sky-600 text-white'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'">
+                        {{ option.label }}
+                      </button>
+                    </div>
                   </div>
+
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Isi</label>
+                    <textarea v-model="form.content" rows="8" required placeholder="Tulis isi pengumuman"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-2.5 text-sm leading-6 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
+
+                  <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Berakhir Pada
+                      <span class="font-normal text-slate-400">(opsional)</span>
+                    </label>
+                    <input v-model="form.deactivated_at" type="datetime-local"
+                      class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-2.5 text-sm ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700" />
+                  </div>
+                </div>
+
+                <div class="flex justify-end gap-2 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
+                  <button type="button" @click="closeFormModal"
+                    class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                    Batal
+                  </button>
+                  <button type="submit" :disabled="isSubmitting"
+                    class="rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:opacity-50">
+                    {{ isSubmitting ? "Menyimpan..." : editingId ? "Simpan Perubahan" : "Simpan Draft" }}
+                  </button>
                 </div>
               </form>
             </div>
@@ -338,8 +278,6 @@ const isBusyAnnouncementId = ref(null);
 const isFormModalOpen = ref(false);
 const editingId = ref(null);
 const activeFilter = ref("ALL");
-const message = ref("");
-const messageType = ref("success");
 const summary = reactive({
   total: 0,
   draft: 0,
@@ -361,10 +299,10 @@ const syncRouteSelection = () => {
 };
 
 const summaryCards = computed(() => [
-  { label: "Total", value: summary.total, caption: "Semua pengumuman sekolah" },
-  { label: "Draft", value: summary.draft, caption: "Menunggu review dan post" },
-  { label: "Aktif", value: summary.active, caption: "Tampil di dashboard role" },
-  { label: "Nonaktif", value: summary.inactive, caption: "Disimpan tapi tidak tampil" },
+  { label: "Total", value: summary.total },
+  { label: "Draft", value: summary.draft },
+  { label: "Aktif", value: summary.active },
+  { label: "Nonaktif", value: summary.inactive },
 ]);
 
 const filteredAnnouncements = computed(() => {
@@ -372,35 +310,6 @@ const filteredAnnouncements = computed(() => {
     return announcements.value;
   }
   return announcements.value.filter((item) => String(item.status || "").toUpperCase() === activeFilter.value);
-});
-
-const previewAnnouncement = computed(() => {
-  const targetAudiences = normalizeTargetAudiences(form.target_audiences);
-  return {
-    title: form.title.trim() || "Judul belum diisi",
-    content: form.content.trim() || "Isi pengumuman belum diisi.",
-    target_audience: targetAudienceString(targetAudiences),
-    target_audiences: targetAudiences,
-    target_label: targetLabel(targetAudiences),
-    status: "DRAFT",
-    status_label: "Draft",
-  };
-});
-
-const reviewSelection = computed(() => {
-  if (!selectedAnnouncement.value) {
-    return previewAnnouncement.value;
-  }
-  return selectedAnnouncement.value;
-});
-
-const reviewCardClass = computed(() => {
-  const targets = normalizeTargetAudiences(reviewSelection.value.target_audiences || reviewSelection.value.target_audience || "ALL");
-  if (targets.includes("ALL")) return "border-sky-200 bg-gradient-to-br from-sky-50 to-cyan-50 dark:border-sky-500/20 dark:from-slate-900 dark:to-slate-950";
-  if (targets.length === 1 && targets[0] === "GURU") return "border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 dark:border-emerald-500/20 dark:from-slate-900 dark:to-slate-950";
-  if (targets.length === 1 && targets[0] === "SISWA") return "border-indigo-200 bg-gradient-to-br from-indigo-50 to-sky-50 dark:border-indigo-500/20 dark:from-slate-900 dark:to-slate-950";
-  if (targets.length === 1 && targets[0] === "ADMIN") return "border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 dark:border-amber-500/20 dark:from-slate-900 dark:to-slate-950";
-  return "border-slate-200 bg-gradient-to-br from-slate-50 to-white dark:border-slate-700 dark:from-slate-900 dark:to-slate-950";
 });
 
 const splitTargetAudience = (value) => String(value || "")
@@ -429,17 +338,6 @@ const normalizeTargetAudiences = (value) => {
 const targetAudienceString = (value) => {
   const normalized = normalizeTargetAudiences(value);
   return normalized.includes("ALL") ? "ALL" : normalized.join(",");
-};
-
-const targetLabel = (value) => {
-  const normalized = normalizeTargetAudiences(value);
-  if (normalized.includes("ALL")) {
-    return "Semua Warga Sekolah";
-  }
-  const labels = normalized
-    .map((target) => targetOptions.find((item) => item.value === target)?.label)
-    .filter(Boolean);
-  return labels.length ? labels.join(", ") : "Semua Warga Sekolah";
 };
 
 const isTargetChecked = (value) => normalizeTargetAudiences(form.target_audiences).includes(value);
@@ -495,7 +393,6 @@ const statusToneClass = (status) => {
 const resetForm = () => {
   Object.assign(form, emptyForm());
   editingId.value = null;
-  selectedAnnouncement.value = null;
 };
 
 const closeFormModal = () => {
@@ -546,7 +443,7 @@ const loadAnnouncements = async () => {
 };
 
 const selectForReview = (item) => {
-  selectedAnnouncement.value = item;
+  selectedAnnouncement.value = selectedAnnouncement.value?.id === item.id ? null : item;
 };
 
 const editAnnouncement = (item) => {
@@ -582,9 +479,6 @@ const submitAnnouncement = async () => {
     const item = response?.data?.item || null;
     if (item) {
       selectedAnnouncement.value = item;
-      if (!editingId.value) {
-        editingId.value = item.id;
-      }
     }
 
     pushToast({

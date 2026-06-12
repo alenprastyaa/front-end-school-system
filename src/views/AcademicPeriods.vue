@@ -74,7 +74,8 @@
       </div>
 
       <div class="mt-6 space-y-5">
-        <article v-for="year in years" :key="year.id" class="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 dark:border-slate-700 dark:bg-slate-900/40">
+        <SkeletonLoader v-if="pageLoading" variant="card" :count="3" :columns="1" />
+        <article v-for="year in years" v-show="!pageLoading" :key="year.id" class="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 dark:border-slate-700 dark:bg-slate-900/40">
           <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div>
               <div class="flex flex-wrap items-center gap-2">
@@ -148,7 +149,7 @@
           </div>
         </article>
 
-        <div v-if="years.length === 0" class="rounded-lg border-2 border-dashed border-slate-200 py-10 text-center text-sm text-slate-500 dark:border-slate-700">
+        <div v-if="!pageLoading && years.length === 0" class="rounded-lg border-2 border-dashed border-slate-200 py-10 text-center text-sm text-slate-500 dark:border-slate-700">
           Belum ada data tahun ajaran.
         </div>
       </div>
@@ -335,246 +336,59 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
-import { api } from "@/api";
-import { pushToast } from "@/composables/useToast";
+import { onMounted, ref } from "vue";
 import { formatDate } from "@/utils/date";
+import { useAdminStore } from "@/store/admin";
+import { storeToRefs } from "pinia";
 
-const isConfirmYearModalOpen = ref(false);
-const isConfirmSemesterModalOpen = ref(false);
-const pendingActivateYear = ref(null);
-const pendingActivateSemester = ref(null);
-const years = ref([]);
-const activePeriod = ref(null);
-const isSubmitting = ref(false);
-const showYearModal = ref(false);
-const showSemesterModal = ref(false);
-const editingYearId = ref(null);
-const editingSemesterId = ref(null);
-const selectedAcademicYear = ref(null);
+const adminStore = useAdminStore();
+const {
+  academicYears: years,
+  academicActivePeriod: activePeriod,
+  academicSubmitting: isSubmitting,
+  academicYearModalOpen: showYearModal,
+  academicSemesterModalOpen: showSemesterModal,
+  academicYearConfirmOpen: isConfirmYearModalOpen,
+  academicSemesterConfirmOpen: isConfirmSemesterModalOpen,
+  academicPendingYear: pendingActivateYear,
+  academicPendingSemester: pendingActivateSemester,
+  academicEditingYearId: editingYearId,
+  academicEditingSemesterId: editingSemesterId,
+  academicSelectedYear: selectedAcademicYear,
+  academicYearForm: yearForm,
+  academicSemesterForm: semesterForm,
+  academicTotalSemesters: totalSemesters,
+} = storeToRefs(adminStore);
 
-const yearForm = reactive({
-  name: "",
-  start_date: "",
-  end_date: "",
-});
-
-const semesterForm = reactive({
-  name: "",
-  code: "",
-  start_date: "",
-  end_date: "",
-});
-
-const totalSemesters = computed(() =>
-  years.value.reduce((total, item) => total + Number(item.semesters?.length || 0), 0),
-);
-
-const resetYearForm = () => {
-  yearForm.name = "";
-  yearForm.start_date = "";
-  yearForm.end_date = "";
-  editingYearId.value = null;
-};
-
-const resetSemesterForm = () => {
-  semesterForm.name = "";
-  semesterForm.code = "";
-  semesterForm.start_date = "";
-  semesterForm.end_date = "";
-  editingSemesterId.value = null;
-};
-
-const closeYearModal = () => {
-  showYearModal.value = false;
-  resetYearForm();
-};
-
-const closeSemesterModal = () => {
-  showSemesterModal.value = false;
-  selectedAcademicYear.value = null;
-  resetSemesterForm();
-};
-
-const openYearModal = (item = null) => {
-  resetYearForm();
-  if (item) {
-    editingYearId.value = item.id;
-    yearForm.name = item.name || "";
-    yearForm.start_date = String(item.start_date || "").slice(0, 10);
-    yearForm.end_date = String(item.end_date || "").slice(0, 10);
-  }
-  showYearModal.value = true;
-};
-
-const openSemesterModal = (semester = null, year = null) => {
-  resetSemesterForm();
-  selectedAcademicYear.value = year || null;
-  if (semester) {
-    editingSemesterId.value = semester.id;
-    semesterForm.name = semester.name || "";
-    semesterForm.code = semester.code || "";
-    semesterForm.start_date = String(semester.start_date || "").slice(0, 10);
-    semesterForm.end_date = String(semester.end_date || "").slice(0, 10);
-  }
-  showSemesterModal.value = true;
-};
-
+const resetYearForm = () => adminStore.resetAcademicYearForm();
+const resetSemesterForm = () => adminStore.resetAcademicSemesterForm();
+const closeYearModal = () => adminStore.closeAcademicYearModal();
+const closeSemesterModal = () => adminStore.closeAcademicSemesterModal();
+const openYearModal = (item = null) => adminStore.openAcademicYearModal(item);
+const openSemesterModal = (semester = null, year = null) => adminStore.openAcademicSemesterModal(semester, year);
+const pageLoading = ref(true);
 const loadData = async () => {
   try {
-    const response = await api.get("/academic-periods");
-    const payload = response?.data || {};
-    years.value = Array.isArray(payload?.years) ? payload.years : [];
-    activePeriod.value = payload?.active || null;
-  } catch (error) {
-    pushToast({
-      title: "Gagal Memuat Periode Akademik",
-      message: error.message,
-      type: "error",
-    });
+    await adminStore.loadAcademicPeriods();
+  } finally {
+    pageLoading.value = false;
   }
 };
-
 const submitYear = async () => {
-  isSubmitting.value = true;
-  try {
-    const payload = { ...yearForm };
-    const response = editingYearId.value
-      ? await api.put(`/academic-periods/years/${editingYearId.value}`, payload)
-      : await api.post("/academic-periods/years", payload);
-
-    pushToast({
-      title: editingYearId.value ? "Tahun Ajaran Diperbarui" : "Tahun Ajaran Dibuat",
-      message: response?.message || "Perubahan tahun ajaran berhasil disimpan.",
-      type: "success",
-    });
-    closeYearModal();
-    await loadData();
-  } catch (error) {
-    pushToast({
-      title: "Gagal Menyimpan Tahun Ajaran",
-      message: error.message,
-      type: "error",
-    });
-  } finally {
-    isSubmitting.value = false;
-  }
+  await adminStore.saveAcademicYear();
 };
-
 const submitSemester = async () => {
-  if (!selectedAcademicYear.value?.id) {
-    pushToast({
-      title: "Tahun Ajaran Belum Dipilih",
-      message: "Pilih tahun ajaran tujuan terlebih dahulu.",
-      type: "error",
-    });
-    return;
-  }
-
-  isSubmitting.value = true;
-  try {
-    const payload = {
-      academic_year_id: selectedAcademicYear.value.id,
-      ...semesterForm,
-    };
-    const response = editingSemesterId.value
-      ? await api.put(`/academic-periods/semesters/${editingSemesterId.value}`, payload)
-      : await api.post("/academic-periods/semesters", payload);
-
-    pushToast({
-      title: editingSemesterId.value ? "Semester Diperbarui" : "Semester Dibuat",
-      message: response?.message || "Perubahan semester berhasil disimpan.",
-      type: "success",
-    });
-    closeSemesterModal();
-    await loadData();
-  } catch (error) {
-    pushToast({
-      title: "Gagal Menyimpan Semester",
-      message: error.message,
-      type: "error",
-    });
-  } finally {
-    isSubmitting.value = false;
-  }
+  await adminStore.saveAcademicSemester();
 };
-
-const activateYear = async (item) => {
-  isSubmitting.value = true;
-  try {
-    const response = await api.post(`/academic-periods/years/${item.id}/activate`, {});
-    pushToast({
-      title: "Tahun Ajaran Aktif",
-      message: response?.message || `${item.name} sekarang menjadi tahun ajaran aktif.`,
-      type: "success",
-    });
-    await loadData();
-  } catch (error) {
-    pushToast({
-      title: "Gagal Mengaktifkan Tahun Ajaran",
-      message: error.message,
-      type: "error",
-    });
-  } finally {
-    isSubmitting.value = false;
-  }
-};
-
-const openActivateYearModal = (item) => {
-  pendingActivateYear.value = item;
-  isConfirmYearModalOpen.value = true;
-};
-
-const closeConfirmYearModal = () => {
-  if (isSubmitting.value) return;
-  isConfirmYearModalOpen.value = false;
-  pendingActivateYear.value = null;
-};
-
+const openActivateYearModal = (item) => adminStore.openAcademicYearConfirm(item);
+const closeConfirmYearModal = () => adminStore.closeAcademicYearConfirm();
 const confirmActivateYear = async () => {
-  if (!pendingActivateYear.value) return;
-  await activateYear(pendingActivateYear.value);
-  isConfirmYearModalOpen.value = false;
-  pendingActivateYear.value = null;
+  await adminStore.confirmAcademicYearActivation();
 };
-
-const activateSemester = async (item) => {
-  isSubmitting.value = true;
-  try {
-    const response = await api.post(`/academic-periods/semesters/${item.id}/activate`, {});
-    pushToast({
-      title: "Semester Aktif",
-      message: response?.message || `${item.name} sekarang menjadi semester aktif.`,
-      type: "success",
-    });
-    await loadData();
-  } catch (error) {
-    pushToast({
-      title: "Gagal Mengaktifkan Semester",
-      message: error.message,
-      type: "error",
-    });
-  } finally {
-    isSubmitting.value = false;
-  }
-};
-
-const openActivateSemesterModal = (item) => {
-  pendingActivateSemester.value = item;
-  isConfirmSemesterModalOpen.value = true;
-};
-
-const closeConfirmSemesterModal = () => {
-  if (isSubmitting.value) return;
-  isConfirmSemesterModalOpen.value = false;
-  pendingActivateSemester.value = null;
-};
-
+const openActivateSemesterModal = (item) => adminStore.openAcademicSemesterConfirm(item);
+const closeConfirmSemesterModal = () => adminStore.closeAcademicSemesterConfirm();
 const confirmActivateSemester = async () => {
-  if (!pendingActivateSemester.value) return;
-  await activateSemester(pendingActivateSemester.value);
-  isConfirmSemesterModalOpen.value = false;
-  pendingActivateSemester.value = null;
+  await adminStore.confirmAcademicSemesterActivation();
 };
 
 onMounted(loadData);

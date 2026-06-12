@@ -10,7 +10,8 @@
         <router-link to="/auth/login" class="reg-login-btn">Ke Login</router-link>
       </div>
       <div class="reg-body">
-        <form @submit.prevent="handleSubmit">
+        <SkeletonLoader v-if="isLoadingOptions" variant="form" :count="3" />
+        <form v-show="!isLoadingOptions" @submit.prevent="handleSubmit">
 
           <!-- Data Siswa -->
           <div class="reg-section-divider">

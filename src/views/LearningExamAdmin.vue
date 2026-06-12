@@ -133,7 +133,9 @@
             </button>
           </div>
 
-          <div class="mt-4 space-y-4">
+          <SkeletonLoader v-if="pageLoading" variant="list" :count="4" class="mt-4" />
+
+          <div v-show="!pageLoading" class="mt-4 space-y-4">
             <article v-for="item in examAssignments" :key="item.id"
               class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-800/20">
               <div class="flex flex-wrap items-center gap-2">
@@ -279,6 +281,7 @@ import { useMasterDataStore } from "@/store/masterData";
 const subjects = ref([]);
 const masterDataStore = useMasterDataStore();
 const examAssignments = ref([]);
+const pageLoading = ref(true);
 const message = ref("");
 const isError = ref(false);
 const isSubmitting = ref(false);
@@ -653,6 +656,8 @@ onMounted(async () => {
   } catch (error) {
     isError.value = true;
     message.value = error.message;
+  } finally {
+    pageLoading.value = false;
   }
 });
 

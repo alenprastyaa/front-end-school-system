@@ -124,7 +124,7 @@
                     </div>
                   </td>
                 </tr>
-                <tr v-if="paginatedStudents.length === 0">
+                <tr v-if="!pageLoading && paginatedStudents.length === 0">
                   <td colspan="3" class="px-3 py-10 text-center">
                     <p class="text-sm font-semibold text-slate-900 dark:text-white">Tidak ada data ditemukan</p>
                     <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Coba kata kunci pencarian lain.</p>
@@ -159,7 +159,14 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-              <tr v-for="item in paginatedStudents" :key="item.id"
+              <template v-if="pageLoading">
+                <tr v-for="n in 6" :key="`tstudent-sk-${n}`">
+                  <td v-for="c in 5" :key="`tstudent-sk-${n}-${c}`" class="px-4 py-3.5">
+                    <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-40' : 'w-20'"></div>
+                  </td>
+                </tr>
+              </template>
+              <tr v-for="item in paginatedStudents" v-show="!pageLoading" :key="item.id"
                 class="group transition hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-3">
@@ -214,7 +221,7 @@
                 </td>
               </tr>
 
-              <tr v-if="paginatedStudents.length === 0">
+              <tr v-if="!pageLoading && paginatedStudents.length === 0">
                 <td colspan="4" class="px-5 py-16 text-center">
                   <div class="mx-auto flex max-w-sm flex-col items-center">
                     <div
@@ -540,33 +547,40 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
 import { Icon } from "@iconify/vue";
+import { storeToRefs } from "pinia";
 import { api } from "@/api";
 import { formatDate, formatDateTime, formatTime } from "@/utils/date";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
+import { useTeacherStudentsStore } from "@/store/teacherStudents";
 
-const homeroomClass = ref(null);
-const students = ref([]);
-const search = ref("");
-const currentPage = ref(1);
-const pageSize = ref(10);
-const selectedStudent = ref(null);
-const attendances = ref([]);
-const receipts = ref([]);
-const showAttendanceModal = ref(false);
-const showReceiptModal = ref(false);
-const showCheckedInModal = ref(false);
-const showAbsentModal = ref(false);
-const summaryError = ref("");
-const listError = ref("");
-const attendanceError = ref("");
-const receiptError = ref("");
+const teacherStudentsStore = useTeacherStudentsStore();
+const pageLoading = ref(true);
+const {
+  homeroomClass,
+  students,
+  search,
+  currentPage,
+  pageSize,
+  selectedStudent,
+  attendances,
+  receipts,
+  showAttendanceModal,
+  showReceiptModal,
+  showCheckedInModal,
+  showAbsentModal,
+  summaryError,
+  listError,
+  attendanceError,
+  receiptError,
+  studentTableSort,
+  checkedInTableSort,
+  absentTableSort,
+  attendanceTableSort,
+  receiptTableSort,
+} = storeToRefs(teacherStudentsStore);
 
 // Table Sort States
-const studentTableSort = createSortState("full_name");
-const checkedInTableSort = createSortState("clock_in", "desc");
-const absentTableSort = createSortState("full_name");
-const attendanceTableSort = createSortState("attendance_date", "desc");
-const receiptTableSort = createSortState("created_at", "desc");
+// State lives in Pinia; helper functions keep working with the same object shape.
 
 const normalizedSearch = computed(() => search.value.trim().toLowerCase());
 
@@ -762,6 +776,8 @@ const loadTeacherData = async () => {
   } catch (error) {
     summaryError.value = error.message;
     listError.value = error.message;
+  } finally {
+    pageLoading.value = false;
   }
 };
 

@@ -8,6 +8,7 @@ import "./assets/tailwind.css";
 import "./assets/sass/css/windzo.css";
 import "@vuepic/vue-datepicker/dist/main.css";
 import vClickOutside from "click-outside-vue3";
+import SkeletonLoader from "@/components/SkeletonLoader.vue";
 import { registerPwaServiceWorker } from "@/utils/serviceWorker";
 
 const storedTheme = localStorage.getItem("color-theme");
@@ -22,6 +23,7 @@ app.use(router);
 app.use(createPinia());
 app.use(vClickOutside);
 app.use(VueApexCharts);
+app.component("SkeletonLoader", SkeletonLoader);
 app.mount("#app");
 
 registerPwaServiceWorker().catch((error) => {

@@ -209,8 +209,7 @@
 
         <div class="p-6">
           <div v-if="isLoading" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <div v-for="item in 6" :key="item" class="h-48 animate-pulse rounded-3xl bg-slate-100 dark:bg-slate-800">
-            </div>
+            <div v-for="item in 6" :key="item" class="skeleton-shimmer h-48 rounded-3xl"></div>
           </div>
 
           <div v-else class="space-y-8">

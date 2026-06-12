@@ -3,6 +3,11 @@ import { beginGlobalLoading } from "@/composables/useGlobalLoading";
 
 const API_BASE_URL = (process.env.VUE_APP_API_BASE_URL || "https://alentest.my.id/school/api").replace(/\/$/, "");
 const pendingRequestControllers = new Set();
+const ABORTED_RESPONSE = Object.freeze({
+  __aborted: true,
+  data: {},
+  message: "",
+});
 
 const normalizeSocketPath = (path) => {
   if (!path) {
@@ -131,12 +136,15 @@ const isSessionReplacedFailure = (error) => {
   return payload?.code === "SESSION_REPLACED" || data?.reason === "SESSION_REPLACED";
 };
 
+export const isAbortedApiResponse = (value) => value?.__aborted === true;
+
 export const apiRequest = async (path, options = {}) => {
   const requestToken = localStorage.getItem("token");
   const hasToken = Boolean(requestToken);
   const suppressAuthRedirect = Boolean(options.suppressAuthRedirect);
   const controller = options.signal ? null : new AbortController();
   const signal = options.signal || controller?.signal;
+  const requestMethod = String(options.method || "GET").toUpperCase();
   const finishGlobalLoading = options.silentLoading
     ? null
     : beginGlobalLoading(options.loadingMessage || "Memuat data...");
@@ -167,6 +175,9 @@ export const apiRequest = async (path, options = {}) => {
   } catch (error) {
     if (error?.name === "AbortError") {
       error.isAborted = true;
+      if (requestMethod === "GET" || requestMethod === "HEAD") {
+        return ABORTED_RESPONSE;
+      }
       throw error;
     }
 

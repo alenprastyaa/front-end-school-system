@@ -233,6 +233,13 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                <template v-if="isLoading && !filteredItems.length">
+                  <tr v-for="n in 6" :key="`inv-sk-${n}`">
+                    <td v-for="c in 6" :key="`inv-sk-${n}-${c}`" class="px-4 py-4 sm:px-6">
+                      <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-40' : 'w-16'"></div>
+                    </td>
+                  </tr>
+                </template>
                 <tr v-for="item in filteredItems" :key="item.id"
                   class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
                   <td class="px-4 py-4 sm:px-6">

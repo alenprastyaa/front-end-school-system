@@ -221,7 +221,12 @@
               </div>
             </button>
 
-            <div v-if="subjects.length === 0"
+            <template v-if="subjectsLoading && !subjects.length">
+              <div v-for="n in 4" :key="`quiz-subj-sk-${n}`"
+                class="skeleton-shimmer h-[104px] min-w-[220px] flex-none rounded-2xl"></div>
+            </template>
+
+            <div v-if="!subjectsLoading && subjects.length === 0"
               class="flex w-full items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 py-8 dark:border-slate-800">
               <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Belum ada mapel terdaftar.</span>
             </div>
@@ -249,7 +254,8 @@
               </div>
 
               <div class="bg-white p-4 dark:bg-slate-900">
-                <div class="hidden md:block overflow-x-auto">
+                <SkeletonLoader v-if="contentLoading" variant="table" :count="6" :table-columns="4" />
+                <div v-show="!contentLoading" class="hidden md:block overflow-x-auto">
                   <table class="min-w-full text-sm">
                     <thead
                       class="bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-500 dark:bg-slate-800/60">
@@ -318,7 +324,7 @@
                   </table>
                 </div>
 
-                <div class="space-y-2 md:hidden">
+                <div v-show="!contentLoading" class="space-y-2 md:hidden">
                   <article v-for="item in assignments" :key="`m-${item.id}`"
                     class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition-all dark:bg-slate-900"
                     :class="item.is_submitted
@@ -720,13 +726,15 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { onBeforeRouteLeave, useRoute } from "vue-router";
 import { api } from "@/api";
 import { formatDateTime, parseDateValue } from "@/utils/date";
 import { pushToast } from "@/composables/useToast";
 import { setLayoutChromeHidden } from "@/composables/useLayoutChrome";
-import { useMasterDataStore } from "@/store/masterData";
+import { storeToRefs } from "pinia";
+import { useStudentStore } from "@/store/student";
+import { useStudentLearningStore } from "@/store/studentLearning";
 
 const props = defineProps({
   mode: {
@@ -736,27 +744,32 @@ const props = defineProps({
 });
 
 const route = useRoute();
-const subjects = ref([]);
-const masterDataStore = useMasterDataStore();
-const selectedSubject = ref(null);
-const assignments = ref([]);
-const submissionTarget = ref(null);
-const isSubmitting = ref(false);
-const subjectError = ref("");
-const message = ref("");
-const isError = ref(false);
-const activeQuestionIndex = ref(0);
-const questionTimeLeftMs = ref(0);
-const violationCount = ref(0);
-const antiCheatMessage = ref("");
-const fullscreenRecoveryRequired = ref(false);
-const pseudoFullscreenActive = ref(false);
-const pseudoViewportHeight = ref(null);
-const examCodeModalOpen = ref(false);
-const confirmSubmitModalOpen = ref(false);
-const pendingExamAssignmentForCode = ref(null);
-const reviewTarget = ref(null);
-const maxViolations = ref(3);
+const studentStore = useStudentStore();
+const studentLearningStore = useStudentLearningStore();
+const { subjects, selectedSubject, subjectError } = storeToRefs(studentStore);
+const {
+  assignments,
+  submissionTarget,
+  isSubmitting,
+  message,
+  isError,
+  activeQuestionIndex,
+  questionTimeLeftMs,
+  violationCount,
+  antiCheatMessage,
+  fullscreenRecoveryRequired,
+  pseudoFullscreenActive,
+  pseudoViewportHeight,
+  examCodeModalOpen,
+  confirmSubmitModalOpen,
+  pendingExamAssignmentForCode,
+  reviewTarget,
+  maxViolations,
+} = storeToRefs(studentLearningStore);
+const submissionForm = studentLearningStore.submissionForm;
+const examCodeForm = studentLearningStore.examCodeForm;
+const subjectsLoading = ref(true);
+const contentLoading = ref(false);
 let questionTimerInterval = null;
 let antiCheatListenersBound = false;
 let lastViolationAt = 0;
@@ -780,13 +793,7 @@ const resolveViolationType = (reason) => {
   return "OTHER";
 };
 
-const submissionForm = reactive({
-  answers: [],
-});
-
-const examCodeForm = reactive({
-  code: "",
-});
+submissionForm.answers = [];
 
 const isExamPage = computed(() => props.mode === "exam");
 const listTitle = computed(() => (isExamPage.value ? "Pilih Mata Pelajaran Ujian" : "Pilih Mata Pelajaran"));
@@ -1615,7 +1622,7 @@ const initializeAttemptSession = (assignment, startPayload) => {
 const loadSubjects = async () => {
   subjectError.value = "";
   try {
-    subjects.value = await masterDataStore.getStudentSubjects();
+    subjects.value = await studentStore.loadStudentSubjects();
     const requestedSubject = subjects.value.find((item) => Number(item.id) === routeSubjectId());
     if (requestedSubject) {
       await selectSubject(requestedSubject);
@@ -1624,11 +1631,15 @@ const loadSubjects = async () => {
     }
   } catch (error) {
     subjectError.value = error.message;
+  } finally {
+    subjectsLoading.value = false;
   }
 };
 
 const loadSubjectData = async () => {
   if (!selectedSubject.value) return;
+  contentLoading.value = true;
+  try {
   const response = await api.get(`/learning/subjects/${selectedSubject.value.id}/assignments`);
   assignments.value = (response?.data || []).map(normalizeAssignment).filter((item) => {
     if (item.assignment_type !== "MCQ" && item.assignment_type !== "ESSAY") {
@@ -1645,10 +1656,13 @@ const loadSubjectData = async () => {
       openAssignmentReview(requestedAssignment);
     }
   }
+  } finally {
+    contentLoading.value = false;
+  }
 };
 
 const selectSubject = async (subject) => {
-  selectedSubject.value = subject;
+  studentStore.setSelectedSubject(subject);
   stopQuestionTimer();
   unbindLockedNavigation();
   unbindAntiCheatListeners();

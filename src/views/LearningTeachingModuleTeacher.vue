@@ -38,6 +38,11 @@
               class="absolute right-4 top-4 h-2 w-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
             ></div>
           </button>
+
+          <template v-if="subjectsLoading && !subjects.length">
+            <div v-for="n in 5" :key="`module-subj-sk-${n}`"
+              class="skeleton-shimmer h-[88px] min-w-[240px] flex-none rounded-2xl"></div>
+          </template>
         </nav>
       </section>
 
@@ -728,9 +733,13 @@
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900">
-                    <tr v-if="isLoadingSavedModules">
-                      <td colspan="6" class="px-4 py-6 text-center text-slate-500 dark:text-slate-400">Memuat modul tersimpan...</td>
+                    <template v-if="isLoadingSavedModules">
+                    <tr v-for="n in 5" :key="`module-sk-${n}`">
+                      <td v-for="c in 6" :key="`module-sk-${n}-${c}`" class="px-4 py-3.5">
+                        <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-40' : 'w-20'"></div>
+                      </td>
                     </tr>
+                    </template>
                     <tr v-else-if="savedModules.length === 0">
                       <td colspan="6" class="px-4 py-6 text-center text-slate-500 dark:text-slate-400">Belum ada modul tersimpan untuk mapel ini.</td>
                     </tr>
@@ -897,31 +906,40 @@
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { useMasterDataStore } from "@/store/masterData";
+import { useTeacherStore } from "@/store/teacher";
+import { useTeacherTeachingModuleStore } from "@/store/teacherTeachingModule";
+import { storeToRefs } from "pinia";
 
-const masterDataStore = useMasterDataStore();
+const teacherStore = useTeacherStore();
+const teachingModuleStore = useTeacherTeachingModuleStore();
+const { subjects } = storeToRefs(teacherStore);
+const subjectsLoading = ref(true);
+const {
+  selectedSubject,
+  subjectError,
+  topicSuggestions,
+  topicSuggestionError,
+  customTopic,
+  isLoadingTopicSuggestions,
+  isLoadingSuggestionCatalog,
+  suggestionCatalogError,
+  isGenerating,
+  isSavingDraft,
+  isLoadingSavedModules,
+  isDeletingSavedModule,
+  draft,
+  savedModules,
+  savedModuleError,
+  editingModuleId,
+  showSavedModuleActions,
+  showDeleteConfirmation,
+  activeSavedModule,
+} = storeToRefs(teachingModuleStore);
+const suggestionCatalog = teachingModuleStore.suggestionCatalog;
+const form = teachingModuleStore.form;
+const customForm = teachingModuleStore.customForm;
 
-const subjects = ref([]);
-const selectedSubject = ref(null);
-const subjectError = ref("");
-const topicSuggestions = ref([]);
-const topicSuggestionError = ref("");
-const customTopic = ref("");
-const isLoadingTopicSuggestions = ref(false);
-const isLoadingSuggestionCatalog = ref(false);
-const suggestionCatalogError = ref("");
-const isGenerating = ref(false);
-const isSavingDraft = ref(false);
-const isLoadingSavedModules = ref(false);
-const isDeletingSavedModule = ref(false);
-const draft = ref(null);
-const savedModules = ref([]);
-const savedModuleError = ref("");
-const editingModuleId = ref(null);
-const showSavedModuleActions = ref(false);
-const showDeleteConfirmation = ref(false);
-const activeSavedModule = ref(null);
-const suggestionCatalog = reactive({
+const suggestionCatalogBase = {
   subject_category: "",
   titles: [],
   cp_references: [],
@@ -930,9 +948,9 @@ const suggestionCatalog = reactive({
   student_characteristics: [],
   facilities: [],
   additional_instruction_tips: [],
-});
-
-const form = reactive({
+};
+Object.assign(suggestionCatalog, suggestionCatalogBase);
+Object.assign(form, {
   title: "",
   topic: "",
   time_allocation: "2 x 45 menit",
@@ -946,7 +964,7 @@ const form = reactive({
   facilities: "",
   additional_instructions: "",
 });
-const customForm = reactive({
+Object.assign(customForm, {
   title: "",
   cp_reference: "",
   learning_objectives: "",
@@ -1115,12 +1133,14 @@ const resetSuggestionCatalog = () => {
 const loadSubjects = async () => {
   subjectError.value = "";
   try {
-    subjects.value = await masterDataStore.getTeacherSubjects();
+    subjects.value = await teacherStore.loadTeacherSubjects();
     if (!selectedSubject.value && subjects.value.length > 0) {
       await selectSubject(subjects.value[0]);
     }
   } catch (error) {
     subjectError.value = error.message;
+  } finally {
+    subjectsLoading.value = false;
   }
 };
 

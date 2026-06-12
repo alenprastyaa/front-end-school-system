@@ -166,7 +166,100 @@
               </div>
             </div>
 
+            <div v-if="isLoadingQuestionBank" class="border-b border-slate-200 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-800/30 sm:p-4">
+              <div class="mb-2 flex items-center justify-between gap-3">
+                <div class="space-y-1.5">
+                  <div class="skeleton-shimmer h-3 w-28 rounded"></div>
+                  <div class="skeleton-shimmer h-2.5 w-48 rounded"></div>
+                </div>
+                <div class="skeleton-shimmer h-3 w-12 rounded"></div>
+              </div>
+              <div class="grid items-stretch gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                <div v-for="n in 3" :key="`bank-skeleton-card-${n}`"
+                  class="flex h-full min-h-[148px] flex-col rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0 flex-1 space-y-2">
+                      <div class="skeleton-shimmer h-4 w-3/4 rounded"></div>
+                      <div class="skeleton-shimmer h-3 w-1/2 rounded"></div>
+                    </div>
+                    <div class="skeleton-shimmer h-5 w-14 shrink-0 rounded-full"></div>
+                  </div>
+                  <div class="mt-3 space-y-1.5">
+                    <div class="skeleton-shimmer h-3 w-full rounded"></div>
+                    <div class="skeleton-shimmer h-3 w-5/6 rounded"></div>
+                  </div>
+                  <div class="mt-auto flex gap-2 pt-3">
+                    <div class="skeleton-shimmer h-8 w-10 shrink-0 rounded-lg"></div>
+                    <div class="skeleton-shimmer h-8 flex-1 rounded-lg"></div>
+                    <div class="skeleton-shimmer h-8 w-10 shrink-0 rounded-lg"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div v-else-if="questionBankCards.length" class="border-b border-slate-200 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-800/30 sm:p-4">
+              <div class="mb-2 flex items-center justify-between gap-3">
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-[0.16em] text-sky-700 dark:text-sky-300">Hasil Generate AI</p>
+                  <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Batch soal yang dibuat pada waktu yang sama.</p>
+                </div>
+                <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">{{ questionBankCards.length }} batch</span>
+              </div>
+              <div class="grid items-stretch gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              <article v-for="group in questionBankCards" :key="group.key"
+                class="flex h-full min-h-[148px] flex-col rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                <div class="flex items-start justify-between gap-2">
+                  <button type="button" class="min-w-0 flex-1 text-left" @click="openQuestionBatchDetail(group)">
+                    <p class="truncate text-sm font-bold text-slate-900 dark:text-white">{{ group.title }}</p>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ group.label }}</p>
+                  </button>
+                  <span class="shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-700 dark:bg-sky-500/10 dark:text-sky-300">
+                    {{ group.items.length }} soal
+                  </span>
+                </div>
+                <p class="mt-2 min-h-10 line-clamp-2 text-xs leading-5 text-slate-600 dark:text-slate-300">
+                  {{ parseQuestionContent(group.items[0]?.question_text).question_text }}
+                </p>
+                <div class="mt-auto flex gap-2 pt-3">
+                  <button type="button" @click="openQuestionBatchDetail(group)"
+                    aria-label="Lihat detail card" title="Detail"
+                    class="inline-flex h-8 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                    <Icon icon="ph:eye" class="h-4 w-4" />
+                  </button>
+                  <button type="button" @click="openQuickQuizPrompt(group.items, group.title)"
+                    class="inline-flex h-8 flex-1 items-center justify-center rounded-lg bg-emerald-600 px-2 text-xs font-bold text-white transition hover:bg-emerald-500">
+                    Jadikan Quiz
+                  </button>
+                  <button type="button" @click="deleteQuestionBatch(group)"
+                    aria-label="Hapus card" title="Hapus"
+                    class="inline-flex h-8 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-700 transition hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20">
+                    <Icon icon="ph:trash" class="h-4 w-4" />
+                  </button>
+                </div>
+              </article>
+              </div>
+            </div>
+
             <div class="space-y-2 p-2.5 md:hidden">
+              <template v-if="isLoadingQuestionBank">
+                <div v-for="n in 6" :key="`bank-skeleton-mobile-${n}`"
+                  class="rounded-lg border border-slate-200 bg-white p-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                  <div class="flex items-start gap-2.5">
+                    <div class="skeleton-shimmer mt-1 h-3.5 w-3.5 shrink-0 rounded"></div>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-start justify-between gap-2">
+                        <div class="skeleton-shimmer h-4 w-16 rounded-md"></div>
+                        <div class="skeleton-shimmer h-6 w-6 shrink-0 rounded-md"></div>
+                      </div>
+                      <div class="skeleton-shimmer mt-2 h-3 w-full rounded"></div>
+                      <div class="skeleton-shimmer mt-1.5 h-3 w-11/12 rounded"></div>
+                      <div class="skeleton-shimmer mt-1.5 h-3 w-2/3 rounded"></div>
+                      <div class="skeleton-shimmer mt-2 h-2.5 w-24 rounded"></div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+              <template v-else>
               <article v-for="item in paginatedQuestionBank" :key="item.id"
                 class="rounded-lg border border-slate-200 bg-white p-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                 <div class="flex items-start gap-2.5">
@@ -213,6 +306,7 @@
                   Soal yang cocok dengan pencarian akan muncul di sini.
                 </p>
               </div>
+              </template>
             </div>
 
             <div class="hidden md:block">
@@ -226,6 +320,25 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-900">
+                  <template v-if="isLoadingQuestionBank">
+                  <tr v-for="n in 8" :key="`bank-skeleton-row-${n}`" class="align-top">
+                    <td class="px-4 py-3">
+                      <div class="skeleton-shimmer mt-1 h-5 w-5 rounded"></div>
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="skeleton-shimmer h-4 w-full max-w-3xl rounded"></div>
+                      <div class="skeleton-shimmer mt-2 h-4 w-2/3 rounded"></div>
+                      <div class="skeleton-shimmer mt-2 h-2.5 w-32 rounded"></div>
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="skeleton-shimmer h-6 w-20 rounded-md"></div>
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                      <div class="skeleton-shimmer ml-auto h-7 w-20 rounded-md"></div>
+                    </td>
+                  </tr>
+                  </template>
+                  <template v-else>
                   <tr v-for="item in paginatedQuestionBank" :key="item.id"
                     class="align-top hover:bg-slate-50 dark:hover:bg-slate-800/40">
                     <td class="px-4 py-3">
@@ -265,6 +378,7 @@
                         muncul di sini.</p>
                     </td>
                   </tr>
+                  </template>
                 </tbody>
               </table>
             </div>
@@ -510,7 +624,7 @@
                         class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">1</span>
                       <h3 class="text-sm font-bold text-slate-900 dark:text-white">Pilih Bentuk Soal</h3>
                     </div>
-                    <div class="grid gap-4 md:grid-cols-3">
+                    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                       <div class="space-y-1.5">
                         <label class="text-xs font-semibold text-slate-500">Jenis Soal</label>
                         <select v-model="aiGeneratorForm.question_type"
@@ -531,6 +645,15 @@
                           <option value="MUDAH">Mudah</option>
                           <option value="MENENGAH">Menengah</option>
                           <option value="SULIT">Sulit</option>
+                        </select>
+                      </div>
+                      <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-slate-500">Model Soal</label>
+                        <select v-model="aiGeneratorForm.question_style"
+                          class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+                          <option v-for="option in aiQuestionStyleOptions" :key="option.value" :value="option.value">
+                            {{ option.label }}
+                          </option>
                         </select>
                       </div>
                     </div>
@@ -570,29 +693,40 @@
                             }}</p>
                         </div>
                       </div>
-                      <div class="space-y-1.5">
-                        <div class="flex items-center justify-between gap-3">
-                          <label class="text-xs font-semibold text-slate-500">Pilih Materi</label>
-                          <button type="button" @click="loadAiTopicSuggestions" :disabled="isLoadingAiTopicSuggestions"
-                            class="text-xs font-semibold text-blue-700 hover:text-blue-800 disabled:opacity-50 dark:text-blue-300">
-                            {{ isLoadingAiTopicSuggestions ? "Memuat..." : "Muat Ulang" }}
-                          </button>
-                        </div>
-                        <select v-model="aiGeneratorForm.topic"
-                          class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
-                          <option value="" disabled>
-                            {{ isLoadingAiTopicSuggestions ? "Memuat daftar materi..." : "Pilih materi..." }}
-                          </option>
-                          <option v-for="topic in aiTopicSuggestions" :key="topic" :value="topic">{{ topic }}</option>
-                          <option value="__custom__">Materi lainnya...</option>
-                        </select>
-                        <input v-if="aiGeneratorForm.topic === '__custom__'" v-model="aiCustomTopic" type="text"
-                          placeholder="Tulis materi sendiri"
-                          class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
-                        <p v-if="aiTopicSuggestionError" class="text-xs font-medium text-amber-700 dark:text-amber-300">
-                          {{ aiTopicSuggestionError }}
-                        </p>
-                      </div>
+	                      <div class="space-y-1.5">
+	                        <div class="flex items-center justify-between gap-3">
+	                          <label class="text-xs font-semibold text-slate-500">Pilih Materi</label>
+	                          <button type="button" @click="loadAiTopicSuggestions" :disabled="isLoadingAiTopicSuggestions"
+	                            class="text-xs font-semibold text-blue-700 hover:text-blue-800 disabled:opacity-50 dark:text-blue-300">
+	                            {{ isLoadingAiTopicSuggestions ? "Memuat..." : "Muat Ulang" }}
+	                          </button>
+	                        </div>
+	                        <div v-if="isLoadingAiTopicSuggestions"
+	                          class="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
+	                          <div class="space-y-2">
+	                            <div class="h-10 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700"></div>
+	                            <div class="grid gap-2 sm:grid-cols-3">
+	                              <div class="h-7 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700"></div>
+	                              <div class="h-7 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700"></div>
+	                              <div class="h-7 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700"></div>
+	                            </div>
+	                          </div>
+	                        </div>
+	                        <div v-else>
+	                          <select v-model="aiGeneratorForm.topic"
+	                            class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+	                            <option value="" disabled>Pilih materi...</option>
+	                            <option v-for="topic in aiTopicSuggestions" :key="topic" :value="topic">{{ topic }}</option>
+	                            <option value="__custom__">Materi lainnya...</option>
+	                          </select>
+	                          <input v-if="aiGeneratorForm.topic === '__custom__'" v-model="aiCustomTopic" type="text"
+	                            placeholder="Tulis materi sendiri"
+	                            class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-600 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+	                          <p v-if="aiTopicSuggestionError" class="text-xs font-medium text-amber-700 dark:text-amber-300">
+	                            {{ aiTopicSuggestionError }}
+	                          </p>
+	                        </div>
+	                      </div>
                     </div>
                   </section>
 
@@ -710,14 +844,155 @@
                   {{ isSavingGeneratedAiQuestions ? "Menyimpan..." : `Simpan ${selectedGeneratedAiQuestions.length}
                   Soal` }}
                 </button>
-                <button type="submit" :disabled="isGeneratingAiQuestions"
-                  class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:text-sm">
-                  {{ isGeneratingAiQuestions ? "Membuat..." : generatedAiQuestions.length ? `Buat Ulang` : `Buat Soal
-                  dengan AI` }}
-                </button>
+	                <button type="submit" :disabled="isGeneratingAiQuestions || isLoadingAiTopicSuggestions"
+	                  class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:text-sm">
+	                  {{ isGeneratingAiQuestions ? "Membuat..." : isLoadingAiTopicSuggestions ? "Menyiapkan materi..." : generatedAiQuestions.length ? `Buat Ulang` : `Buat Soal
+	                  dengan AI` }}
+	                </button>
               </div>
             </fieldset>
           </form>
+        </div>
+      </div>
+    </Transition>
+
+    <Transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100" leave-active-class="transition ease-in duration-150"
+      leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+      <div v-if="questionBatchDetailModal.open"
+        class="learning-bank-modal-overlay fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div
+          class="flex max-h-[calc(100dvh-2rem)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+          <div class="flex items-start justify-between gap-3 border-b border-slate-100 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/60">
+            <div class="min-w-0">
+              <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ questionBatchDetailModal.group?.title || "Detail Batch Soal" }}</h3>
+              <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                {{ questionBatchDetailModal.group?.label || "-" }}
+              </p>
+            </div>
+            <button type="button" @click="closeQuestionBatchDetail"
+              class="shrink-0 rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="min-h-0 flex-1 overflow-y-auto p-4">
+            <div class="space-y-3">
+              <article v-for="(item, index) in questionBatchDetailModal.group?.items || []" :key="item.id"
+                class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+                <div class="flex items-start gap-3">
+                  <input v-model="assignmentForm.selected_question_bank_ids" type="checkbox" :value="item.id"
+                    class="mt-1 h-4 w-4 shrink-0 rounded border-slate-300 text-blue-600 focus:ring-blue-600 dark:border-slate-600 dark:bg-slate-800" />
+                  <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                      <span class="inline-flex rounded-md border px-2 py-0.5 text-[10px] font-semibold"
+                        :class="item.question_type === 'MCQ'
+                          ? 'border-blue-700 bg-blue-50 text-blue-800 dark:border-blue-500 dark:bg-blue-900/30 dark:text-blue-300'
+                          : 'border-amber-700 bg-amber-50 text-amber-800 dark:border-amber-500 dark:bg-amber-900/30 dark:text-amber-300'">
+                        Soal {{ index + 1 }} - {{ assignmentTypeLabel(item.question_type) }}
+                      </span>
+                      <button type="button" @click="openQuestionPreview(item, 'bank', index + 1)"
+                        class="inline-flex h-7 items-center justify-center rounded-md border border-slate-300 bg-white px-2 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                        Lihat / Edit
+                      </button>
+                    </div>
+                    <p class="mt-2 whitespace-pre-wrap break-words text-sm font-semibold leading-6 text-slate-900 dark:text-white">
+                      {{ parseQuestionContent(item.question_text).question_text }}
+                    </p>
+                    <img v-if="parseQuestionContent(item.question_text).question_image_url"
+                      :src="parseQuestionContent(item.question_text).question_image_url" alt="Gambar pertanyaan"
+                      class="mt-2 max-h-40 rounded-lg border border-slate-200 object-contain dark:border-slate-700" />
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <div class="flex flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/60 sm:flex-row sm:justify-end">
+            <button type="button" @click="deleteQuestionBatch(questionBatchDetailModal.group)"
+              class="rounded-xl bg-rose-50 px-4 py-2.5 text-sm font-bold text-rose-700 transition hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20 sm:mr-auto">
+              Hapus Card
+            </button>
+            <button type="button" @click="closeQuestionBatchDetail"
+              class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+              Tutup
+            </button>
+            <button type="button" @click="openQuickQuizPrompt(questionBatchDetailModal.group?.items || [], questionBatchDetailModal.group?.title || '')"
+              class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-500">
+              Jadikan Quiz
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <Transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100" leave-active-class="transition ease-in duration-150"
+      leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+      <div v-if="quickQuizPromptOpen"
+        class="learning-bank-modal-overlay fixed inset-0 z-[250] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+        <div
+          class="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+          <div class="border-b border-slate-100 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/60">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Jadikan Soal Ini Sebagai Quiz?</h3>
+            <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">
+              {{ quickQuizQuestionIds.length }} soal sudah dipilih. Lengkapi pengaturan singkat untuk menerbitkan quiz.
+            </p>
+          </div>
+
+          <form class="space-y-4 px-5 py-5" @submit.prevent="createQuickQuizFromPrompt">
+            <div>
+              <label class="mb-1.5 block text-xs font-semibold text-slate-500">Judul Quiz</label>
+              <input v-model="assignmentForm.title" type="text" required
+                class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 focus:border-sky-600 focus:outline-none dark:border-slate-600 dark:bg-slate-950 dark:text-white" />
+            </div>
+            <div>
+              <label class="mb-1.5 block text-xs font-semibold text-slate-500">Deadline</label>
+              <input v-model="assignmentForm.due_date" type="datetime-local"
+                class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 focus:border-sky-600 focus:outline-none dark:border-slate-600 dark:bg-slate-950 dark:text-white" />
+            </div>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label class="mb-1.5 block text-xs font-semibold text-slate-500">Mode Durasi</label>
+                <select v-model="assignmentForm.question_duration_mode"
+                  class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 focus:border-sky-600 focus:outline-none dark:border-slate-600 dark:bg-slate-950 dark:text-white">
+                  <option value="PER_QUESTION">Per soal</option>
+                  <option value="GLOBAL">Global</option>
+                </select>
+              </div>
+              <div>
+                <label class="mb-1.5 block text-xs font-semibold text-slate-500">
+                  {{ assignmentForm.question_duration_mode === 'GLOBAL' ? 'Durasi Global (menit)' : 'Durasi per Soal (detik)' }}
+                </label>
+                <input v-model.number="assignmentForm.question_duration_seconds" type="number"
+                  :min="assignmentForm.question_duration_mode === 'GLOBAL' ? 1 : 5"
+                  :max="assignmentForm.question_duration_mode === 'GLOBAL' ? 180 : 600"
+                  class="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 focus:border-sky-600 focus:outline-none dark:border-slate-600 dark:bg-slate-950 dark:text-white" />
+              </div>
+            </div>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <label
+                class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200">
+                <input v-model="assignmentForm.shuffle_questions" type="checkbox"
+                  class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-600 dark:border-slate-600 dark:bg-slate-800" />
+                Acak soal
+              </label>
+            </div>
+          </form>
+
+          <div
+            class="flex flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-800/60 sm:flex-row sm:justify-end">
+            <button type="button" @click="closeQuickQuizPrompt" :disabled="isSavingAssignment"
+              class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+              Nanti Saja
+            </button>
+            <button type="button" @click="createQuickQuizFromPrompt" :disabled="isSavingAssignment || quickQuizQuestionIds.length === 0"
+              class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-500 disabled:opacity-50">
+              {{ isSavingAssignment ? "Menerbitkan..." : "Ya, Jadikan Quiz" }}
+            </button>
+          </div>
         </div>
       </div>
     </Transition>
@@ -742,12 +1017,16 @@
               <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">
                 Mohon tunggu sampai proses selesai. Form sedang dikunci agar input tidak berubah.
               </p>
-              <div class="mt-4 space-y-2">
-                <p class="text-sm font-medium text-sky-700 dark:text-sky-300">{{ activeAiGenerationStage }}</p>
-                <div class="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                  <div class="h-full w-1/2 animate-pulse rounded-full bg-sky-500"></div>
-                </div>
-              </div>
+	              <div class="mt-4 space-y-2">
+	                <div class="flex items-center justify-between gap-3">
+	                  <p class="text-sm font-medium text-sky-700 dark:text-sky-300">{{ activeAiGenerationStage }}</p>
+	                  <span class="text-sm font-bold tabular-nums text-slate-900 dark:text-white">{{ aiGenerationProgress }}%</span>
+	                </div>
+	                <div class="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+	                  <div class="h-full rounded-full bg-sky-500 transition-all duration-700 ease-out"
+	                    :style="{ width: `${aiGenerationProgress}%` }"></div>
+	                </div>
+	              </div>
             </div>
           </div>
         </div>
@@ -916,9 +1195,9 @@
             </button>
           </div>
 
-          <div v-if="quizOverviewModal.loading" class="min-h-0 flex-1 p-8 text-center sm:p-12">
-            <div class="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-sky-600"></div>
-            <p class="mt-4 text-sm text-slate-500">Memuat detail quiz...</p>
+          <div v-if="quizOverviewModal.loading" class="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+            <SkeletonLoader variant="stats" :count="3" :columns="3" />
+            <SkeletonLoader variant="table" :count="6" :table-columns="4" class="mt-4" />
           </div>
 
           <div v-else class="min-h-0 flex-1 overflow-y-auto p-3 sm:p-6">
@@ -1259,7 +1538,7 @@
           class="w-full max-w-md overflow-hidden rounded-2xl border-2 border-rose-200 bg-white shadow-2xl dark:border-rose-500/30 dark:bg-slate-900">
           <div class="border-b border-rose-100 bg-rose-50 px-6 py-5 dark:border-rose-500/20 dark:bg-rose-500/10">
             <h3 class="text-lg font-bold text-rose-800 dark:text-rose-200">
-              {{ deleteQuestionConfirmModal.mode === 'bulk' ? 'Hapus Soal Terpilih?' : 'Hapus Soal Ini?' }}
+              {{ deleteQuestionConfirmTitle }}
             </h3>
             <p class="mt-2 text-sm leading-6 text-rose-700 dark:text-rose-200">
               {{ deleteQuestionConfirmMessage }}
@@ -1291,22 +1570,26 @@
 </template>
 
 <script setup>
+import { Icon } from "@iconify/vue";
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
 import { formatDateTime, formatStoredDateTime, parseDateValue } from "@/utils/date";
-import { useMasterDataStore } from "@/store/masterData";
+import { useTeacherStore } from "@/store/teacher";
+import { storeToRefs } from "pinia";
 import { uploadFileDirect } from "@/api/upload";
 
-const subjects = ref([]);
-const masterDataStore = useMasterDataStore();
+const teacherStore = useTeacherStore();
+const { subjects } = storeToRefs(teacherStore);
 const selectedSubject = ref(null);
 const subjectDropdownOpen = ref(false);
 const subjectDropdownRef = ref(null);
 const assignments = ref([]);
 const questionBank = ref([]);
+const questionBankCardItems = ref([]);
 const questionBankForAssignment = ref([]);
 const questionBankTotal = ref(0);
+const isLoadingQuestionBank = ref(false);
 const subjectError = ref("");
 const message = ref("");
 const isError = ref(false);
@@ -1319,6 +1602,9 @@ const isDownloadingTemplate = ref(false);
 const isImportingQuestionBank = ref(false);
 const isGeneratingAiQuestions = ref(false);
 const isSavingGeneratedAiQuestions = ref(false);
+const isViewActive = ref(true);
+let loadSubjectDataRequestId = 0;
+const loadSubjectDataControllers = new Set();
 const aiGeneratorModalOpen = ref(false);
 const aiPreviewSectionRef = ref(null);
 const aiGeneratorScrollRef = ref(null);
@@ -1334,7 +1620,14 @@ const bankSearch = ref("");
 const bankTypeFilter = ref("ALL");
 const bankPageSize = ref(20);
 const bankCurrentPage = ref(1);
+const questionBankCardPageSize = 500;
 const randomQuestionCount = ref(5);
+const quickQuizPromptOpen = ref(false);
+const quickQuizQuestionIds = ref([]);
+const questionBatchDetailModal = reactive({
+  open: false,
+  group: null,
+});
 const quizOverviewModal = reactive({
   open: false,
   loading: false,
@@ -1355,6 +1648,7 @@ const deleteQuestionConfirmModal = reactive({
   mode: "single",
   question: null,
   count: 0,
+  ids: [],
 });
 const questionPreviewForm = reactive({
   question_text: "",
@@ -1363,7 +1657,33 @@ const questionPreviewForm = reactive({
   correct_option: 0,
   rubric: "",
 });
-
+const assignmentForm = reactive({
+  title: "",
+  description: "",
+  due_date: "",
+  assignment_type: "MCQ",
+  shuffle_questions: false,
+  question_duration_mode: "PER_QUESTION",
+  question_duration_seconds: 10,
+  selected_question_bank_ids: [],
+});
+const questionBankForm = reactive({
+  question_type: "MCQ",
+  question_text: "",
+  question_image_url: "",
+  options: ["", "", "", "", ""],
+  correct_option: 0,
+  rubric: "",
+});
+const aiGeneratorForm = reactive({
+  question_type: "MCQ",
+  question_count: 5,
+  difficulty: "MENENGAH",
+  question_style: "AUTO",
+  topic: "",
+  include_illustration: false,
+  additional_instructions: "",
+});
 const questionBankImportFileName = computed(() => questionBankImportFile.value?.name || "");
 
 const slugifyFilename = (value, fallback = "file") => {
@@ -1376,6 +1696,8 @@ const isAnyModalOpen = computed(() =>
   aiGeneratorModalOpen.value
   || questionBankModalOpen.value
   || bulkImportModalOpen.value
+  || quickQuizPromptOpen.value
+  || questionBatchDetailModal.open
   || quizOverviewModal.open
   || questionPreviewModal.open
   || deleteQuestionConfirmModal.open,
@@ -1390,6 +1712,9 @@ watch(isAnyModalOpen, (isOpen) => {
 });
 
 onUnmounted(() => {
+  isViewActive.value = false;
+  loadSubjectDataRequestId += 1;
+  cancelQuestionBankLoads();
   document.body.style.overflow = '';
   if (typeof document !== "undefined") {
     document.removeEventListener("click", handleSubjectDropdownOutsideClick);
@@ -1399,25 +1724,10 @@ onUnmounted(() => {
     clearInterval(aiGenerationStageInterval);
     aiGenerationStageInterval = null;
   }
-});
-
-const assignmentForm = reactive({
-  title: "",
-  description: "",
-  due_date: "",
-  assignment_type: "MCQ",
-  shuffle_questions: false,
-  question_duration_seconds: 10,
-  selected_question_bank_ids: [],
-});
-
-const questionBankForm = reactive({
-  question_type: "MCQ",
-  question_text: "",
-  question_image_url: "",
-  options: ["", "", "", "", ""],
-  correct_option: 0,
-  rubric: "",
+  if (aiGenerationProgressInterval) {
+    clearInterval(aiGenerationProgressInterval);
+    aiGenerationProgressInterval = null;
+  }
 });
 
 const QUESTION_IMAGE_MARKER = "[[QUESTION_IMAGE_URL]]";
@@ -1606,18 +1916,12 @@ const inferPhaseFromGrade = (grade) => {
   return "Fase belum terbaca";
 };
 
-const aiGeneratorForm = reactive({
-  question_type: "MCQ",
-  question_count: 5,
-  difficulty: "MENENGAH",
-  topic: "",
-  include_illustration: false,
-  additional_instructions: "",
-});
 const generatedAiQuestions = ref([]);
 const selectedGeneratedAiQuestionIds = ref([]);
 const aiGenerationStageIndex = ref(0);
+const aiGenerationProgress = ref(0);
 let aiGenerationStageInterval = null;
+let aiGenerationProgressInterval = null;
 const aiGenerationStages = [
   "Menganalisis topik dan konteks soal...",
   "Menyusun struktur pertanyaan dan opsi jawaban...",
@@ -1653,11 +1957,45 @@ const formatDurationSeconds = (value) => {
   return seconds > 0 ? `${minutes}m ${seconds}dtk` : `${minutes} menit`;
 };
 
+const asArray = (value) => (Array.isArray(value) ? value : []);
+
 const filteredQuestionBank = computed(() => questionBank.value);
 
 const bankTotalPages = computed(() => Math.max(1, Math.ceil(questionBankTotal.value / Number(bankPageSize.value || 20))));
 
 const paginatedQuestionBank = computed(() => questionBank.value);
+
+const getQuestionBatchKey = (item) => {
+  const createdAt = String(item?.created_at || "").trim();
+  if (!createdAt) {
+    return "unknown";
+  }
+  return createdAt.slice(0, 16);
+};
+
+const questionBankCards = computed(() => {
+  const groups = new Map();
+  questionBankCardItems.value.forEach((item) => {
+    const key = getQuestionBatchKey(item);
+    if (!groups.has(key)) {
+      groups.set(key, {
+        key,
+        title: key === "unknown" ? "Soal tanpa waktu pembuatan" : "Batch Soal",
+        label: item?.created_at ? formatDateTime(item.created_at) : "-",
+        created_at: item?.created_at || "",
+        items: [],
+      });
+    }
+    groups.get(key).items.push(item);
+  });
+
+  return Array.from(groups.values())
+    .filter((group) => group.items.length > 1)
+    .map((group) => ({
+      ...group,
+      title: `Generate AI - ${group.items.length} soal`,
+    }));
+});
 
 const bankStartRow = computed(() => {
   if (questionBankTotal.value === 0) return 0;
@@ -1692,6 +2030,51 @@ const resolvedAiTopic = computed(() =>
     ? String(aiCustomTopic.value || "").trim()
     : String(aiGeneratorForm.topic || "").trim(),
 );
+const subjectCategory = computed(() => {
+  const name = String(selectedSubject.value?.name || "").toLowerCase();
+  if (/matematika|math|numerasi|statistik|fisika|kimia|akuntansi|ekonomi/.test(name)) return "NUMERASI";
+  if (/bahasa|indonesia|inggris|arab|jawa|sunda|literasi/.test(name)) return "BAHASA";
+  if (/ipa|biologi|sains|geografi|sejarah|sosiologi|ppkn|pkn|ips/.test(name)) return "KONSEP";
+  if (/informatika|komputer|rpl|tkj|multimedia|kejuruan|produktif|bisnis|otomotif|mesin|listrik/.test(name)) return "KEJURUAN";
+  if (/seni|musik|rupa|prakarya|pjok|olahraga|penjas/.test(name)) return "PRAKTIK";
+  return "UMUM";
+});
+const baseAiQuestionStyleOptions = [
+  { value: "AUTO", label: "Otomatis sesuai mapel" },
+  { value: "HOTS", label: "HOTS" },
+  { value: "STORY", label: "Soal cerita" },
+  { value: "MULTI_STEP", label: "Soal beranak / bertahap" },
+  { value: "CASE_STUDY", label: "Studi kasus" },
+];
+const aiQuestionStyleOptions = computed(() => {
+  const byCategory = {
+    NUMERASI: [
+      { value: "DATA_INTERPRETATION", label: "Interpretasi data" },
+      { value: "PROBLEM_SOLVING", label: "Pemecahan masalah" },
+    ],
+    BAHASA: [
+      { value: "READING_COMPREHENSION", label: "Pemahaman bacaan" },
+      { value: "TEXT_ANALYSIS", label: "Analisis teks" },
+    ],
+    KONSEP: [
+      { value: "CAUSE_EFFECT", label: "Sebab-akibat" },
+      { value: "EXPERIMENT", label: "Eksperimen / observasi" },
+    ],
+    KEJURUAN: [
+      { value: "PROCEDURE", label: "Prosedur kerja" },
+      { value: "TROUBLESHOOTING", label: "Troubleshooting" },
+    ],
+    PRAKTIK: [
+      { value: "PERFORMANCE", label: "Praktik / performa" },
+      { value: "REFLECTION", label: "Refleksi" },
+    ],
+    UMUM: [
+      { value: "CAUSE_EFFECT", label: "Sebab-akibat" },
+      { value: "COMPARISON", label: "Perbandingan" },
+    ],
+  };
+  return [...baseAiQuestionStyleOptions, ...(byCategory[subjectCategory.value] || byCategory.UMUM)];
+});
 
 const selectedQuestionsForPublish = computed(() =>
   filteredQuestionBankForAssignment.value.filter((item) => assignmentForm.selected_question_bank_ids.includes(item.id)),
@@ -1726,7 +2109,19 @@ const questionPreviewModalQuestionHeader = computed(() =>
 const questionPreviewModalNumberLabel = computed(() =>
   `${questionPreviewModalSourcePrefix.value} - ${questionPreviewModalNumberText.value}`,
 );
+const deleteQuestionConfirmTitle = computed(() => {
+  if (deleteQuestionConfirmModal.mode === "batch") {
+    return "Hapus Card Generate AI?";
+  }
+  if (deleteQuestionConfirmModal.mode === "bulk") {
+    return "Hapus Soal Terpilih?";
+  }
+  return "Hapus Soal Ini?";
+});
 const deleteQuestionConfirmMessage = computed(() => {
+  if (deleteQuestionConfirmModal.mode === "batch") {
+    return `Anda akan menghapus ${deleteQuestionConfirmModal.count} soal dalam card ini dari bank soal.`;
+  }
   if (deleteQuestionConfirmModal.mode === "bulk") {
     return `Anda akan menghapus ${deleteQuestionConfirmModal.count} soal dari bank soal.`;
   }
@@ -1749,7 +2144,12 @@ watch([bankSearch, bankTypeFilter, bankPageSize, bankCurrentPage], async () => {
   if (!selectedSubject.value) {
     return;
   }
-  await loadSubjectData();
+  try {
+    await loadSubjectData();
+  } catch (error) {
+    if (!isViewActive.value) return;
+    subjectError.value = error.message;
+  }
 });
 
 watch([questionBankTotal, bankPageSize], () => {
@@ -1761,7 +2161,7 @@ watch([questionBankTotal, bankPageSize], () => {
 watch(
   () => assignmentForm.assignment_type,
   async () => {
-    await loadAssignmentQuestionBank();
+    await loadAssignmentQuestionBank(subjectId, controller?.signal);
     assignmentForm.selected_question_bank_ids = assignmentForm.selected_question_bank_ids.filter((id) =>
       filteredQuestionBankForAssignment.value.some((item) => item.id === id),
     );
@@ -1781,6 +2181,7 @@ const resetAiGeneratorForm = () => {
   aiGeneratorForm.question_type = "MCQ";
   aiGeneratorForm.question_count = 5;
   aiGeneratorForm.difficulty = "MENENGAH";
+  aiGeneratorForm.question_style = "AUTO";
   aiGeneratorForm.topic = "";
   aiCustomTopic.value = "";
   aiTopicSuggestions.value = [];
@@ -1793,13 +2194,31 @@ const resetAiGeneratorForm = () => {
 
 const startAiGenerationProgress = () => {
   aiGenerationStageIndex.value = 0;
+  aiGenerationProgress.value = 0;
   if (aiGenerationStageInterval) {
     clearInterval(aiGenerationStageInterval);
+  }
+  if (aiGenerationProgressInterval) {
+    clearInterval(aiGenerationProgressInterval);
   }
 
   aiGenerationStageInterval = window.setInterval(() => {
     aiGenerationStageIndex.value = (aiGenerationStageIndex.value + 1) % aiGenerationStages.length;
   }, 1300);
+
+  aiGenerationProgressInterval = window.setInterval(() => {
+    const current = aiGenerationProgress.value;
+    if (current >= 95) return;
+
+    let step = 1;
+    if (current < 25) {
+      step = 4;
+    } else if (current < 60) {
+      step = 2;
+    }
+
+    aiGenerationProgress.value = Math.min(95, current + step);
+  }, 900);
 };
 
 const stopAiGenerationProgress = () => {
@@ -1807,7 +2226,20 @@ const stopAiGenerationProgress = () => {
     clearInterval(aiGenerationStageInterval);
     aiGenerationStageInterval = null;
   }
+  if (aiGenerationProgressInterval) {
+    clearInterval(aiGenerationProgressInterval);
+    aiGenerationProgressInterval = null;
+  }
   aiGenerationStageIndex.value = 0;
+  aiGenerationProgress.value = 0;
+};
+
+const completeAiGenerationProgress = () => {
+  if (aiGenerationProgressInterval) {
+    clearInterval(aiGenerationProgressInterval);
+    aiGenerationProgressInterval = null;
+  }
+  aiGenerationProgress.value = 100;
 };
 
 const resetQuestionBankImport = () => {
@@ -1828,12 +2260,82 @@ const resetAssignmentForm = () => {
   assignmentForm.due_date = "";
   assignmentForm.assignment_type = "MCQ";
   assignmentForm.shuffle_questions = false;
+  assignmentForm.question_duration_mode = "PER_QUESTION";
   assignmentForm.question_duration_seconds = 10;
   assignmentForm.selected_question_bank_ids = [];
 };
 
 const clearSelectedQuestions = () => {
   assignmentForm.selected_question_bank_ids = [];
+};
+
+const isQuestionGroupFullySelected = (group) =>
+  Array.isArray(group?.items)
+  && group.items.length > 0
+  && group.items.every((item) => assignmentForm.selected_question_bank_ids.includes(item.id));
+
+const toggleQuestionGroupSelection = (group, checked) => {
+  const ids = (group?.items || []).map((item) => item.id).filter(Boolean);
+  if (checked) {
+    assignmentForm.selected_question_bank_ids = Array.from(new Set([...assignmentForm.selected_question_bank_ids, ...ids]));
+    return;
+  }
+
+  const idSet = new Set(ids);
+  assignmentForm.selected_question_bank_ids = assignmentForm.selected_question_bank_ids.filter((id) => !idSet.has(id));
+};
+
+const openQuestionBatchDetail = (group) => {
+  questionBatchDetailModal.open = true;
+  questionBatchDetailModal.group = group || null;
+};
+
+const closeQuestionBatchDetail = () => {
+  questionBatchDetailModal.open = false;
+  questionBatchDetailModal.group = null;
+};
+
+const buildQuickQuizTitle = (sourceTitle = "") => {
+  const topic = resolvedAiTopic.value || sourceTitle || "Bank Soal";
+  return `Quiz ${selectedSubject.value?.name || "Mapel"} - ${topic}`;
+};
+
+const openQuickQuizPrompt = (questions = [], sourceTitle = "") => {
+  const items = Array.isArray(questions) ? questions : [];
+  const questionType = items[0]?.question_type || aiGeneratorForm.question_type || "MCQ";
+  const eligibleItems = items.filter((item) => item.question_type === questionType);
+  const ids = eligibleItems.map((item) => item.id).filter(Boolean);
+  if (ids.length === 0) {
+    return;
+  }
+
+  quickQuizQuestionIds.value = ids;
+  assignmentForm.assignment_type = questionType;
+  assignmentForm.selected_question_bank_ids = ids;
+  assignmentForm.title = buildQuickQuizTitle(sourceTitle);
+  assignmentForm.description = `Quiz dibuat dari ${ids.length} soal bank soal.`;
+  assignmentForm.due_date = "";
+  assignmentForm.question_duration_mode = assignmentForm.question_duration_mode || "PER_QUESTION";
+  assignmentForm.question_duration_seconds = Number(assignmentForm.question_duration_seconds) || 10;
+  closeQuestionBatchDetail();
+  quickQuizPromptOpen.value = true;
+};
+
+const closeQuickQuizPrompt = () => {
+  if (isSavingAssignment.value) return;
+  quickQuizPromptOpen.value = false;
+  quickQuizQuestionIds.value = [];
+};
+
+const createQuickQuizFromPrompt = async () => {
+  if (quickQuizQuestionIds.value.length === 0) {
+    return;
+  }
+  assignmentForm.selected_question_bank_ids = [...quickQuizQuestionIds.value];
+  await submitAssignment();
+  if (!isError.value) {
+    closeQuickQuizPrompt();
+  }
 };
 
 const selectAllCurrentBankPage = () => {
@@ -1892,11 +2394,12 @@ const closeQuestionPreview = () => {
   questionPreviewForm.rubric = "";
 };
 
-const openDeleteQuestionConfirm = ({ mode = "single", question = null, count = 0 } = {}) => {
+const openDeleteQuestionConfirm = ({ mode = "single", question = null, count = 0, ids = [] } = {}) => {
   deleteQuestionConfirmModal.open = true;
   deleteQuestionConfirmModal.mode = mode;
   deleteQuestionConfirmModal.question = question;
   deleteQuestionConfirmModal.count = count;
+  deleteQuestionConfirmModal.ids = Array.isArray(ids) ? ids : [];
 };
 
 const closeDeleteQuestionConfirm = (force = false) => {
@@ -1905,6 +2408,7 @@ const closeDeleteQuestionConfirm = (force = false) => {
   deleteQuestionConfirmModal.mode = "single";
   deleteQuestionConfirmModal.question = null;
   deleteQuestionConfirmModal.count = 0;
+  deleteQuestionConfirmModal.ids = [];
 };
 
 const saveQuestionPreviewChanges = async () => {
@@ -1979,6 +2483,21 @@ const deleteSelectedQuestionBankItems = async () => {
   });
 };
 
+const deleteQuestionBatch = (group) => {
+  if (!selectedSubject.value) return;
+  const ids = (group?.items || []).map((item) => item.id).filter(Boolean);
+  if (ids.length === 0) {
+    return;
+  }
+
+  openDeleteQuestionConfirm({
+    mode: "batch",
+    question: null,
+    count: ids.length,
+    ids,
+  });
+};
+
 const confirmDeleteQuestion = async () => {
   if (!selectedSubject.value) return;
 
@@ -1987,20 +2506,27 @@ const confirmDeleteQuestion = async () => {
     message.value = "";
     isError.value = false;
 
-    if (deleteQuestionConfirmModal.mode === "bulk") {
+    if (deleteQuestionConfirmModal.mode === "bulk" || deleteQuestionConfirmModal.mode === "batch") {
+      const questionIds = deleteQuestionConfirmModal.mode === "batch"
+        ? deleteQuestionConfirmModal.ids
+        : assignmentForm.selected_question_bank_ids;
       const response = await api.post(
         `/learning/subjects/${selectedSubject.value.id}/question-bank/bulk-delete`,
-        { question_ids: assignmentForm.selected_question_bank_ids },
+        { question_ids: questionIds },
       );
 
       const total = response?.data?.total || 0;
-      assignmentForm.selected_question_bank_ids = [];
+      const deletedIdSet = new Set(questionIds);
+      assignmentForm.selected_question_bank_ids = assignmentForm.selected_question_bank_ids.filter((id) => !deletedIdSet.has(id));
       message.value = response?.message || "Soal terpilih berhasil dihapus";
       pushToast({
-        title: "Soal Terpilih Dihapus",
+        title: deleteQuestionConfirmModal.mode === "batch" ? "Card Generate AI Dihapus" : "Soal Terpilih Dihapus",
         message: `${total} soal berhasil dihapus dari bank soal.`,
         type: "success",
       });
+      if (deleteQuestionConfirmModal.mode === "batch") {
+        closeQuestionBatchDetail();
+      }
     } else {
       const questionId = deleteQuestionConfirmModal.question?.id || questionPreviewModal.question?.id;
       if (!questionId) {
@@ -2055,46 +2581,128 @@ const openQuizOverview = async (assignment) => {
 const loadSubjects = async () => {
   subjectError.value = "";
   try {
-    subjects.value = await masterDataStore.getTeacherSubjects();
+    const loadedSubjects = await teacherStore.loadTeacherSubjects();
+    if (!isViewActive.value) return;
+    subjects.value = asArray(loadedSubjects);
     if (!selectedSubject.value && subjects.value.length > 0) {
       await selectSubject(subjects.value[0]);
     }
   } catch (error) {
+    if (!isViewActive.value) return;
     subjectError.value = error.message;
   }
 };
 
-const loadSubjectData = async () => {
-  if (!selectedSubject.value) return;
-
-  const [assignmentResponse, questionBankResponse] = await Promise.all([
-    api.get(`/learning/subjects/${selectedSubject.value.id}/assignments`),
-    api.get(`/learning/subjects/${selectedSubject.value.id}/question-bank`, {
-      params: {
-        keyword: bankSearch.value || "",
-        question_type: bankTypeFilter.value === "ALL" ? "" : bankTypeFilter.value,
-        page: bankCurrentPage.value,
-        limit: bankPageSize.value,
-      },
-    }),
-  ]);
-
-  assignments.value = (assignmentResponse?.data || []).filter((item) => item.assignment_type !== "FILE" && !item.is_exam);
-  questionBank.value = (questionBankResponse?.data?.data || []).map(normalizeQuestionBankItem);
-  questionBankTotal.value = questionBankResponse?.data?.total || 0;
-  await loadAssignmentQuestionBank();
+const cancelQuestionBankLoads = () => {
+  loadSubjectDataControllers.forEach((controller) => {
+    try {
+      controller.abort();
+    } catch (error) {
+      // ignore abort failures
+    }
+  });
+  loadSubjectDataControllers.clear();
 };
 
-const loadAssignmentQuestionBank = async () => {
+const fetchQuestionBankPage = async (subjectId, page, limit, baseParams = {}, signal = undefined) => {
+  if (!subjectId) {
+    return { data: [], total: 0 };
+  }
+
+  const response = await api.get(`/learning/subjects/${subjectId}/question-bank`, {
+    params: {
+      ...baseParams,
+      page,
+      limit,
+    },
+    signal,
+  });
+
+  return {
+    data: asArray(response?.data?.data).map(normalizeQuestionBankItem),
+    total: Number(response?.data?.total || 0),
+  };
+};
+
+const loadQuestionBankCardItems = async (subjectId, baseParams, signal) => {
+  const firstPage = await fetchQuestionBankPage(subjectId, 1, questionBankCardPageSize, baseParams, signal);
+  const allItems = [...firstPage.data];
+  const totalPages = Math.max(1, Math.ceil(firstPage.total / questionBankCardPageSize));
+
+  if (totalPages > 1) {
+    const responses = await Promise.all(
+      Array.from({ length: totalPages - 1 }, (_, index) =>
+        fetchQuestionBankPage(subjectId, index + 2, questionBankCardPageSize, baseParams, signal),
+      ),
+    );
+    responses.forEach((response) => {
+      allItems.push(...response.data);
+    });
+  }
+
+  return allItems;
+};
+
+const loadSubjectData = async () => {
   if (!selectedSubject.value) return;
-  const response = await api.get(`/learning/subjects/${selectedSubject.value.id}/question-bank`, {
+  cancelQuestionBankLoads();
+  const requestId = ++loadSubjectDataRequestId;
+  const subjectId = selectedSubject.value.id;
+  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+  if (controller) {
+    loadSubjectDataControllers.add(controller);
+  }
+  const baseQuestionBankParams = {
+    keyword: bankSearch.value || "",
+    question_type: bankTypeFilter.value === "ALL" ? "" : bankTypeFilter.value,
+  };
+
+  isLoadingQuestionBank.value = true;
+  try {
+    const [assignmentResponse, questionBankResponse, cardItems] = await Promise.all([
+      api.get(`/learning/subjects/${subjectId}/assignments`, { signal: controller?.signal }),
+      api.get(`/learning/subjects/${subjectId}/question-bank`, {
+        params: {
+          ...baseQuestionBankParams,
+          page: bankCurrentPage.value,
+          limit: bankPageSize.value,
+        },
+        signal: controller?.signal,
+      }),
+      loadQuestionBankCardItems(subjectId, baseQuestionBankParams, controller?.signal),
+    ]);
+
+    if (!isViewActive.value || requestId !== loadSubjectDataRequestId || selectedSubject.value?.id !== subjectId) {
+      return;
+    }
+
+    assignments.value = asArray(assignmentResponse?.data).filter((item) => item.assignment_type !== "FILE" && !item.is_exam);
+    questionBank.value = asArray(questionBankResponse?.data?.data).map(normalizeQuestionBankItem);
+    questionBankCardItems.value = cardItems;
+    questionBankTotal.value = questionBankResponse?.data?.total || 0;
+    await loadAssignmentQuestionBank();
+  } finally {
+    if (controller) {
+      loadSubjectDataControllers.delete(controller);
+    }
+    if (requestId === loadSubjectDataRequestId) {
+      isLoadingQuestionBank.value = false;
+    }
+  }
+};
+
+const loadAssignmentQuestionBank = async (subjectId = selectedSubject.value?.id, signal = undefined) => {
+  if (!subjectId) return;
+  const response = await api.get(`/learning/subjects/${subjectId}/question-bank`, {
     params: {
       question_type: assignmentForm.assignment_type || "MCQ",
       page: 1,
       limit: 500,
     },
+    signal,
   });
-  questionBankForAssignment.value = (response?.data?.data || []).map(normalizeQuestionBankItem);
+  if (!isViewActive.value || selectedSubject.value?.id !== subjectId) return;
+  questionBankForAssignment.value = asArray(response?.data?.data).map(normalizeQuestionBankItem);
 };
 
 const selectSubject = async (subject) => {
@@ -2267,6 +2875,7 @@ const importQuestionBankDocument = async () => {
 
 const generateQuestionBankWithAi = async () => {
   if (!selectedSubject.value) return;
+  if (isLoadingAiTopicSuggestions.value) return;
   if (!resolvedAiTopic.value) {
     aiTopicSuggestionError.value = "Pilih materi atau tulis materi sendiri terlebih dahulu.";
     return;
@@ -2283,6 +2892,7 @@ const generateQuestionBankWithAi = async () => {
       question_type: aiGeneratorForm.question_type,
       question_count: Number(aiGeneratorForm.question_count) || 0,
       difficulty: aiGeneratorForm.difficulty,
+      question_style: aiGeneratorForm.question_style || "AUTO",
       grade_label: autoAiGradeLabel.value === "-" ? "" : autoAiGradeLabel.value,
       phase_name: autoAiPhaseName.value === "Fase belum terbaca" ? "" : autoAiPhaseName.value,
       curriculum_name: autoAiCurriculumName.value,
@@ -2290,12 +2900,13 @@ const generateQuestionBankWithAi = async () => {
       additional_instructions: aiGeneratorForm.additional_instructions || "",
     };
 
-    const response = await api.post(
-      `/learning/subjects/${selectedSubject.value.id}/question-bank/generate-ai`,
-      payload,
-    );
+	    const response = await api.post(
+	      `/learning/subjects/${selectedSubject.value.id}/question-bank/generate-ai`,
+	      payload,
+	    );
+	    completeAiGenerationProgress();
 
-    const summary = response?.data || {};
+	    const summary = response?.data || {};
     generatedAiQuestions.value = (summary.items || []).map((item, index) => ({
       ...item,
       question_image_url: aiGeneratorForm.include_illustration ? (item.question_image_url || "") : "",
@@ -2325,11 +2936,14 @@ const generateQuestionBankWithAi = async () => {
       message: error.message,
       type: "error",
     });
-  } finally {
-    isGeneratingAiQuestions.value = false;
-    stopAiGenerationProgress();
-  }
-};
+	  } finally {
+	    if (aiGenerationProgress.value === 100) {
+	      await new Promise((resolve) => window.setTimeout(resolve, 350));
+	    }
+	    isGeneratingAiQuestions.value = false;
+	    stopAiGenerationProgress();
+	  }
+	};
 
 const selectAllGeneratedAiQuestions = () => {
   selectedGeneratedAiQuestionIds.value = generatedAiQuestions.value.map((item) => item.temp_id);
@@ -2419,18 +3033,28 @@ const saveGeneratedAiQuestions = async () => {
       },
     );
 
-    const summary = response?.data || {};
+    const savedItems = Array.isArray(response?.data) ? response.data.map(normalizeQuestionBankItem) : [];
+    const totalSaved = savedItems.length || Number(response?.data?.total || 0);
     message.value = response?.message
-      ? `${response.message}: ${summary.total || 0} soal berhasil disimpan ke bank soal.`
+      ? `${response.message}: ${totalSaved} soal berhasil disimpan ke bank soal.`
       : "Soal berhasil disimpan";
     pushToast({
       title: "Soal Disimpan",
-      message: `${summary.total || 0} soal terpilih berhasil masuk ke bank soal.`,
+      message: `${totalSaved} soal terpilih berhasil masuk ke bank soal.`,
       type: "success",
     });
+    const savedQuestionType = aiGeneratorForm.question_type;
+    const savedTopic = resolvedAiTopic.value;
     aiGeneratorModalOpen.value = false;
     resetAiGeneratorForm();
     await loadSubjectData();
+    const savedIds = savedItems.map((item) => item.id).filter(Boolean);
+    if (savedIds.length > 0) {
+      const savedRows = questionBank.value.filter((item) => savedIds.includes(item.id));
+      const quizItems = savedRows.length > 0 ? savedRows : savedItems;
+      assignmentForm.assignment_type = savedQuestionType;
+      openQuickQuizPrompt(quizItems, savedTopic);
+    }
   } catch (error) {
     isError.value = true;
     message.value = error.message;
@@ -2528,7 +3152,12 @@ const submitAssignment = async () => {
     formData.append("due_date", assignmentForm.due_date || "");
     formData.append("assignment_type", assignmentForm.assignment_type);
     formData.append("shuffle_questions", String(Boolean(assignmentForm.shuffle_questions)));
-    formData.append("question_duration_seconds", String(Number(assignmentForm.question_duration_seconds) || 0));
+    formData.append("question_duration_mode", assignmentForm.question_duration_mode || "PER_QUESTION");
+    if (assignmentForm.question_duration_mode === "GLOBAL") {
+      formData.append("question_duration_minutes", String(Number(assignmentForm.question_duration_seconds) || 0));
+    } else {
+      formData.append("question_duration_seconds", String(Number(assignmentForm.question_duration_seconds) || 0));
+    }
     formData.append("question_bank_ids", JSON.stringify(assignmentForm.selected_question_bank_ids));
 
     const response = await api.post("/learning/assignments", formData);
@@ -2552,12 +3181,12 @@ onMounted(async () => {
 });
 
 watch(subjectError, (value) => {
-  if (!value) return;
+  if (!value || !isViewActive.value) return;
   pushToast({ title: "Gagal Memuat Bank Soal", message: value, type: "error" });
 });
 
 watch(message, (value) => {
-  if (!value) return;
+  if (!value || !isViewActive.value) return;
   pushToast({
     title: isError.value ? "Aksi Bank Soal Gagal" : "Aksi Bank Soal Berhasil",
     message: value,

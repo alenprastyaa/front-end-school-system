@@ -44,6 +44,44 @@ export const getStoredRole = () => {
   return normalizeRole(localStorage.getItem("role"));
 };
 
+const requiredStudentProfileFields = [
+  { key: "full_name", label: "Nama Lengkap" },
+  { key: "parent_email", label: "Email" },
+  { key: "phone_number", label: "No. HP" },
+];
+
+const hasProfileValue = (value) => String(value ?? "").trim() !== "";
+
+export const getMissingStudentProfileFields = (user = {}) => {
+  if (normalizeRole(user?.role) !== "SISWA") {
+    return [];
+  }
+
+  return requiredStudentProfileFields
+    .filter((field) => !hasProfileValue(user?.[field.key]))
+    .map((field) => field.label);
+};
+
+export const isStudentProfileComplete = (user = {}) => {
+  if (normalizeRole(user?.role) !== "SISWA") {
+    return true;
+  }
+
+  if (user?.profile_complete === true) {
+    return true;
+  }
+
+  return getMissingStudentProfileFields(user).length === 0;
+};
+
+export const isStudentFaceEnrolled = (user = {}) => {
+  if (normalizeRole(user?.role) !== "SISWA") {
+    return true;
+  }
+
+  return hasProfileValue(user?.face_reference_image) && hasProfileValue(user?.face_reference_descriptor);
+};
+
 const isTokenUsable = (token) => {
   const payload = decodeJwtPayload(token);
   if (!payload) {
@@ -83,11 +121,17 @@ export const persistSession = (payload) => {
       attendance_checkout_deadline: data.attendance_checkout_deadline || "",
       inventory_module_enabled: schoolFeatures.inventory_module_enabled !== false,
       attendance_module_enabled: schoolFeatures.attendance_module_enabled !== false,
+      attendance_teacher_module_enabled: schoolFeatures.attendance_teacher_module_enabled !== false,
       official_exam_module_enabled: schoolFeatures.official_exam_module_enabled !== false,
       koperasi_module_enabled: schoolFeatures.koperasi_module_enabled !== false,
       private_chat_module_enabled: schoolFeatures.private_chat_module_enabled !== false,
       teaching_module_ai_enabled: schoolFeatures.teaching_module_ai_enabled !== false,
+      payroll_module_enabled: schoolFeatures.payroll_module_enabled !== false,
+      spmb_module_enabled: schoolFeatures.spmb_module_enabled === true,
       personal_teacher_mode_enabled: schoolFeatures.personal_teacher_mode_enabled === true,
+      parent_email: data.parent_email || "",
+      phone_number: data.phone_number || "",
+      profile_complete: data.profile_complete === true,
       profile_image: normalizePublicUrl(data.profile_image) || null,
       face_reference_image: normalizePublicUrl(data.face_reference_image) || null,
       face_reference_descriptor: data.face_reference_descriptor || null,

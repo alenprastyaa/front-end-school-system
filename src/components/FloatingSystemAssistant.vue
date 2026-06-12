@@ -90,7 +90,7 @@ const assistantConfig = {
     "Beri contoh praktis",
   ],
 };
-const allowedRoles = new Set(["SUPER_ADMIN", "ADMIN", "GURU", "SISWA", "SARPRAS", "KOPERASI"]);
+const allowedRoles = new Set(["SUPER_ADMIN", "ADMIN", "GURU", "SISWA", "SARPRAS", "KOPERASI", "BENDAHARA"]);
 const open = ref(false);
 const viewportWidth = ref(typeof window !== "undefined" ? window.innerWidth : 1280);
 const question = ref("");

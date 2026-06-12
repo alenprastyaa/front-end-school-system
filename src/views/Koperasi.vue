@@ -116,7 +116,8 @@
           </div>
 
           <!-- Product Grid: Diubah gap, padding, dan font size untuk mobile -->
-          <div class="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
+          <SkeletonLoader v-if="isLoading && !filteredProducts.length" variant="card" :count="8" :columns="4" thumbnail />
+          <div v-show="!(isLoading && !filteredProducts.length)" class="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
             <article v-for="product in filteredProducts" :key="product.id"
               class="relative flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-transform hover:-translate-y-1 hover:shadow-md dark:border-slate-700 dark:bg-gray-900">
               <!-- Image 1:1 Ratio -->

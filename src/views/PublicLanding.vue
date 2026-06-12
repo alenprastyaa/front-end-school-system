@@ -623,6 +623,7 @@ const handlePwaInstallClick = async () => {
 
 const navItems = [
   { href: "#ringkasan", label: "Ringkasan" },
+  { href: "#fitur", label: "Fitur" },
   { href: "#dashboard", label: "Dashboard" },
   { href: "#penggunaan", label: "Penggunaan" },
   { href: "#dummy", label: "Data Dummy" },
@@ -630,14 +631,16 @@ const navItems = [
 
 const heroMetrics = [
   { value: "3 role", label: "Role utama", caption: "Admin, Guru, dan Siswa mendapat alur kerja yang berbeda." },
-  { value: "10+", label: "Modul aktif", caption: "Mencakup struktur sekolah, pembelajaran, evaluasi, dan layanan siswa." },
+  { value: "20+", label: "Fitur unggulan", caption: "Mencakup LMS, CBT, AI, presensi, komunikasi, dan operasional sekolah." },
   { value: "1 page", label: "Materi presentasi", caption: "Seluruh ringkasan penggunaan sudah dirangkum di landing page ini." },
 ];
 
 const presentationChecklist = [
   "Ringkasan sistem dan ruang lingkup modul untuk admin, guru, dan siswa.",
+  "Daftar fitur unggulan LMS, CBT, AI, presensi, pengumuman, dan akses smartphone.",
   "Contoh dashboard role-based agar user paham apa yang mereka lihat setelah login.",
   "Panduan penggunaan langkah demi langkah untuk onboarding dan training.",
+  "Alur ujian resmi, bank soal, tugas online, dan penilaian dari guru sampai siswa.",
   "Tabel dummy presentasi untuk menggambarkan data nyata tanpa memakai data produksi.",
 ];
 
@@ -660,17 +663,37 @@ const featureHighlights = [
     description: "Siswa menerima materi, mengerjakan evaluasi, memantau nilai, absensi, dan layanan lain dalam akun yang sama.",
     tone: "bg-emerald-600",
   },
+  {
+    index: "04",
+    title: "CBT dan bank soal",
+    description: "Sekolah dapat menjalankan quiz, tugas, ujian resmi, dan paket soal reusable dengan alur yang lebih terkontrol.",
+    tone: "bg-amber-500",
+  },
+  {
+    index: "05",
+    title: "AI untuk guru",
+    description: "Guru dibantu membuat draft materi ajar, presentasi pembelajaran, dan soal evaluasi sesuai topik yang diajarkan.",
+    tone: "bg-indigo-600",
+  },
+  {
+    index: "06",
+    title: "PWA multi perangkat",
+    description: "Aplikasi dapat diakses dari komputer maupun smartphone, termasuk mode install PWA dan notifikasi web.",
+    tone: "bg-teal-600",
+  },
 ];
 
 const quickFlow = [
   "Siapkan tahun ajaran, semester, kelas, mapel, dan akun user.",
-  "Pastikan guru mengisi materi, tugas, bank soal, dan jadwal evaluasi.",
-  "Pantau progres siswa melalui quiz, ujian resmi, nilai, dan kehadiran.",
+  "Aktifkan modul pembelajaran, presensi, ujian resmi, pengumuman, dan layanan siswa.",
+  "Pastikan guru mengisi materi, tugas, bank soal, modul ajar AI, dan jadwal evaluasi.",
+  "Pantau progres siswa melalui quiz, CBT, nilai, rapor mapel, presensi, dan pengumuman.",
 ];
 
 const quickAdvantages = [
-  "Presentasi produk lebih mudah karena user langsung melihat contoh role dan datanya.",
-  "CMS dan LMS tidak dipisah, jadi alur operasional sekolah terasa lebih realistis.",
+  "Satu sistem mencakup LMS, CBT, bank soal, AI, presensi, pengumuman, dan dashboard role-based.",
+  "CMS dan LMS tidak dipisah, jadi alur akademik dan operasional sekolah terasa lebih realistis.",
+  "Akses komputer dan smartphone membuat guru serta siswa tetap bisa bekerja dari perangkat yang tersedia.",
   "Data dummy membantu user non-teknis membayangkan isi dashboard tanpa harus login dulu.",
 ];
 
@@ -694,10 +717,26 @@ const cmsModules = [
   {
     tag: "Akademik",
     tagTone: "text-emerald-200",
-    title: "Kelas & Tahun Ajaran",
+    title: "Kelas, Tahun Ajaran & Semester",
     badge: "Terstruktur",
     badgeTone: "bg-emerald-500/10 text-emerald-200 ring-emerald-400/20",
     description: "Menentukan kelas aktif, wali kelas, tahun ajaran, dan semester agar semua modul mengikuti struktur yang sama.",
+  },
+  {
+    tag: "Akademik",
+    tagTone: "text-emerald-200",
+    title: "Kalender Akademik",
+    badge: "Agenda",
+    badgeTone: "bg-emerald-500/10 text-emerald-200 ring-emerald-400/20",
+    description: "Membantu sekolah mengatur periode aktif, jadwal pembelajaran, agenda evaluasi, dan informasi penting semester berjalan.",
+  },
+  {
+    tag: "Akademik",
+    tagTone: "text-emerald-200",
+    title: "Kurikulum & Mata Pelajaran",
+    badge: "Mapel",
+    badgeTone: "bg-emerald-500/10 text-emerald-200 ring-emerald-400/20",
+    description: "Admin menyusun mapel dan struktur kurikulum agar guru serta siswa hanya melihat pembelajaran sesuai kelasnya.",
   },
   {
     tag: "LMS Guru",
@@ -708,6 +747,30 @@ const cmsModules = [
     description: "Guru dapat menyiapkan konten belajar, file, dan materi yang bisa diakses siswa berdasarkan mapel dan kelas.",
   },
   {
+    tag: "LMS Guru",
+    tagTone: "text-rose-200",
+    title: "Tugas & Penilaian Online",
+    badge: "Assignment",
+    badgeTone: "bg-rose-500/10 text-rose-200 ring-rose-400/20",
+    description: "Guru dapat memberi tugas, menerima submission siswa, memberi skor, dan menulis feedback tanpa proses manual terpisah.",
+  },
+  {
+    tag: "AI Assistant",
+    tagTone: "text-indigo-200",
+    title: "AI Materi & Modul Ajar",
+    badge: "Generate",
+    badgeTone: "bg-indigo-500/10 text-indigo-200 ring-indigo-400/20",
+    description: "Membantu guru menyusun draft modul ajar, tujuan pembelajaran, aktivitas kelas, asesmen, dan bahan bacaan.",
+  },
+  {
+    tag: "AI Assistant",
+    tagTone: "text-indigo-200",
+    title: "AI Pembuat Soal",
+    badge: "Cepat",
+    badgeTone: "bg-indigo-500/10 text-indigo-200 ring-indigo-400/20",
+    description: "Guru dapat membuat kandidat soal berdasarkan topik, level kesulitan, tipe soal, dan kebutuhan evaluasi.",
+  },
+  {
     tag: "Interaksi",
     tagTone: "text-violet-200",
     title: "Live Chat Kelas",
@@ -716,12 +779,28 @@ const cmsModules = [
     description: "Memfasilitasi diskusi antara guru dan siswa per mapel agar pembelajaran tidak berhenti di materi statis.",
   },
   {
+    tag: "Interaksi",
+    tagTone: "text-violet-200",
+    title: "Pengumuman Sekolah",
+    badge: "Broadcast",
+    badgeTone: "bg-violet-500/10 text-violet-200 ring-violet-400/20",
+    description: "Admin dapat membuat pengumuman penting dan menampilkannya ke dashboard warga sekolah secara terpusat.",
+  },
+  {
+    tag: "Interaksi",
+    tagTone: "text-violet-200",
+    title: "Notifikasi Web",
+    badge: "Push",
+    badgeTone: "bg-violet-500/10 text-violet-200 ring-violet-400/20",
+    description: "Mendukung notifikasi browser untuk informasi penting seperti pengumuman, aktivitas chat, dan update pembelajaran.",
+  },
+  {
     tag: "Evaluasi",
     tagTone: "text-amber-200",
-    title: "Bank Soal",
+    title: "Bank Soal Terintegrasi",
     badge: "Reusable",
     badgeTone: "bg-amber-500/10 text-amber-200 ring-amber-400/20",
-    description: "Guru menyimpan soal pilihan ganda atau essay untuk digunakan kembali pada quiz dan ujian resmi.",
+    description: "Guru menyimpan soal pilihan ganda atau essay, mengelompokkan berdasarkan mapel, dan memakainya ulang untuk quiz atau ujian resmi.",
   },
   {
     tag: "Evaluasi",
@@ -734,10 +813,18 @@ const cmsModules = [
   {
     tag: "Evaluasi",
     tagTone: "text-amber-200",
-    title: "Ujian Resmi",
+    title: "CBT / Ujian Berbasis Komputer",
     badge: "Terkontrol",
     badgeTone: "bg-amber-500/10 text-amber-200 ring-amber-400/20",
-    description: "Admin membuat task ujian, guru menyerahkan paket soal, lalu admin menerbitkan sesi ke siswa secara resmi.",
+    description: "Admin membuat task ujian, guru menyerahkan paket soal, lalu siswa mengerjakan ujian berbasis komputer sesuai jadwal.",
+  },
+  {
+    tag: "Evaluasi",
+    tagTone: "text-amber-200",
+    title: "Timer & Status Pengerjaan",
+    badge: "Realtime",
+    badgeTone: "bg-amber-500/10 text-amber-200 ring-amber-400/20",
+    description: "Sistem membantu memantau status ujian atau quiz, waktu pengerjaan, submission, dan hasil yang perlu ditinjau.",
   },
   {
     tag: "Monitoring",
@@ -748,12 +835,44 @@ const cmsModules = [
     description: "Guru membaca hasil belajar, memeriksa submission, dan menyusun rekap performa siswa per mata pelajaran.",
   },
   {
+    tag: "Monitoring",
+    tagTone: "text-sky-200",
+    title: "Dashboard Guru, Siswa & Admin",
+    badge: "Role-based",
+    badgeTone: "bg-sky-500/10 text-sky-200 ring-sky-400/20",
+    description: "Setiap role melihat metrik, menu, dan prioritas kerja yang berbeda sehingga sistem lebih mudah dipakai harian.",
+  },
+  {
+    tag: "Monitoring",
+    tagTone: "text-sky-200",
+    title: "Laporan & Ekspor Data",
+    badge: "Rekap",
+    badgeTone: "bg-sky-500/10 text-sky-200 ring-sky-400/20",
+    description: "Data nilai, kehadiran, pembayaran, dan aktivitas sekolah dapat direkap untuk kebutuhan administrasi dan evaluasi.",
+  },
+  {
     tag: "Siswa",
     tagTone: "text-fuchsia-200",
-    title: "Absensi & Pembayaran",
+    title: "Presensi Siswa Digital",
     badge: "Layanan",
     badgeTone: "bg-fuchsia-500/10 text-fuchsia-200 ring-fuchsia-400/20",
-    description: "Selain belajar, siswa juga dapat mengakses kehadiran dan bukti pembayaran dari akun yang sama.",
+    description: "Siswa dapat melakukan presensi digital, sementara sekolah memantau riwayat kehadiran dari dashboard yang sama.",
+  },
+  {
+    tag: "Siswa",
+    tagTone: "text-fuchsia-200",
+    title: "Presensi Lokasi & Wajah",
+    badge: "Validasi",
+    badgeTone: "bg-fuchsia-500/10 text-fuchsia-200 ring-fuchsia-400/20",
+    description: "Mendukung pengaturan radius lokasi sekolah dan referensi wajah untuk membantu validasi kehadiran siswa.",
+  },
+  {
+    tag: "Siswa",
+    tagTone: "text-fuchsia-200",
+    title: "Bukti Pembayaran Siswa",
+    badge: "Riwayat",
+    badgeTone: "bg-fuchsia-500/10 text-fuchsia-200 ring-fuchsia-400/20",
+    description: "Siswa dapat melihat status dan bukti pembayaran sehingga layanan administrasi lebih transparan.",
   },
   {
     tag: "Operasional",
@@ -764,12 +883,68 @@ const cmsModules = [
     description: "Digunakan untuk mengendalikan parameter penting yang memengaruhi operasional aplikasi sekolah sehari-hari.",
   },
   {
+    tag: "Operasional",
+    tagTone: "text-indigo-200",
+    title: "Manajemen Tagihan",
+    badge: "Billing",
+    badgeTone: "bg-indigo-500/10 text-indigo-200 ring-indigo-400/20",
+    description: "Sekolah dapat mengelola tagihan, status pembayaran, dan histori transaksi siswa dari panel administrasi.",
+  },
+  {
+    tag: "Operasional",
+    tagTone: "text-indigo-200",
+    title: "Payroll Guru & Staff",
+    badge: "Slip",
+    badgeTone: "bg-indigo-500/10 text-indigo-200 ring-indigo-400/20",
+    description: "Mendukung pengaturan komponen gaji, slip payroll, dan status pembayaran internal sekolah.",
+  },
+  {
+    tag: "Operasional",
+    tagTone: "text-indigo-200",
+    title: "Inventaris Sekolah",
+    badge: "Asset",
+    badgeTone: "bg-indigo-500/10 text-indigo-200 ring-indigo-400/20",
+    description: "Mencatat aset sekolah, kondisi barang, dan data inventaris agar administrasi sarana lebih tertata.",
+  },
+  {
+    tag: "Operasional",
+    tagTone: "text-indigo-200",
+    title: "Koperasi Sekolah",
+    badge: "Transaksi",
+    badgeTone: "bg-indigo-500/10 text-indigo-200 ring-indigo-400/20",
+    description: "Membantu pengelolaan produk, pesanan, metode pembayaran, dan status transaksi koperasi sekolah.",
+  },
+  {
     tag: "Publik",
     tagTone: "text-teal-200",
     title: "Registrasi Siswa Publik",
     badge: "Onboarding",
     badgeTone: "bg-teal-500/10 text-teal-200 ring-teal-400/20",
     description: "Formulir publik mempermudah proses pendaftaran siswa baru sebelum mereka masuk ke area internal.",
+  },
+  {
+    tag: "Publik",
+    tagTone: "text-teal-200",
+    title: "Akses Komputer & Smartphone",
+    badge: "PWA",
+    badgeTone: "bg-teal-500/10 text-teal-200 ring-teal-400/20",
+    description: "Tampilan web responsif dan dukungan install PWA membuat sistem tetap nyaman dipakai di laptop maupun ponsel.",
+  },
+  {
+    tag: "Keamanan",
+    tagTone: "text-red-200",
+    title: "Akses Sesuai Role",
+    badge: "Secure",
+    badgeTone: "bg-red-500/10 text-red-200 ring-red-400/20",
+    description: "Hak akses dipisahkan untuk admin, guru, siswa, dan super admin supaya setiap pengguna hanya membuka menu yang relevan.",
+  },
+  {
+    tag: "Keamanan",
+    tagTone: "text-red-200",
+    title: "Kontrol Sesi Login",
+    badge: "Session",
+    badgeTone: "bg-red-500/10 text-red-200 ring-red-400/20",
+    description: "Sistem mendukung kontrol sesi dan pemberitahuan saat akun digunakan dari perangkat lain.",
   },
 ];
 
