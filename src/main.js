@@ -10,6 +10,7 @@ import "@vuepic/vue-datepicker/dist/main.css";
 import vClickOutside from "click-outside-vue3";
 import SkeletonLoader from "@/components/SkeletonLoader.vue";
 import { registerPwaServiceWorker } from "@/utils/serviceWorker";
+// te
 
 const storedTheme = localStorage.getItem("color-theme");
 if (storedTheme === "dark") {
