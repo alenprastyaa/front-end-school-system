@@ -86,7 +86,7 @@
 
           <SkeletonLoader v-if="isLoading && !summaryCards.length" variant="stats" :count="4" :columns="4" class="p-4 sm:p-6" />
           <div v-show="!(isLoading && !summaryCards.length)" class="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4 sm:p-6">
-            <div v-for="item in summaryCards" :key="item.label" class="rounded-2xl p-5 text-white shadow-sm" :class="item.cardClass">
+            <div v-for="item in summaryCards" :key="item.label" v-tilt class="rounded-2xl p-5 text-white shadow-sm" :class="item.cardClass">
               <p class="text-[11px] font-medium text-white/80">{{ item.label }}</p>
               <div class="mt-2 flex items-end justify-between gap-3">
                 <div>
@@ -101,7 +101,7 @@
 
         <section class="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
           <div class="space-y-4">
-            <section class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <section v-tilt class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div class="border-b border-slate-200 px-4 py-4 sm:px-6 dark:border-slate-800">
                 <div class="flex items-center justify-between gap-3">
                   <div>
@@ -148,7 +148,7 @@
               </div>
             </section>
 
-            <section class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <section v-tilt class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div class="border-b border-slate-200 px-4 py-4 sm:px-6 dark:border-slate-800">
                 <h3 class="text-base font-semibold text-slate-900 dark:text-white">Slip Guru Terbaru</h3>
               </div>
@@ -194,7 +194,7 @@
           </div>
 
           <div class="space-y-4">
-            <section class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <section v-tilt class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div class="border-b border-slate-200 px-4 py-4 sm:px-6 dark:border-slate-800">
                 <h3 class="text-base font-semibold text-slate-900 dark:text-white">Komponen Aktif</h3>
               </div>
@@ -226,7 +226,7 @@
               </div>
             </section>
 
-            <section class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <section v-tilt class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div class="border-b border-slate-200 px-4 py-4 sm:px-6 dark:border-slate-800">
                 <h3 class="text-base font-semibold text-slate-900 dark:text-white">Aksi Cepat</h3>
               </div>
@@ -253,7 +253,7 @@
       </template>
 
       <template v-else-if="isParentDashboard">
-        <section
+        <section v-tilt
           class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div class="bg-slate-950 px-4 py-5 text-white sm:px-6 sm:py-6">
             <div class="flex flex-col gap-4">
@@ -334,7 +334,7 @@
         </section>
 
         <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div v-for="item in summaryCards" :key="item.label" class="relative overflow-hidden rounded-2xl p-5"
+          <div v-for="item in summaryCards" :key="item.label" v-tilt class="relative overflow-hidden rounded-2xl p-5"
             :class="item.cardClass">
             <div class="flex items-start justify-between gap-4">
               <div>
@@ -351,7 +351,7 @@
 
         <section class="grid grid-cols-1 gap-4 xl:grid-cols-[1.45fr_1fr]">
           <div class="space-y-4">
-            <section
+            <section v-tilt
               class="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
               <div class="flex items-center justify-between gap-3">
                 <div>
@@ -420,7 +420,7 @@
           </div>
 
           <div class="space-y-4">
-            <section
+            <section v-tilt
               class="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
               <div class="flex items-center justify-between gap-3">
                 <div>
@@ -474,7 +474,7 @@
               </div>
             </section>
 
-            <section
+            <section v-tilt
               class="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
               <div class="flex items-center justify-between gap-3">
                 <div>
@@ -505,7 +505,7 @@
               </div>
             </section>
 
-            <section
+            <section v-tilt
               class="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
               <div class="flex items-center justify-between gap-3">
                 <div>
@@ -539,7 +539,7 @@
 
       <template v-else>
       <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div v-for="item in summaryCards" :key="item.label" class="relative overflow-hidden rounded-2xl p-5"
+        <div v-for="item in summaryCards" :key="item.label" v-tilt class="relative overflow-hidden rounded-2xl p-5"
           :class="item.cardClass">
           <div class="flex items-start justify-between gap-4">
             <div>
@@ -637,7 +637,7 @@
 
         <div class="flex flex-col gap-5 sm:gap-6 lg:col-span-2">
 
-          <section
+          <section v-tilt
             class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
             <div class="flex items-center justify-between">
               <div>
@@ -657,7 +657,15 @@
               <h2 class="text-base font-semibold text-slate-900 dark:text-white">{{ primaryPanel.title }}</h2>
               <p class="mt-1 text-sm text-slate-500">{{ primaryPanel.description }}</p>
             </div>
-            <div class="overflow-x-auto">
+
+            <!-- 2D line chart of student count per rombel (ADMIN) -->
+            <div v-if="role === 'ADMIN'" class="px-2 py-4 sm:px-4">
+              <apexchart v-if="rombelChartSeries[0].data.length" type="area" height="320"
+                :options="rombelChartOptions" :series="rombelChartSeries" />
+              <p v-else class="px-4 py-10 text-center text-sm text-slate-500">Data kelas kosong.</p>
+            </div>
+
+            <div v-if="role !== 'ADMIN'" class="overflow-x-auto">
               <table class="min-w-full text-left text-sm">
                 <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
                   <tr>
@@ -692,7 +700,7 @@
 
         <div class="flex flex-col gap-5 sm:gap-6 lg:col-span-1">
 
-          <section
+          <section v-tilt
             class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
             <h2 class="text-base font-semibold text-slate-900 dark:text-white">Ringkasan Distribusi</h2>
             <div class="mt-5 flex items-center justify-center sm:mt-6">
@@ -715,7 +723,7 @@
             </div>
           </section>
 
-          <section
+          <section v-tilt
             class="flex-1 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
             <h2 class="text-base font-semibold text-slate-900 dark:text-white">{{ secondaryPanel.title }}</h2>
             <div class="mt-5 space-y-4 sm:mt-6 sm:space-y-5">
@@ -841,6 +849,62 @@ import { getStoredRole, getStoredUser } from "@/utils/auth";
 import { createSortState, sortItems, toggleSort } from "@/utils/tableSort";
 import { usePayrollStore } from "@/store/payroll";
 import { useStudentDashboardStore } from "@/store/studentDashboard";
+
+// ===== v-tilt: cursor-reactive 3D tilt for cards =====
+const vTilt = (() => {
+  const MAX = 6; // max tilt degrees
+  const prefersReduced =
+    typeof window !== "undefined" &&
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const onMove = (event) => {
+    const el = event.currentTarget;
+    const rect = el.getBoundingClientRect();
+    const px = (event.clientX - rect.left) / rect.width; // 0..1
+    const py = (event.clientY - rect.top) / rect.height; // 0..1
+    const ry = (px - 0.5) * 2 * MAX;
+    const rx = -(py - 0.5) * 2 * MAX;
+    el.style.transition = "transform 0.08s ease-out";
+    el.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+    if (el._glare) el._glare.style.background =
+      `radial-gradient(circle at ${px * 100}% ${py * 100}%, rgba(255,255,255,0.35), transparent 55%)`;
+    if (el._glare) el._glare.style.opacity = "1";
+  };
+
+  const onLeave = (event) => {
+    const el = event.currentTarget;
+    el.style.transition = "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)";
+    el.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg)";
+    if (el._glare) el._glare.style.opacity = "0";
+  };
+
+  return {
+    mounted(el) {
+      if (prefersReduced) return;
+      el.style.transformStyle = "preserve-3d";
+      el.style.willChange = "transform";
+      // glare overlay (follows the cursor)
+      const glare = document.createElement("span");
+      glare.style.cssText =
+        "position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s ease;z-index:1;";
+      if (getComputedStyle(el).position === "static") el.style.position = "relative";
+      el.appendChild(glare);
+      el._glare = glare;
+      el._onMove = onMove;
+      el._onLeave = onLeave;
+      el.addEventListener("mousemove", onMove);
+      el.addEventListener("mouseleave", onLeave);
+    },
+    unmounted(el) {
+      if (el._onMove) el.removeEventListener("mousemove", el._onMove);
+      if (el._onLeave) el.removeEventListener("mouseleave", el._onLeave);
+      el._glare = null;
+      el._onMove = null;
+      el._onLeave = null;
+    },
+  };
+})();
 
 const role = getStoredRole();
 const user = getStoredUser();
@@ -1195,6 +1259,86 @@ const primarySortIndicator = (key) => {
   if (activeKey !== key) return "↕";
   return primaryTableSort.direction === "asc" ? "▲" : "▼";
 };
+
+// 2D line chart for "Data Rombongan Belajar" (ADMIN)
+const rombelClasses = computed(() => dashboardData.value?.classes || []);
+const rombelChartSeries = computed(() => [
+  { name: "Jumlah Siswa", data: rombelClasses.value.map((c) => Number(c.student_count) || 0) },
+]);
+const rombelChartOptions = computed(() => ({
+  chart: {
+    type: "area",
+    fontFamily: "inherit",
+    toolbar: { show: false },
+    zoom: { enabled: false },
+    animations: { enabled: true, easing: "easeinout", speed: 700 },
+    dropShadow: {
+      enabled: true,
+      top: 6,
+      left: 0,
+      blur: 8,
+      color: "#2563eb",
+      opacity: 0.25,
+    },
+  },
+  colors: ["#2563eb"],
+  dataLabels: {
+    enabled: true,
+    background: {
+      enabled: true,
+      foreColor: "#2563eb",
+      borderWidth: 0,
+      borderRadius: 6,
+      padding: 5,
+      opacity: 1,
+      dropShadow: { enabled: true, top: 2, left: 0, blur: 4, color: "#1e3a8a", opacity: 0.2 },
+    },
+    style: { fontSize: "11px", fontWeight: 700, colors: ["#2563eb"] },
+  },
+  stroke: { curve: "smooth", width: 3, lineCap: "round" },
+  markers: {
+    size: 5,
+    colors: ["#ffffff"],
+    strokeColors: "#2563eb",
+    strokeWidth: 3,
+    hover: { size: 7 },
+  },
+  fill: {
+    type: "gradient",
+    gradient: {
+      shadeIntensity: 1,
+      type: "vertical",
+      colorStops: [
+        { offset: 0, color: "#22d3ee", opacity: 0.45 },
+        { offset: 55, color: "#3b82f6", opacity: 0.18 },
+        { offset: 100, color: "#3b82f6", opacity: 0.02 },
+      ],
+    },
+  },
+  xaxis: {
+    categories: rombelClasses.value.map((c) => c.class_name ?? "-"),
+    axisBorder: { show: false },
+    axisTicks: { show: false },
+    labels: { style: { colors: "#64748b", fontSize: "12px", fontWeight: 500 }, rotate: -25, hideOverlappingLabels: true, trim: true },
+    tooltip: { enabled: false },
+  },
+  yaxis: {
+    labels: { style: { colors: "#94a3b8", fontSize: "12px" }, formatter: (v) => Math.round(v) },
+  },
+  grid: {
+    borderColor: "#eef2f7",
+    strokeDashArray: 5,
+    xaxis: { lines: { show: false } },
+    yaxis: { lines: { show: true } },
+    padding: { top: 6, right: 12, bottom: 0, left: 8 },
+  },
+  tooltip: {
+    theme: "light",
+    style: { fontSize: "13px", fontFamily: "inherit" },
+    y: { formatter: (v) => `${v} siswa`, title: { formatter: () => "Jumlah" } },
+    x: { formatter: (_, { dataPointIndex }) => rombelClasses.value[dataPointIndex]?.class_name ?? "" },
+  },
+}));
 
 const secondaryPanel = computed(() => {
   if (role === "SUPER_ADMIN" || role === "ADMIN" || role === "GURU") {

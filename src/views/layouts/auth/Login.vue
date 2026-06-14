@@ -4,16 +4,40 @@
     <transition name="intro">
       <div v-if="introActive" class="intro-overlay">
         <div class="intro-content">
-          <div class="intro-logo">
-            <svg viewBox="0 0 24 24" fill="none" class="h-10 w-10">
-              <path d="M12 3 2 8l10 5 10-5-10-5Z" fill="currentColor" />
-              <path d="M5 11.5V16c0 1.5 3.1 3 7 3s7-1.5 7-3v-4.5" stroke="currentColor" stroke-width="1.6"
-                stroke-linecap="round" fill="none" />
-            </svg>
+          <div class="intro-stage">
+            <div class="cube">
+              <div class="cube-face cube-front"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 2 8l10 5 10-5-10-5Z" fill="currentColor" /><path d="M5 11.5V16c0 1.5 3.1 3 7 3s7-1.5 7-3v-4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none" /></svg></div>
+              <div class="cube-face cube-back"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 2 8l10 5 10-5-10-5Z" fill="currentColor" /><path d="M5 11.5V16c0 1.5 3.1 3 7 3s7-1.5 7-3v-4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none" /></svg></div>
+              <div class="cube-face cube-right"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 2 8l10 5 10-5-10-5Z" fill="currentColor" /><path d="M5 11.5V16c0 1.5 3.1 3 7 3s7-1.5 7-3v-4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none" /></svg></div>
+              <div class="cube-face cube-left"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 2 8l10 5 10-5-10-5Z" fill="currentColor" /><path d="M5 11.5V16c0 1.5 3.1 3 7 3s7-1.5 7-3v-4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none" /></svg></div>
+              <div class="cube-face cube-top"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 2 8l10 5 10-5-10-5Z" fill="currentColor" /><path d="M5 11.5V16c0 1.5 3.1 3 7 3s7-1.5 7-3v-4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none" /></svg></div>
+              <div class="cube-face cube-bottom"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 2 8l10 5 10-5-10-5Z" fill="currentColor" /><path d="M5 11.5V16c0 1.5 3.1 3 7 3s7-1.5 7-3v-4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none" /></svg></div>
+            </div>
+            <div class="cube-shadow"></div>
           </div>
           <p class="intro-title">School System</p>
           <p class="intro-subtitle">Menyiapkan ruang belajar Anda…</p>
           <div class="intro-bar"><span></span></div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- ===== Success splash → dashboard ===== -->
+    <transition name="success">
+      <div v-if="showSuccessSplash" class="success-overlay">
+        <div class="success-decor" aria-hidden="true">
+          <span class="success-glow"></span>
+          <span v-for="n in 14" :key="n" class="confetti" :style="confettiStyle(n)"></span>
+        </div>
+        <div class="success-content">
+          <svg class="success-check" viewBox="0 0 96 96">
+            <circle class="sc-ring-bg" cx="48" cy="48" r="42" />
+            <circle class="sc-ring" cx="48" cy="48" r="42" />
+            <path class="sc-tick" d="M30 49 l12 12 l24 -26" />
+          </svg>
+          <h2 class="success-title">{{ successName }}</h2>
+          <p class="success-subtitle">Menyiapkan dashboard Anda…</p>
+          <div class="success-bar"><span></span></div>
         </div>
       </div>
     </transition>
@@ -24,50 +48,104 @@
       <span class="blob blob-2"></span>
       <span class="blob blob-3"></span>
       <span class="grid-mask"></span>
+
+      <!-- floating 3D shapes -->
+      <div class="scene-3d">
+        <div class="shape mini-cube mini-cube-1">
+          <span class="mc-face mc-front"></span><span class="mc-face mc-back"></span>
+          <span class="mc-face mc-right"></span><span class="mc-face mc-left"></span>
+          <span class="mc-face mc-top"></span><span class="mc-face mc-bottom"></span>
+        </div>
+        <div class="shape mini-cube mini-cube-2">
+          <span class="mc-face mc-front"></span><span class="mc-face mc-back"></span>
+          <span class="mc-face mc-right"></span><span class="mc-face mc-left"></span>
+          <span class="mc-face mc-top"></span><span class="mc-face mc-bottom"></span>
+        </div>
+        <div class="shape ring-3d ring-3d-1"></div>
+        <div class="shape ring-3d ring-3d-2"></div>
+        <div class="shape pyramid"></div>
+      </div>
     </div>
 
     <div class="login-layout">
       <!-- ===== Branding panel ===== -->
-      <section class="brand-panel">
+      <section class="brand-panel" @mousemove="handleBrandMove" @mouseleave="resetBrand">
         <div class="brand-inner">
-          <div class="brand-badge reveal" style="--d: 0.05s">
-            <svg viewBox="0 0 24 24" fill="none" class="h-6 w-6">
-              <path d="M12 3 2 8l10 5 10-5-10-5Z" fill="currentColor" />
-              <path d="M5 11.5V16c0 1.5 3.1 3 7 3s7-1.5 7-3v-4.5" stroke="currentColor" stroke-width="1.6"
-                stroke-linecap="round" fill="none" />
-            </svg>
-            <span>School System</span>
+          <div class="brand-top">
+            <div class="brand-badge reveal" style="--d: 0.05s">
+              <svg viewBox="0 0 24 24" fill="none" class="h-6 w-6">
+                <path d="M12 3 2 8l10 5 10-5-10-5Z" fill="currentColor" />
+                <path d="M5 11.5V16c0 1.5 3.1 3 7 3s7-1.5 7-3v-4.5" stroke="currentColor" stroke-width="1.6"
+                  stroke-linecap="round" fill="none" />
+              </svg>
+              <span>School System</span>
+            </div>
+
+            <h2 class="brand-title reveal" style="--d: 0.15s">
+              Satu portal untuk seluruh
+              <span class="brand-highlight">perjalanan belajar.</span>
+            </h2>
+            <p class="brand-desc reveal" style="--d: 0.25s">
+              Akses materi, kehadiran, nilai, dan komunikasi sekolah dalam satu tempat yang
+              cepat, aman, dan menyenangkan setiap hari.
+            </p>
           </div>
 
-          <h2 class="brand-title reveal" style="--d: 0.15s">
-            Satu portal untuk seluruh
-            <span class="brand-highlight">perjalanan belajar.</span>
-          </h2>
-          <p class="brand-desc reveal" style="--d: 0.25s">
-            Akses materi, kehadiran, nilai, dan komunikasi sekolah dalam satu tempat yang cepat,
-            aman, dan menyenangkan untuk digunakan setiap hari.
-          </p>
+          <!-- ===== Hero: 3D character + floating feature chips ===== -->
+          <div class="brand-hero">
+            <div class="hero-3d">
+            <div class="hero-chip chip-a" style="--d: 0.45s; --fd: 0s">
+              <span class="chip-ico">
+                <svg viewBox="0 0 24 24" fill="none" class="h-4 w-4">
+                  <path d="M4 5.5A2 2 0 0 1 6 4h5v15H6a2 2 0 0 0-2 1.2V5.5Z" stroke="currentColor" stroke-width="1.6"
+                    stroke-linejoin="round" />
+                  <path d="M20 5.5A2 2 0 0 0 18 4h-5v15h5a2 2 0 0 1 2 1.2V5.5Z" stroke="currentColor" stroke-width="1.6"
+                    stroke-linejoin="round" />
+                </svg>
+              </span>
+              <span class="chip-text"><b>Materi terorganisir</b><small>Modul &amp; tugas rapi</small></span>
+            </div>
 
-          <ul class="brand-features">
-            <li class="reveal" style="--d: 0.35s">
-              <span class="feature-dot"></span> Pembelajaran &amp; materi terorganisir
-            </li>
-            <li class="reveal" style="--d: 0.45s">
-              <span class="feature-dot"></span> Pantau kehadiran secara real-time
-            </li>
-            <li class="reveal" style="--d: 0.55s">
-              <span class="feature-dot"></span> Login aman untuk siswa &amp; orang tua
-            </li>
-          </ul>
+            <div class="hero-chip chip-b" style="--d: 0.55s; --fd: 0.6s">
+              <span class="chip-ico chip-ico-emerald">
+                <svg viewBox="0 0 24 24" fill="none" class="h-4 w-4">
+                  <rect x="3.5" y="5" width="17" height="15" rx="2.5" stroke="currentColor" stroke-width="1.6" />
+                  <path d="M3.5 9h17M8 3.5v3m8-3v3M8.5 14l2.2 2.2L15.5 12" stroke="currentColor" stroke-width="1.6"
+                    stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <span class="chip-text"><b>Kehadiran real-time</b><small>Pantau tiap hari</small></span>
+            </div>
+
+            <div class="hero-chip chip-c" style="--d: 0.65s; --fd: 1.1s">
+              <span class="chip-ico chip-ico-amber">
+                <svg viewBox="0 0 24 24" fill="none" class="h-4 w-4">
+                  <path d="M12 3 5 6v5c0 4.4 3 8.3 7 9.5 4-1.2 7-5.1 7-9.5V6l-7-3Z" stroke="currentColor"
+                    stroke-width="1.6" stroke-linejoin="round" />
+                  <path d="m9.2 12 2 2 3.6-3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </span>
+              <span class="chip-text"><b>Login aman</b><small>Siswa &amp; orang tua</small></span>
+            </div>
+
+            <!-- ===== 3D school-kid character ===== -->
+            <div class="hero-stage" aria-hidden="true">
+              <StudentCharacter3D :pointer-x="bp.x" :pointer-y="bp.y" :mood="mood" />
+            </div>
+            </div>
+          </div>
 
           <div class="brand-glow" aria-hidden="true"></div>
         </div>
       </section>
 
       <!-- ===== Form panel ===== -->
-      <section class="form-panel">
-        <form @submit.prevent="handleSubmit" class="login-card">
-          <div class="card-head reveal" style="--d: 0.1s">
+      <section class="form-panel" @mousemove="handleTilt" @mouseleave="resetTilt">
+        <div class="card-3d-wrap">
+        <form @submit.prevent="handleSubmit" class="login-card" :style="cardStyle">
+          <span class="card-glare" :style="glareStyle" aria-hidden="true"></span>
+          <div class="card-head reveal card-layer" style="--d: 0.1s; --z: 40px">
             <span class="card-eyebrow">School System</span>
             <h1 class="card-title">Selamat Datang Kembali 👋</h1>
             <p class="card-subtitle">Masuk untuk mengakses halaman LMS Anda.</p>
@@ -81,8 +159,7 @@
                 <path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke="currentColor" stroke-width="1.6"
                   stroke-linecap="round" />
               </svg>
-              <input v-model="loginIdentifier" type="text" required placeholder="Masukkan username atau nomor HP"
-                class="field-input" />
+              <input v-model="loginIdentifier" type="text" required placeholder="username" class="field-input" />
               <span class="field-mode" :class="loginMode">
                 {{ loginMode === 'otp' ? 'OTP WhatsApp' : 'Password' }}
               </span>
@@ -105,11 +182,13 @@
                 <button type="button" class="field-toggle" @click="showPassword = !showPassword"
                   :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'">
                   <svg v-if="!showPassword" viewBox="0 0 24 24" fill="none" class="h-5 w-5">
-                    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" stroke="currentColor" stroke-width="1.6" />
+                    <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" stroke="currentColor"
+                      stroke-width="1.6" />
                     <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6" />
                   </svg>
                   <svg v-else viewBox="0 0 24 24" fill="none" class="h-5 w-5">
-                    <path d="m3 3 18 18M10.6 10.6a3 3 0 0 0 4.2 4.2M9.9 5.2A10.3 10.3 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.4 4M6.1 6.1A17 17 0 0 0 2 12s3.6 7 10 7c1 0 2-.1 2.9-.4"
+                    <path
+                      d="m3 3 18 18M10.6 10.6a3 3 0 0 0 4.2 4.2M9.9 5.2A10.3 10.3 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.4 4M6.1 6.1A17 17 0 0 0 2 12s3.6 7 10 7c1 0 2-.1 2.9-.4"
                       stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
                   </svg>
                 </button>
@@ -120,8 +199,8 @@
           <transition name="slide-fade">
             <div v-if="loginMode === 'otp' && otpSent" class="field reveal">
               <label class="field-label">Kode OTP</label>
-              <input v-model="otpForm.otp" type="text" inputmode="numeric" maxlength="6" required
-                placeholder="••••••" class="otp-input" />
+              <input v-model="otpForm.otp" type="text" inputmode="numeric" maxlength="6" required placeholder="••••••"
+                class="otp-input" />
               <p class="field-hint">Kode berlaku 10 menit. Cek WhatsApp pada nomor yang dimasukkan.</p>
             </div>
           </transition>
@@ -136,7 +215,7 @@
             </div>
           </transition>
 
-          <button type="submit" :disabled="submitDisabled" class="submit-btn reveal" style="--d: 0.4s">
+          <button type="submit" :disabled="submitDisabled" class="submit-btn reveal card-layer" style="--d: 0.4s; --z: 55px">
             <span class="submit-spinner" v-if="isLoading || isParentLoading"></span>
             <span>{{ submitLabel }}</span>
             <svg v-if="!(isLoading || isParentLoading)" viewBox="0 0 24 24" fill="none" class="submit-arrow">
@@ -155,6 +234,7 @@
             <router-link to="/" class="card-link">Buka landing page</router-link>
           </p>
         </form>
+        </div>
       </section>
     </div>
   </div>
@@ -167,6 +247,7 @@ import { pushToast } from "@/composables/useToast";
 import { clearSession, persistSession } from "@/utils/auth";
 import { useProfileStore } from "@/store/profile";
 import { useRealtimeStore } from "@/store/realtime";
+import StudentCharacter3D from "@/components/StudentCharacter3D.vue";
 
 const SHOW_PWA_INSTALL_AFTER_LOGIN_KEY = "show-pwa-install-after-login";
 const LOGIN_LOCK_UNTIL_KEY = "login-lock-until";
@@ -179,14 +260,99 @@ const otpSent = ref(false);
 const lockRemainingSeconds = ref(0);
 const showPassword = ref(false);
 const introActive = ref(true);
+const mood = ref("idle"); // "idle" | "happy" | "sad" — drives the 3D character
+const showSuccessSplash = ref(false);
+const successName = ref("Login Berhasil");
 let introTimer = null;
 let lockCountdownTimer = null;
+let moodResetTimer = null;
+let redirectTimer = null;
+
+const confettiStyle = (n) => {
+  const colors = ["#38bdf8", "#22d3ee", "#60a5fa", "#fbbf24", "#34d399", "#ffffff"];
+  const left = (n * 67) % 100;
+  const delay = ((n * 137) % 700) / 1000;
+  const duration = 1.6 + (((n * 53) % 90) / 100);
+  const size = 6 + ((n * 31) % 7);
+  return {
+    left: `${left}%`,
+    width: `${size}px`,
+    height: `${size + 4}px`,
+    background: colors[n % colors.length],
+    animationDelay: `${delay}s`,
+    animationDuration: `${duration}s`,
+  };
+};
+
+const flashSad = () => {
+  if (showSuccessSplash.value) return;
+  mood.value = "sad";
+  if (moodResetTimer) window.clearTimeout(moodResetTimer);
+  moodResetTimer = window.setTimeout(() => {
+    if (mood.value === "sad") mood.value = "idle";
+  }, 2600);
+};
 const form = reactive({
   password: "",
 });
 const otpForm = reactive({
   otp: "",
 });
+
+// ===== 3D pointer-tracking tilt for the login card =====
+const prefersReducedMotion =
+  typeof window !== "undefined" &&
+  window.matchMedia &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const tilt = reactive({ rx: 0, ry: 0, gx: 50, gy: 50, active: false });
+const MAX_TILT = 9; // degrees
+
+const cardStyle = computed(() => ({
+  transform: `perspective(1100px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
+  transition: tilt.active ? "transform 0.08s ease-out" : "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+}));
+const glareStyle = computed(() => ({
+  opacity: tilt.active ? 0.55 : 0,
+  background: `radial-gradient(circle at ${tilt.gx}% ${tilt.gy}%, rgba(255,255,255,0.55), transparent 55%)`,
+}));
+
+const handleTilt = (event) => {
+  if (prefersReducedMotion) return;
+  const rect = event.currentTarget.getBoundingClientRect();
+  const px = (event.clientX - rect.left) / rect.width; // 0..1
+  const py = (event.clientY - rect.top) / rect.height; // 0..1
+  tilt.ry = (px - 0.5) * 2 * MAX_TILT;
+  tilt.rx = -(py - 0.5) * 2 * MAX_TILT;
+  tilt.gx = px * 100;
+  tilt.gy = py * 100;
+  tilt.active = true;
+};
+
+const resetTilt = () => {
+  tilt.rx = 0;
+  tilt.ry = 0;
+  tilt.gx = 50;
+  tilt.gy = 50;
+  tilt.active = false;
+};
+
+// ===== Playable brand scene: the 3D character follows the cursor (bp is passed as props) =====
+const bp = reactive({ x: 0, y: 0, active: false });
+const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+
+const handleBrandMove = (event) => {
+  if (prefersReducedMotion) return;
+  const rect = event.currentTarget.getBoundingClientRect();
+  bp.x = clamp(((event.clientX - rect.left) / rect.width - 0.5) * 2, -1, 1);
+  bp.y = clamp(((event.clientY - rect.top) / rect.height - 0.5) * 2, -1, 1);
+  bp.active = true;
+};
+
+const resetBrand = () => {
+  bp.x = 0;
+  bp.y = 0;
+  bp.active = false;
+};
 
 const isPhoneNumberLike = (value) => {
   const raw = String(value || "").trim();
@@ -260,16 +426,32 @@ const resetOtpFlow = () => {
 
 const finishLogin = (response, message = "Selamat datang, Anda berhasil masuk ke School System.") => {
   persistSession(response);
-  pushToast({
-    title: "Login Berhasil",
-    message,
-    type: "success",
-  });
   stopLockCountdown();
   lockRemainingSeconds.value = 0;
   persistLockUntil(null);
   sessionStorage.setItem(SHOW_PWA_INSTALL_AFTER_LOGIN_KEY, "1");
-  window.location.assign("/dashboard");
+
+  // 1) character smiles & celebrates
+  if (moodResetTimer) window.clearTimeout(moodResetTimer);
+  mood.value = "happy";
+
+  const displayName =
+    response?.data?.user?.name ||
+    response?.data?.name ||
+    response?.user?.name ||
+    "";
+  successName.value = displayName ? `Halo, ${String(displayName).split(" ")[0]}!` : "Login Berhasil";
+
+  pushToast({ title: "Login Berhasil", message, type: "success" });
+
+  // 2) let the smile show briefly, then reveal the elegant splash
+  redirectTimer = window.setTimeout(() => {
+    showSuccessSplash.value = true;
+    // 3) hand off to the dashboard after the splash animation
+    redirectTimer = window.setTimeout(() => {
+      window.location.assign("/dashboard");
+    }, 1900);
+  }, 650);
 };
 
 const persistLockUntil = (lockedUntilIso) => {
@@ -345,6 +527,14 @@ onBeforeUnmount(() => {
     window.clearTimeout(introTimer);
     introTimer = null;
   }
+  if (moodResetTimer) {
+    window.clearTimeout(moodResetTimer);
+    moodResetTimer = null;
+  }
+  if (redirectTimer) {
+    window.clearTimeout(redirectTimer);
+    redirectTimer = null;
+  }
 });
 
 const handleLogin = async () => {
@@ -373,6 +563,7 @@ const handleLogin = async () => {
     const status = Number(error?.status || 0);
     const message = String(error?.message || "");
     const lockedUntilIso = error?.payload?.data?.locked_until || error?.payload?.locked_until || null;
+    flashSad();
     if (status === 403 && /terkunci/i.test(message)) {
       startLockCountdown(60, lockedUntilIso);
       pushToast({
@@ -430,6 +621,7 @@ const handleOtpSubmit = async () => {
     const retryMessage = status === 429 && retryAtLabel
       ? `Coba lagi setelah ${retryAtLabel}.`
       : error.message || "Proses login orang tua gagal.";
+    flashSad();
     pushToast({
       title: otpSent.value ? "Verifikasi OTP Gagal" : "Gagal Mengirim OTP",
       message: retryMessage,
@@ -547,18 +739,169 @@ watch(loginIdentifier, () => {
 }
 
 @keyframes float-a {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(40px, 30px) scale(1.08); }
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(40px, 30px) scale(1.08);
+  }
 }
 
 @keyframes float-b {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-30px, -40px) scale(1.12); }
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(-30px, -40px) scale(1.12);
+  }
 }
 
 @keyframes float-c {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-42%, -58%) scale(1.1); }
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  50% {
+    transform: translate(-42%, -58%) scale(1.1);
+  }
+}
+
+/* ===================== Floating 3D shapes ===================== */
+.scene-3d {
+  position: absolute;
+  inset: 0;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.shape {
+  position: absolute;
+  opacity: 0.5;
+  will-change: transform;
+}
+
+/* small wireframe-ish glass cubes */
+.mini-cube {
+  width: 64px;
+  height: 64px;
+  transform-style: preserve-3d;
+}
+
+.mini-cube-1 {
+  top: 16%;
+  left: 12%;
+  animation: spin3d-a 18s linear infinite;
+}
+
+.mini-cube-2 {
+  bottom: 14%;
+  right: 16%;
+  width: 90px;
+  height: 90px;
+  opacity: 0.38;
+  animation: spin3d-b 24s linear infinite;
+}
+
+.mc-face {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid rgba(37, 99, 235, 0.35);
+  background: rgba(37, 99, 235, 0.06);
+  border-radius: 8px;
+}
+
+.mini-cube-1 .mc-front { transform: translateZ(32px); }
+.mini-cube-1 .mc-back { transform: rotateY(180deg) translateZ(32px); }
+.mini-cube-1 .mc-right { transform: rotateY(90deg) translateZ(32px); }
+.mini-cube-1 .mc-left { transform: rotateY(-90deg) translateZ(32px); }
+.mini-cube-1 .mc-top { transform: rotateX(90deg) translateZ(32px); }
+.mini-cube-1 .mc-bottom { transform: rotateX(-90deg) translateZ(32px); }
+
+.mini-cube-2 .mc-front { transform: translateZ(45px); }
+.mini-cube-2 .mc-back { transform: rotateY(180deg) translateZ(45px); }
+.mini-cube-2 .mc-right { transform: rotateY(90deg) translateZ(45px); }
+.mini-cube-2 .mc-left { transform: rotateY(-90deg) translateZ(45px); }
+.mini-cube-2 .mc-top { transform: rotateX(90deg) translateZ(45px); }
+.mini-cube-2 .mc-bottom { transform: rotateX(-90deg) translateZ(45px); }
+
+:global(.dark) .mc-face {
+  border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(56, 189, 248, 0.05);
+}
+
+@keyframes spin3d-a {
+  from { transform: rotateX(0) rotateY(0); }
+  to { transform: rotateX(360deg) rotateY(360deg); }
+}
+
+@keyframes spin3d-b {
+  from { transform: rotateX(20deg) rotateY(0) rotateZ(0); }
+  to { transform: rotateX(20deg) rotateY(-360deg) rotateZ(180deg); }
+}
+
+/* tilted glowing rings */
+.ring-3d {
+  border-radius: 9999px;
+  border: 2px solid rgba(8, 145, 178, 0.3);
+  box-shadow: 0 0 22px rgba(8, 145, 178, 0.18);
+}
+
+.ring-3d-1 {
+  width: 150px;
+  height: 150px;
+  top: 22%;
+  right: 10%;
+  animation: ring-spin-a 16s linear infinite;
+}
+
+.ring-3d-2 {
+  width: 110px;
+  height: 110px;
+  bottom: 20%;
+  left: 8%;
+  border-color: rgba(37, 99, 235, 0.28);
+  animation: ring-spin-b 20s linear infinite;
+}
+
+@keyframes ring-spin-a {
+  from { transform: rotateX(70deg) rotateZ(0); }
+  to { transform: rotateX(70deg) rotateZ(360deg); }
+}
+
+@keyframes ring-spin-b {
+  from { transform: rotateX(60deg) rotateY(20deg) rotateZ(0); }
+  to { transform: rotateX(60deg) rotateY(20deg) rotateZ(-360deg); }
+}
+
+/* floating pyramid (CSS triangle that drifts in 3D) */
+.pyramid {
+  top: 60%;
+  left: 46%;
+  width: 0;
+  height: 0;
+  border-left: 26px solid transparent;
+  border-right: 26px solid transparent;
+  border-bottom: 44px solid rgba(96, 165, 250, 0.28);
+  filter: drop-shadow(0 6px 10px rgba(37, 99, 235, 0.2));
+  animation: pyramid-float 14s ease-in-out infinite;
+}
+
+@keyframes pyramid-float {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0); }
+  33% { transform: translate3d(20px, -26px, 0) rotate(120deg); }
+  66% { transform: translate3d(-16px, 16px, 0) rotate(240deg); }
+}
+
+@media (max-width: 640px) {
+  .scene-3d { display: none; }
 }
 
 /* ===================== Branding panel ===================== */
@@ -575,7 +918,7 @@ watch(loginIdentifier, () => {
 @media (min-width: 1024px) {
   .brand-panel {
     display: flex;
-    align-items: center;
+    align-items: stretch;
   }
 }
 
@@ -590,13 +933,29 @@ watch(loginIdentifier, () => {
 }
 
 @keyframes shimmer {
-  from { opacity: 0.6; transform: scale(1); }
-  to { opacity: 1; transform: scale(1.05); }
+  from {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.05);
+  }
 }
 
 .brand-inner {
   position: relative;
   z-index: 2;
+  width: 100%;
+  max-width: 540px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: 2.5rem;
+}
+
+.brand-top {
   max-width: 460px;
 }
 
@@ -613,8 +972,17 @@ watch(loginIdentifier, () => {
 }
 
 @keyframes pulse-glow {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.25); opacity: 0.85; }
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: scale(1.25);
+    opacity: 0.85;
+  }
 }
 
 .brand-badge {
@@ -631,7 +999,7 @@ watch(loginIdentifier, () => {
 }
 
 .brand-title {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   font-size: clamp(2rem, 3vw, 2.9rem);
   font-weight: 700;
   line-height: 1.15;
@@ -676,12 +1044,206 @@ watch(loginIdentifier, () => {
   animation: dot-pulse 2.4s ease-in-out infinite;
 }
 
-.brand-features li:nth-child(2) .feature-dot { animation-delay: 0.4s; }
-.brand-features li:nth-child(3) .feature-dot { animation-delay: 0.8s; }
+.brand-features li:nth-child(2) .feature-dot {
+  animation-delay: 0.4s;
+}
+
+.brand-features li:nth-child(3) .feature-dot {
+  animation-delay: 0.8s;
+}
 
 @keyframes dot-pulse {
-  0%, 100% { box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2); }
-  50% { box-shadow: 0 0 0 7px rgba(255, 255, 255, 0.05); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 0 7px rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* ===================== Hero (character + floating chips) ===================== */
+.brand-hero {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 30rem;
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* wide stage; chips float at the corners over the transparent canvas */
+.hero-3d {
+  position: relative;
+  width: 100%;
+  max-width: 34rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* the real WebGL character lives here (big, centred) */
+.hero-stage {
+  position: relative;
+  width: 30rem;
+  max-width: 100%;
+  height: 30rem;
+  margin: 0 auto;
+}
+
+/* soft glow halo behind the character */
+.hero-stage::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: 78%;
+  height: 70%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(125, 211, 252, 0.45), rgba(8, 145, 178, 0.12) 45%, transparent 70%);
+  filter: blur(10px);
+  z-index: 0;
+  animation: halo-pulse 6s ease-in-out infinite;
+}
+
+@keyframes halo-pulse {
+  0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+}
+
+/* ---------- floating glass feature chips (each at its own depth) ---------- */
+.hero-chip {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 10.5rem;
+  padding: 0.45rem 0.7rem 0.45rem 0.45rem;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  box-shadow: 0 16px 34px -16px rgba(2, 12, 40, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  opacity: 0;
+  animation: chip-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards, chip-float 5s ease-in-out infinite;
+  animation-delay: var(--d, 0s), var(--fd, 0s);
+}
+
+.chip-ico {
+  display: grid;
+  place-items: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  flex-shrink: 0;
+  border-radius: 0.6rem;
+  color: #fff;
+  background: linear-gradient(135deg, #38bdf8, #2563eb);
+}
+
+.chip-ico-emerald { background: linear-gradient(135deg, #34d399, #0d9488); }
+.chip-ico-amber { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+
+.chip-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.chip-text b {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.chip-text small {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.chip-a { top: 3%; left: -11%; transform: translateZ(60px); }
+.chip-b { top: 44%; right: -13%; transform: translateZ(85px); }
+.chip-c { bottom: 5%; left: -7%; transform: translateZ(45px); }
+
+@keyframes chip-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* float uses the independent `translate` property so it stacks with translateZ depth */
+@keyframes chip-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -10px; }
+}
+
+/* keep composition from clipping on short / narrow viewports */
+@media (max-height: 880px) {
+  .brand-hero { min-height: 24rem; }
+  .hero-stage { width: 24rem; height: 24rem; }
+}
+
+@media (max-height: 720px) {
+  .brand-hero { display: none; }
+}
+
+.char-float {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: char-bob 4s ease-in-out infinite;
+}
+
+@keyframes char-bob {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-12px) rotate(1deg); }
+}
+
+.char-shadow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: char-shadow 4s ease-in-out infinite;
+}
+
+@keyframes char-shadow {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(0.78); opacity: 0.3; }
+}
+
+.char-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: char-ring 4s ease-in-out infinite;
+}
+
+@keyframes char-ring {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.04); }
+}
+
+.char-arm-wave {
+  transform-box: fill-box;
+  transform-origin: 12% 86%;
+  animation: char-wave 1.8s ease-in-out infinite;
+}
+
+@keyframes char-wave {
+  0%, 100% { transform: rotate(6deg); }
+  50% { transform: rotate(-20deg); }
+}
+
+.char-tassel {
+  transform-box: fill-box;
+  transform-origin: top left;
+  animation: char-tassel 3s ease-in-out infinite;
+}
+
+@keyframes char-tassel {
+  0%, 100% { transform: rotate(7deg); }
+  50% { transform: rotate(-7deg); }
 }
 
 /* ===================== Form panel ===================== */
@@ -690,11 +1252,19 @@ watch(loginIdentifier, () => {
   align-items: center;
   justify-content: center;
   padding: 2rem 1.25rem;
+  perspective: 1100px;
+}
+
+.card-3d-wrap {
+  width: 100%;
+  max-width: 26rem;
+  animation: card-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-style: preserve-3d;
 }
 
 .login-card {
+  position: relative;
   width: 100%;
-  max-width: 26rem;
   padding: 2.25rem;
   border-radius: 1.5rem;
   background: rgba(255, 255, 255, 0.82);
@@ -704,7 +1274,30 @@ watch(loginIdentifier, () => {
     0 10px 30px -15px rgba(15, 23, 42, 0.2);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  animation: card-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* glare highlight that follows the cursor */
+.card-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+/* keep real content above the glare sheen */
+.login-card > :not(.card-glare) {
+  position: relative;
+  z-index: 2;
+}
+
+/* content layers that pop toward the viewer on tilt */
+.card-layer {
+  transform: translateZ(var(--z, 0));
+  transform-style: preserve-3d;
 }
 
 :global(.dark) .login-card {
@@ -713,11 +1306,20 @@ watch(loginIdentifier, () => {
 }
 
 @keyframes card-in {
-  from { opacity: 0; transform: translateY(26px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.card-head { margin-bottom: 1.6rem; }
+.card-head {
+  margin-bottom: 1.6rem;
+}
 
 .card-eyebrow {
   font-size: 0.7rem;
@@ -735,7 +1337,9 @@ watch(loginIdentifier, () => {
   color: #0f172a;
 }
 
-:global(.dark) .card-title { color: #f8fafc; }
+:global(.dark) .card-title {
+  color: #f8fafc;
+}
 
 .card-subtitle {
   margin-top: 0.4rem;
@@ -743,10 +1347,14 @@ watch(loginIdentifier, () => {
   color: #64748b;
 }
 
-:global(.dark) .card-subtitle { color: #94a3b8; }
+:global(.dark) .card-subtitle {
+  color: #94a3b8;
+}
 
 /* ---------- Fields ---------- */
-.field { margin-bottom: 1.15rem; }
+.field {
+  margin-bottom: 1.15rem;
+}
 
 .field-label {
   display: block;
@@ -756,7 +1364,9 @@ watch(loginIdentifier, () => {
   color: #334155;
 }
 
-:global(.dark) .field-label { color: #cbd5e1; }
+:global(.dark) .field-label {
+  color: #cbd5e1;
+}
 
 .field-control {
   position: relative;
@@ -788,7 +1398,9 @@ watch(loginIdentifier, () => {
   pointer-events: none;
 }
 
-.field-control:focus-within .field-icon { color: #2563eb; }
+.field-control:focus-within .field-icon {
+  color: #2563eb;
+}
 
 .field-input {
   width: 100%;
@@ -800,11 +1412,17 @@ watch(loginIdentifier, () => {
   outline: none;
 }
 
-.field-input.has-toggle { padding-right: 2.8rem; }
+.field-input.has-toggle {
+  padding-right: 2.8rem;
+}
 
-:global(.dark) .field-input { color: #f1f5f9; }
+:global(.dark) .field-input {
+  color: #f1f5f9;
+}
 
-.field-input::placeholder { color: #94a3b8; }
+.field-input::placeholder {
+  color: #94a3b8;
+}
 
 .field-mode {
   position: absolute;
@@ -923,8 +1541,15 @@ watch(loginIdentifier, () => {
 }
 
 @keyframes gradient-shift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 .submit-btn::after {
@@ -944,9 +1569,13 @@ watch(loginIdentifier, () => {
   box-shadow: 0 18px 32px -12px rgba(37, 99, 235, 0.75);
 }
 
-.submit-btn:hover:not(:disabled)::after { left: 130%; }
+.submit-btn:hover:not(:disabled)::after {
+  left: 130%;
+}
 
-.submit-btn:active:not(:disabled) { transform: translateY(0); }
+.submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
 
 .submit-btn:disabled {
   opacity: 0.65;
@@ -960,7 +1589,9 @@ watch(loginIdentifier, () => {
   transition: transform 0.2s ease;
 }
 
-.submit-btn:hover:not(:disabled) .submit-arrow { transform: translateX(4px); }
+.submit-btn:hover:not(:disabled) .submit-arrow {
+  transform: translateX(4px);
+}
 
 .submit-spinner {
   width: 1.1rem;
@@ -972,7 +1603,9 @@ watch(loginIdentifier, () => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .ghost-btn {
@@ -994,7 +1627,10 @@ watch(loginIdentifier, () => {
   color: #2563eb;
 }
 
-.ghost-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.ghost-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 :global(.dark) .ghost-btn {
   color: #cbd5e1;
@@ -1026,18 +1662,23 @@ watch(loginIdentifier, () => {
   transition: width 0.25s ease;
 }
 
-.card-link:hover::after { width: 100%; }
+.card-link:hover::after {
+  width: 100%;
+}
 
 /* ===================== Entrance reveal ===================== */
 .reveal {
   opacity: 0;
-  transform: translateY(14px);
+  transform: translateY(14px) translateZ(var(--z, 0));
   animation: reveal-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   animation-delay: var(--d, 0s);
 }
 
 @keyframes reveal-up {
-  to { opacity: 1; transform: translateY(0); }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateZ(var(--z, 0));
+  }
 }
 
 /* ===================== Field transitions ===================== */
@@ -1071,26 +1712,80 @@ watch(loginIdentifier, () => {
   text-align: center;
 }
 
-.intro-logo {
+/* ---------- 3D rotating cube ---------- */
+.intro-stage {
+  position: relative;
+  width: 120px;
+  height: 120px;
   display: grid;
   place-items: center;
-  width: 5rem;
-  height: 5rem;
-  border-radius: 1.5rem;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(8px);
-  animation: logo-pop 0.8s cubic-bezier(0.16, 1, 0.3, 1) both, logo-float 3s ease-in-out 0.8s infinite;
+  perspective: 600px;
+  animation: stage-pop 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-@keyframes logo-pop {
-  from { opacity: 0; transform: scale(0.6) rotate(-12deg); }
-  to { opacity: 1; transform: scale(1) rotate(0); }
+@keyframes stage-pop {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-@keyframes logo-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+.cube {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  transform-style: preserve-3d;
+  animation: spin-cube 6s linear infinite, cube-bob 3s ease-in-out infinite;
+}
+
+.cube-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: inset 0 0 24px rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
+}
+
+.cube-face svg {
+  width: 44px;
+  height: 44px;
+  color: #fff;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+}
+
+.cube-front { transform: rotateY(0deg) translateZ(42px); }
+.cube-back { transform: rotateY(180deg) translateZ(42px); }
+.cube-right { transform: rotateY(90deg) translateZ(42px); }
+.cube-left { transform: rotateY(-90deg) translateZ(42px); }
+.cube-top { transform: rotateX(90deg) translateZ(42px); }
+.cube-bottom { transform: rotateX(-90deg) translateZ(42px); }
+
+@keyframes spin-cube {
+  from { transform: rotateX(-20deg) rotateY(0deg); }
+  to { transform: rotateX(-20deg) rotateY(360deg); }
+}
+
+@keyframes cube-bob {
+  0%, 100% { margin-top: 0; }
+  50% { margin-top: -10px; }
+}
+
+.cube-shadow {
+  position: absolute;
+  bottom: 6px;
+  width: 70px;
+  height: 14px;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.28);
+  filter: blur(7px);
+  animation: cube-shadow 3s ease-in-out infinite;
+}
+
+@keyframes cube-shadow {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(0.78); opacity: 0.25; }
 }
 
 .intro-title {
@@ -1129,9 +1824,20 @@ watch(loginIdentifier, () => {
 }
 
 @keyframes load-bar {
-  0% { transform: translateX(-110%); width: 40%; }
-  60% { transform: translateX(120%); width: 55%; }
-  100% { transform: translateX(260%); width: 60%; }
+  0% {
+    transform: translateX(-110%);
+    width: 40%;
+  }
+
+  60% {
+    transform: translateX(120%);
+    width: 55%;
+  }
+
+  100% {
+    transform: translateX(260%);
+    width: 60%;
+  }
 }
 
 .intro-enter-active,
@@ -1144,15 +1850,202 @@ watch(loginIdentifier, () => {
   transform: scale(1.04);
 }
 
+/* ===================== Success splash → dashboard ===================== */
+.success-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1d4ed8 0%, #0891b2 55%, #2563eb 100%);
+  color: #fff;
+}
+
+.success-decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.success-glow {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 60vmin;
+  height: 60vmin;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.35), transparent 60%);
+  filter: blur(20px);
+  animation: success-glow-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes success-glow-pulse {
+  0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.15); }
+}
+
+.confetti {
+  position: absolute;
+  top: -6vh;
+  border-radius: 2px;
+  opacity: 0;
+  animation-name: confetti-fall;
+  animation-timing-function: ease-in;
+  animation-iteration-count: infinite;
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(110vh) rotate(540deg); opacity: 0; }
+}
+
+.success-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.success-check {
+  width: 7rem;
+  height: 7rem;
+}
+
+.sc-ring-bg {
+  fill: rgba(255, 255, 255, 0.12);
+  stroke: rgba(255, 255, 255, 0.25);
+  stroke-width: 4;
+}
+
+.sc-ring {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 264;
+  stroke-dashoffset: 264;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  animation: sc-ring-draw 0.7s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+.sc-tick {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: sc-tick-draw 0.4s cubic-bezier(0.65, 0, 0.35, 1) 0.55s forwards;
+}
+
+@keyframes sc-ring-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes sc-tick-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+.success-title {
+  margin-top: 1.4rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  opacity: 0;
+  animation: reveal-up 0.5s ease 0.7s forwards;
+}
+
+.success-subtitle {
+  margin-top: 0.4rem;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.82);
+  opacity: 0;
+  animation: reveal-up 0.5s ease 0.85s forwards;
+}
+
+.success-bar {
+  margin-top: 1.6rem;
+  width: 13rem;
+  height: 5px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.success-bar span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: 9999px;
+  background: #ffffff;
+  transform-origin: left;
+  transform: scaleX(0);
+  animation: success-bar-fill 1.6s ease-in-out 0.5s forwards;
+}
+
+@keyframes success-bar-fill {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+.success-enter-active {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.success-enter-from {
+  opacity: 0;
+  transform: scale(1.06);
+}
+
 /* ===================== Reduced motion ===================== */
 @media (prefers-reduced-motion: reduce) {
-  .blob, .brand-panel::before, .brand-glow, .feature-dot,
-  .submit-btn, .logo-float, .intro-logo {
+
+  .blob,
+  .brand-panel::before,
+  .brand-glow,
+  .feature-dot,
+  .submit-btn,
+  .cube,
+  .cube-shadow,
+  .mini-cube,
+  .ring-3d,
+  .pyramid,
+  .char-float,
+  .char-shadow,
+  .char-ring,
+  .char-arm-wave,
+  .char-tassel,
+  .hero-chip,
+  .hero-stage::before {
     animation: none !important;
   }
-  .reveal, .login-card, .intro-title, .intro-subtitle {
+
+  .hero-chip {
+    opacity: 1 !important;
+  }
+
+  .scene-3d {
+    display: none;
+  }
+
+  .reveal,
+  .card-3d-wrap,
+  .intro-stage,
+  .intro-title,
+  .intro-subtitle {
     animation-duration: 0.001s !important;
     opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .login-card {
     transform: none !important;
   }
 }
