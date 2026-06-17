@@ -1,7 +1,7 @@
 import { clearSessionAndRedirectToLogin, persistForcedLogoutNotice } from "@/utils/auth";
 import { beginGlobalLoading } from "@/composables/useGlobalLoading";
 
-const API_BASE_URL = (process.env.VUE_APP_API_BASE_URL || "https://alentest.my.id/school/api").replace(/\/$/, "");
+const API_BASE_URL = (process.env.VUE_APP_API_BASE_URL || "https://lms.idschoolsystem.com/api").replace(/\/$/, "");
 const pendingRequestControllers = new Set();
 const ABORTED_RESPONSE = Object.freeze({
   __aborted: true,

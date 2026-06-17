@@ -20,6 +20,42 @@ const routes = [
     },
   },
   {
+    path: "/refund-policy",
+    name: "PublicRefundPolicy",
+    component: lazyRoute(() => import("../views/PublicRefundPolicy.vue")),
+    meta: {
+      title: "Refund Policy" + appName,
+      hideNav: true,
+    },
+  },
+  {
+    path: "/terms-and-conditions",
+    name: "PublicTermsConditions",
+    component: lazyRoute(() => import("../views/PublicTermsConditions.vue")),
+    meta: {
+      title: "Terms & Conditions" + appName,
+      hideNav: true,
+    },
+  },
+  {
+    path: "/blog",
+    name: "PublicBlog",
+    component: lazyRoute(() => import("../views/PublicBlog.vue")),
+    meta: {
+      title: "Blog" + appName,
+      hideNav: true,
+    },
+  },
+  {
+    path: "/blog/:slug",
+    name: "PublicBlogDetail",
+    component: lazyRoute(() => import("../views/PublicBlogDetail.vue")),
+    meta: {
+      title: "Artikel Blog" + appName,
+      hideNav: true,
+    },
+  },
+  {
     path: "/dashboard",
     name: "Dashboard",
     component: Dashboard,
@@ -154,6 +190,26 @@ const routes = [
     component: lazyRoute(() => import("../views/ModuleSettings.vue")),
     meta: {
       title: "Setting Modul" + appName,
+      requiresAuth: true,
+      roles: ["SUPER_ADMIN"],
+    },
+  },
+  {
+    path: "/package-settings",
+    name: "PackageSettings",
+    component: lazyRoute(() => import("../views/PackageSettings.vue")),
+    meta: {
+      title: "Kelola Paket" + appName,
+      requiresAuth: true,
+      roles: ["SUPER_ADMIN"],
+    },
+  },
+  {
+    path: "/landing-cms",
+    name: "LandingCMS",
+    component: lazyRoute(() => import("../views/LandingCMS.vue")),
+    meta: {
+      title: "CMS Landing Page" + appName,
       requiresAuth: true,
       roles: ["SUPER_ADMIN"],
     },

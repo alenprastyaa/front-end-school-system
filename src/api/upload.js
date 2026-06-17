@@ -10,7 +10,7 @@ const resolvePublicBaseUrl = () =>
 const resolveApiBaseUrl = () =>
   String(
     process.env.VUE_APP_API_BASE_URL
-    || "https://alentest.my.id/school/api",
+    || "https://lms.idschoolsystem.com/api",
   ).trim().replace(/\/$/, "");
 
 const FILE_UPLOAD_URL = `${resolvePublicBaseUrl()}/file/api/upload-file`;

@@ -510,6 +510,8 @@ const menuByRole = {
     { key: "school-visit-targets", to: "/school-visit-targets", label: "List Sekolah", icon: "ph:map-trifold" },
     { key: "schools", to: "/schools", label: "Sekolah", icon: "ph:buildings" },
     { key: "module-settings", to: "/module-settings", label: "Setting Modul", icon: "ph:squares-four" },
+    { key: "package-settings", to: "/package-settings", label: "Kelola Paket", icon: "ph:package" },
+    { key: "landing-cms", to: "/landing-cms", label: "CMS Landing", icon: "ph:layout" },
     { key: "marketing-email", to: "/marketing-email", label: "Email Penawaran", icon: "ph:envelope-simple" },
     { key: "billing", to: "/billing", label: "Billing", icon: "ph:credit-card" },
     { key: "admin-settings", to: "/admin-settings", dataTour: "settings", label: "Setting Admin", icon: "ph:gear-six" },

@@ -17,7 +17,7 @@
                 </div>
               </div>
               <div>
-                <p class="text-xs font-bold uppercase tracking-[0.32em] text-slate-500">Xendit Payment</p>
+                <p class="text-xs font-bold uppercase tracking-[0.32em] text-slate-500">{{ paymentProviderLabel }}</p>
                 <h1 class="mt-2 text-3xl font-black tracking-tight text-slate-900 md:text-4xl">
                   {{ isSuccess ? "Pembayaran Berhasil" : "Pembayaran Gagal" }}
                 </h1>
@@ -31,7 +31,7 @@
           <p class="mt-4 max-w-3xl text-sm leading-7 text-slate-600 md:text-base">
             {{
               isSuccess
-                ? "Pembayaran Anda sudah diproses. Silakan kembali ke billing untuk melihat status invoice."
+                ? successMessage
                 : "Pembayaran tidak dapat dilanjutkan. Silakan coba lagi atau gunakan metode pembayaran lain."
             }}
           </p>
@@ -51,7 +51,7 @@
                 {{ statusLabel }}
               </p>
               <p class="mt-2 text-sm leading-6 text-slate-600">
-                {{ isSuccess ? `Pembayaran diterima dan sedang diproses ke invoice.` : `Pembayaran belum berhasil
+                {{ isSuccess ? successStatusText : `Pembayaran belum berhasil
                 diproses.` }}
               </p>
             </div>
@@ -69,13 +69,13 @@
             <div>
               <p class="text-xs font-bold uppercase tracking-[0.24em] text-slate-500">Aksi</p>
               <div class="mt-4 space-y-3">
-                <button @click="goToBilling"
+                <button @click="primaryAction"
                   class="w-full rounded-2xl bg-sky-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-500">
-                  Kembali ke Billing
+                  {{ primaryActionLabel }}
                 </button>
-                <button @click="goToDashboard"
+                <button @click="secondaryAction"
                   class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50">
-                  Dashboard
+                  {{ secondaryActionLabel }}
                 </button>
               </div>
             </div>
@@ -83,7 +83,7 @@
             <div class="rounded-2xl bg-white p-4 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200">
               <p class="font-semibold text-slate-900">Info</p>
               <p class="mt-2 leading-6">
-                Jika status invoice belum berubah di halaman billing, tunggu beberapa detik lalu refresh.
+                {{ infoMessage }}
               </p>
             </div>
           </div>
@@ -98,7 +98,7 @@ import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { api } from "@/api";
 import { pushToast } from "@/composables/useToast";
-import { getStoredUser } from "@/utils/auth";
+import { getStoredUser, isAuthenticated } from "@/utils/auth";
 import { normalizePublicUrl } from "@/utils/url";
 
 const props = defineProps({
@@ -126,27 +126,49 @@ const isSuccess = computed(() => {
   return ["success", "paid", "settlement", "completed", "sukses"].includes(raw);
 });
 
+const isLandingCheckout = computed(() => String(route.query.source || "").toLowerCase() === "landing");
+const paymentProviderLabel = computed(() => (isLandingCheckout.value ? "iPaymu Payment" : "Xendit Payment"));
 const referenceId = computed(() => String(route.query.reference_id || route.query.order_id || route.query.reference || "").trim());
 
 const statusLabel = computed(() => (isSuccess.value ? "Berhasil" : "Gagal"));
+const successMessage = computed(() =>
+  isLandingCheckout.value
+    ? "Pembayaran Anda sedang diproses. Invoice sudah dikirim ke email, dan akun admin akan dikirim setelah pembayaran berhasil dikonfirmasi."
+    : "Pembayaran Anda sudah diproses. Silakan kembali ke billing untuk melihat status invoice."
+);
+const successStatusText = computed(() =>
+  isLandingCheckout.value
+    ? "Pembayaran diterima oleh iPaymu dan sedang menunggu konfirmasi akhir."
+    : "Pembayaran diterima dan sedang diproses ke invoice."
+);
 
 const statusDescription = computed(() => {
   if (isSuccess.value) {
-    return "Pembayaran berhasil diterima oleh Xendit. Sistem akan memperbarui status invoice setelah webhook atau sinkronisasi berjalan.";
+    return isLandingCheckout.value
+      ? "Jika pembayaran sudah berhasil, sistem akan membuat akun admin sekolah dan mengirim username serta password ke Email Aktif yang Anda isi sebagai penerima pesan."
+      : "Pembayaran berhasil diterima oleh Xendit. Sistem akan memperbarui status invoice setelah webhook atau sinkronisasi berjalan.";
   }
   return "Pembayaran gagal, dibatalkan, atau kedaluwarsa. Anda dapat mencoba lagi dari halaman billing.";
 });
 
-const goToBilling = () => {
-  router.push({ path: "/billing" });
+const primaryActionLabel = computed(() => (isLandingCheckout.value ? "Kembali ke Landing" : "Kembali ke Billing"));
+const secondaryActionLabel = computed(() => (isLandingCheckout.value ? "Login Sistem" : "Dashboard"));
+const infoMessage = computed(() =>
+  isLandingCheckout.value
+    ? "Cek Email Aktif yang Anda isi untuk invoice dan kredensial admin setelah pembayaran terkonfirmasi."
+    : "Jika status invoice belum berubah di halaman billing, tunggu beberapa detik lalu refresh."
+);
+
+const primaryAction = () => {
+  router.push({ path: isLandingCheckout.value ? "/" : "/billing" });
 };
 
-const goToDashboard = () => {
-  router.push({ name: "Dashboard" });
+const secondaryAction = () => {
+  router.push(isLandingCheckout.value ? { path: "/auth/login" } : { name: "Dashboard" });
 };
 
 const syncInvoiceStatus = async () => {
-  if (!referenceId.value || !isSuccess.value) return;
+  if (isLandingCheckout.value || !isAuthenticated() || !referenceId.value || !isSuccess.value) return;
   syncState.value = "loading";
   try {
     await api.post(`/billing/current/invoices/reference/${encodeURIComponent(referenceId.value)}/sync-xendit`);

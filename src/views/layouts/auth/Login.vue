@@ -130,8 +130,8 @@
             </div>
 
             <!-- ===== 3D school-kid character ===== -->
-            <div class="hero-stage" aria-hidden="true">
-              <StudentCharacter3D :pointer-x="bp.x" :pointer-y="bp.y" :mood="mood" />
+            <div class="hero-stage" :class="characterMoodClass" aria-hidden="true">
+              <img src="/image.png" alt="" class="login-character-image" :style="characterImageStyle" />
             </div>
             </div>
           </div>
@@ -141,10 +141,9 @@
       </section>
 
       <!-- ===== Form panel ===== -->
-      <section class="form-panel" @mousemove="handleTilt" @mouseleave="resetTilt">
+      <section class="form-panel">
         <div class="card-3d-wrap">
-        <form @submit.prevent="handleSubmit" class="login-card" :style="cardStyle">
-          <span class="card-glare" :style="glareStyle" aria-hidden="true"></span>
+        <form @submit.prevent="handleSubmit" class="login-card">
           <div class="card-head reveal card-layer" style="--d: 0.1s; --z: 40px">
             <span class="card-eyebrow">School System</span>
             <h1 class="card-title">Selamat Datang Kembali 👋</h1>
@@ -247,7 +246,6 @@ import { pushToast } from "@/composables/useToast";
 import { clearSession, persistSession } from "@/utils/auth";
 import { useProfileStore } from "@/store/profile";
 import { useRealtimeStore } from "@/store/realtime";
-import StudentCharacter3D from "@/components/StudentCharacter3D.vue";
 
 const SHOW_PWA_INSTALL_AFTER_LOGIN_KEY = "show-pwa-install-after-login";
 const LOGIN_LOCK_UNTIL_KEY = "login-lock-until";
@@ -299,49 +297,29 @@ const otpForm = reactive({
   otp: "",
 });
 
-// ===== 3D pointer-tracking tilt for the login card =====
 const prefersReducedMotion =
   typeof window !== "undefined" &&
   window.matchMedia &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const tilt = reactive({ rx: 0, ry: 0, gx: 50, gy: 50, active: false });
-const MAX_TILT = 9; // degrees
-
-const cardStyle = computed(() => ({
-  transform: `perspective(1100px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
-  transition: tilt.active ? "transform 0.08s ease-out" : "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+const isCoarsePointer =
+  typeof window !== "undefined" &&
+  window.matchMedia &&
+  window.matchMedia("(pointer: coarse)").matches;
+const characterImageStyle = computed(() => ({
+  transform: `translate3d(${bp.x * 12}px, ${bp.y * 10}px, 0) rotateY(${bp.x * 7}deg) rotateX(${-bp.y * 5}deg)`,
+  transition: bp.active ? "transform 0.12s ease-out" : "transform 0.65s cubic-bezier(0.16, 1, 0.3, 1)",
 }));
-const glareStyle = computed(() => ({
-  opacity: tilt.active ? 0.55 : 0,
-  background: `radial-gradient(circle at ${tilt.gx}% ${tilt.gy}%, rgba(255,255,255,0.55), transparent 55%)`,
+const characterMoodClass = computed(() => ({
+  "is-happy": mood.value === "happy",
+  "is-sad": mood.value === "sad",
 }));
-
-const handleTilt = (event) => {
-  if (prefersReducedMotion) return;
-  const rect = event.currentTarget.getBoundingClientRect();
-  const px = (event.clientX - rect.left) / rect.width; // 0..1
-  const py = (event.clientY - rect.top) / rect.height; // 0..1
-  tilt.ry = (px - 0.5) * 2 * MAX_TILT;
-  tilt.rx = -(py - 0.5) * 2 * MAX_TILT;
-  tilt.gx = px * 100;
-  tilt.gy = py * 100;
-  tilt.active = true;
-};
-
-const resetTilt = () => {
-  tilt.rx = 0;
-  tilt.ry = 0;
-  tilt.gx = 50;
-  tilt.gy = 50;
-  tilt.active = false;
-};
 
 // ===== Playable brand scene: the 3D character follows the cursor (bp is passed as props) =====
 const bp = reactive({ x: 0, y: 0, active: false });
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
 const handleBrandMove = (event) => {
-  if (prefersReducedMotion) return;
+  if (prefersReducedMotion || isCoarsePointer) return;
   const rect = event.currentTarget.getBoundingClientRect();
   bp.x = clamp(((event.clientX - rect.left) / rect.width - 0.5) * 2, -1, 1);
   bp.y = clamp(((event.clientY - rect.top) / rect.height - 0.5) * 2, -1, 1);
@@ -1093,6 +1071,9 @@ watch(loginIdentifier, () => {
   max-width: 100%;
   height: 30rem;
   margin: 0 auto;
+  display: grid;
+  place-items: center;
+  perspective: 900px;
 }
 
 /* soft glow halo behind the character */
@@ -1110,9 +1091,67 @@ watch(loginIdentifier, () => {
   animation: halo-pulse 6s ease-in-out infinite;
 }
 
+.login-character-image {
+  position: relative;
+  z-index: 1;
+  width: min(92%, 28rem);
+  height: min(92%, 28rem);
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 34px 36px rgba(2, 12, 40, 0.26));
+  transform-style: preserve-3d;
+  animation: character-image-float 4.8s ease-in-out infinite;
+  will-change: transform;
+}
+
+.hero-stage::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 9%;
+  width: 54%;
+  height: 9%;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: radial-gradient(ellipse, rgba(15, 23, 42, 0.22), transparent 70%);
+  filter: blur(8px);
+  animation: character-image-shadow 4.8s ease-in-out infinite;
+}
+
+.hero-stage.is-happy .login-character-image {
+  animation: character-image-celebrate 0.85s ease-in-out, character-image-float 4.8s ease-in-out 0.85s infinite;
+}
+
+.hero-stage.is-sad .login-character-image {
+  animation: character-image-shake 0.45s ease-in-out, character-image-float 4.8s ease-in-out 0.45s infinite;
+}
+
 @keyframes halo-pulse {
   0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
   50% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+}
+
+@keyframes character-image-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -12px; }
+}
+
+@keyframes character-image-shadow {
+  0%, 100% { opacity: 0.55; transform: translateX(-50%) scale(1); }
+  50% { opacity: 0.32; transform: translateX(-50%) scale(0.78); }
+}
+
+@keyframes character-image-celebrate {
+  0%, 100% { translate: 0 0; scale: 1; }
+  35% { translate: 0 -18px; scale: 1.04; }
+  65% { translate: 0 3px; scale: 0.99; }
+}
+
+@keyframes character-image-shake {
+  0%, 100% { translate: 0 0; }
+  25% { translate: -7px 0; }
+  50% { translate: 7px 0; }
+  75% { translate: -4px 0; }
 }
 
 /* ---------- floating glass feature chips (each at its own depth) ---------- */
@@ -1248,22 +1287,25 @@ watch(loginIdentifier, () => {
 
 /* ===================== Form panel ===================== */
 .form-panel {
+  position: relative;
+  z-index: 3;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem 1.25rem;
-  perspective: 1100px;
 }
 
 .card-3d-wrap {
+  position: relative;
+  z-index: 4;
   width: 100%;
   max-width: 26rem;
   animation: card-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-  transform-style: preserve-3d;
 }
 
 .login-card {
   position: relative;
+  z-index: 5;
   width: 100%;
   padding: 2.25rem;
   border-radius: 1.5rem;
@@ -1274,30 +1316,61 @@ watch(loginIdentifier, () => {
     0 10px 30px -15px rgba(15, 23, 42, 0.2);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  transform-style: preserve-3d;
-  will-change: transform;
 }
 
-/* glare highlight that follows the cursor */
-.card-glare {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  z-index: 1;
+@media (max-width: 767px), (pointer: coarse) {
+  .login-page {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .login-layout {
+    min-height: 100dvh;
+    align-items: center;
+  }
+
+  .form-panel {
+    min-height: 100dvh;
+    padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+    perspective: none;
+    pointer-events: auto;
+  }
+
+  .card-3d-wrap,
+  .login-card,
+  .card-layer {
+    transform: none !important;
+    transform-style: flat;
+  }
+
+  .card-3d-wrap {
+    max-width: 100%;
+    animation: none;
+  }
+
+  .login-card {
+    padding: clamp(1.25rem, 5vw, 1.75rem);
+    border-radius: 1.25rem;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    will-change: auto;
+  }
+
+  .field-control,
+  .field-input,
+  .field-toggle,
+  .otp-input,
+  .submit-btn,
+  .ghost-btn,
+  .card-link {
+    pointer-events: auto;
+    touch-action: manipulation;
+  }
 }
 
-/* keep real content above the glare sheen */
-.login-card > :not(.card-glare) {
-  position: relative;
-  z-index: 2;
-}
-
-/* content layers that pop toward the viewer on tilt */
 .card-layer {
-  transform: translateZ(var(--z, 0));
-  transform-style: preserve-3d;
+  transform: none;
+  transform-style: flat;
 }
 
 :global(.dark) .login-card {
@@ -2023,7 +2096,8 @@ watch(loginIdentifier, () => {
   .char-arm-wave,
   .char-tassel,
   .hero-chip,
-  .hero-stage::before {
+  .hero-stage::before,
+  .login-character-image {
     animation: none !important;
   }
 

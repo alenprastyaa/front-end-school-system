@@ -816,7 +816,7 @@ const form = reactive({
   send_as_html: true,
 });
 
-const API_BASE_URL = (process.env.VUE_APP_API_BASE_URL || "https://alentest.my.id/school/api").replace(/\/$/, "");
+const API_BASE_URL = (process.env.VUE_APP_API_BASE_URL || "https://lms.idschoolsystem.com/api").replace(/\/$/, "");
 
 const recipients = ref([createRecipient()]);
 const recipientTab = ref("schools");
