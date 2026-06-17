@@ -17,6 +17,7 @@ if (storedTheme === "dark") {
 } else if (storedTheme === "light") {
   document.documentElement.classList.remove("dark");
 }
+// te
 
 const app = createApp(App);
 app.use(router);
