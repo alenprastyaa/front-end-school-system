@@ -17,7 +17,6 @@ const baseSchoolForm = () => ({
   koperasi_module_enabled: true,
   private_chat_module_enabled: true,
   teaching_module_ai_enabled: true,
-  personal_teacher_mode_enabled: false,
 });
 
 const baseAdminForm = () => ({
@@ -133,7 +132,6 @@ export const useSchoolStore = defineStore("schools", {
               koperasi_module_enabled: item.koperasi_module_enabled !== false,
               private_chat_module_enabled: item.private_chat_module_enabled !== false,
               teaching_module_ai_enabled: item.teaching_module_ai_enabled !== false,
-              personal_teacher_mode_enabled: item.personal_teacher_mode_enabled === true,
             }))
           : [];
       } catch (error) {
@@ -209,7 +207,6 @@ export const useSchoolStore = defineStore("schools", {
         payload.append("private_chat_module_enabled", String(Boolean(this.form.private_chat_module_enabled)));
         payload.append("official_exam_module_enabled", String(Boolean(this.form.official_exam_module_enabled)));
         payload.append("teaching_module_ai_enabled", String(Boolean(this.form.teaching_module_ai_enabled)));
-        payload.append("personal_teacher_mode_enabled", String(Boolean(this.form.personal_teacher_mode_enabled)));
         if (this.schoolLogoFile) {
           payload.append("logo", this.schoolLogoFile);
         }
@@ -250,7 +247,6 @@ export const useSchoolStore = defineStore("schools", {
         koperasi_module_enabled: item.koperasi_module_enabled !== false,
         private_chat_module_enabled: item.private_chat_module_enabled !== false,
         teaching_module_ai_enabled: item.teaching_module_ai_enabled !== false,
-        personal_teacher_mode_enabled: item.personal_teacher_mode_enabled === true,
       };
       this.schoolLogoFile = null;
       this.schoolLogoPreview = normalizePublicUrl(item.logo_url) || "";

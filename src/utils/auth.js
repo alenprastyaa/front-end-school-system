@@ -128,7 +128,6 @@ export const persistSession = (payload) => {
       teaching_module_ai_enabled: schoolFeatures.teaching_module_ai_enabled !== false,
       payroll_module_enabled: schoolFeatures.payroll_module_enabled !== false,
       spmb_module_enabled: schoolFeatures.spmb_module_enabled === true,
-      personal_teacher_mode_enabled: schoolFeatures.personal_teacher_mode_enabled === true,
       parent_email: data.parent_email || "",
       phone_number: data.phone_number || "",
       profile_complete: data.profile_complete === true,

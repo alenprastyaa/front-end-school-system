@@ -7,8 +7,7 @@
             <p class="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600 dark:text-sky-300">Super Admin</p>
             <h1 class="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">Setting Modul</h1>
             <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">
-            Atur modul yang tampil di sekolah. Mode Guru Personal menyederhanakan tenant untuk guru mandiri tanpa
-            mengubah tenant sekolah yang sudah berjalan.
+              Atur modul yang tampil di sekolah.
             </p>
           </div>
           <button @click="loadSchools" :disabled="isLoading"
@@ -43,14 +42,13 @@
                 <th class="px-4 py-3 font-medium sm:px-6">Modul Ajar AI</th>
                 <th class="px-4 py-3 font-medium sm:px-6">Payroll</th>
                 <th class="px-4 py-3 font-medium sm:px-6">SPMB</th>
-                <th class="px-4 py-3 font-medium sm:px-6">Guru Personal</th>
                 <th class="px-4 py-3 font-medium sm:px-6">Status</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
               <template v-if="isLoading && !schools.length">
                 <tr v-for="n in 5" :key="`module-settings-sk-${n}`">
-                  <td v-for="c in 12" :key="`module-settings-sk-${n}-${c}`" class="px-4 py-4 sm:px-6">
+                  <td v-for="c in 11" :key="`module-settings-sk-${n}-${c}`" class="px-4 py-4 sm:px-6">
                     <div class="skeleton-shimmer h-4 rounded" :class="c === 1 ? 'w-32' : 'w-12'"></div>
                   </td>
                 </tr>
@@ -132,20 +130,12 @@
                   </label>
                 </td>
                 <td class="px-4 py-4 sm:px-6">
-                  <label class="inline-flex items-center gap-2 text-sm font-semibold">
-                    <input v-model="item.personal_teacher_mode_enabled" type="checkbox" :disabled="isSaving(item.id)"
-                      @change="saveModuleSettings(item)"
-                      class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
-                    {{ item.personal_teacher_mode_enabled === true ? "Aktif" : "Nonaktif" }}
-                  </label>
-                </td>
-                <td class="px-4 py-4 sm:px-6">
                   <span v-if="isSaving(item.id)" class="text-xs font-semibold text-sky-600 dark:text-sky-300">Menyimpan...</span>
                   <span v-else class="text-xs font-semibold text-slate-400">Otomatis</span>
                 </td>
               </tr>
               <tr v-if="!isLoading && schools.length === 0">
-                <td colspan="12" class="px-4 py-10 text-center text-slate-500 sm:px-6">Belum ada sekolah terdaftar.</td>
+                <td colspan="11" class="px-4 py-10 text-center text-slate-500 sm:px-6">Belum ada sekolah terdaftar.</td>
               </tr>
             </tbody>
           </table>
@@ -202,7 +192,6 @@ const loadSchools = async () => {
           teaching_module_ai_enabled: toBooleanFlag(item.teaching_module_ai_enabled),
           payroll_module_enabled: toBooleanFlag(item.payroll_module_enabled),
           spmb_module_enabled: toBooleanFlag(item.spmb_module_enabled),
-          personal_teacher_mode_enabled: toBooleanFlag(item.personal_teacher_mode_enabled),
         }))
       : [];
   } catch (error) {
@@ -228,7 +217,6 @@ const saveModuleSettings = async (item) => {
     formData.append("teaching_module_ai_enabled", String(Boolean(item.teaching_module_ai_enabled)));
     formData.append("payroll_module_enabled", String(Boolean(item.payroll_module_enabled)));
     formData.append("spmb_module_enabled", String(Boolean(item.spmb_module_enabled)));
-    formData.append("personal_teacher_mode_enabled", String(Boolean(item.personal_teacher_mode_enabled)));
     const response = await api.put(`/school/${item.id}/modules`, formData);
     message.value = response?.message || "Setting modul berhasil disimpan.";
     pushToast({

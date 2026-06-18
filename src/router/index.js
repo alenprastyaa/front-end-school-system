@@ -667,24 +667,6 @@ const router = createRouter({
   linkExactActiveClass: "exact-active",
 });
 
-const personalTeacherModeBlockedRoutes = new Set([
-  "Inventory",
-  "Koperasi",
-  "SchoolUsers",
-  "TeacherStudents",
-  "LearningAdminTeacherLoads",
-  "LearningAdminRooms",
-  "LearningAdminClassDistributions",
-  "LearningAdminSchedule",
-  "LearningAdminGenerate",
-  "LearningExamAdmin",
-  "LearningExamTeacher",
-  "LearningExamStudent",
-  "LearningReportTeacher",
-  "Announcements",
-  "Billing",
-]);
-
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title || appName;
 
@@ -742,14 +724,6 @@ router.beforeEach((to, from, next) => {
     const moduleFlag = moduleFlagByKey[to.meta.moduleKey];
     const moduleEnabled = moduleFlag ? storedUser[moduleFlag] !== false : true;
     if (!moduleEnabled) {
-      next({ name: "Dashboard" });
-      return;
-    }
-  }
-
-  if (personalTeacherModeBlockedRoutes.has(to.name)) {
-    const storedUser = getStoredUser() || {};
-    if (storedUser.personal_teacher_mode_enabled === true) {
       next({ name: "Dashboard" });
       return;
     }

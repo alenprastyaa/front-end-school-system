@@ -325,7 +325,6 @@ const isPrivateChatEnabled = computed(() => storedProfile.value?.private_chat_mo
 const isTeachingModuleAIEnabled = computed(() => storedProfile.value?.teaching_module_ai_enabled !== false);
 const isPayrollEnabled = computed(() => storedProfile.value?.payroll_module_enabled !== false);
 const isSPMBEnabled = computed(() => storedProfile.value?.spmb_module_enabled === true);
-const isPersonalTeacherModeEnabled = computed(() => storedProfile.value?.personal_teacher_mode_enabled === true);
 const isStudentProfileLocked = computed(() => role === "SISWA" && !isStudentProfileComplete({ ...(storedProfile.value || {}), role }));
 const isStudentFaceEnrollmentLocked = computed(() => role === "SISWA" && !isStudentProfileLocked.value && !isStudentFaceEnrolled({ ...(storedProfile.value || {}), role }));
 const shouldTrackKoperasi = computed(() => isKoperasiEnabled.value && (isAdminRole || isKoperasiRole));
@@ -632,21 +631,6 @@ const filterMenuItems = (items = []) =>
       if (isStudentFaceEnrollmentLocked.value && item.key !== "face-enrollment") {
         return null;
       }
-      if (isPersonalTeacherModeEnabled.value) {
-        const hiddenPersonalKeys = new Set([
-          "school-users",
-          "homeroom-students",
-          "inventory",
-          "koperasi",
-          "spmb",
-          "learning-exams-admin",
-          "announcements",
-          "billing",
-        ]);
-        if (hiddenPersonalKeys.has(item.key)) {
-          return null;
-        }
-      }
       if (item.key === "inventory" && !isInventoryEnabled.value) {
         return null;
       }
@@ -671,21 +655,6 @@ const filterMenuItems = (items = []) =>
       }
       if (item.children) {
         const children = item.children.filter((child) => {
-          if (isPersonalTeacherModeEnabled.value) {
-            const hiddenPersonalChildPaths = new Set([
-              "/learning-admin/teacher-loads",
-              "/learning-admin/rooms",
-              "/learning-admin/class-distributions",
-              "/learning-admin/schedule",
-              "/learning-admin/generate",
-              "/learning-exams-teacher",
-              "/learning-exams-student",
-              "/learning-report-teacher",
-            ]);
-            if (hiddenPersonalChildPaths.has(child.to)) {
-              return false;
-            }
-          }
           if ((child.to === "/learning-exams-teacher" || child.to === "/learning-exams-student") && !isOfficialExamEnabled.value) {
             return false;
           }

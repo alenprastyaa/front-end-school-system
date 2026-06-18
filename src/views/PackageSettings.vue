@@ -303,7 +303,6 @@ const moduleOptions = [
   { label: "Modul Ajar AI", icon: "ph:notebook" },
   { label: "Payroll", icon: "ph:money" },
   { label: "SPMB", icon: "ph:user-plus" },
-  { label: "Guru Personal", icon: "ph:user-focus" },
 ];
 
 const packages = ref([]);
