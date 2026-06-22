@@ -109,6 +109,36 @@
 
 	            <div class="grid gap-3 sm:grid-cols-2">
 	              <label class="block">
+	                <span class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">NPSN</span>
+	                <input
+	                  v-model.trim="form.npsn"
+	                  type="text"
+	                  placeholder="Nomor NPSN"
+	                  class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
+	                />
+	              </label>
+	              <label class="block">
+	                <span class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Status</span>
+	                <input
+	                  v-model.trim="form.status"
+	                  type="text"
+	                  placeholder="Negeri / Swasta / lainnya"
+	                  class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
+	                />
+	              </label>
+	            </div>
+
+	            <div class="grid gap-3 sm:grid-cols-2">
+	              <label class="block">
+	                <span class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Telp</span>
+	                <input
+	                  v-model.trim="form.phone"
+	                  type="text"
+	                  placeholder="Nomor telepon sekolah"
+	                  class="block w-full rounded-xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
+	                />
+	              </label>
+	              <label class="block">
 	                <span class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Email Sekolah</span>
 	                <input
 	                  v-model.trim="form.email"
@@ -380,12 +410,16 @@
                 <table class="min-w-full border-separate border-spacing-0 text-sm">
                 <thead>
                   <tr class="bg-slate-50/80 text-left text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:bg-slate-800/50 dark:text-slate-500">
-                    <th class="border-b border-slate-200/80 px-6 py-4 font-semibold dark:border-slate-700/60">Sekolah</th>
-                    <th class="border-b border-slate-200/80 px-6 py-4 font-semibold dark:border-slate-700/60">Alamat</th>
-                    <th class="border-b border-slate-200/80 px-6 py-4 font-semibold dark:border-slate-700/60">Status</th>
-                    <th class="border-b border-slate-200/80 px-6 py-4 font-semibold dark:border-slate-700/60">Tindak Lanjut</th>
-                    <th class="border-b border-slate-200/80 px-6 py-4 font-semibold dark:border-slate-700/60">Dibuat</th>
-                    <th class="border-b border-slate-200/80 px-6 py-4 text-right font-semibold dark:border-slate-700/60">Aksi</th>
+                    <th class="border-b border-slate-200/80 px-4 py-4 font-semibold dark:border-slate-700/60">NPSN</th>
+                    <th class="border-b border-slate-200/80 px-4 py-4 font-semibold dark:border-slate-700/60">Nama SMK</th>
+                    <th class="border-b border-slate-200/80 px-4 py-4 font-semibold dark:border-slate-700/60">Status</th>
+                    <th class="border-b border-slate-200/80 px-4 py-4 font-semibold dark:border-slate-700/60">Alamat</th>
+                    <th class="border-b border-slate-200/80 px-4 py-4 font-semibold dark:border-slate-700/60">Provinsi</th>
+                    <th class="border-b border-slate-200/80 px-4 py-4 font-semibold dark:border-slate-700/60">Kab/Kota</th>
+                    <th class="border-b border-slate-200/80 px-4 py-4 font-semibold dark:border-slate-700/60">Kecamatan</th>
+                    <th class="border-b border-slate-200/80 px-4 py-4 font-semibold dark:border-slate-700/60">Telp</th>
+                    <th class="border-b border-slate-200/80 px-4 py-4 font-semibold dark:border-slate-700/60">Email</th>
+                    <th class="border-b border-slate-200/80 px-4 py-4 text-right font-semibold dark:border-slate-700/60">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -394,81 +428,16 @@
                     :key="item.id"
                     class="group bg-white transition-colors hover:bg-slate-50/70 dark:bg-slate-900 dark:hover:bg-slate-800/40"
                   >
-                    <td class="border-b border-slate-100 px-6 py-5 align-top dark:border-slate-800/80">
-                      <div class="flex items-start gap-3">
-                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-indigo-500 text-sm font-bold text-white shadow-sm">
-                          {{ schoolInitials(item.name) }}
-                        </div>
-                        <div class="min-w-0">
-	                          <p class="font-semibold leading-snug text-slate-900 dark:text-white">{{ item.name }}</p>
-	                          <p class="mt-0.5 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-	                            <Icon icon="mdi:email-outline" class="h-3.5 w-3.5 shrink-0" />
-	                            {{ item.email || "Email belum diisi" }}
-	                          </p>
-	                          <p class="mt-0.5 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                            <Icon icon="mdi:map-marker-outline" class="h-3.5 w-3.5 shrink-0" />
-                            {{ item.province || "Provinsi belum diisi" }}
-                          </p>
-                          <div v-if="item.wakur || item.kepsek" class="mt-2 flex flex-wrap gap-1.5">
-                            <span v-if="item.wakur" class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                              <Icon icon="mdi:account-tie-outline" class="h-3 w-3" /> {{ item.wakur }}
-                            </span>
-                            <span v-if="item.kepsek" class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                              <Icon icon="mdi:account-star-outline" class="h-3 w-3" /> {{ item.kepsek }}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="max-w-xs border-b border-slate-100 px-6 py-5 align-top dark:border-slate-800/80">
-                      <p class="line-clamp-2 leading-snug text-slate-700 dark:text-slate-200">{{ item.full_address || "Alamat belum diisi" }}</p>
-                      <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">{{ compactArea(item) || "Kab/Kota & kecamatan belum diisi" }}</p>
-                    </td>
-                    <td class="border-b border-slate-100 px-6 py-5 align-top dark:border-slate-800/80">
-                      <span
-                        class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1"
-                        :class="visitStatusClass(item)"
-                      >
-                        <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
-                        {{ visitStatusLabel(item) }}
-                      </span>
-                      <p v-if="item.visited_at" class="mt-2 text-[11px] text-slate-400 dark:text-slate-500">Dikunjungi {{ formatDate(item.visited_at) }}</p>
-                      <p v-else-if="item.planned_at" class="mt-2 text-[11px] text-slate-400 dark:text-slate-500">Direncanakan {{ formatDate(item.planned_at) }}</p>
-                    </td>
-                    <td class="border-b border-slate-100 px-6 py-5 align-top dark:border-slate-800/80">
-                      <div class="flex flex-col gap-2.5">
-                        <label class="inline-flex cursor-pointer items-center gap-2">
-                          <span class="relative inline-flex h-5 w-9 shrink-0 items-center">
-                            <input
-                              type="checkbox"
-                              class="peer sr-only"
-                              :checked="item.is_planned === true"
-                              :disabled="planningId === item.id || visitingId === item.id"
-                              @change="togglePlanned(item, $event.target.checked)"
-                            />
-                            <span class="absolute inset-0 rounded-full bg-slate-200 transition-colors peer-checked:bg-sky-500 peer-disabled:opacity-50 dark:bg-slate-700"></span>
-                            <span class="absolute left-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-4"></span>
-                          </span>
-                          <span class="text-xs font-medium text-slate-600 dark:text-slate-300">Rencana</span>
-                        </label>
-                        <label class="inline-flex cursor-pointer items-center gap-2">
-                          <span class="relative inline-flex h-5 w-9 shrink-0 items-center">
-                            <input
-                              type="checkbox"
-                              class="peer sr-only"
-                              :checked="item.is_visited === true"
-                              :disabled="visitingId === item.id || planningId === item.id"
-                              @change="toggleVisited(item, $event.target.checked)"
-                            />
-                            <span class="absolute inset-0 rounded-full bg-slate-200 transition-colors peer-checked:bg-emerald-500 peer-disabled:opacity-50 dark:bg-slate-700"></span>
-                            <span class="absolute left-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-4"></span>
-                          </span>
-                          <span class="text-xs font-medium text-slate-600 dark:text-slate-300">Complete</span>
-                        </label>
-                      </div>
-                    </td>
-                    <td class="border-b border-slate-100 px-6 py-5 align-top text-xs text-slate-500 dark:border-slate-800/80 dark:text-slate-400">{{ formatDate(item.created_at) }}</td>
-                    <td class="border-b border-slate-100 px-6 py-5 align-top dark:border-slate-800/80">
+                    <td class="border-b border-slate-100 px-4 py-4 align-top text-slate-700 dark:border-slate-800/80 dark:text-slate-200">{{ item.npsn || "-" }}</td>
+                    <td class="border-b border-slate-100 px-4 py-4 align-top font-semibold text-slate-900 dark:border-slate-800/80 dark:text-white">{{ item.name || "-" }}</td>
+                    <td class="border-b border-slate-100 px-4 py-4 align-top text-slate-700 dark:border-slate-800/80 dark:text-slate-200">{{ item.status || "-" }}</td>
+                    <td class="max-w-xs border-b border-slate-100 px-4 py-4 align-top text-slate-700 dark:border-slate-800/80 dark:text-slate-200">{{ item.full_address || "-" }}</td>
+                    <td class="border-b border-slate-100 px-4 py-4 align-top text-slate-700 dark:border-slate-800/80 dark:text-slate-200">{{ item.province || "-" }}</td>
+                    <td class="border-b border-slate-100 px-4 py-4 align-top text-slate-700 dark:border-slate-800/80 dark:text-slate-200">{{ item.city || "-" }}</td>
+                    <td class="border-b border-slate-100 px-4 py-4 align-top text-slate-700 dark:border-slate-800/80 dark:text-slate-200">{{ item.district || "-" }}</td>
+                    <td class="border-b border-slate-100 px-4 py-4 align-top text-slate-700 dark:border-slate-800/80 dark:text-slate-200">{{ item.phone || "-" }}</td>
+                    <td class="border-b border-slate-100 px-4 py-4 align-top text-slate-700 dark:border-slate-800/80 dark:text-slate-200">{{ item.email || "-" }}</td>
+                    <td class="border-b border-slate-100 px-4 py-4 align-top dark:border-slate-800/80">
                       <div class="flex justify-end gap-1.5 opacity-70 transition-opacity group-hover:opacity-100">
                         <button
                           type="button"
@@ -662,7 +631,10 @@ const confirmModal = reactive({
 });
 
 const form = reactive({
+  npsn: "",
   name: "",
+  status: "",
+  phone: "",
   email: "",
   wakur: "",
   kepsek: "",
@@ -733,7 +705,10 @@ const closeFormModal = () => {
 
 const resetForm = () => {
   editingId.value = null;
+  form.npsn = "";
   form.name = "";
+  form.status = "";
+  form.phone = "";
   form.email = "";
   form.wakur = "";
   form.kepsek = "";
@@ -756,7 +731,10 @@ const resetForm = () => {
 };
 
 const buildPayload = () => ({
+  npsn: form.npsn || undefined,
   name: form.name,
+  status: form.status || undefined,
+  phone: form.phone || undefined,
   email: form.email || undefined,
   wakur: form.wakur || undefined,
   kepsek: form.kepsek || undefined,
@@ -943,6 +921,9 @@ const submitTarget = async () => {
 const editTarget = (item) => {
   editingId.value = item.id;
   form.name = item.name || "";
+  form.npsn = item.npsn || "";
+  form.status = item.status || "";
+  form.phone = item.phone || "";
   form.email = item.email || "";
   form.wakur = item.wakur || "";
   form.kepsek = item.kepsek || "";

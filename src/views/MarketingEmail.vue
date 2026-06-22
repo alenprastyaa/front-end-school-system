@@ -75,9 +75,7 @@
         </div>
       </section>
 
-      <section class="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
-        <!-- MAIN COLUMN -->
-        <div class="space-y-6">
+      <section class="space-y-6">
           <!-- STEP 1: TEMPLATE -->
           <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -181,7 +179,7 @@
                   <input
                     v-model.trim="schoolContactSearch"
                     type="search"
-                    placeholder="Cari sekolah atau email..."
+                    placeholder="Cari NPSN, nama sekolah, alamat, telp, email..."
                     class="block w-full rounded-xl border-0 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
                   />
                 </div>
@@ -206,6 +204,35 @@
                     <input type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="hidden" @change="importRecipientExcel" />
                   </label>
                 </div>
+              </div>
+
+              <div class="mt-3 grid gap-3 md:grid-cols-3">
+                <select
+                  v-model="locationFilters.provinceCode"
+                  class="rounded-xl border-0 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 disabled:opacity-50 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
+                  :disabled="isLoadingLocations.provinces"
+                >
+                  <option value="">Semua Provinsi</option>
+                  <option v-for="item in provinceOptions" :key="item.code" :value="item.code">{{ item.name }}</option>
+                </select>
+
+                <select
+                  v-model="locationFilters.cityCode"
+                  class="rounded-xl border-0 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 disabled:opacity-50 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
+                  :disabled="!locationFilters.provinceCode || isLoadingLocations.cities"
+                >
+                  <option value="">Semua Kab/Kota</option>
+                  <option v-for="item in cityOptions" :key="item.code" :value="item.code">{{ item.name }}</option>
+                </select>
+
+                <select
+                  v-model="locationFilters.districtCode"
+                  class="rounded-xl border-0 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 disabled:opacity-50 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
+                  :disabled="!locationFilters.cityCode || isLoadingLocations.districts"
+                >
+                  <option value="">Semua Kecamatan</option>
+                  <option v-for="item in districtOptions" :key="item.code" :value="item.code">{{ item.name }}</option>
+                </select>
               </div>
 
               <!-- TOOLBAR -->
@@ -233,100 +260,201 @@
                 </button>
               </div>
 
-              <!-- LIST -->
-              <div class="mt-3 space-y-2">
-                <SkeletonLoader v-if="isLoadingSchoolContacts" variant="list" :count="5" />
+              <div class="mt-3 space-y-3">
+                <div class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700">
+                  <div class="hidden overflow-x-auto md:block">
+                    <table class="min-w-[1450px] text-left text-sm">
+                      <thead class="bg-slate-50 text-[11px] uppercase tracking-[0.1em] text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                        <tr>
+                          <th class="px-4 py-3 font-semibold">Pilih</th>
+                          <th class="px-4 py-3 font-semibold">NPSN</th>
+                          <th class="px-4 py-3 font-semibold">Nama SMK</th>
+                          <th class="px-4 py-3 font-semibold">Status</th>
+                          <th class="px-4 py-3 font-semibold">Alamat</th>
+                          <th class="px-4 py-3 font-semibold">Provinsi</th>
+                          <th class="px-4 py-3 font-semibold">Kab/Kota</th>
+                          <th class="px-4 py-3 font-semibold">Kecamatan</th>
+                          <th class="px-4 py-3 font-semibold">Telp</th>
+                          <th class="px-4 py-3 font-semibold">Email</th>
+                          <th class="px-4 py-3 font-semibold">Pengiriman</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                        <tr v-if="isLoadingSchoolContacts">
+                          <td colspan="11" class="px-4 py-6">
+                            <SkeletonLoader variant="list" :count="4" />
+                          </td>
+                        </tr>
+                        <tr
+                          v-for="item in paginatedSchoolContacts"
+                          v-else
+                          :key="item.id"
+                          class="align-top dark:bg-slate-900"
+                          :class="isSchoolContactSelected(item.id) ? 'bg-sky-50/60 dark:bg-sky-500/5' : 'bg-white'"
+                        >
+                          <td class="px-4 py-4">
+                            <input
+                              type="checkbox"
+                              class="mt-1 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500 disabled:cursor-not-allowed"
+                              :checked="isSchoolContactSelected(item.id)"
+                              :disabled="!isSchoolContactSelectable(item) || isSending"
+                              @change="toggleSchoolContactSelection(item, $event.target.checked)"
+                            />
+                          </td>
+                          <td class="px-4 py-4 text-slate-600 dark:text-slate-300">{{ item.npsn || "-" }}</td>
+                          <td class="px-4 py-4">
+                            <div class="font-semibold text-slate-900 dark:text-white">{{ item.name }}</div>
+                            <div v-if="item.kepsek || item.wakur" class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ schoolContactLabel(item) }}</div>
+                          </td>
+                          <td class="px-4 py-4 text-slate-600 dark:text-slate-300">{{ item.status || "-" }}</td>
+                          <td class="max-w-xs px-4 py-4 text-slate-600 dark:text-slate-300">{{ item.full_address || "-" }}</td>
+                          <td class="px-4 py-4 text-slate-600 dark:text-slate-300">{{ item.province || "-" }}</td>
+                          <td class="px-4 py-4 text-slate-600 dark:text-slate-300">{{ item.city || "-" }}</td>
+                          <td class="px-4 py-4 text-slate-600 dark:text-slate-300">{{ item.district || "-" }}</td>
+                          <td class="px-4 py-4 text-slate-600 dark:text-slate-300">{{ item.phone || "-" }}</td>
+                          <td class="px-4 py-4">
+                            <div v-if="editingSchoolEmail.id === item.id" class="flex min-w-[240px] items-center gap-2">
+                              <input
+                                v-model.trim="editingSchoolEmail.email"
+                                type="email"
+                                placeholder="email@sekolah.sch.id"
+                                class="block w-full rounded-lg border-0 bg-white px-3 py-2 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-950 dark:text-white dark:ring-slate-700"
+                                @keydown.enter.prevent="saveSchoolEmail(item)"
+                                @keydown.esc.prevent="cancelEditSchoolEmail"
+                              />
+                              <button
+                                type="button"
+                                @click="saveSchoolEmail(item)"
+                                :disabled="savingSchoolEmailId === item.id"
+                                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white transition hover:bg-emerald-500 disabled:opacity-50"
+                                title="Simpan email"
+                              >
+                                <Icon :icon="savingSchoolEmailId === item.id ? 'mdi:loading' : 'mdi:check'" class="h-4 w-4" :class="{ 'animate-spin': savingSchoolEmailId === item.id }" />
+                              </button>
+                              <button
+                                type="button"
+                                @click="cancelEditSchoolEmail"
+                                :disabled="savingSchoolEmailId === item.id"
+                                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition hover:bg-slate-200 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                                title="Batal"
+                              >
+                                <Icon icon="mdi:close" class="h-4 w-4" />
+                              </button>
+                            </div>
+                            <div v-else class="flex items-center gap-1.5 text-sm" :class="item.email ? 'text-slate-600 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'">
+                              <span class="min-w-0 break-all">{{ item.email || "Email belum diisi" }}</span>
+                              <button
+                                type="button"
+                                @click="startEditSchoolEmail(item)"
+                                :disabled="isSending || savingSchoolEmailId === item.id"
+                                class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-sky-600 transition hover:bg-sky-50 disabled:opacity-40 dark:text-sky-300 dark:hover:bg-sky-500/10"
+                                title="Edit email sekolah"
+                              >
+                                <Icon icon="mdi:pencil-outline" class="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                          <td class="px-4 py-4">
+                            <span
+                              class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ring-1"
+                              :class="marketingStatusClass(item)"
+                            >
+                              <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
+                              {{ marketingStatusLabel(item) }}
+                            </span>
+                            <p v-if="getEmailOfferStatus(item.email).last_sent_at" class="mt-1 text-[11px] text-slate-400 dark:text-slate-500">{{ formatDateTime(getEmailOfferStatus(item.email).last_sent_at) }}</p>
+                            <p v-else-if="isLoadingOfferStatuses" class="mt-1 text-[11px] text-slate-400 dark:text-slate-500">Mengecek Brevo...</p>
+                          </td>
+                        </tr>
+                        <tr v-if="!isLoadingSchoolContacts && unsentFilteredSchoolContacts.length === 0">
+                          <td colspan="11" class="px-4 py-10 text-center text-slate-500 dark:text-slate-400">
+                            {{ (schoolContactSearch || locationFilters.provinceCode || locationFilters.cityCode || locationFilters.districtCode)
+                              ? "Tidak ada sekolah belum terkirim yang cocok dengan filter."
+                              : "Semua sekolah pada daftar ini sudah pernah dikirimi email." }}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
 
-                <template v-else>
-                  <div
-                    v-for="item in paginatedSchoolContacts"
-                    :key="item.id"
-                    class="flex items-start gap-3 rounded-2xl border p-3 transition"
-                    :class="isSchoolContactSelected(item.id)
-                      ? 'border-sky-300 bg-sky-50/70 dark:border-sky-500/40 dark:bg-sky-500/5'
-                      : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700'"
-                  >
-                    <input
-                      type="checkbox"
-                      class="mt-2.5 h-4 w-4 shrink-0 rounded border-slate-300 text-sky-600 focus:ring-sky-500 disabled:cursor-not-allowed"
-                      :checked="isSchoolContactSelected(item.id)"
-                      :disabled="!isSchoolContactSelectable(item) || isSending"
-                      @change="toggleSchoolContactSelection(item, $event.target.checked)"
-                    />
-                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-black" :class="avatarClass(item.name)">
-                      {{ schoolInitials(item.name) }}
-                    </span>
-                    <div class="min-w-0 flex-1">
-                      <div class="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
-                        <p class="min-w-0 break-words font-bold text-slate-900 dark:text-white">{{ item.name }}</p>
-                        <div class="shrink-0 text-right">
-                          <span
-                            class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ring-1"
-                            :class="marketingStatusClass(item)"
-                          >
-                            <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
-                            {{ marketingStatusLabel(item) }}
-                          </span>
-                          <p v-if="getEmailOfferStatus(item.email).last_sent_at" class="mt-1 text-[11px] text-slate-400 dark:text-slate-500">{{ formatDateTime(getEmailOfferStatus(item.email).last_sent_at) }}</p>
-                          <p v-else-if="isLoadingOfferStatuses" class="mt-1 text-[11px] text-slate-400 dark:text-slate-500">Mengecek Brevo...</p>
+                  <div class="space-y-2 p-3 md:hidden">
+                    <SkeletonLoader v-if="isLoadingSchoolContacts" variant="list" :count="5" />
+                    <template v-else>
+                      <div
+                        v-for="item in paginatedSchoolContacts"
+                        :key="item.id"
+                        class="rounded-2xl border p-3 transition"
+                        :class="isSchoolContactSelected(item.id)
+                          ? 'border-sky-300 bg-sky-50/70 dark:border-sky-500/40 dark:bg-sky-500/5'
+                          : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700'"
+                      >
+                        <div class="flex items-start gap-3">
+                          <input
+                            type="checkbox"
+                            class="mt-1 h-4 w-4 shrink-0 rounded border-slate-300 text-sky-600 focus:ring-sky-500 disabled:cursor-not-allowed"
+                            :checked="isSchoolContactSelected(item.id)"
+                            :disabled="!isSchoolContactSelectable(item) || isSending"
+                            @change="toggleSchoolContactSelection(item, $event.target.checked)"
+                          />
+                          <div class="min-w-0 flex-1">
+                            <div class="flex flex-wrap items-start justify-between gap-2">
+                              <p class="font-bold text-slate-900 dark:text-white">{{ item.name }}</p>
+                              <span
+                                class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ring-1"
+                                :class="marketingStatusClass(item)"
+                              >
+                                <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
+                                {{ marketingStatusLabel(item) }}
+                              </span>
+                            </div>
+                            <div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                              <div><span class="font-semibold">NPSN:</span> {{ item.npsn || "-" }}</div>
+                              <div><span class="font-semibold">Status:</span> {{ item.status || "-" }}</div>
+                              <div><span class="font-semibold">Provinsi:</span> {{ item.province || "-" }}</div>
+                              <div><span class="font-semibold">Kab/Kota:</span> {{ item.city || "-" }}</div>
+                              <div><span class="font-semibold">Kecamatan:</span> {{ item.district || "-" }}</div>
+                              <div><span class="font-semibold">Telp:</span> {{ item.phone || "-" }}</div>
+                            </div>
+                            <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">{{ item.full_address || "Alamat belum diisi" }}</p>
+                            <div class="mt-2 flex items-center gap-1.5 text-sm" :class="item.email ? 'text-slate-600 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'">
+                              <Icon icon="mdi:email-outline" class="h-4 w-4 shrink-0 text-slate-400" />
+                              <span class="min-w-0 break-all">{{ item.email || "Email belum diisi" }}</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
-                      <!-- EMAIL / EDIT -->
-                      <div v-if="editingSchoolEmail.id === item.id" class="mt-2 flex max-w-xl items-center gap-2">
-                        <input
-                          v-model.trim="editingSchoolEmail.email"
-                          type="email"
-                          placeholder="email@sekolah.sch.id"
-                          class="block w-full rounded-lg border-0 bg-white px-3 py-2 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-sky-600 dark:bg-slate-950 dark:text-white dark:ring-slate-700"
-                          @keydown.enter.prevent="saveSchoolEmail(item)"
-                          @keydown.esc.prevent="cancelEditSchoolEmail"
-                        />
-                        <button
-                          type="button"
-                          @click="saveSchoolEmail(item)"
-                          :disabled="savingSchoolEmailId === item.id"
-                          class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white transition hover:bg-emerald-500 disabled:opacity-50"
-                          title="Simpan email"
-                        >
-                          <Icon :icon="savingSchoolEmailId === item.id ? 'mdi:loading' : 'mdi:check'" class="h-4 w-4" :class="{ 'animate-spin': savingSchoolEmailId === item.id }" />
-                        </button>
-                        <button
-                          type="button"
-                          @click="cancelEditSchoolEmail"
-                          :disabled="savingSchoolEmailId === item.id"
-                          class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition hover:bg-slate-200 disabled:opacity-50 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                          title="Batal"
-                        >
-                          <Icon icon="mdi:close" class="h-4 w-4" />
-                        </button>
+                      <div v-if="unsentFilteredSchoolContacts.length === 0" class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 py-12 text-center dark:border-slate-700">
+                        <Icon icon="mdi:school-outline" class="h-10 w-10 text-slate-300 dark:text-slate-600" />
+                        <p class="mt-3 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ (schoolContactSearch || locationFilters.provinceCode || locationFilters.cityCode || locationFilters.districtCode) ? "Tidak ada sekolah belum terkirim yang cocok dengan filter." : "Semua sekolah pada daftar ini sudah pernah dikirimi email." }}</p>
+                        <p class="mt-1 text-xs text-slate-400">Sekolah yang sudah terkirim dipindahkan ke tabel di bawah.</p>
                       </div>
-                      <div v-else class="mt-1 flex items-center gap-1.5 text-sm" :class="item.email ? 'text-slate-600 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'">
-                        <Icon icon="mdi:email-outline" class="h-4 w-4 shrink-0 text-slate-400" />
-                        <span class="min-w-0 break-all">{{ item.email || "Email belum diisi" }}</span>
-                        <button
-                          type="button"
-                          @click="startEditSchoolEmail(item)"
-                          :disabled="isSending || savingSchoolEmailId === item.id"
-                          class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-sky-600 transition hover:bg-sky-50 disabled:opacity-40 dark:text-sky-300 dark:hover:bg-sky-500/10"
-                          title="Edit email sekolah"
-                        >
-                          <Icon icon="mdi:pencil-outline" class="h-4 w-4" />
-                        </button>
-                      </div>
+                    </template>
+                  </div>
+                </div>
+
+                <aside class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700">
+                  <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Ringkasan Seleksi</p>
+                  <div class="mt-3 grid gap-3 md:grid-cols-3">
+                    <div class="rounded-2xl bg-white p-4 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
+                      <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Dipilih</p>
+                      <p class="mt-1 text-3xl font-black text-slate-900 dark:text-white">{{ validRecipientCount }}</p>
+                      <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Siap masuk daftar kirim.</p>
+                    </div>
+                    <div class="rounded-2xl bg-white p-4 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
+                      <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Belum Dikirim</p>
+                      <p class="mt-1 text-2xl font-black text-amber-600 dark:text-amber-300">{{ schoolStats.unsent }}</p>
+                    </div>
+                    <div class="rounded-2xl bg-white p-4 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
+                      <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Sudah Dikirim</p>
+                      <p class="mt-1 text-2xl font-black text-emerald-600 dark:text-emerald-300">{{ schoolStats.sent }}</p>
                     </div>
                   </div>
-
-                  <div v-if="filteredSchoolContacts.length === 0" class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 py-12 text-center dark:border-slate-700">
-                    <Icon icon="mdi:school-outline" class="h-10 w-10 text-slate-300 dark:text-slate-600" />
-                    <p class="mt-3 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ schoolContactSearch ? "Tidak ada sekolah yang cocok." : "Belum ada sekolah." }}</p>
-                    <p class="mt-1 text-xs text-slate-400">Tambahkan lewat tombol Upload atau menu School Visit Targets.</p>
-                  </div>
-                </template>
+                </aside>
               </div>
 
               <!-- PAGINATION -->
-              <div v-if="!isLoadingSchoolContacts && filteredSchoolContacts.length > 0" class="mt-4 flex flex-col items-center justify-between gap-3 sm:flex-row">
+              <div v-if="!isLoadingSchoolContacts && unsentFilteredSchoolContacts.length > 0" class="mt-4 flex flex-col items-center justify-between gap-3 sm:flex-row">
                 <p class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ schoolContactRangeLabel }}</p>
                 <div class="flex items-center gap-1.5">
                   <button
@@ -363,6 +491,90 @@
                   </button>
                 </div>
               </div>
+
+              <section v-if="sentFilteredSchoolContacts.length > 0" class="mt-6 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <div class="border-b border-slate-200 px-4 py-4 dark:border-slate-700">
+                  <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 class="text-sm font-bold text-slate-900 dark:text-white">Sekolah yang Sudah Dikirimi Email</h3>
+                      <p class="text-xs text-slate-500 dark:text-slate-400">Daftar ini dipisahkan dari tabel utama agar fokus selection hanya untuk email yang belum terkirim.</p>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-200 dark:ring-emerald-500/20">
+                      <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
+                      {{ sentFilteredSchoolContacts.length }} sekolah
+                    </span>
+                  </div>
+                </div>
+
+                <div class="hidden overflow-x-auto md:block">
+                  <table class="min-w-[1410px] text-left text-sm">
+                    <thead class="bg-slate-50 text-[11px] uppercase tracking-[0.1em] text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                      <tr>
+                        <th class="px-4 py-3 font-semibold">NPSN</th>
+                        <th class="px-4 py-3 font-semibold">Nama SMK</th>
+                        <th class="px-4 py-3 font-semibold">Status</th>
+                        <th class="px-4 py-3 font-semibold">Alamat</th>
+                        <th class="px-4 py-3 font-semibold">Provinsi</th>
+                        <th class="px-4 py-3 font-semibold">Kab/Kota</th>
+                        <th class="px-4 py-3 font-semibold">Kecamatan</th>
+                        <th class="px-4 py-3 font-semibold">Telp</th>
+                        <th class="px-4 py-3 font-semibold">Email</th>
+                        <th class="px-4 py-3 font-semibold">Terkirim</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                      <tr v-for="item in sentFilteredSchoolContacts" :key="`sent-${item.id}`" class="bg-white align-top dark:bg-slate-900">
+                        <td class="px-4 py-4 text-slate-600 dark:text-slate-300">{{ item.npsn || "-" }}</td>
+                        <td class="px-4 py-4">
+                          <div class="font-semibold text-slate-900 dark:text-white">{{ item.name }}</div>
+                          <div v-if="item.kepsek || item.wakur" class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ schoolContactLabel(item) }}</div>
+                        </td>
+                        <td class="px-4 py-4 text-slate-600 dark:text-slate-300">{{ item.status || "-" }}</td>
+                        <td class="max-w-xs px-4 py-4 text-slate-600 dark:text-slate-300">{{ item.full_address || "-" }}</td>
+                        <td class="px-4 py-4 text-slate-600 dark:text-slate-300">{{ item.province || "-" }}</td>
+                        <td class="px-4 py-4 text-slate-600 dark:text-slate-300">{{ item.city || "-" }}</td>
+                        <td class="px-4 py-4 text-slate-600 dark:text-slate-300">{{ item.district || "-" }}</td>
+                        <td class="px-4 py-4 text-slate-600 dark:text-slate-300">{{ item.phone || "-" }}</td>
+                        <td class="px-4 py-4 text-slate-600 dark:text-slate-300">{{ item.email || "-" }}</td>
+                        <td class="px-4 py-4">
+                          <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-200 dark:ring-emerald-500/20">
+                            <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
+                            {{ marketingStatusLabel(item) }}
+                          </span>
+                          <p v-if="getEmailOfferStatus(item.email).last_sent_at" class="mt-1 text-[11px] text-slate-400 dark:text-slate-500">{{ formatDateTime(getEmailOfferStatus(item.email).last_sent_at) }}</p>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="space-y-2 p-3 md:hidden">
+                  <div
+                    v-for="item in sentFilteredSchoolContacts"
+                    :key="`sent-mobile-${item.id}`"
+                    class="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-3 dark:border-emerald-500/20 dark:bg-emerald-500/5"
+                  >
+                    <div class="flex flex-wrap items-start justify-between gap-2">
+                      <p class="font-bold text-slate-900 dark:text-white">{{ item.name }}</p>
+                      <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-200 dark:ring-emerald-500/20">
+                        <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
+                        {{ marketingStatusLabel(item) }}
+                      </span>
+                    </div>
+                    <div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                      <div><span class="font-semibold">NPSN:</span> {{ item.npsn || "-" }}</div>
+                      <div><span class="font-semibold">Status:</span> {{ item.status || "-" }}</div>
+                      <div><span class="font-semibold">Provinsi:</span> {{ item.province || "-" }}</div>
+                      <div><span class="font-semibold">Kab/Kota:</span> {{ item.city || "-" }}</div>
+                      <div><span class="font-semibold">Kecamatan:</span> {{ item.district || "-" }}</div>
+                      <div><span class="font-semibold">Telp:</span> {{ item.phone || "-" }}</div>
+                    </div>
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">{{ item.full_address || "Alamat belum diisi" }}</p>
+                    <div class="mt-2 text-sm text-slate-600 dark:text-slate-300">{{ item.email || "-" }}</div>
+                    <p v-if="getEmailOfferStatus(item.email).last_sent_at" class="mt-1 text-[11px] text-slate-400 dark:text-slate-500">{{ formatDateTime(getEmailOfferStatus(item.email).last_sent_at) }}</p>
+                  </div>
+                </div>
+              </section>
             </div>
 
             <!-- TAB: MANUAL -->
@@ -425,11 +637,8 @@
               </div>
             </div>
           </section>
-        </div>
 
-        <!-- SIDE: STEP 3 - KIRIM (sticky) -->
-        <aside class="space-y-6">
-          <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 xl:sticky xl:top-6 dark:bg-slate-900 dark:ring-white/10">
+          <section class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
             <div class="flex gap-4">
               <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-black text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-200">3</span>
               <div>
@@ -438,7 +647,7 @@
               </div>
             </div>
 
-            <div class="mt-5 space-y-3">
+            <div class="mt-5 grid gap-3 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
               <div class="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-slate-800/60 dark:ring-slate-700">
                 <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Subject</p>
                 <p class="mt-1.5 text-sm font-bold text-slate-900 dark:text-white">{{ previewSubject || "Subject belum diisi" }}</p>
@@ -459,21 +668,22 @@
               </div>
             </div>
 
-            <button
-              type="button"
-              @click="sendEmails"
-              :disabled="isSending || validRecipientCount === 0"
-              class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
-            >
-              <Icon :icon="isSending ? 'mdi:loading' : 'mdi:send'" class="h-5 w-5" :class="{ 'animate-spin': isSending }" />
-              {{ isSending ? "Mengirim..." : `Kirim ke ${validRecipientCount} Email` }}
-            </button>
-            <p class="mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-slate-400">
-              <Icon icon="mdi:shield-check-outline" class="h-3.5 w-3.5" />
-              Email yang sudah pernah dikirim otomatis dilewati.
-            </p>
+            <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p class="flex items-center gap-1.5 text-xs text-slate-400">
+                <Icon icon="mdi:shield-check-outline" class="h-3.5 w-3.5" />
+                Email yang sudah pernah dikirim otomatis dilewati.
+              </p>
+              <button
+                type="button"
+                @click="sendEmails"
+                :disabled="isSending || validRecipientCount === 0"
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none sm:min-w-[280px]"
+              >
+                <Icon :icon="isSending ? 'mdi:loading' : 'mdi:send'" class="h-5 w-5" :class="{ 'animate-spin': isSending }" />
+                {{ isSending ? "Mengirim..." : `Kirim ke ${validRecipientCount} Email` }}
+              </button>
+            </div>
           </section>
-        </aside>
       </section>
 
       <!-- HASIL PENGIRIMAN -->
@@ -838,6 +1048,19 @@ const selectedSchoolContactIds = ref(new Set());
 const emailOfferStatuses = ref({});
 const testEmail = ref("");
 const savingSchoolEmailId = ref(null);
+const provinceOptions = ref([]);
+const cityOptions = ref([]);
+const districtOptions = ref([]);
+const isLoadingLocations = reactive({
+  provinces: false,
+  cities: false,
+  districts: false,
+});
+const locationFilters = reactive({
+  provinceCode: "",
+  cityCode: "",
+  districtCode: "",
+});
 const editingSchoolEmail = reactive({
   id: null,
   email: "",
@@ -845,6 +1068,39 @@ const editingSchoolEmail = reactive({
 
 const textValue = (value) => String(value ?? "").trim();
 const normalizeEmail = (value) => textValue(value).toLowerCase();
+const normalizeLocationName = (value) =>
+  textValue(value)
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^\w\s./-]/g, " ")
+    .replace(/\badm(?:inistrasi)?\.?\b/g, "")
+    .replace(/\bprovinsi\b/g, "")
+    .replace(/\bdaerah khusus ibukota\b/g, "")
+    .replace(/\bdki\b/g, "")
+    .replace(/\bdaerah istimewa\b/g, "")
+    .replace(/\bdi yogyakarta\b/g, "yogyakarta")
+    .replace(/\bd\.?i\.?\b/g, "")
+    .replace(/\bkepulauan\b/g, "")
+    .replace(/\bkep\.\b/g, "")
+    .replace(/\bprov\.\b/g, "")
+    .replace(/\bkab\.\b/g, "kabupaten")
+    .replace(/\bkota adm\b/g, "kota")
+    .replace(/\bkabupaten adm\b/g, "kabupaten")
+    .replace(/\bkabupaten\b/g, "")
+    .replace(/\bkota\b/g, "")
+    .replace(/\bkecamatan\b/g, "")
+    .replace(/\bkelurahan\b/g, "")
+    .replace(/\bdesa\b/g, "")
+    .replace(/[./_-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+const locationMatches = (source, target) => {
+  const left = normalizeLocationName(source);
+  const right = normalizeLocationName(target);
+  if (!right) return true;
+  if (!left) return false;
+  return left === right || left.includes(right) || right.includes(left);
+};
 
 const AVATAR_PALETTE = [
   "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-200",
@@ -870,29 +1126,43 @@ const avatarClass = (name) => {
 
 const filteredSchoolContacts = computed(() => {
   const keyword = schoolContactSearch.value.toLowerCase();
-  const rows = schoolContacts.value;
-  if (!keyword) return rows;
-  return rows.filter((item) =>
-    `${item.name || ""} ${item.email || ""} ${item.full_address || ""} ${item.province || ""} ${item.city || ""} ${item.district || ""}`
+  const selectedProvince = provinceOptions.value.find((item) => item.code === locationFilters.provinceCode)?.name || "";
+  const selectedCity = cityOptions.value.find((item) => item.code === locationFilters.cityCode)?.name || "";
+  const selectedDistrict = districtOptions.value.find((item) => item.code === locationFilters.districtCode)?.name || "";
+
+  return schoolContacts.value.filter((item) => {
+    const matchesKeyword = !keyword || `${item.npsn || ""} ${item.name || ""} ${item.status || ""} ${item.phone || ""} ${item.email || ""} ${item.full_address || ""} ${item.province || ""} ${item.city || ""} ${item.district || ""}`
       .toLowerCase()
-      .includes(keyword)
-  );
+      .includes(keyword);
+    const matchesProvince = locationMatches(item.province, selectedProvince);
+    const matchesCity = locationMatches(item.city, selectedCity);
+    const matchesDistrict = locationMatches(item.district, selectedDistrict);
+    return matchesKeyword && matchesProvince && matchesCity && matchesDistrict;
+  });
 });
+
+const unsentFilteredSchoolContacts = computed(() =>
+  filteredSchoolContacts.value.filter((item) => !getEmailOfferStatus(item.email).sent)
+);
+
+const sentFilteredSchoolContacts = computed(() =>
+  filteredSchoolContacts.value.filter((item) => getEmailOfferStatus(item.email).sent)
+);
 
 const SCHOOL_CONTACTS_PER_PAGE = 8;
 const schoolContactPage = ref(1);
 
 const schoolContactTotalPages = computed(() =>
-  Math.max(1, Math.ceil(filteredSchoolContacts.value.length / SCHOOL_CONTACTS_PER_PAGE))
+  Math.max(1, Math.ceil(unsentFilteredSchoolContacts.value.length / SCHOOL_CONTACTS_PER_PAGE))
 );
 
 const paginatedSchoolContacts = computed(() => {
   const start = (schoolContactPage.value - 1) * SCHOOL_CONTACTS_PER_PAGE;
-  return filteredSchoolContacts.value.slice(start, start + SCHOOL_CONTACTS_PER_PAGE);
+  return unsentFilteredSchoolContacts.value.slice(start, start + SCHOOL_CONTACTS_PER_PAGE);
 });
 
 const schoolContactRangeLabel = computed(() => {
-  const total = filteredSchoolContacts.value.length;
+  const total = unsentFilteredSchoolContacts.value.length;
   if (total === 0) return "0 sekolah";
   const start = (schoolContactPage.value - 1) * SCHOOL_CONTACTS_PER_PAGE + 1;
   const end = Math.min(start + SCHOOL_CONTACTS_PER_PAGE - 1, total);
@@ -923,12 +1193,36 @@ watch(schoolContactSearch, () => {
   schoolContactPage.value = 1;
 });
 
+watch(() => locationFilters.provinceCode, async (value) => {
+  locationFilters.cityCode = "";
+  locationFilters.districtCode = "";
+  cityOptions.value = [];
+  districtOptions.value = [];
+  schoolContactPage.value = 1;
+  if (value) {
+    await loadCities(value);
+  }
+});
+
+watch(() => locationFilters.cityCode, async (value) => {
+  locationFilters.districtCode = "";
+  districtOptions.value = [];
+  schoolContactPage.value = 1;
+  if (value) {
+    await loadDistricts(value);
+  }
+});
+
+watch(() => locationFilters.districtCode, () => {
+  schoolContactPage.value = 1;
+});
+
 watch(schoolContactTotalPages, (totalPages) => {
   if (schoolContactPage.value > totalPages) schoolContactPage.value = totalPages;
 });
 
 const visibleSchoolContactsWithEmail = computed(() =>
-  filteredSchoolContacts.value.filter((item) => textValue(item.email))
+  unsentFilteredSchoolContacts.value.filter((item) => textValue(item.email))
 );
 
 const selectableVisibleSchoolContacts = computed(() =>
@@ -955,6 +1249,59 @@ const schoolStats = computed(() => {
     unsent: withEmail - sent,
   };
 });
+
+const fetchWilayahList = async (path) => {
+  const response = await api.get(`/public/wilayah${path}`, {
+    suppressAuthRedirect: true,
+    silentLoading: true,
+  });
+  return Array.isArray(response?.data?.items) ? response.data.items : [];
+};
+
+const loadProvinces = async () => {
+  isLoadingLocations.provinces = true;
+  try {
+    provinceOptions.value = await fetchWilayahList("/provinces");
+  } catch (error) {
+    pushToast({
+      title: "Gagal Memuat Provinsi",
+      message: error.message || "Daftar provinsi dari wilayah.id tidak berhasil dimuat.",
+      type: "warning",
+    });
+  } finally {
+    isLoadingLocations.provinces = false;
+  }
+};
+
+const loadCities = async (provinceCode) => {
+  isLoadingLocations.cities = true;
+  try {
+    cityOptions.value = await fetchWilayahList(`/regencies/${encodeURIComponent(provinceCode)}`);
+  } catch (error) {
+    pushToast({
+      title: "Gagal Memuat Kab/Kota",
+      message: error.message || "Daftar kabupaten/kota dari wilayah.id tidak berhasil dimuat.",
+      type: "warning",
+    });
+  } finally {
+    isLoadingLocations.cities = false;
+  }
+};
+
+const loadDistricts = async (cityCode) => {
+  isLoadingLocations.districts = true;
+  try {
+    districtOptions.value = await fetchWilayahList(`/districts/${encodeURIComponent(cityCode)}`);
+  } catch (error) {
+    pushToast({
+      title: "Gagal Memuat Kecamatan",
+      message: error.message || "Daftar kecamatan dari wilayah.id tidak berhasil dimuat.",
+      type: "warning",
+    });
+  } finally {
+    isLoadingLocations.districts = false;
+  }
+};
 
 const areAllVisibleSchoolContactsSelected = computed(() => {
   const visible = selectableVisibleSchoolContacts.value;
@@ -1108,7 +1455,10 @@ const loadSchoolContacts = async () => {
 
     schoolContacts.value = rows.map((item) => ({
       id: item.id,
+      npsn: textValue(item.npsn),
       name: textValue(item.name),
+      status: textValue(item.status),
+      phone: textValue(item.phone),
       email: textValue(item.email),
       wakur: textValue(item.wakur),
       kepsek: textValue(item.kepsek),
@@ -1334,6 +1684,13 @@ const marketingStatusClass = (item) => {
   return "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/20";
 };
 
+const schoolContactLabel = (item) => {
+  const contacts = [];
+  if (textValue(item.wakur)) contacts.push(`Wakur: ${textValue(item.wakur)}`);
+  if (textValue(item.kepsek)) contacts.push(`Kepsek: ${textValue(item.kepsek)}`);
+  return contacts.join(" | ");
+};
+
 const formatDateTime = (value) => {
   if (!value) return "";
   const date = new Date(value);
@@ -1354,14 +1711,41 @@ const downloadRecipientTemplate = async () => {
       filename: "template-upload-list-sekolah.xlsx",
       sheetName: "List Sekolah",
       title: "Template Upload List Sekolah",
-      subtitle: "Isi kolom Nama Sekolah dan Email untuk menambah atau memperbarui list sekolah.",
+      subtitle: "Isi kolom data sekolah untuk menambah atau memperbarui list sekolah. Nama Sekolah wajib diisi.",
       columns: [
+        { key: "npsn", label: "NPSN" },
         { key: "school_name", label: "Nama Sekolah" },
+        { key: "status", label: "Status" },
+        { key: "full_address", label: "Alamat" },
+        { key: "province", label: "Provinsi" },
+        { key: "city", label: "Kab/Kota" },
+        { key: "district", label: "Kecamatan" },
+        { key: "phone", label: "Telp" },
         { key: "email", label: "Email" },
       ],
       rows: [
-        { school_name: "SMA Contoh Nusantara", email: "info@sma-contoh.sch.id" },
-        { school_name: "SMK Contoh Mandiri", email: "admin@smk-contoh.sch.id" },
+        {
+          npsn: "12345678",
+          school_name: "SMK Contoh Nusantara",
+          status: "Swasta",
+          full_address: "Jl. Pendidikan No. 1",
+          province: "DKI Jakarta",
+          city: "Jakarta Barat",
+          district: "Palmerah",
+          phone: "0211234567",
+          email: "info@smkcontoh.sch.id",
+        },
+        {
+          npsn: "87654321",
+          school_name: "SMK Mandiri Digital",
+          status: "Negeri",
+          full_address: "Jl. Teknologi No. 2",
+          province: "Jawa Barat",
+          city: "Bandung",
+          district: "Coblong",
+          phone: "0227654321",
+          email: "admin@smkmandiri.sch.id",
+        },
       ],
     });
   } catch (error) {
@@ -1385,8 +1769,7 @@ const findHeaderIndex = (rows) =>
   rows.findIndex((row) => {
     const headers = row.map(normalizeHeader);
     const hasName = headers.some((item) => ["nama sekolah", "sekolah", "school name", "school"].includes(item));
-    const hasEmail = headers.some((item) => ["email", "alamat email", "email sekolah"].includes(item));
-    return hasName && hasEmail;
+    return hasName;
   });
 
 const upsertSchoolContactsFromExcel = async (items) => {
@@ -1399,7 +1782,17 @@ const upsertSchoolContactsFromExcel = async (items) => {
 
   for (const item of items) {
     const name = textValue(item.school_name || item.name);
-    const email = textValue(item.email);
+    const payload = {
+      npsn: textValue(item.npsn) || undefined,
+      name,
+      status: textValue(item.status) || undefined,
+      full_address: textValue(item.full_address) || undefined,
+      province: textValue(item.province) || undefined,
+      city: textValue(item.city) || undefined,
+      district: textValue(item.district) || undefined,
+      phone: textValue(item.phone) || undefined,
+      email: textValue(item.email) || undefined,
+    };
     if (!name) {
       skipped += 1;
       continue;
@@ -1407,22 +1800,48 @@ const upsertSchoolContactsFromExcel = async (items) => {
 
     const existing = existingByName.get(name.toLowerCase());
     if (existing) {
-      if (textValue(existing.email).toLowerCase() === email.toLowerCase()) {
+      const unchanged =
+        textValue(existing.npsn) === textValue(payload.npsn) &&
+        textValue(existing.status) === textValue(payload.status) &&
+        textValue(existing.full_address) === textValue(payload.full_address) &&
+        textValue(existing.province) === textValue(payload.province) &&
+        textValue(existing.city) === textValue(payload.city) &&
+        textValue(existing.district) === textValue(payload.district) &&
+        textValue(existing.phone) === textValue(payload.phone) &&
+        textValue(existing.email).toLowerCase() === textValue(payload.email).toLowerCase();
+      if (unchanged) {
         skipped += 1;
         continue;
       }
-      await api.put(`/school-visit-targets/${existing.id}`, { email }, { silentLoading: true });
-      existing.email = email;
+      await api.put(`/school-visit-targets/${existing.id}`, payload, { silentLoading: true });
+      Object.assign(existing, {
+        npsn: textValue(payload.npsn),
+        name,
+        status: textValue(payload.status),
+        full_address: textValue(payload.full_address),
+        province: textValue(payload.province),
+        city: textValue(payload.city),
+        district: textValue(payload.district),
+        phone: textValue(payload.phone),
+        email: textValue(payload.email),
+      });
       updated += 1;
       continue;
     }
 
-    const response = await api.post("/school-visit-targets", { name, email }, { silentLoading: true });
+    const response = await api.post("/school-visit-targets", payload, { silentLoading: true });
     const createdItem = response?.data || {};
     existingByName.set(name.toLowerCase(), {
       id: createdItem.id,
+      npsn: textValue(payload.npsn),
       name,
-      email,
+      status: textValue(payload.status),
+      full_address: textValue(payload.full_address),
+      province: textValue(payload.province),
+      city: textValue(payload.city),
+      district: textValue(payload.district),
+      phone: textValue(payload.phone),
+      email: textValue(payload.email),
     });
     created += 1;
   }
@@ -1442,19 +1861,33 @@ const importRecipientExcel = async (event) => {
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
     const headerIndex = findHeaderIndex(rows);
     if (headerIndex < 0) {
-      throw new Error("Header Nama Sekolah dan Email tidak ditemukan.");
+      throw new Error("Header Nama Sekolah tidak ditemukan.");
     }
 
     const headers = rows[headerIndex].map(normalizeHeader);
     const nameIndex = headers.findIndex((item) => ["nama sekolah", "sekolah", "school name", "school"].includes(item));
+    const npsnIndex = headers.findIndex((item) => ["npsn"].includes(item));
+    const statusIndex = headers.findIndex((item) => ["status"].includes(item));
+    const addressIndex = headers.findIndex((item) => ["alamat", "alamat lengkap", "full address"].includes(item));
+    const provinceIndex = headers.findIndex((item) => ["provinsi", "province"].includes(item));
+    const cityIndex = headers.findIndex((item) => ["kab kota", "kab/kota", "kota", "city"].includes(item));
+    const districtIndex = headers.findIndex((item) => ["kecamatan", "district"].includes(item));
+    const phoneIndex = headers.findIndex((item) => ["telp", "telepon", "phone", "no telp", "nomor telepon"].includes(item));
     const emailIndex = headers.findIndex((item) => ["email", "alamat email", "email sekolah"].includes(item));
     const parsed = rows
       .slice(headerIndex + 1)
       .map((row) => ({
+        npsn: textValue(row[npsnIndex]),
         school_name: textValue(row[nameIndex]),
+        status: textValue(row[statusIndex]),
+        full_address: textValue(row[addressIndex]),
+        province: textValue(row[provinceIndex]),
+        city: textValue(row[cityIndex]),
+        district: textValue(row[districtIndex]),
+        phone: textValue(row[phoneIndex]),
         email: textValue(row[emailIndex]),
       }))
-      .filter((item) => item.school_name || item.email);
+      .filter((item) => item.school_name || item.email || item.npsn || item.phone);
     if (parsed.length === 0) {
       throw new Error("Tidak ada data sekolah di file Excel.");
     }
@@ -1636,5 +2069,10 @@ const confirmSendEmails = async () => {
 };
 
 useDefaultTemplate();
-onMounted(loadSchoolContacts);
+onMounted(async () => {
+  await Promise.all([
+    loadProvinces(),
+    loadSchoolContacts(),
+  ]);
+});
 </script>
