@@ -853,7 +853,7 @@
             <div class="flex justify-end border-t border-slate-100 px-6 py-4 dark:border-slate-800">
               <button
                 type="button"
-                @click="closeTemplateModal"
+                @click="saveTemplate"
                 class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-700 dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white"
               >
                 Simpan Template
@@ -940,6 +940,7 @@ import { downloadExcelWorksheet } from "@/utils/excelExport";
 let recipientId = 1;
 
 const DEFAULT_SUBJECT = "Demo LMS Modern untuk {{school_name}}";
+const TEMPLATE_STORAGE_KEY = "marketing_email_template_v1";
 const DEFAULT_BODY = `<!doctype html>
 <html lang="id">
   <head>
@@ -1346,6 +1347,52 @@ const useDefaultTemplate = () => {
   form.subject = DEFAULT_SUBJECT;
   form.body = DEFAULT_BODY;
   form.send_as_html = true;
+};
+
+const loadSavedTemplate = () => {
+  try {
+    const raw = localStorage.getItem(TEMPLATE_STORAGE_KEY);
+    if (!raw) {
+      useDefaultTemplate();
+      return;
+    }
+    const parsed = JSON.parse(raw);
+    form.subject = textValue(parsed?.subject) || DEFAULT_SUBJECT;
+    form.body = String(parsed?.body || DEFAULT_BODY);
+    form.send_as_html = parsed?.send_as_html !== false;
+  } catch {
+    useDefaultTemplate();
+  }
+};
+
+const saveTemplate = () => {
+  if (!form.subject.trim() || !form.body.trim()) {
+    pushToast({
+      title: "Template Belum Lengkap",
+      message: "Subject dan isi email wajib diisi sebelum disimpan.",
+      type: "error",
+    });
+    return;
+  }
+  try {
+    localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify({
+      subject: form.subject,
+      body: form.body,
+      send_as_html: form.send_as_html === true,
+    }));
+    showTemplateModal.value = false;
+    pushToast({
+      title: "Template Disimpan",
+      message: "Perubahan template email berhasil disimpan.",
+      type: "success",
+    });
+  } catch (error) {
+    pushToast({
+      title: "Gagal Menyimpan Template",
+      message: error?.message || "Template email tidak berhasil disimpan.",
+      type: "error",
+    });
+  }
 };
 
 const openTemplateModal = () => {
@@ -1981,9 +2028,7 @@ const sendTestEmail = async () => {
 
 const resetForm = () => {
   form.reply_to = "";
-  form.subject = DEFAULT_SUBJECT;
-  form.body = DEFAULT_BODY;
-  form.send_as_html = true;
+  loadSavedTemplate();
   recipients.value = [createRecipient()];
   bulkInput.value = "";
   testEmail.value = "";
@@ -2068,7 +2113,7 @@ const confirmSendEmails = async () => {
   }
 };
 
-useDefaultTemplate();
+loadSavedTemplate();
 onMounted(async () => {
   await Promise.all([
     loadProvinces(),
