@@ -408,13 +408,15 @@
               <div class="relative mb-8 flex-1">
                 <ul class="space-y-3.5 overflow-hidden transition-[max-height] duration-300"
                   :class="isPackageModulesExpanded(pkg) || !hasHiddenPackageModules(pkg) ? 'max-h-[900px]' : 'max-h-[252px]'">
-                  <li v-for="mod in standardLmsModules" :key="mod.label" class="flex items-start gap-2.5 text-sm font-bold"
+                  <li v-for="mod in standardLmsModules" :key="mod.label"
+                    class="flex items-start gap-2.5 text-sm font-bold"
                     :class="pkg.is_popular ? 'text-white' : 'text-slate-700'">
                     <Icon icon="ph:check-bold" class="mt-0.5 shrink-0 text-base"
                       :class="pkg.is_popular ? 'text-blue-500' : 'text-emerald-500'" />
                     <span>{{ mod.label }}</span>
                   </li>
-                  <li v-for="(mod, i) in sortedPackageModules(pkg)" :key="`${mod.label}-${i}`" class="flex items-start gap-2.5 text-sm font-medium"
+                  <li v-for="(mod, i) in sortedPackageModules(pkg)" :key="`${mod.label}-${i}`"
+                    class="flex items-start gap-2.5 text-sm font-medium"
                     :class="mod.included ? (pkg.is_popular ? 'text-white' : 'text-slate-700') : (pkg.is_popular ? 'text-slate-400' : 'text-slate-400')">
                     <Icon :icon="mod.included ? 'ph:check-bold' : 'ph:x-bold'" class="mt-0.5 shrink-0 text-base" :class="mod.included
                       ? (pkg.is_popular ? 'text-blue-500' : 'text-emerald-500')
@@ -799,7 +801,7 @@ const navItems = [
 const contact = reactive({
   phone: "085719578195",
   email: "bitwizedigitalplatform@gmail.com",
-  address: "Jalan Harun II No.126 A, Palmerah, Jakarta Barat",
+  address: "Gang Harun 2 Kota Jakrta Barat Privinsi DKI Jakarta Kode Pos 11480",
   whatsappUrl: "https://wa.me/6285719578195",
   mapUrl: "https://www.google.com/maps/search/?api=1&query=Jalan%20Harun%20II%20No.126%20A%2C%20Palmerah%2C%20Jakarta%20Barat",
 });

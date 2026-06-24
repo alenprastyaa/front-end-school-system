@@ -45,7 +45,8 @@
           <h2 class="text-lg font-extrabold text-[#123a62]">Informasi perusahaan</h2>
           <p class="mt-2 text-sm font-semibold leading-7 text-[#526577]">
             Bitwize Digital Platform dapat dihubungi melalui WhatsApp 085719578195,
-            email bitwizedigitalplatform@gmail.com, atau alamat Jalan Harun II No.126 A, Palmerah, Jakarta Barat.
+            email bitwizedigitalplatform@gmail.com, atau alamat Gang Harun 2 Kota Jakrta Barat Privinsi DKI Jakarta Kode
+            Pos 11480.
           </p>
         </div>
       </section>

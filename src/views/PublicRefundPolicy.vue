@@ -53,7 +53,7 @@
             </a>.
           </p>
           <p class="mt-2 text-sm font-semibold leading-7 text-[#526577]">
-            Alamat: Jalan Harun II No.126 A, Palmerah, Jakarta Barat.
+            Alamat: Gang Harun 2 Kota Jakrta Barat Privinsi DKI Jakarta Kode Pos 11480.
           </p>
         </div>
       </section>
